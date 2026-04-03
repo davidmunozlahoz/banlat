@@ -234,44 +234,43 @@ theorem disjoint_smul (a : ℝ) (nonneg : 0 ≤ a) (h : x ⊓ y = 0) :
 
 section Archimedean
 
-variable [Archimedean X]
+/-- A lattice-ordered group is **Archimedean** (in the vector-lattice sense) when the only
+non-negative element all of whose multiples are bounded is zero: `0 ≤ x` and `∀ n, n • x ≤ y`
+imply `x = 0`. This is the standard Archimedean property for partially ordered groups; it is
+weaker than Mathlib's `Archimedean` class, which is stated for linearly ordered monoids. -/
 
-private lemma infinitesimal_is_zero {x y : X}
-  (infinitesimal : ∀ n : ℕ, n • |x| ≤ y) : x = 0 := by
-  by_contra h
-  have : 0 < |x| := by
-    apply lt_of_le_of_ne
-    · apply abs_nonneg
-    intro heq
-    symm at heq
-    have : x = 0 := by apply (abs_eq_zero_iff_zero x).mp heq
-    contradiction
-  obtain ⟨n, hn⟩ := exists_lt_nsmul this y
-  specialize infinitesimal n
-  have : n • |x| < n • |x| := by
-    apply lt_of_le_of_lt infinitesimal hn
-  apply lt_irrefl (n • |x|) this
+class IsVLArchimedean (X : Type*) [AddCommGroup X] [Lattice X]
+    [IsOrderedAddMonoid X] : Prop where
+  eq_zero_of_nonneg_of_forall_nsmul_le {x y : X} :
+    0 ≤ x → (∀ n : ℕ, n • x ≤ y) → x = 0
+
+variable [IsVLArchimedean X]
+
+/-- An element whose absolute-value multiples are bounded must be zero. -/
+theorem infinitesimal_eq_zero {x y : X}
+    (h : ∀ n : ℕ, n • |x| ≤ y) : x = 0 := by
+  have hab : |x| = 0 :=
+    IsVLArchimedean.eq_zero_of_nonneg_of_forall_nsmul_le (abs_nonneg x) h
+  exact (abs_eq_zero_iff_zero x).mp hab
 
 /-- In an Archimedean vector lattice, if `n • x ≤ y` for all `n : ℕ`, then `x ≤ 0`. -/
 theorem le_zero_of_forall_nsmul_le {x y : X} (h : ∀ n : ℕ, n • x ≤ y) : x ≤ 0 := by
   apply (le_iff_posPart_negPart x 0).mpr
   constructor
-  · have : ∀ n : ℕ, n • |x⁺| ≤ y⁺ := by
+  · have : ∀ n : ℕ, n • x⁺ ≤ y⁺ := by
       intro n
       calc
-        n • |x⁺| = n • x⁺ := by congr; apply abs_of_nonneg (posPart_nonneg x)
-               _ = n • (x ⊔ 0) := by rw [posPart_def]
-               _ = (n:ℝ) • (x ⊔ 0) := by norm_cast
-               _ = ((n:ℝ) • x) ⊔ ((n:ℝ) • 0) := by
-                 rw [nonneg_smul_sup x 0 (n:ℝ) (by norm_num)]
-               _ = ((n:ℝ) • x) ⊔ 0 := by rw [smul_zero (n:ℝ)]
-               _ = ((n:ℝ) • x)⁺ := by rw [posPart_def]
-               _ ≤ y⁺ := by norm_cast; exact ((le_iff_posPart_negPart (n • x) y).mp (h n)).1
-    have xpos_zero : x⁺ = 0 := infinitesimal_is_zero this
-    rw [xpos_zero]
-    simp
-  · simp
-    exact negPart_nonneg x
+        n • x⁺ = n • (x ⊔ 0) := by rw [posPart_def]
+             _ = (n:ℝ) • (x ⊔ 0) := by norm_cast
+             _ = ((n:ℝ) • x) ⊔ ((n:ℝ) • 0) := by
+               rw [nonneg_smul_sup x 0 (n:ℝ) (by norm_num)]
+             _ = ((n:ℝ) • x) ⊔ 0 := by rw [smul_zero (n:ℝ)]
+             _ = ((n:ℝ) • x)⁺ := by rw [posPart_def]
+             _ ≤ y⁺ := by norm_cast; exact ((le_iff_posPart_negPart (n • x) y).mp (h n)).1
+    have xpos_zero : x⁺ = 0 :=
+      IsVLArchimedean.eq_zero_of_nonneg_of_forall_nsmul_le (posPart_nonneg x) this
+    rw [xpos_zero]; simp
+  · simp; exact negPart_nonneg x
 
 end Archimedean
 

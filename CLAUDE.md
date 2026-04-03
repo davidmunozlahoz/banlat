@@ -13,8 +13,8 @@ added one at a time and verified before proceeding.
 - The `Library/` directory contains reference monographs (currently
   `troitsky2022.pdf` and `aliprantis_burkinshaw2006.pdf`). Consult them when
   looking for results to formalise or to understand the mathematical context.
-- Before writing any declaration, search Mathlib for it (use `lean_local_search`,
-  `lean_loogle`, or `lean_leansearch`). If the result already exists in Mathlib,
+- When needed, search the codebase and Mathlib (use `lean_local_search`,
+  `lean_loogle`, or `lean_leansearch`) for relevant results and definitions. If the result already exists in Mathlib,
   just import the right file and use it — do not reprove it or introduce an alias.
 - Split long proofs into small private lemmas. Keep those lemmas `private` unless
   they are genuinely reusable across the library.
@@ -40,9 +40,10 @@ There are two operating modes:
 1. **Plan first.** Before writing any Lean, draft a proof outline (consult the
    monographs if helpful). Break the argument into steps and identify which
    steps need a separate lemma.
-2. **Search before writing.** For each step, check whether it is already proved
-   in this library or in Mathlib (`lean_local_search`, `lean_loogle`,
-   `lean_leansearch`). Only introduce a new `private lemma` if the step is
+2. **Search before writing.**
+   When needed, search the codebase and Mathlib (use `lean_local_search`,
+  `lean_loogle`, or `lean_leansearch`) for relevant results and definitions.
+   Only introduce a new `private lemma` if the step is
    genuinely missing.
 3. **Write the proof**, leaning on existing results as much as possible.
 4. **Review after completion.** Re-read the finished proof critically: is there
