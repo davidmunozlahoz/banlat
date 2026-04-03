@@ -1,13 +1,14 @@
 # banlat
 
-## GitHub configuration
+## Next Steps
 
-To set up your new GitHub repository, follow these steps:
-
-* Under your repository name, click **Settings**.
-* In the **Actions** section of the sidebar, click "General".
-* Check the box **Allow GitHub Actions to create and approve pull requests**.
-* Click the **Pages** section of the settings sidebar.
-* In the **Source** dropdown menu, select "GitHub Actions".
-
-After following the steps above, you can remove this section from the README file.
+- [ ] `Banach.lean` definition of Banach lattice extending normed
+lattice.
+- [ ] `PositiveOperator.lean` in a vector lattice, Monotone f is the
+same as sending positive elements to positive elements (define the
+latter as Positive f). If f is positive, |f x| \le f |x|. In a Banach
+lattice, positive operators are bounded.
+- [ ] Folder `Examples` with the typical examples of vector and Banach
+  lattices.
+- [ ] `Lp.lean`
+- [ ] `CofK.lean`
