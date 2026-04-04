@@ -30,6 +30,9 @@ namespace NormedVectorLattice
 variable {X : Type*} [NormedAddCommGroup X] [Lattice X] [IsOrderedAddMonoid X]
   [NormedVectorLattice X]
 
+instance instNormedSpace : NormedSpace ℝ X where
+  norm_smul_le a x := (norm_smul a x).le
+
 /-! ### Continuity of lattice operations -/
 
 /-- Supremum is jointly norm-continuous. -/
