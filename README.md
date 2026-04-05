@@ -6,3 +6,4 @@
   lattices.
 - [ ] `Lp.lean`
 - [ ] `CofK.lean`
+- [ ] `Bands.lean`

@@ -136,7 +136,7 @@ theorem nonneg_smul_sup (a : ℝ) (nonneg : a ≥ 0) :
         exact smul_le_smul_of_nonneg_left
          le_sup_right
          (by norm_num [nonneg])
-      simp [h] at hx hy
+      simp only [inv_smul_smul₀ h] at hx hy
       have hxy : x ⊔ y ≤ a⁻¹ • (a • x ⊔ a • y) :=
         sup_le hx hy
       calc
@@ -238,7 +238,6 @@ section Archimedean
 non-negative element all of whose multiples are bounded is zero: `0 ≤ x` and `∀ n, n • x ≤ y`
 imply `x = 0`. This is the standard Archimedean property for partially ordered groups; it is
 weaker than Mathlib's `Archimedean` class, which is stated for linearly ordered monoids. -/
-
 class IsVLArchimedean (X : Type*) [AddCommGroup X] [Lattice X]
     [IsOrderedAddMonoid X] : Prop where
   eq_zero_of_nonneg_of_forall_nsmul_le {x y : X} :
@@ -246,6 +245,7 @@ class IsVLArchimedean (X : Type*) [AddCommGroup X] [Lattice X]
 
 variable [IsVLArchimedean X]
 
+omit [VectorLattice X] in
 /-- An element whose absolute-value multiples are bounded must be zero. -/
 theorem infinitesimal_eq_zero {x y : X}
     (h : ∀ n : ℕ, n • |x| ≤ y) : x = 0 := by
@@ -270,7 +270,7 @@ theorem le_zero_of_forall_nsmul_le {x y : X} (h : ∀ n : ℕ, n • x ≤ y) : 
     have xpos_zero : x⁺ = 0 :=
       IsVLArchimedean.eq_zero_of_nonneg_of_forall_nsmul_le (posPart_nonneg x) this
     rw [xpos_zero]; simp
-  · simp; exact negPart_nonneg x
+  · simp only [negPart_of_nonpos le_rfl, neg_zero]; exact negPart_nonneg x
 
 end Archimedean
 

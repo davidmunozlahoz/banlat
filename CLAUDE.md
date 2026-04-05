@@ -30,10 +30,9 @@ There are two operating modes:
 
 **Prove mode** — activated when asked to prove a result.
 - The file must compile with no `sorry` whatsoever.
-- **Do not alter any existing definition or theorem signature** — these have
-  already been reviewed and approved. Treat them as frozen.
 - If the proof needs an auxiliary result, introduce it as a `private lemma`
   with its own proof; do not touch public declarations.
+- The file must compile with no style or suggested `warning`.
 
 *Workflow within prove mode:*
 

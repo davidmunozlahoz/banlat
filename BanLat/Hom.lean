@@ -71,7 +71,7 @@ instance instLinearMapClass : LinearMapClass (VecLatHom X Y) ℝ X Y where
     exact f.toLinearMap.map_add a b
   map_smulₛₗ := by
     intro f c x
-    simp
+    simp only [RingHom.id_apply]
     exact f.toLinearMap.map_smul c x
 
 /-- The underlying function of a `VecLatHom` equals its coercion to `X → Y`. -/
@@ -129,12 +129,14 @@ def comp {Z : Type*} [AddCommGroup Z] [Lattice Z] [IsOrderedAddMonoid Z]
   {LinearMap.comp g.toLinearMap f.toLinearMap with
     map_sup' := by
       intro x y
-      simp
+      simp only [AddHom.toFun_eq_coe, LinearMap.coe_toAddHom, LinearMap.coe_comp,
+        Function.comp_apply]
       change g ( f (x ⊔ y) ) = (g (f x)) ⊔ (g (f y))
       simp only [map_sup]
     map_inf' := by
       intro x y
-      simp
+      simp only [AddHom.toFun_eq_coe, LinearMap.coe_toAddHom, LinearMap.coe_comp,
+        Function.comp_apply]
       change g ( f (x ⊓ y) ) = (g (f x)) ⊓ (g (f y))
       simp only [map_inf]
   }
@@ -219,7 +221,7 @@ theorem of_abs {f : X → Y} (lin : IsLinearMap ℝ f) (abs : ∀ x : X, f |x|
 
 /-- A positive linear map that preserves disjointness is a vector lattice homomorphism. -/
 theorem of_disjoint {f : X → Y} (lin : IsLinearMap ℝ f)
-    (pos : ∀ x : X, 0 ≤ x → 0 ≤ f x)
+    (_pos : ∀ x : X, 0 ≤ x → 0 ≤ f x)
     (disj : ∀ x y : X, x ⊓ y = 0 → f x ⊓ f y = 0) : IsVecLatHom f := by
   have fNeg : ∀ x : X, f (-x) = -f x := fun x => by
     have h := lin.map_smul (-1 : ℝ) x; rwa [neg_one_smul, neg_one_smul] at h
@@ -289,10 +291,10 @@ def trans {Z : Type*} [AddCommGroup Z] [Lattice Z] [IsOrderedAddMonoid Z] [Vecto
     (e₁ : VecLatEquiv X Y) (e₂ : VecLatEquiv Y Z) : VecLatEquiv X Z :=
   { e₁.toLinearEquiv.trans e₂.toLinearEquiv with
     map_sup' := fun a b => by
-      show e₂.toFun (e₁.toFun (a ⊔ b)) = e₂.toFun (e₁.toFun a) ⊔ e₂.toFun (e₁.toFun b)
+      change e₂.toFun (e₁.toFun (a ⊔ b)) = e₂.toFun (e₁.toFun a) ⊔ e₂.toFun (e₁.toFun b)
       rw [e₁.map_sup', e₂.map_sup']
     map_inf' := fun a b => by
-      show e₂.toFun (e₁.toFun (a ⊓ b)) = e₂.toFun (e₁.toFun a) ⊓ e₂.toFun (e₁.toFun b)
+      change e₂.toFun (e₁.toFun (a ⊓ b)) = e₂.toFun (e₁.toFun a) ⊓ e₂.toFun (e₁.toFun b)
       rw [e₁.map_inf', e₂.map_inf'] }
 
 end VecLatEquiv
