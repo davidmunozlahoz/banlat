@@ -1,6 +1,10 @@
 import BanLat.AMSpace
+import BanLat.Dual
+import BanLat.Examples.MofK
 import Mathlib.Topology.ContinuousMap.Compact
 import Mathlib.Topology.ContinuousMap.Lattice
+import Mathlib.MeasureTheory.Integral.Bochner.Basic
+import Mathlib.MeasureTheory.Constructions.BorelSpace.Basic
 
 /-!
 # Spaces of continuous functions as Banach lattices and AM-spaces
@@ -161,3 +165,136 @@ noncomputable instance instAMSpaceWithUnitCofK :
         (Classical.arbitrary K)
       simp at this
   norm_eq_gaugeNorm := norm_eq_gaugeNorm_const
+
+/-! ### Riesz representation: the dual is a space of measures
+
+For a compact Hausdorff space `K` equipped with its Borel σ-algebra, the
+**Riesz–Markov–Kakutani representation theorem** identifies the norm dual of
+`C(K, ℝ)` with the space `M(K) = SignedMeasure K` of finite signed Borel
+measures. The Banach lattice structure on `M(K)` is established in
+`BanLat.Examples.MofK`; here we state the identification itself.
+
+The map sends a measure `μ` to the continuous linear functional
+`f ↦ ∫ x, f x ∂μ`, defined via the Jordan decomposition of `μ`. The map is
+real-linear, isometric (`‖μ‖ = |μ|(K)`), and preserves the lattice operations
+`⊔` and `⊓`, so it is a Banach lattice isomorphism.
+-/
+
+open MeasureTheory
+
+section Riesz
+
+variable [MeasurableSpace K] [BorelSpace K] [T2Space K]
+
+/-- Integration of a continuous function on a compact Hausdorff space against
+a finite signed Borel measure, defined via the Jordan decomposition of the
+measure. -/
+noncomputable def signedMeasureIntegral (μ : SignedMeasure K) (f : C(K, ℝ)) : ℝ :=
+  ∫ x, f x ∂μ.toJordanDecomposition.posPart -
+    ∫ x, f x ∂μ.toJordanDecomposition.negPart
+
+/-- The bounded linear functional on `C(K, ℝ)` associated to a finite signed
+Borel measure `μ` by integration. The boundedness constant is the total
+variation `|μ|(K)`. The proof packages `signedMeasureIntegral μ` as a
+continuous linear map: linearity follows from linearity of the Bochner
+integral on each Jordan part, and the bound `|⟨μ, f⟩| ≤ |μ|(K) · ‖f‖∞` from
+the standard estimate `|∫ f dν| ≤ ν(K) · ‖f‖∞` applied to each Jordan part. -/
+noncomputable def signedMeasureFunctional (μ : SignedMeasure K) :
+    NormDualSpace C(K, ℝ) :=
+  sorry
+
+/-- The functional associated to a signed measure agrees with
+`signedMeasureIntegral`. -/
+@[simp]
+theorem signedMeasureFunctional_apply (μ : SignedMeasure K) (f : C(K, ℝ)) :
+    signedMeasureFunctional μ f = signedMeasureIntegral μ f :=
+  sorry
+
+/-! #### From a continuous functional back to a signed measure
+
+For each `φ : C(K, ℝ) →L[ℝ] ℝ`, decomposing `φ` into its positive and negative
+parts in the order dual (`BanLat/Dual.lean`) yields two positive functionals.
+Each positive functional is represented by a finite Borel measure via Mathlib's
+`MeasureTheory.RealRMK.rieszMeasure`, and the difference of these two measures
+is a signed measure. The mutual singularity needed for a genuine Jordan
+decomposition is automatic from `φ⁺ ⊓ φ⁻ = 0`. -/
+
+/-- The signed Borel measure associated to a continuous linear functional on
+`C(K, ℝ)` by the Riesz–Markov–Kakutani representation theorem. -/
+noncomputable def rieszSignedMeasure (φ : NormDualSpace C(K, ℝ)) :
+    SignedMeasure K :=
+  sorry
+
+/-- Defining property of `rieszSignedMeasure`: integration recovers the
+functional. Argument: by construction `rieszSignedMeasure φ` is the difference
+of the two positive measures representing `φ⁺` and `φ⁻`, so integration
+against it returns `φ⁺ f - φ⁻ f = φ f`. -/
+theorem rieszSignedMeasure_integral (φ : NormDualSpace C(K, ℝ)) (f : C(K, ℝ)) :
+    signedMeasureIntegral (rieszSignedMeasure φ) f = φ f :=
+  sorry
+
+/-! #### The two constructions are mutually inverse -/
+
+private theorem rieszSignedMeasure_signedMeasureFunctional
+    (μ : SignedMeasure K) :
+    rieszSignedMeasure (signedMeasureFunctional μ) = μ :=
+  sorry
+
+private theorem signedMeasureFunctional_rieszSignedMeasure
+    (φ : NormDualSpace C(K, ℝ)) :
+    signedMeasureFunctional (rieszSignedMeasure φ) = φ :=
+  sorry
+
+/-! #### Linearity, isometry, and lattice preservation -/
+
+private theorem signedMeasureFunctional_add (μ ν : SignedMeasure K) :
+    signedMeasureFunctional (μ + ν) =
+      signedMeasureFunctional μ + signedMeasureFunctional ν :=
+  sorry
+
+private theorem signedMeasureFunctional_smul (c : ℝ) (μ : SignedMeasure K) :
+    signedMeasureFunctional (c • μ) = c • signedMeasureFunctional μ :=
+  sorry
+
+/-- The Riesz functional has operator norm equal to the total variation of the
+underlying measure. Argument: for the upper bound, use
+`|⟨μ, f⟩| ≤ |μ|(K) · ‖f‖∞`. For the lower bound, approximate the indicator of
+a positive Hahn set from above by continuous functions (using regularity of the
+total variation measure on a compact Hausdorff space) to make the integral get
+arbitrarily close to `|μ|(K)`. -/
+private theorem norm_signedMeasureFunctional (μ : SignedMeasure K) :
+    ‖signedMeasureFunctional μ‖ = ‖μ‖ :=
+  sorry
+
+private theorem signedMeasureFunctional_sup (μ ν : SignedMeasure K) :
+    signedMeasureFunctional (μ ⊔ ν) =
+      signedMeasureFunctional μ ⊔ signedMeasureFunctional ν :=
+  sorry
+
+private theorem signedMeasureFunctional_inf (μ ν : SignedMeasure K) :
+    signedMeasureFunctional (μ ⊓ ν) =
+      signedMeasureFunctional μ ⊓ signedMeasureFunctional ν :=
+  sorry
+
+/-- **Riesz–Markov–Kakutani representation theorem** for `C(K, ℝ)`. For a
+compact Hausdorff space `K`, integration against a finite signed Borel measure
+is a Banach lattice isomorphism between `SignedMeasure K` and the norm dual of
+`C(K, ℝ)`: it is a real-linear isometric equivalence that also preserves the
+lattice operations `⊔` and `⊓`. -/
+noncomputable def rieszEquiv :
+    BanachLatEquiv (SignedMeasure K) (NormDualSpace C(K, ℝ)) :=
+  sorry
+
+@[simp]
+theorem rieszEquiv_apply (μ : SignedMeasure K) (f : C(K, ℝ)) :
+    rieszEquiv μ f = signedMeasureIntegral μ f :=
+  sorry
+
+/-- The Riesz isomorphism preserves positivity: a signed measure is non-negative
+iff its associated functional is non-negative on `C(K, ℝ)`. This is a direct
+consequence of `rieszEquiv` being a lattice isomorphism. -/
+theorem rieszEquiv_nonneg_iff {μ : SignedMeasure K} :
+    0 ≤ (rieszEquiv : BanachLatEquiv (SignedMeasure K) _) μ ↔ 0 ≤ μ :=
+  sorry
+
+end Riesz

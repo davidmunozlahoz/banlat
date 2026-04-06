@@ -11,14 +11,17 @@
                      / | \      / |  \            |               |
                     /  |  \    /  |   \           |               |
                 Band   | ALSpace |  Operators.Positive            |
-                  |    |         |       |                        |
+                 /|    |         |       |                        |
+              Atom |   |         |       |                        |
+                   |   |         |       |                        |
           OrderContinuous     AMSpace    |                        |
                             /       \   Operators.OrderBounded    |
                      Examples.Lp  Examples.CofK   |    \         |
-                                                  |     \        |
-                                                  |      \       |
-                                                  | Operators.RieszKantorovich
-                                                  |      /       |
+                                       |          |     \        |
+                                Examples.MofK     |      \       |
+                                       |          | Operators.RieszKantorovich
+                          Preliminaries.SignedMeasure  /          |
+                                                  |  /           |
                                          Operators.Regular------'
 ```
 
@@ -34,6 +37,7 @@
 | Ideal                      | Sublattice, Normed                   |
 | Banach                     | Normed, Operators.Hom                |
 | Band                       | Ideal, Operators.Hom                 |
+| Atom                       | Band                                 |
 | ALSpace                    | Banach, Ideal                        |
 | AMSpace                    | Banach, Ideal                        |
 | Quotient                   | Ideal, Operators.Hom, Banach         |
@@ -43,5 +47,7 @@
 | Operators.RieszKantorovich | Operators.OrderBounded, OrderComplete|
 | Dual                       | Operators.Regular, Operators.RieszKantorovich |
 | OrderContinuous            | Banach, Band                         |
-| Examples.CofK              | AMSpace                              |
+| Preliminaries.SignedMeasure| _(none within BanLat)_               |
+| Examples.MofK              | Banach, Preliminaries.SignedMeasure  |
+| Examples.CofK              | AMSpace, Dual, Examples.MofK         |
 | Examples.Lp                | AMSpace                              |
