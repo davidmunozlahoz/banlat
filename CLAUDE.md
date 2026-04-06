@@ -53,6 +53,15 @@ There are two operating modes:
 
 ---
 
+## Dependency graph
+
+The file **[dependency.md](dependency.md)** contains a Mermaid dependency graph
+of the `BanLat/` modules. After finishing work on any file (adding, removing, or
+changing imports), update `dependency.md` to reflect the current import
+structure.
+
+---
+
 ## Style
 
 See **[STYLE.md](STYLE.md)** for the full naming conventions, documentation

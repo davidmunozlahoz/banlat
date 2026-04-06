@@ -1,5 +1,5 @@
 import BanLat.Ideal
-import BanLat.Hom
+import BanLat.Operators.Hom
 
 /-!
 # Bands and projection bands

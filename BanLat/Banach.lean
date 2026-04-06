@@ -1,5 +1,5 @@
 import BanLat.Normed
-import BanLat.Hom
+import BanLat.Operators.Hom
 import Mathlib.Topology.Algebra.Module.Equiv
 
 /-!

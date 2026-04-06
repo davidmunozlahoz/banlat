@@ -1,8 +1,13 @@
 import BanLat.Basic
-import BanLat.Hom
+import BanLat.Operators.Hom
+import BanLat.Operators.OrderBounded
+import BanLat.Operators.Regular
+import BanLat.Operators.RieszKantorovich
 import BanLat.Normed
 import BanLat.Sublattice
 import BanLat.Ideal
 import BanLat.Banach
 import BanLat.Band
+import BanLat.Dual
+import BanLat.OrderComplete
 import BanLat.Examples.CofK
