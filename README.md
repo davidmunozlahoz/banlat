@@ -1,9 +1,5 @@
 # banlat
 
-## Next Steps
+The Banach lattices library in Lean.
 
-- [ ] Folder `Examples` with the typical examples of vector and Banach
-  lattices.
-- [ ] `Lp.lean`
-- [ ] `CofK.lean`
-- [ ] `Bands.lean`
+## Next Steps
