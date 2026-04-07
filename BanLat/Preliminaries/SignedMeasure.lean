@@ -1,5 +1,7 @@
 import Mathlib.MeasureTheory.VectorMeasure.Decomposition.Jordan
 import Mathlib.MeasureTheory.VectorMeasure.Decomposition.JordanSub
+import Mathlib.MeasureTheory.VectorMeasure.Decomposition.RadonNikodym
+import Mathlib.MeasureTheory.Function.L1Space.AEEqFun
 
 /-!
 # Auxiliary measure-theoretic facts about signed measures
@@ -13,6 +15,8 @@ The statements here belong to measure theory, not to vector or Banach lattice
 theory: nothing in this file mentions `Lattice`, `VectorLattice`, norms, or
 the order on signed measures beyond what is already in Mathlib.
 -/
+
+open scoped ENNReal NNReal
 
 namespace MeasureTheory
 namespace SignedMeasure
@@ -172,151 +176,221 @@ theorem abs_apply_le_totalVariation_univ (s : SignedMeasure α) {A : Set α}
   rw [abs_le]
   refine ⟨?_, ?_⟩ <;> linarith
 
-/-! ### Completeness in total variation (Vitali–Hahn–Saks)
+/-! ### Completeness in total variation
 
 A sequence of signed measures that is Cauchy in the total-variation distance
 admits a signed-measure limit, with convergence in total variation. This is
 the measure-theoretic content underlying the `CompleteSpace` instance on the
 Banach lattice `M(K)` of finite signed measures (see `BanLat.Examples.MofK`).
 
-The result is the **Vitali–Hahn–Saks** (a.k.a. Nikodym convergence) theorem
-in disguise: the set-wise limit of a TV-Cauchy sequence is automatically
-countably additive, hence a signed measure.
+**Strategy.** We reduce TV completeness to L¹ completeness via the
+Radon–Nikodym theorem:
+
+1. *Control measure.* Build a finite measure `μ` such that every `sₙ` is
+   absolutely continuous with respect to `μ`. We take
+   `μ := Σ_n cₙ • |sₙ|.totalVariation` with weights
+   `cₙ := ENNReal.ofReal (1 / (2^(n+1) * (1 + |sₙ|.totalVariation(univ).toReal)))`,
+   chosen so that `μ(univ) ≤ 1`.
+
+2. *Densities.* By Radon–Nikodym, each `sₙ` has a density
+   `fₙ := (sₙ).rnDeriv μ ∈ L¹(μ)`.
+
+3. *Isometry.* The TV distance equals the L¹ distance of densities,
+   `((sₘ - sₙ).totalVariation Set.univ).toReal = ∫ |fₘ - fₙ| dμ`,
+   because for measurable integrable `g : α → ℝ` the total variation of
+   `μ.withDensityᵥ g` on the universe is `∫ |g| dμ`.
+
+4. *L¹ completeness.* Hence `(fₙ)` is L¹-Cauchy, and L¹ completeness gives a
+   limit `f ∈ L¹(μ)`.
+
+5. *Conclusion.* The signed measure `t := μ.withDensityᵥ f` satisfies
+   `((sₙ - t).totalVariation Set.univ).toReal = ∫ |fₙ - f| dμ → 0`.
 -/
 
-/-! ### Proof outline for `exists_tv_limit_of_cauchy`
+/-- **Step 3 (TV ↔ L¹ isometry).** For a measurable integrable real-valued
+function, the total variation of the associated signed measure on the universe
+equals the L¹ norm of the function. -/
+private lemma totalVariation_withDensityᵥ_apply_univ {μ : Measure α}
+    {f : α → ℝ} (hfm : Measurable f) (hfi : Integrable f μ) :
+    (SignedMeasure.totalVariation (μ.withDensityᵥ f) Set.univ).toReal =
+      ∫ x, |f x| ∂μ := by
+  have h0 : (0 : SignedMeasure α) ⟂ᵥ μ.toENNRealVectorMeasure :=
+    VectorMeasure.MutuallySingular.zero_left
+  have heq : (μ.withDensityᵥ f : SignedMeasure α) =
+      0 + μ.withDensityᵥ f := (zero_add _).symm
+  have hjd := toJordanDecomposition_eq_of_eq_add_withDensity hfm hfi h0 heq
+  rw [SignedMeasure.totalVariation, hjd]
+  simp only [toJordanDecomposition_zero, JordanDecomposition.zero_posPart,
+    JordanDecomposition.zero_negPart, zero_add, Measure.add_apply,
+    withDensity_apply _ MeasurableSet.univ, Measure.restrict_univ]
+  have hpos : Measurable (fun x => ENNReal.ofReal (f x)) :=
+    ENNReal.measurable_ofReal.comp hfm
+  rw [← lintegral_add_left hpos (fun x => ENNReal.ofReal (-f x))]
+  rw [integral_eq_lintegral_of_nonneg_ae (Filter.Eventually.of_forall (fun x => abs_nonneg _))
+    (by fun_prop : AEStronglyMeasurable (fun x => |f x|) μ)]
+  congr 1
+  refine lintegral_congr fun x => ?_
+  rcases le_or_gt 0 (f x) with h | h
+  · rw [ENNReal.ofReal_of_nonpos (neg_nonpos.mpr h), add_zero, abs_of_nonneg h]
+  · rw [ENNReal.ofReal_of_nonpos h.le, zero_add, abs_of_neg h]
 
-Given a TV-Cauchy sequence of signed measures, we produce a signed-measure
-limit in five steps.
+/-! ### Construction of the control measure -/
 
-1. *Set-wise Cauchy.* For any measurable set `A`, the bound
-   `|(sₘ - sₙ) A| ≤ ((sₘ - sₙ).totalVariation Set.univ).toReal`
-   (a routine consequence of `diff_le_totalVariation_real` applied to a Hahn
-   decomposition of `sₘ - sₙ` and the splitting `A = (A ∩ P) ∪ (A ∩ Pᶜ)`)
-   shows that `(sₙ A)ₙ` is Cauchy in `ℝ`, hence converges to some
-   `t₀ A : ℝ`.
+/-- The weight assigned to `(s n).totalVariation` in the control measure. The
+denominator `2^(n+1) * (1 + |sₙ|(univ))` is finite and positive, so the
+inverse is a positive finite ENNReal. -/
+private noncomputable def controlWeight (s : ℕ → SignedMeasure α) (n : ℕ) : ℝ≥0∞ :=
+  ((2 : ℝ≥0∞) ^ (n + 1) * (1 + (s n).totalVariation Set.univ))⁻¹
 
-2. *Finite additivity of `t₀`.* For disjoint measurable `A`, `B`, finite
-   additivity of each `sₙ` and continuity of addition give
-   `t₀ (A ∪ B) = lim (sₙ (A ∪ B)) = lim (sₙ A + sₙ B) = t₀ A + t₀ B`,
-   and `t₀ ∅ = 0` is immediate.
+private lemma controlWeight_denom_ne_top (s : ℕ → SignedMeasure α) (n : ℕ) :
+    ((2 : ℝ≥0∞) ^ (n + 1) * (1 + (s n).totalVariation Set.univ)) ≠ ⊤ := by
+  refine ENNReal.mul_ne_top (ENNReal.pow_ne_top ENNReal.ofNat_ne_top) ?_
+  exact ENNReal.add_ne_top.mpr ⟨ENNReal.one_ne_top, (measure_lt_top _ _).ne⟩
 
-3. *Countable additivity (Nikodym / Vitali–Hahn–Saks).* For a pairwise
-   disjoint measurable family `(Aₖ)`, the convergence of the partial sums
-   `Σ_{k < K} sₙ Aₖ → sₙ (⋃ₖ Aₖ)` is **uniform in `n`**. Concretely, the
-   tail bound
-   `|Σ_{k ≥ K} sₙ Aₖ| ≤ (sₙ.totalVariation) (⋃_{k ≥ K} Aₖ)`,
-   together with uniform absolute continuity of the family `{sₙ.totalVariation}`
-   with respect to the finite control measure
-   `μ := |s₀|.totalVariation +
-        Σₙ 2 ^ (-n) • |sₙ₊₁ - sₙ|.totalVariation /
-            (1 + ((sₙ₊₁ - sₙ).totalVariation Set.univ).toReal)`,
-   lets us exchange the sum and the limit. Hence
-   `t₀ (⋃ₖ Aₖ) = Σₖ t₀ Aₖ`.
+private lemma controlWeight_pos (s : ℕ → SignedMeasure α) (n : ℕ) :
+    0 < controlWeight s n :=
+  ENNReal.inv_pos.mpr (controlWeight_denom_ne_top s n)
 
-4. *Bundle as a `SignedMeasure`.* Wrap `t₀` as a `VectorMeasure ℝ` using the
-   countable additivity from step 3; finiteness of `t₀ Set.univ` is automatic
-   from the TV-Cauchy bound applied to a fixed reference index.
+private lemma controlWeight_ne_zero (s : ℕ → SignedMeasure α) (n : ℕ) :
+    controlWeight s n ≠ 0 := (controlWeight_pos s n).ne'
 
-5. *TV convergence.* Given `ε > 0`, pick `N` with
-   `((sₘ - sₙ).totalVariation Set.univ).toReal < ε` for all `m, n ≥ N`. For
-   `n ≥ N`, take a Hahn decomposition `(P, Pᶜ)` of `t - sₙ` and use
-   `totalVariationReal_eq_sub_of_isHahnDecomposition` to rewrite
-   `((t - sₙ).totalVariation Set.univ).toReal = (t - sₙ) P - (t - sₙ) Pᶜ`,
-   then pass to the limit `m → ∞` inside the parentheses.
+/-- A finite measure such that every signed measure in the sequence is
+absolutely continuous with respect to it. -/
+private noncomputable def controlMeasure (s : ℕ → SignedMeasure α) : Measure α :=
+  Measure.sum (fun n => controlWeight s n • (s n).totalVariation)
 
-The intermediate lemmas below isolate the four nontrivial steps; only Step 3
-(`exists_tail_lt_of_tvCauchy`) genuinely uses the Vitali–Hahn–Saks heart.
--/
+/-- Each summand of the control measure has small total mass, bounded by
+`(1/2)^(n+1) = (2^(n+1))⁻¹`. -/
+private lemma controlWeight_smul_totalVariation_le (s : ℕ → SignedMeasure α) (n : ℕ) :
+    (controlWeight s n • (s n).totalVariation) Set.univ ≤
+      ((2 : ℝ≥0∞) ^ (n + 1))⁻¹ := by
+  rw [Measure.smul_apply, smul_eq_mul, controlWeight]
+  set r : ℝ≥0∞ := (s n).totalVariation Set.univ
+  have hr_lt : r < ⊤ := measure_lt_top _ _
+  have h1r_ne_top : (1 + r : ℝ≥0∞) ≠ ⊤ :=
+    ENNReal.add_ne_top.mpr ⟨ENNReal.one_ne_top, hr_lt.ne⟩
+  have h1r_ne_zero : (1 + r : ℝ≥0∞) ≠ 0 :=
+    (lt_of_lt_of_le zero_lt_one le_self_add).ne'
+  have h2_ne_top : ((2 : ℝ≥0∞) ^ (n + 1)) ≠ ⊤ := ENNReal.pow_ne_top ENNReal.ofNat_ne_top
+  have h2_ne_zero : ((2 : ℝ≥0∞) ^ (n + 1)) ≠ 0 :=
+    pow_ne_zero _ (two_ne_zero (α := ℝ≥0∞))
+  rw [ENNReal.mul_inv (Or.inl h2_ne_zero) (Or.inl h2_ne_top), mul_assoc]
+  refine mul_le_of_le_one_right (zero_le _) ?_
+  rw [ENNReal.inv_mul_le_iff h1r_ne_zero h1r_ne_top, mul_one]
+  exact le_add_self
 
-/-- *Step 1.* A TV-Cauchy sequence of signed measures is set-wise Cauchy on
-every measurable set; in particular it admits a real-valued set-wise limit.
-Direct from `abs_apply_le_totalVariation_univ` applied to differences. -/
-private theorem exists_tendsto_apply_of_tvCauchy
-    (s : ℕ → SignedMeasure α)
-    (hs : ∀ ε > 0, ∃ N, ∀ m ≥ N, ∀ n ≥ N,
-        ((s m - s n).totalVariation Set.univ).toReal < ε)
-    {A : Set α} (hA : MeasurableSet A) :
-    ∃ ℓ : ℝ, ∀ ε > 0, ∃ N, ∀ n ≥ N, |((s n) A : ℝ) - ℓ| < ε := by
-  have hCauchy : CauchySeq (fun n => ((s n) A : ℝ)) := by
-    rw [Metric.cauchySeq_iff]
-    intro ε hε
-    obtain ⟨N, hN⟩ := hs ε hε
-    refine ⟨N, fun m hm n hn => ?_⟩
-    rw [Real.dist_eq]
-    have hbound := abs_apply_le_totalVariation_univ (s m - s n) hA
-    have heq : ((s m - s n) A : ℝ) = (s m A : ℝ) - (s n A : ℝ) := by
-      simp [VectorMeasure.sub_apply]
-    rw [heq] at hbound
-    exact lt_of_le_of_lt hbound (hN m hm n hn)
-  obtain ⟨ℓ, hℓ⟩ := cauchySeq_tendsto_of_complete hCauchy
-  refine ⟨ℓ, fun ε hε => ?_⟩
-  obtain ⟨N, hN⟩ := Metric.tendsto_atTop.mp hℓ ε hε
-  exact ⟨N, fun n hn => by rw [← Real.dist_eq]; exact hN n hn⟩
+private instance instIsFiniteMeasure_controlMeasure (s : ℕ → SignedMeasure α) :
+    IsFiniteMeasure (controlMeasure s) where
+  measure_univ_lt_top := by
+    rw [controlMeasure, Measure.sum_apply _ MeasurableSet.univ]
+    refine lt_of_le_of_lt
+      (ENNReal.tsum_le_tsum (controlWeight_smul_totalVariation_le s)) ?_
+    -- Bound by ∑' n, (2⁻¹)^n = 2 < ⊤
+    have h_pow : ∀ n, ((2 : ℝ≥0∞) ^ (n + 1))⁻¹ ≤ ((2 : ℝ≥0∞)⁻¹) ^ n := by
+      intro n
+      rw [← ENNReal.inv_pow]
+      refine ENNReal.inv_le_inv.mpr ?_
+      exact pow_le_pow_right₀ (by norm_num : (1 : ℝ≥0∞) ≤ 2) n.le_succ
+    refine lt_of_le_of_lt (ENNReal.tsum_le_tsum h_pow) ?_
+    rw [ENNReal.tsum_geometric_two]
+    exact ENNReal.ofNat_lt_top
 
-/-- *Step 3 (Vitali–Hahn–Saks core).* If `(sₙ)` is Cauchy in total variation
-and `(Aₖ)` is a pairwise disjoint sequence of measurable sets, then for any
-`ε > 0` there exists `K` such that the value of every `sₙ` on the tail union
-`⋃_{k ≥ K} Aₖ` is less than `ε` in absolute value, **uniformly in `n`**.
+private lemma totalVariation_absolutelyContinuous_controlMeasure
+    (s : ℕ → SignedMeasure α) (n : ℕ) :
+    (s n).totalVariation ≪ controlMeasure s := by
+  refine Measure.absolutelyContinuous_sum_right n ?_
+  exact Measure.absolutelyContinuous_smul (controlWeight_ne_zero s n)
 
-This is the heart of the Vitali–Hahn–Saks theorem and the only step that
-genuinely uses the TV-Cauchy hypothesis (beyond producing the pointwise limit
-in Step 1). The standard proof builds a finite control measure
-`μ := |s₀|.totalVariation +
-      Σₙ 2 ^ (-n) • |sₙ₊₁ - sₙ|.totalVariation /
-          (1 + ((sₙ₊₁ - sₙ).totalVariation Set.univ).toReal)`
-and observes that the family `{|sₙ|.totalVariation}` is uniformly absolutely
-continuous with respect to `μ`. -/
-private theorem exists_tail_lt_of_tvCauchy
-    (s : ℕ → SignedMeasure α)
-    (hs : ∀ ε > 0, ∃ N, ∀ m ≥ N, ∀ n ≥ N,
-        ((s m - s n).totalVariation Set.univ).toReal < ε)
-    {A : ℕ → Set α} (hA : ∀ k, MeasurableSet (A k))
-    (hdisj : Pairwise fun i j => Disjoint (A i) (A j)) {ε : ℝ} (hε : 0 < ε) :
-    ∃ K, ∀ n, |((s n) (⋃ k, ⋃ (_ : K ≤ k), A k) : ℝ)| < ε :=
-  sorry
+private lemma signedMeasure_absolutelyContinuous_controlMeasure
+    (s : ℕ → SignedMeasure α) (n : ℕ) :
+    s n ≪ᵥ (controlMeasure s).toENNRealVectorMeasure := by
+  rw [SignedMeasure.absolutelyContinuous_ennreal_iff,
+    VectorMeasure.ennrealToMeasure_toENNRealVectorMeasure]
+  exact totalVariation_absolutelyContinuous_controlMeasure s n
 
-/-- *Step 5 (Hahn-decomposition formula).* Given a Hahn decomposition
-`(P, Pᶜ)` of `s` — i.e., `s` is non-negative on `P` and non-positive on `Pᶜ` —
-the real-valued total variation on the universe is the difference
-`s P - s Pᶜ`. Used in the final step of `exists_tv_limit_of_cauchy` to extract
-TV convergence from set-wise convergence. -/
-private theorem totalVariationReal_eq_sub_of_isHahnDecomposition
-    (s : SignedMeasure α) {P : Set α} (hP : MeasurableSet P)
-    (hPpos : (0 : SignedMeasure α) ≤[P] s) (hPneg : s ≤[Pᶜ] 0) :
-    (s.totalVariation Set.univ).toReal = (s P : ℝ) - s Pᶜ := by
-  let j : JordanDecomposition α :=
-    { posPart := s.toMeasureOfZeroLE P hP hPpos
-      negPart := s.toMeasureOfLEZero Pᶜ hP.compl hPneg
-      mutuallySingular := by
-        refine ⟨Pᶜ, hP.compl, ?_, ?_⟩
-        · rw [toMeasureOfZeroLE_apply _ _ hP hP.compl]; simp
-        · rw [toMeasureOfLEZero_apply _ _ hP.compl hP.compl.compl]; simp }
-  have hj : s.toJordanDecomposition = j := by
-    refine toJordanDecomposition_eq ?_
-    ext k hk
-    have hdisj : Disjoint (P ∩ k) (Pᶜ ∩ k) := by
-      exact Set.disjoint_left.mpr fun x ⟨hxP, _⟩ ⟨hxPc, _⟩ => hxPc hxP
-    have hsplit : (s : SignedMeasure α) k = s (P ∩ k) + s (Pᶜ ∩ k) := by
-      rw [← VectorMeasure.of_union (v := s) hdisj (hP.inter hk) (hP.compl.inter hk),
-        ← Set.union_inter_distrib_right, Set.union_compl_self, Set.univ_inter]
-    rw [JordanDecomposition.toSignedMeasure, Measure.toSignedMeasure_sub_apply hk,
-      toMeasureOfZeroLE_real_apply _ hPpos hP hk,
-      toMeasureOfLEZero_real_apply _ hPneg hP.compl hk, sub_neg_eq_add, hsplit]
-  rw [SignedMeasure.totalVariation, hj, ← measureReal_def, measureReal_add_apply,
-    toMeasureOfZeroLE_real_apply _ hPpos hP MeasurableSet.univ,
-    toMeasureOfLEZero_real_apply _ hPneg hP.compl MeasurableSet.univ,
-    Set.inter_univ, Set.inter_univ]
-  ring
+/-! ### Conclusion -/
 
-/-- **Vitali–Hahn–Saks completeness for signed measures.** -/
+/-- **Completeness of signed measures in total variation.** A sequence of
+signed measures that is Cauchy in the total-variation distance converges in
+total variation to a signed measure. -/
 theorem exists_tv_limit_of_cauchy
     (s : ℕ → SignedMeasure α)
     (hs : ∀ ε > 0, ∃ N, ∀ m ≥ N, ∀ n ≥ N,
         ((s m - s n).totalVariation Set.univ).toReal < ε) :
     ∃ t : SignedMeasure α, ∀ ε > 0, ∃ N, ∀ n ≥ N,
-      ((s n - t).totalVariation Set.univ).toReal < ε :=
-  sorry
+      ((s n - t).totalVariation Set.univ).toReal < ε := by
+  set μ := controlMeasure s
+  haveI : IsFiniteMeasure μ := instIsFiniteMeasure_controlMeasure s
+  have hsAC : ∀ n, s n ≪ᵥ μ.toENNRealVectorMeasure :=
+    signedMeasure_absolutelyContinuous_controlMeasure s
+  -- Densities of each `s n` w.r.t. μ
+  let f : ℕ → α → ℝ := fun n => (s n).rnDeriv μ
+  have hfm : ∀ n, Measurable (f n) := fun n => SignedMeasure.measurable_rnDeriv _ _
+  have hfi : ∀ n, Integrable (f n) μ := fun n => SignedMeasure.integrable_rnDeriv _ _
+  -- Each `s n` equals `μ.withDensityᵥ (f n)`
+  have hf_eq : ∀ n, μ.withDensityᵥ (f n) = (s n : SignedMeasure α) := fun n =>
+    SignedMeasure.withDensityᵥ_rnDeriv_eq (s n) μ (hsAC n)
+  -- Build L¹ versions of the densities
+  let g : ℕ → Lp ℝ 1 μ := fun n => (hfi n).toL1 (f n)
+  -- The sequence (g n) is L¹-Cauchy
+  have hgCauchy : CauchySeq g := by
+    rw [Metric.cauchySeq_iff]
+    intro ε hε
+    obtain ⟨N, hN⟩ := hs ε hε
+    refine ⟨N, fun m hm n hn => ?_⟩
+    rw [dist_eq_norm]
+    have hsubm : Measurable (fun x => f m x - f n x) := (hfm m).sub (hfm n)
+    have hL1 : ‖g m - g n‖ = ((s m - s n).totalVariation Set.univ).toReal := by
+      have hgsub : g m - g n = (hfi m).toL1 (f m) - (hfi n).toL1 (f n) := rfl
+      rw [hgsub, ← Integrable.toL1_sub, Integrable.norm_toL1_eq_lintegral_norm]
+      have hsubeq : (s m - s n : SignedMeasure α) =
+          μ.withDensityᵥ (fun x => f m x - f n x) := by
+        rw [withDensityᵥ_sub' (hfi m) (hfi n), hf_eq m, hf_eq n]
+      rw [hsubeq, totalVariation_withDensityᵥ_apply_univ
+        hsubm ((hfi m).sub (hfi n))]
+      rw [integral_eq_lintegral_of_nonneg_ae
+        (Filter.Eventually.of_forall (fun _ => abs_nonneg _))
+        (by fun_prop : AEStronglyMeasurable (fun x => |f m x - f n x|) μ)]
+      simp only [Real.norm_eq_abs, Pi.sub_apply]
+    rw [hL1]
+    exact hN m hm n hn
+  -- L¹ is complete, so g converges to some limit gLim
+  obtain ⟨gLim, hgLim⟩ := cauchySeq_tendsto_of_complete hgCauchy
+  -- Take a measurable representative of gLim
+  set fLim : α → ℝ := (Lp.aestronglyMeasurable gLim).mk gLim
+  have hfLimm : Measurable fLim := (Lp.aestronglyMeasurable gLim).measurable_mk
+  have hfLim_ae : (gLim : α → ℝ) =ᵐ[μ] fLim := (Lp.aestronglyMeasurable gLim).ae_eq_mk
+  have hfLim_int : Integrable fLim μ := (L1.integrable_coeFn gLim).congr hfLim_ae
+  -- The L¹ class of fLim is gLim
+  have hgLim_eq_toL1 : gLim = hfLim_int.toL1 fLim := by
+    rw [← Integrable.toL1_coeFn gLim (L1.integrable_coeFn gLim)]
+    exact (Integrable.toL1_eq_toL1_iff _ _ _ _).mpr hfLim_ae
+  -- The limit signed measure
+  refine ⟨μ.withDensityᵥ fLim, fun ε hε => ?_⟩
+  rw [Metric.tendsto_atTop] at hgLim
+  obtain ⟨N, hN⟩ := hgLim ε hε
+  refine ⟨N, fun n hn => ?_⟩
+  -- Express the TV difference as L¹ distance
+  have hsubm : Measurable (fun x => f n x - fLim x) := (hfm n).sub hfLimm
+  have hsubeq : (s n - μ.withDensityᵥ fLim : SignedMeasure α) =
+      μ.withDensityᵥ (fun x => f n x - fLim x) := by
+    rw [withDensityᵥ_sub' (hfi n) hfLim_int, hf_eq n]
+  rw [hsubeq, totalVariation_withDensityᵥ_apply_univ
+    hsubm ((hfi n).sub hfLim_int)]
+  -- Show ‖g n - gLim‖ equals this integral
+  have hL1 : ‖g n - gLim‖ = ∫ x, |f n x - fLim x| ∂μ := by
+    rw [hgLim_eq_toL1]
+    have hgsub : g n - hfLim_int.toL1 fLim = (hfi n).toL1 (f n) - hfLim_int.toL1 fLim := rfl
+    rw [hgsub, ← Integrable.toL1_sub, Integrable.norm_toL1_eq_lintegral_norm]
+    rw [integral_eq_lintegral_of_nonneg_ae
+      (Filter.Eventually.of_forall (fun _ => abs_nonneg _))
+      (by fun_prop : AEStronglyMeasurable (fun x => |f n x - fLim x|) μ)]
+    simp only [Real.norm_eq_abs, Pi.sub_apply]
+  -- Conclude
+  have hbound : ‖g n - gLim‖ < ε := by
+    rw [← dist_eq_norm]; exact hN n hn
+  rw [hL1] at hbound
+  exact hbound
 
 end SignedMeasure
 end MeasureTheory

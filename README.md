@@ -53,8 +53,8 @@ The Banach lattices library in Lean.
   lattice, and their coincidence in the Banach setting.
 - **`BanLat/Bidual.lean`** — The bidual of a Banach lattice and the canonical
   isometric vector lattice embedding into it.
-- **`BanLat/DirectSum.lean`** — Pointwise direct sums and `ℓ^p` direct sums of
-  vector, normed, and Banach lattices.
+- **`BanLat/Pi.lean`** — Pointwise products and `ℓ^p` products of vector,
+  normed, and Banach lattices.
 
 ### Special classes and representation
 

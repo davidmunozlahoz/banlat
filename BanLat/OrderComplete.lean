@@ -123,34 +123,120 @@ variable {X : Type*} [AddCommGroup X] [Lattice X] [IsOrderedAddMonoid X]
 
 /-! #### Order completeness equivalences -/
 
+omit [VectorLattice X] in
 /-- In a vector lattice, order completeness is equivalent to every bounded
 above non-empty subset of the positive cone having a supremum. -/
 theorem isOrderComplete_iff_pos_bddAbove_isLUB :
     IsOrderComplete X ↔
     (∀ {S : Set X}, S ⊆ {x | 0 ≤ x} → BddAbove S → S.Nonempty →
-      ∃ x, IsLUB S x) := sorry
+      ∃ x, IsLUB S x) := by
+  refine ⟨fun _ _ _ hb hne ↦ IsOrderComplete.isLUB_of_bddAbove hb hne, fun H ↦ ?_⟩
+  refine ⟨fun {S} hb hne ↦ ?_⟩
+  obtain ⟨s₀, hs₀⟩ := hne
+  obtain ⟨b, hb'⟩ := hb
+  set T : Set X := (fun s ↦ (s ⊔ s₀) - s₀) '' S with hT_def
+  have hTpos : T ⊆ {x | 0 ≤ x} := by
+    rintro _ ⟨s, _, rfl⟩
+    exact sub_nonneg.mpr le_sup_right
+  have hTbdd : BddAbove T := by
+    refine ⟨(b ⊔ s₀) - s₀, ?_⟩
+    rintro _ ⟨s, hs, rfl⟩
+    exact sub_le_sub_right (sup_le_sup_right (hb' hs) _) _
+  have hTne : T.Nonempty := ⟨0, s₀, hs₀, by simp⟩
+  obtain ⟨y, hy⟩ := H hTpos hTbdd hTne
+  refine ⟨y + s₀, ?_, ?_⟩
+  · intro s hs
+    have h1 : (s ⊔ s₀) - s₀ ≤ y := hy.1 ⟨s, hs, rfl⟩
+    have h2 : s ⊔ s₀ ≤ y + s₀ := sub_le_iff_le_add.mp h1
+    exact le_sup_left.trans h2
+  · intro u hu
+    have hu₀ : s₀ ≤ u := hu hs₀
+    have huT : u - s₀ ∈ upperBounds T := by
+      rintro _ ⟨s, hs, rfl⟩
+      exact sub_le_sub_right (sup_le (hu hs) hu₀) _
+    exact le_sub_iff_add_le.mp (hy.2 huT)
 
 /-! #### Sigma order completeness equivalences -/
 
+omit [AddCommGroup X] [IsOrderedAddMonoid X] [VectorLattice X] in
 /-- In a vector lattice, sigma order completeness is equivalent to every
 increasing bounded sequence having a least upper bound. -/
 theorem isSigmaOrderComplete_iff_mono_bddAbove_isLUB :
     IsSigmaOrderComplete X ↔
     (∀ {u : ℕ → X}, Monotone u → BddAbove (range u) →
-      ∃ x, IsLUB (range u) x) := sorry
+      ∃ x, IsLUB (range u) x) := by
+  refine ⟨fun _ _ hmono hbdd ↦
+    IsSigmaOrderComplete.isLUB_of_bddAbove_countable (countable_range _) hbdd
+      (range_nonempty _), fun H ↦ ?_⟩
+  refine ⟨fun {S} hc hb hne ↦ ?_⟩
+  obtain ⟨f, rfl⟩ := hc.exists_eq_range hne
+  let u : ℕ → X := fun n ↦ Nat.rec (f 0) (fun k uk ↦ uk ⊔ f (k+1)) n
+  have hmono : Monotone u :=
+    monotone_nat_of_le_succ fun _ ↦ le_sup_left
+  have hfle : ∀ n, f n ≤ u n := by
+    intro n
+    cases n with
+    | zero => exact le_refl _
+    | succ k => exact le_sup_right
+  have hu_le : ∀ {v : X}, (∀ k, f k ≤ v) → ∀ n, u n ≤ v := by
+    intro v hv n
+    induction n with
+    | zero => exact hv 0
+    | succ k ih => exact sup_le ih (hv (k+1))
+  obtain ⟨b, hbf⟩ := hb
+  obtain ⟨x, hx⟩ := H hmono
+    ⟨b, by rintro _ ⟨n, rfl⟩; exact hu_le (fun k ↦ hbf ⟨k, rfl⟩) n⟩
+  refine ⟨x, ?_, fun v hv ↦ hx.2 ?_⟩
+  · rintro _ ⟨n, rfl⟩
+    exact (hfle n).trans (hx.1 ⟨n, rfl⟩)
+  · rintro _ ⟨n, rfl⟩
+    exact hu_le (fun k ↦ hv ⟨k, rfl⟩) n
 
+omit [VectorLattice X] in
 /-- In a vector lattice, sigma order completeness is equivalent to every
 decreasing bounded sequence having a greatest lower bound. -/
 theorem isSigmaOrderComplete_iff_anti_bddBelow_isGLB :
     IsSigmaOrderComplete X ↔
     (∀ {u : ℕ → X}, Antitone u → BddBelow (range u) →
-      ∃ x, IsGLB (range u) x) := sorry
+      ∃ x, IsGLB (range u) x) := by
+  refine ⟨fun _ _ _ hbdd ↦
+    isGLB_of_bddBelow_countable (countable_range _) hbdd (range_nonempty _),
+    fun H ↦ isSigmaOrderComplete_iff_mono_bddAbove_isLUB.mpr fun {u} hmono hbdd ↦ ?_⟩
+  obtain ⟨b, hb⟩ := hbdd
+  obtain ⟨y, hy⟩ := H (u := fun n ↦ -u n)
+    (fun _ _ h ↦ neg_le_neg (hmono h))
+    ⟨-b, by rintro _ ⟨n, rfl⟩; exact neg_le_neg (hb ⟨n, rfl⟩)⟩
+  refine ⟨-y, ?_, fun w hw ↦ ?_⟩
+  · rintro _ ⟨n, rfl⟩
+    exact le_neg.mp (hy.1 ⟨n, rfl⟩)
+  · have hlb : -w ∈ lowerBounds (range fun k ↦ -u k) := by
+      rintro _ ⟨n, rfl⟩
+      exact neg_le_neg (hw ⟨n, rfl⟩)
+    exact neg_le.mp (hy.2 hlb)
 
+omit [VectorLattice X] in
 /-- In a vector lattice, sigma order completeness is equivalent to every
 positive increasing bounded sequence having a least upper bound. -/
 theorem isSigmaOrderComplete_iff_pos_mono_bddAbove_isLUB :
     IsSigmaOrderComplete X ↔
     (∀ {u : ℕ → X}, Monotone u → (∀ n, 0 ≤ u n) →
-      BddAbove (range u) → ∃ x, IsLUB (range u) x) := sorry
+      BddAbove (range u) → ∃ x, IsLUB (range u) x) := by
+  refine ⟨fun h _ hmono _ hbdd ↦
+    isSigmaOrderComplete_iff_mono_bddAbove_isLUB.mp h hmono hbdd,
+    fun H ↦ isSigmaOrderComplete_iff_mono_bddAbove_isLUB.mpr fun {u} hmono hbdd ↦ ?_⟩
+  obtain ⟨b, hb⟩ := hbdd
+  set v : ℕ → X := fun n ↦ u n - u 0
+  have hvmono : Monotone v := fun _ _ hmn ↦ sub_le_sub_right (hmono hmn) _
+  have hvpos : ∀ n, 0 ≤ v n := fun n ↦ sub_nonneg.mpr (hmono (Nat.zero_le n))
+  have hvbdd : BddAbove (range v) :=
+    ⟨b - u 0, by rintro _ ⟨n, rfl⟩; exact sub_le_sub_right (hb ⟨n, rfl⟩) _⟩
+  obtain ⟨y, hy⟩ := H hvmono hvpos hvbdd
+  refine ⟨y + u 0, ?_, fun w hw ↦ ?_⟩
+  · rintro _ ⟨n, rfl⟩
+    exact sub_le_iff_le_add.mp (hy.1 ⟨n, rfl⟩)
+  · have hub : w - u 0 ∈ upperBounds (range v) := by
+      rintro _ ⟨n, rfl⟩
+      exact sub_le_sub_right (hw ⟨n, rfl⟩) _
+    exact le_sub_iff_add_le.mp (hy.2 hub)
 
 end VectorLattice

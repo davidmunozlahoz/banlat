@@ -8,21 +8,30 @@
                     \      |   / \              / |               |
                      \     |  /   \            /  |               |
                       Ideal      Banach ------'   |               |
-                     / | \      / |  \            |               |
-                    /  |  \    /  |   \           |               |
-                Band   | ALSpace |  Operators.Positive            |
-                 /|    |         |       |                        |
-              Atom |   |         |       |                        |
-                   |   |         |       |                        |
-          OrderContinuous     AMSpace    |                        |
-                            /       \   Operators.OrderBounded    |
-                     Examples.Lp  Examples.CofK   |    \         |
-                                       |          |     \        |
-                                Examples.MofK     |      \       |
-                                       |          | Operators.RieszKantorovich
-                          Preliminaries.SignedMeasure  /          |
-                                                  |  /           |
-                                         Operators.Regular------'
+                     / |        / |  \            |               |
+                    /  |       /  |   \           |               |
+                Band   |      /   |  Operators.Positive           |
+                 /|    |     /    |       |                       |
+              Atom |   |    /     |       |                       |
+                   |   |   /      |       |                       |
+          OrderContinuous AMSpace |  Operators.OrderBounded       |
+                       \    |  \  |       |    \                  |
+                        \   |   \ |       |     \                 |
+                         \  |  Examples.Lp|      \                |
+                          \ |             | Operators.RieszKantorovich
+                           \|             |    /                  |
+                            |    Operators.Regular ---------------'
+                            |             |
+                            |            Dual
+                            |           / | \
+                            |          /  |  \
+                          ALSpace ----'   | Bidual
+                                          |
+                                Examples.CofK
+                                          |
+                                Examples.MofK
+                                          |
+                       Preliminaries.SignedMeasure
 ```
 
 ## Edges
@@ -38,7 +47,7 @@
 | Banach                     | Normed, Operators.Hom                |
 | Band                       | Ideal, Operators.Hom                 |
 | Atom                       | Band                                 |
-| ALSpace                    | Banach, Ideal                        |
+| ALSpace                    | AMSpace, Banach, Dual, Ideal, OrderContinuous |
 | AMSpace                    | Banach, Ideal                        |
 | Quotient                   | Ideal, Operators.Hom, Banach         |
 | Operators.Positive         | Banach                               |
@@ -46,8 +55,11 @@
 | Operators.Regular          | Operators.OrderBounded, Operators.RieszKantorovich, OrderComplete|
 | Operators.RieszKantorovich | Operators.OrderBounded, OrderComplete|
 | Dual                       | Operators.Regular, Operators.RieszKantorovich |
-| OrderContinuous            | Banach, Band                         |
+| Bidual                     | Dual                                 |
+| OrderContinuous            | Banach, Band, OrderComplete          |
 | Preliminaries.SignedMeasure| _(none within BanLat)_               |
 | Examples.MofK              | Banach, Preliminaries.SignedMeasure  |
 | Examples.CofK              | AMSpace, Dual, Examples.MofK         |
 | Examples.Lp                | AMSpace                              |
+| Pi                         | ALSpace, AMSpace, Banach             |
+| Kakutani                   | AMSpace, Examples.CofK               |

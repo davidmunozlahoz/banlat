@@ -1,4 +1,5 @@
 import BanLat.Ideal
+import BanLat.OrderComplete
 import BanLat.Operators.Hom
 
 /-!
@@ -266,6 +267,116 @@ theorem mem_of_abs_mem {x : X} (h : |x| ∈ B) : x ∈ B :=
 theorem mem_of_abs_le_abs {x y : X} (hx : x ∈ B) (h : |y| ≤ |x|) :
     y ∈ B :=
   B.toOrderIdeal.mem_of_abs_le_abs hx h
+
+/-! ### Vector lattice structure on the underlying subtype
+
+A band `B` is a submodule of `X`, and its underlying subtype inherits a
+pointwise vector lattice structure. -/
+
+/-- The lattice structure on the underlying subtype of a band. -/
+noncomputable instance instLatticeSubtype : Lattice ↥B.toSubmodule :=
+  Subtype.lattice (P := fun x => x ∈ B.toSubmodule)
+    (fun _ _ hx hy => B.sup_mem hx hy) (fun _ _ hx hy => B.inf_mem hx hy)
+
+/-- The subtype of a band is an ordered additive monoid. -/
+instance instIsOrderedAddMonoidSubtype : IsOrderedAddMonoid ↥B.toSubmodule where
+  add_le_add_left := by intro a b (h : a.1 ≤ b.1) c; exact add_le_add_left h c.1
+  add_le_add_right := by intro a b (h : a.1 ≤ b.1) c; exact add_le_add_right h c.1
+
+/-- Scalar multiplication by non-negative reals is monotone on the subtype of
+a band. -/
+instance instPosSMulMonoSubtype : PosSMulMono ℝ ↥B.toSubmodule where
+  smul_le_smul_of_nonneg_left := by
+    intro a ha b₁ b₂ h
+    change (a • b₁).1 ≤ (a • b₂).1
+    exact smul_le_smul_of_nonneg_left h ha
+
+/-- The subtype of a band is itself a vector lattice. -/
+instance instVectorLatticeSubtype : VectorLattice ↥B.toSubmodule := ⟨⟩
+
+/-- A finite nonempty subset of a band has its supremum (computed in the
+ambient space) inside the band. -/
+private lemma finset_sup'_mem {F : Finset X} (hne : F.Nonempty)
+    (hsub : (↑F : Set X) ⊆ (↑B : Set X)) : F.sup' hne id ∈ B := by
+  classical
+  induction hne using Finset.Nonempty.cons_induction with
+  | singleton a =>
+    rw [Finset.sup'_singleton]
+    exact hsub (by simp)
+  | cons a s ha hsne ih =>
+    rw [Finset.sup'_cons hsne]
+    refine B.sup_mem (hsub (by simp)) (ih ?_)
+    intro x hx
+    exact hsub (by simp [Finset.mem_coe.mp hx])
+
+/-- A band in an order complete vector lattice is itself order complete. -/
+instance instIsOrderCompleteSubtype [IsOrderComplete X] :
+    IsOrderComplete ↥B.toSubmodule := by
+  classical
+  rw [isOrderComplete_iff_pos_bddAbove_isLUB]
+  intro S hSpos hbdd hne
+  obtain ⟨u, hu⟩ := hbdd
+  obtain ⟨s₀, hs₀⟩ := hne
+  -- Lift `S` to a subset of `X`.
+  let SX : Set X := Subtype.val '' S
+  have hSX_sub : SX ⊆ (↑B : Set X) := by rintro _ ⟨a, _, rfl⟩; exact a.2
+  have hSX_le : ∀ y ∈ SX, y ≤ u.val := by
+    rintro _ ⟨a, ha, rfl⟩; exact (hu ha : a.val ≤ u.val)
+  have hSX_nn : ∀ y ∈ SX, (0 : X) ≤ y := by
+    rintro _ ⟨a, ha, rfl⟩
+    exact (hSpos ha : (0 : ↥B.toSubmodule).val ≤ a.val)
+  -- Build the directed closure under finite suprema in `X`.
+  let D : Set X := {y : X | ∃ (F : Finset X) (hne : F.Nonempty),
+      (↑F : Set X) ⊆ SX ∧ y = F.sup' hne id}
+  have hD_sub_B : D ⊆ (↑B : Set X) := by
+    rintro _ ⟨F, hne, hF, rfl⟩
+    exact finset_sup'_mem _ hne (hF.trans hSX_sub)
+  have hD_ne : D.Nonempty :=
+    ⟨s₀.val, {s₀.val}, Finset.singleton_nonempty _,
+      by intro x hx; rw [Finset.coe_singleton] at hx;
+         exact hx ▸ ⟨s₀, hs₀, rfl⟩,
+      (Finset.sup'_singleton (id : X → X)).symm⟩
+  have hD_bdd : BddAbove D := by
+    refine ⟨u.val, ?_⟩
+    rintro _ ⟨F, hne, hF, rfl⟩
+    exact Finset.sup'_le _ _
+      fun x hx => hSX_le x (hF (Finset.mem_coe.mpr hx))
+  have hD_dir : DirectedOn (· ≤ ·) D := by
+    rintro _ ⟨F₁, hne₁, hF₁, rfl⟩ _ ⟨F₂, hne₂, hF₂, rfl⟩
+    refine ⟨(F₁ ∪ F₂).sup' (hne₁.mono Finset.subset_union_left) id,
+      ⟨F₁ ∪ F₂, hne₁.mono Finset.subset_union_left,
+        ?_, rfl⟩, ?_, ?_⟩
+    · intro x hx; rcases Finset.mem_union.mp (Finset.mem_coe.mp hx) with h | h
+      · exact hF₁ (Finset.mem_coe.mpr h)
+      · exact hF₂ (Finset.mem_coe.mpr h)
+    · exact Finset.sup'_le _ _ fun x hx =>
+        Finset.le_sup' (f := id) (Finset.mem_union_left _ hx)
+    · exact Finset.sup'_le _ _ fun x hx =>
+        Finset.le_sup' (f := id) (Finset.mem_union_right _ hx)
+  have hD_pos : ∀ y ∈ D, (0 : X) ≤ y := by
+    rintro _ ⟨F, hne, hF, rfl⟩
+    obtain ⟨a, ha⟩ := hne
+    refine le_trans (hSX_nn a (hF (Finset.mem_coe.mpr ha))) ?_
+    exact Finset.le_sup' (f := id) ha
+  -- LUB of `D` in `X`.
+  obtain ⟨t, ht⟩ := IsOrderComplete.isLUB_of_bddAbove hD_bdd hD_ne
+  have htB : t ∈ B := B.directed_sSup_mem hD_sub_B hD_pos hD_dir hD_ne ht
+  refine ⟨⟨t, htB⟩, ?_, ?_⟩
+  · -- upper bound
+    intro a ha
+    change a.val ≤ t
+    have : a.val ∈ D := ⟨{a.val}, Finset.singleton_nonempty _,
+      by intro x hx; rw [Finset.coe_singleton] at hx; exact hx ▸ ⟨a, ha, rfl⟩,
+      (Finset.sup'_singleton (id : X → X)).symm⟩
+    exact ht.1 this
+  · -- least upper bound
+    intro v hv
+    change t ≤ v.val
+    refine ht.2 ?_
+    rintro _ ⟨F, hne, hF, rfl⟩
+    refine Finset.sup'_le _ _ fun x hx => ?_
+    obtain ⟨a, ha, rfl⟩ := hF (Finset.mem_coe.mpr hx)
+    exact (hv ha : a.val ≤ v.val)
 
 /-! ### The disjoint complement is a band -/
 
@@ -1209,3 +1320,130 @@ theorem bandProjection_isVecLatHom :
     · exact le_inf (P.bandProjection_nonneg hx) (P.bandProjection_nonneg hy)
 
 end ProjectionBand
+
+/-! ## Infinite band decompositions
+
+We introduce the **Projection Property** (PP) and **Principal Projection
+Property** (PPP) of a vector lattice, the notion of a **maximal disjoint
+family** of positive vectors, and **weak units**, and we state the main
+results: every vector in a lattice with PPP is the supremum of its
+principal-band projections along a maximal disjoint family; the resulting map
+into a product of principal bands is a lattice homomorphic embedding with
+order dense range; and every Archimedean vector lattice embeds as an order
+dense sublattice into a product of order complete vector lattices with weak
+units.
+-/
+
+/-! ### Projection properties -/
+
+/-- A vector lattice has the **Projection Property** (PP) when every band in
+`X` is a projection band. -/
+class HasProjectionProperty (X : Type*) [AddCommGroup X] [Lattice X]
+    [IsOrderedAddMonoid X] [VectorLattice X] : Prop where
+  exists_projectionBand : ∀ B : Band X, ∃ P : ProjectionBand X,
+    (P : Set X) = (B : Set X)
+
+/-- A vector lattice has the **Principal Projection Property** (PPP) when every
+principal band in `X` is a projection band. -/
+class HasPrincipalProjectionProperty (X : Type*) [AddCommGroup X] [Lattice X]
+    [IsOrderedAddMonoid X] [VectorLattice X] : Prop where
+  exists_projectionBand : ∀ a : X, ∃ P : ProjectionBand X,
+    (P : Set X) = (Band.principalBand a : Set X)
+
+/-- PP implies PPP. -/
+instance (priority := 100) HasPrincipalProjectionProperty.of_hasProjectionProperty
+    [HasProjectionProperty X] : HasPrincipalProjectionProperty X :=
+  sorry
+
+/-- A vector lattice with PPP is Archimedean. -/
+theorem isVLArchimedean_of_hasPrincipalProjectionProperty
+    [HasPrincipalProjectionProperty X] : IsVLArchimedean X :=
+  sorry
+
+/-! ### Maximal disjoint families and weak units -/
+
+/-- A subset of `X` is **pairwise disjoint** when distinct members are
+vector-lattice disjoint. -/
+def IsDisjointSet (Λ : Set X) : Prop :=
+  ∀ ⦃a⦄, a ∈ Λ → ∀ ⦃b⦄, b ∈ Λ → a ≠ b → IsVLDisjoint a b
+
+/-- A **maximal disjoint family** in `X₊` is a pairwise disjoint set of strictly
+positive elements that is not properly contained in any larger such set. The
+order is by inclusion (not refinement). -/
+def IsMaximalDisjoint (Λ : Set X) : Prop :=
+  Maximal (fun S : Set X => (∀ x ∈ S, 0 < x) ∧ IsDisjointSet S) Λ
+
+/-- A pairwise disjoint family of positive elements is maximal iff its disjoint
+complement reduces to `{0}`. -/
+theorem isMaximalDisjoint_iff_disjointComplement_eq_zero {Λ : Set X}
+    (hpos : ∀ x ∈ Λ, 0 < x) (hdis : IsDisjointSet Λ) :
+    IsMaximalDisjoint Λ ↔ Λᵈ = ({0} : Set X) :=
+  sorry
+
+/-- **Zorn's lemma.** Every vector lattice admits a maximal disjoint family of
+positive vectors. -/
+theorem exists_isMaximalDisjoint (X : Type*) [AddCommGroup X] [Lattice X]
+    [IsOrderedAddMonoid X] [VectorLattice X] :
+    ∃ Λ : Set X, IsMaximalDisjoint Λ :=
+  sorry
+
+/-- A positive element `e` is a **weak (order) unit** when the only element of
+`X` disjoint from `e` is `0`. -/
+def IsWeakOrderUnit (e : X) : Prop :=
+  0 ≤ e ∧ ∀ x : X, IsVLDisjoint x e → x = 0
+
+/-- For `a ∈ X₊`, `a` is a weak order unit of the principal band it generates. -/
+theorem isWeakOrderUnit_principalBand_self [IsVLArchimedean X] {a : X}
+    (ha : 0 ≤ a) :
+    ∀ x ∈ Band.principalBand a, IsVLDisjoint x a → x = 0 :=
+  sorry
+
+/-! ### Principal band projections under PPP -/
+
+namespace Band
+
+/-- Under PPP, the principal band generated by `a` is a (chosen) projection
+band. -/
+noncomputable def principalProjectionBand [HasPrincipalProjectionProperty X]
+    (a : X) : ProjectionBand X :=
+  (HasPrincipalProjectionProperty.exists_projectionBand a).choose
+
+/-- The chosen projection band has the same underlying set as `principalBand a`. -/
+theorem principalProjectionBand_coe [HasPrincipalProjectionProperty X]
+    (a : X) :
+    ((principalProjectionBand a : ProjectionBand X) : Set X)
+      = (principalBand a : Set X) :=
+  (HasPrincipalProjectionProperty.exists_projectionBand a).choose_spec
+
+/-- The band projection onto the principal band generated by `a`, available
+under PPP. We write `Pₐ` informally for this map. -/
+noncomputable def principalBandProjection [HasPrincipalProjectionProperty X]
+    (a : X) : X →ₗ[ℝ] X :=
+  (principalProjectionBand a).bandProjection
+
+end Band
+
+/-! ### Decomposition Lemma -/
+
+open Band in
+/-- Let `X` have PPP and let `Λ` be a maximal disjoint family in `X₊`. For
+every `x ∈ X₊`, `x` is the supremum of the family `(Pₐ x)_{a ∈ Λ}`, where `Pₐ`
+is the band projection onto the principal band generated by `a`. -/
+theorem isLUB_principalBandProjection_of_isMaximalDisjoint
+    [HasPrincipalProjectionProperty X] {Λ : Set X} (hΛ : IsMaximalDisjoint Λ)
+    {x : X} (hx : 0 ≤ x) :
+    IsLUB (Set.range fun a : Λ => principalBandProjection (a : X) x) x :=
+  sorry
+
+/-! The next two consequences of the Decomposition Lemma — that `T x a := Pₐ x`
+is an order dense lattice embedding into the product `Λ → X`, and that every
+Archimedean vector lattice embeds as an order dense sublattice into a product
+of order complete vector lattices with weak units — live in `BanLat/Pi.lean`,
+since they are statements about products. -/
+
+/-! **Decomposition Lemma.** In an order continuous Banach lattice, fix a
+maximal disjoint family `Λ` in `X₊`. For every `x ∈ X`, only countably many
+of the principal-band projections `Pz x` are non-zero, and `x` is the sum of
+those terms. The statement requires `IsOrderContinuousNorm`, which is
+introduced downstream of `Band.lean`, so the formal version lives in
+`BanLat/OrderContinuous.lean`. -/

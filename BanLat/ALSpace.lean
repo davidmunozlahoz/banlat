@@ -1,5 +1,8 @@
+import BanLat.AMSpace
 import BanLat.Banach
+import BanLat.Dual
 import BanLat.Ideal
+import BanLat.OrderContinuous
 
 /-!
 # AL-spaces
@@ -113,4 +116,25 @@ instance instALSpace_closedSublattice (Y : VectorSublattice X)
       exact ALSpace.norm_add_eq_of_nonneg hx hy
   }
 
+/-! ### Order continuity -/
+
+/-- Every AL-space has an order continuous norm: every antitone non-negative
+sequence with infimum zero converges to zero in norm. -/
+instance instIsOrderContinuousNorm : IsOrderContinuousNorm X := sorry
+
 end ALSpace
+
+/-! ### Duality between AL- and AM-spaces -/
+
+/-- The norm dual of an AM-space is an AL-space: for positive `φ, ψ` in the
+dual, the dual norm satisfies `‖φ + ψ‖ = ‖φ‖ + ‖ψ‖`. -/
+instance NormDualSpace.instALSpace_of_amSpace
+    {X : Type*} [NormedAddCommGroup X] [Lattice X] [IsOrderedAddMonoid X]
+    [AMSpace X] : ALSpace (NormDualSpace X) := sorry
+
+/-- The norm dual of an AL-space is an AM-space with unit. The strong unit is
+the positive functional `e : x ↦ ‖x⁺‖ - ‖x⁻‖`, which on the positive cone
+agrees with the AL-norm. -/
+noncomputable instance NormDualSpace.instAMSpaceWithUnit_of_alSpace
+    {X : Type*} [NormedAddCommGroup X] [Lattice X] [IsOrderedAddMonoid X]
+    [ALSpace X] : AMSpaceWithUnit (NormDualSpace X) := sorry

@@ -5,6 +5,7 @@ import BanLat.Operators.Regular
 import BanLat.Operators.RieszKantorovich
 import BanLat.Normed
 import BanLat.Sublattice
+import BanLat.OrderDense
 import BanLat.Ideal
 import BanLat.Banach
 import BanLat.Band
