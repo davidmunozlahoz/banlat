@@ -1,5 +1,6 @@
 import BanLat.Banach
 import BanLat.Ideal
+import Mathlib.Order.Zorn
 
 /-!
 # AM-spaces and AM-spaces with unit
@@ -306,5 +307,96 @@ theorem exists_equiv_amSpaceWithUnit
   obtain ⟨C₂, hC₂, hupper⟩ := gauge_upper_bound u
   exact ⟨1 / ‖u‖, C₂, div_pos one_pos hu_norm_pos, hC₂,
     gauge_lower_bound u hu_pos, hupper⟩
+
+/-! ### Maximal ideals in AM-spaces with unit -/
+
+variable {X : Type*} [NormedAddCommGroup X] [Lattice X] [IsOrderedAddMonoid X]
+  [AMSpaceWithUnit X]
+
+/-- An ideal is the whole space iff it contains the unit. -/
+theorem top_iff_unit_mem (I : OrderIdeal X) :
+    I = ⊤ ↔ (e : X) ∈ I := by
+  constructor
+  · intro h; rw [h]; exact OrderIdeal.mem_top
+  · intro h
+    have : ∀ x : X, x ∈ I := by
+      intro x
+      -- Use the norm characterization: |x| ≤ ‖x‖ • e and solidity
+      have h1 : |x| ≤ ‖x‖ • e := abs_le_norm_smul_unit x
+      -- Since e ∈ I, we have ‖x‖ • e ∈ I by smul_mem
+      have h2 : ‖x‖ • e ∈ I := I.toSubmodule.smul_mem ‖x‖ h
+      -- By solidity, |x| ∈ I
+      have h3 : |x| ∈ I := I.mem_of_abs_le_abs h2 (by
+        rw [abs_of_nonneg (abs_nonneg x)]
+        calc |x| ≤ ‖x‖ • e := h1
+          _ ≤ |‖x‖ • e| := le_abs_self _)
+      -- Finally, x ∈ I since |x| ∈ I
+      exact I.mem_of_abs_mem h3
+    -- Use SetLike.ext instead of ext
+    apply SetLike.ext
+    intro x
+    exact ⟨fun _ => OrderIdeal.mem_top, fun _ => this x⟩
+
+/-- The partial order on order ideals induced by set inclusion via the
+underlying submodule. -/
+instance instPartialOrder : PartialOrder (OrderIdeal X) :=
+  PartialOrder.lift (fun J : OrderIdeal X => J.toSubmodule)
+    OrderIdeal.toSubmodule_injective
+
+private theorem directedOn_toSubmodule_of_chain {c : Set (OrderIdeal X)}
+    (hchain : IsChain (· ≤ ·) c) :
+    DirectedOn (· ≤ ·) ((fun J : OrderIdeal X => J.toSubmodule) '' c) := by
+  rintro _ ⟨J₁, hJ₁, rfl⟩ _ ⟨J₂, hJ₂, rfl⟩
+  by_cases heq : J₁ = J₂
+  · exact ⟨J₁.toSubmodule, ⟨J₁, hJ₁, rfl⟩, le_refl _, heq ▸ le_refl _⟩
+  · rcases hchain hJ₁ hJ₂ heq with h | h
+    · exact ⟨J₂.toSubmodule, ⟨J₂, hJ₂, rfl⟩, h, le_refl _⟩
+    · exact ⟨J₁.toSubmodule, ⟨J₁, hJ₁, rfl⟩, le_refl _, h⟩
+
+/-- **Every proper order ideal is contained in a maximal proper order ideal.**
+Standard Zorn's lemma argument applied to the poset of proper order ideals
+containing `I`, using the union of a chain as the upper bound. -/
+theorem exists_le_maximal (I : OrderIdeal X) (hI : I ≠ ⊤) :
+    ∃ M : OrderIdeal X, I ≤ M ∧ M ≠ ⊤ ∧
+      ∀ J : OrderIdeal X, M ≤ J → J ≠ ⊤ → J = M := by
+  classical
+  set S : Set (OrderIdeal X) := {J | I ≤ J ∧ J ≠ ⊤} with hS_def
+  have hIS : I ∈ S := ⟨le_refl _, hI⟩
+  have hzorn : ∀ c ⊆ S, IsChain (· ≤ ·) c → ∀ y ∈ c,
+      ∃ ub ∈ S, ∀ z ∈ c, z ≤ ub := by
+    intro c hcS hchain y hyc
+    set SM : Set (Submodule ℝ X) :=
+      (fun J : OrderIdeal X => J.toSubmodule) '' c with hSM_def
+    have hSMne : SM.Nonempty := ⟨y.toSubmodule, y, hyc, rfl⟩
+    have hdir : DirectedOn (· ≤ ·) SM := directedOn_toSubmodule_of_chain hchain
+    -- The union (sSup) is an order ideal via `ofSolid`
+    refine ⟨OrderIdeal.ofSolid (sSup SM) ?_, ⟨?_, ?_⟩, ?_⟩
+    · -- Solid condition
+      intro x w hx hxw
+      rw [Submodule.mem_sSup_of_directed hSMne hdir] at hx
+      obtain ⟨_, ⟨J, hJ, rfl⟩, hxJ⟩ := hx
+      rw [Submodule.mem_sSup_of_directed hSMne hdir]
+      exact ⟨J.toSubmodule, ⟨J, hJ, rfl⟩, J.mem_of_abs_le_abs hxJ hxw⟩
+    · -- I ≤ ofSolid (sSup SM) _
+      change I.toSubmodule ≤ sSup SM
+      exact le_trans (hcS hyc).1 (le_sSup ⟨y, hyc, rfl⟩)
+    · -- ofSolid (sSup SM) _ ≠ ⊤
+      intro hU_top
+      have hmem : (e : X) ∈ sSup SM := by
+        have : (e : X) ∈ (⊤ : OrderIdeal X) := OrderIdeal.mem_top
+        rw [← hU_top] at this
+        exact this
+      rw [Submodule.mem_sSup_of_directed hSMne hdir] at hmem
+      obtain ⟨_, ⟨J, hJ, rfl⟩, heJ⟩ := hmem
+      exact (hcS hJ).2 ((top_iff_unit_mem J).mpr heJ)
+    · -- upper bound
+      intro J hJ
+      change J.toSubmodule ≤ sSup SM
+      exact le_sSup ⟨J, hJ, rfl⟩
+  obtain ⟨M, hIM, hMax⟩ := zorn_le_nonempty₀ S hzorn I hIS
+  refine ⟨M, hIM, hMax.prop.2, ?_⟩
+  intro J hMJ hJne
+  have hJS : J ∈ S := ⟨le_trans hIM hMJ, hJne⟩
+  exact hMax.eq_of_ge hJS hMJ
 
 end AMSpaceWithUnit
