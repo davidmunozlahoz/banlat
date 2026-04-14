@@ -120,6 +120,27 @@ private lemma compl_mem_indicatorFamily [IsFiniteMeasure μ]
   rw [h]
   exact L.toSubmodule.sub_mem hone hAL
 
+omit [Fact (1 ≤ p)] in
+/-- In `Lp`, the indicator of a union of two measurable sets is the supremum
+of the individual indicators. -/
+private lemma indicatorConstLp_union_eq_sup [IsFiniteMeasure μ]
+    {A B : Set Ω} (hA : MeasurableSet A) (hB : MeasurableSet B) :
+    indicatorConstLp p (hA.union hB) (measure_ne_top μ _) (1 : ℝ)
+      = indicatorConstLp p hA (measure_ne_top μ _) (1 : ℝ)
+        ⊔ indicatorConstLp p hB (measure_ne_top μ _) (1 : ℝ) := by
+  rw [Lp.ext_iff]
+  filter_upwards [indicatorConstLp_coeFn (hs := hA.union hB)
+      (hμs := measure_ne_top μ (A ∪ B)) (c := (1:ℝ)),
+    Lp.coeFn_sup (indicatorConstLp p hA (measure_ne_top μ A) (1:ℝ))
+      (indicatorConstLp p hB (measure_ne_top μ B) (1:ℝ)),
+    indicatorConstLp_coeFn (hs := hA) (hμs := measure_ne_top μ A) (c := (1:ℝ)),
+    indicatorConstLp_coeFn (hs := hB) (hμs := measure_ne_top μ B) (c := (1:ℝ))]
+    with x h1 h2 h3 h4
+  rw [h1, h2, Pi.sup_apply, h3, h4]
+  by_cases hxA : x ∈ A <;> by_cases hxB : x ∈ B <;>
+    simp [Set.indicator_of_mem, Set.indicator_of_notMem, hxA, hxB,
+      Set.mem_union, sup_of_le_left, sup_of_le_right]
+
 /-- `indicatorFamily` is closed under countable unions. For a monotone
 sequence this follows from order continuity of the `Lp` norm together with
 norm-closure of `L`; the general case is reduced to the monotone case in the
@@ -131,7 +152,66 @@ private lemma iUnion_mem_indicatorFamily [IsFiniteMeasure μ]
     {f : ℕ → Set Ω}
     (hf : ∀ i, f i ∈ indicatorFamily (μ := μ) (p := p) L) :
     (⋃ i, f i) ∈ indicatorFamily (μ := μ) (p := p) L := by
-  sorry
+  have hfm : ∀ i, MeasurableSet (f i) := fun i => (hf i).1
+  have hfL : ∀ i, indicatorConstLp p (hfm i) (measure_ne_top μ (f i)) (1:ℝ)
+                ∈ L.toSubmodule := fun i => (hf i).2
+  let A : ℕ → Set Ω := Set.accumulate f
+  have hAm : ∀ n, MeasurableSet (A n) := fun n =>
+    MeasurableSet.iUnion (fun i => MeasurableSet.iUnion (fun _ => hfm i))
+  have hAmono : Monotone A := Set.monotone_accumulate
+  have hAunion : ⋃ n, A n = ⋃ i, f i := Set.iUnion_accumulate
+  have hAL : ∀ n, indicatorConstLp p (hAm n) (measure_ne_top μ (A n)) (1:ℝ)
+                ∈ L.toSubmodule := by
+    intro n
+    induction n with
+    | zero =>
+      have hA0 : A 0 = f 0 := Set.accumulate_zero_nat f
+      have : indicatorConstLp p (hAm 0) (measure_ne_top μ (A 0)) (1:ℝ)
+           = indicatorConstLp p (hfm 0) (measure_ne_top μ (f 0)) (1:ℝ) := by
+        congr 1
+      rw [this]; exact hfL 0
+    | succ n ih =>
+      have hAsucc : A (n+1) = A n ∪ f (n+1) := Set.accumulate_succ f n
+      have : indicatorConstLp p (hAm (n+1)) (measure_ne_top μ (A (n+1))) (1:ℝ)
+           = indicatorConstLp p ((hAm n).union (hfm (n+1)))
+               (measure_ne_top μ _) (1:ℝ) := by
+        congr 1
+      rw [this, indicatorConstLp_union_eq_sup (hAm n) (hfm (n+1))]
+      exact L.sup_mem ih (hfL (n+1))
+  have hUm : MeasurableSet (⋃ i, f i) :=
+    MeasurableSet.iUnion hfm
+  refine ⟨hUm, ?_⟩
+  have htendsto : Filter.Tendsto
+      (fun n => indicatorConstLp p (hAm n) (measure_ne_top μ (A n)) (1:ℝ))
+      Filter.atTop (nhds (indicatorConstLp p hUm (measure_ne_top μ _) (1:ℝ))) := by
+    refine tendsto_indicatorConstLp_set (ht := hAm)
+      (hμt := fun n => measure_ne_top μ (A n)) hp_ne_top ?_
+    -- μ (symmDiff (A n) (⋃ i, f i)) → 0
+    have hAsub : ∀ n, A n ⊆ ⋃ i, f i := fun n =>
+      (Set.accumulate_subset_iUnion n)
+    have hsymm : ∀ n, symmDiff (A n) (⋃ i, f i) = (⋃ i, f i) \ A n := by
+      intro n
+      rw [symmDiff_def]
+      simp [Set.diff_eq_empty.mpr (hAsub n)]
+    simp_rw [hsymm]
+    -- μ((⋃ i, f i) \ A n) = μ(⋃ i, f i) - μ(A n) → 0
+    have hmtendsto : Filter.Tendsto (fun n => μ (A n)) Filter.atTop
+        (nhds (μ (⋃ i, f i))) := by
+      have := tendsto_measure_iUnion_atTop (μ := μ) hAmono
+      rw [hAunion] at this
+      exact this
+    have hsub : ∀ n, μ ((⋃ i, f i) \ A n) = μ (⋃ i, f i) - μ (A n) := fun n =>
+      measure_diff (hAsub n) (hAm n).nullMeasurableSet (measure_ne_top μ _)
+    simp_rw [hsub]
+    have hfin : μ (⋃ i, f i) ≠ ⊤ := measure_ne_top μ _
+    have hsub_tendsto : Filter.Tendsto
+        (fun n => μ (⋃ i, f i) - μ (A n)) Filter.atTop
+        (nhds (μ (⋃ i, f i) - μ (⋃ i, f i))) :=
+      ENNReal.tendsto_sub (Or.inr hfin) |>.comp
+        (Filter.Tendsto.prodMk_nhds tendsto_const_nhds hmtendsto)
+    rw [tsub_self] at hsub_tendsto
+    exact hsub_tendsto
+  exact hclosed.isSeqClosed (fun n => hAL n) htendsto
 
 /-- The sub-σ-algebra of `m₀` induced by the sublattice `L`. -/
 private def sigmaAlgebra [IsFiniteMeasure μ] (hp_ne_top : p ≠ ⊤)
