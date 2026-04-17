@@ -1,780 +1,731 @@
-import BanLat.Atom
-import BanLat.Banach
-import BanLat.Preliminaries.SignedMeasure
+import BanLat.Examples.CofK
+import BanLat.Examples.SignedMeasure
+import BanLat.Preliminaries.Baire
+import BanLat.Sublattice
 
 /-!
-# The space `M(K)` of finite signed measures as a Banach lattice
+# The Banach lattice `M(K)` of regular signed Borel measures
 
-For a measurable space `K`, the space `MeasureTheory.SignedMeasure K` of finite
-signed measures carries a canonical Banach lattice structure. Order, lattice
-operations, and norm all flow from the **Jordan decomposition**: every signed
-measure `s` is uniquely a difference `s⁺ - s⁻` of two mutually singular finite
-measures, and
+For a compact Hausdorff space `K`, the classical space `M(K)` is the space of
+**regular** signed Borel measures on `K`, equipped with the total-variation
+norm. It is identified here as the closed sublattice of
+`MeasureTheory.SignedMeasure K` cut out by the regularity predicate
+`SignedMeasure.IsRegular`.
 
-* the order is the pointwise (set-wise) order coming from `VectorMeasure.LE`;
-* the lattice operations are `s ⊔ t := t + (s - t).posPart` and
-  `s ⊓ t := s - (s - t).posPart`, where `(s - t).posPart` is the Jordan
-  positive part of `s - t`, viewed as a signed measure;
-* the norm is the **total variation**, `‖s‖ := |s|(K)`, where
-  `|s| = s⁺ + s⁻` is the total-variation measure;
-* completeness in this norm follows from the Vitali–Hahn–Saks theorem.
+The first main result is that `M(K)` is Banach-lattice isometrically isomorphic
+to the space `@SignedMeasure K (baire K)` of finite signed measures on the Baire
+σ-algebra, via the unique regular Borel extension (`BaireMeasure.borelExtension`
+from `BanLat.Preliminaries.Baire`). Since `SignedMeasure` on any measurable
+space carries a canonical Banach-lattice structure (developed in
+`BanLat.Examples.SignedMeasure`), all structural properties — AL-space, atoms,
+principal bands — transfer to `M(K)` through this isomorphism.
 
-This is the space classically denoted `M(K)`. The identification of `M(K)`
-with the dual of `C(K, ℝ)` (the **Riesz–Markov–Kakutani representation
-theorem** for signed functionals) is formalised separately in
-`BanLat.Examples.CofK`.
+The second main result is the **Riesz–Markov–Kakutani representation theorem**:
+`M(K)` is Banach-lattice isometrically isomorphic to the norm dual `C(K, ℝ)*`,
+assembling the duality results from `BanLat.Examples.CofK`.
 -/
 
-open MeasureTheory
+open MeasureTheory Set
 
-namespace MeasureTheory
-namespace SignedMeasure
+/-! ### Closedness of the regularity predicate in the TV norm -/
 
-variable {α : Type*} [MeasurableSpace α]
+namespace MeasureTheory.SignedMeasure
 
-/-! ### Positive and negative parts as signed measures
+variable {K : Type*} [TopologicalSpace K] [T2Space K] [CompactSpace K]
+  [MeasurableSpace K] [BorelSpace K]
 
-Re-bundling the Jordan parts (which Mathlib stores as positive `Measure`s)
-back as signed measures gives the algebraic identity `s = posPart - negPart`
-inside `SignedMeasure α` and lets us state the lattice operations cleanly.
--/
+omit [TopologicalSpace K] [T2Space K] [CompactSpace K] [BorelSpace K] in
+/-- The real-valued Jordan positive parts of `u` and `v` differ on any measurable set by at
+most `‖u - v‖`, using that `posPart` is a 1-Lipschitz lattice operation. -/
+private lemma toReal_posPart_sub_le_norm_of_signed {u v : SignedMeasure K}
+    {E : Set K} (hE : MeasurableSet E) :
+    |(u.toJordanDecomposition.posPart E).toReal -
+        (v.toJordanDecomposition.posPart E).toReal| ≤ ‖u - v‖ := by
+  have h_u_eval : u.posPart E = (u.toJordanDecomposition.posPart E).toReal := by
+    change u.toJordanDecomposition.posPart.toSignedMeasure E = _
+    rw [Measure.toSignedMeasure_apply_measurable hE, measureReal_def]
+  have h_v_eval : v.posPart E = (v.toJordanDecomposition.posPart E).toReal := by
+    change v.toJordanDecomposition.posPart.toSignedMeasure E = _
+    rw [Measure.toSignedMeasure_apply_measurable hE, measureReal_def]
+  have h_eq_u : u ⊔ 0 = u.posPart := by rw [max_def, sub_zero, zero_add]
+  have h_eq_v : v ⊔ 0 = v.posPart := by rw [max_def, sub_zero, zero_add]
+  rw [← h_u_eval, ← h_v_eval, show u.posPart E - v.posPart E = (u.posPart - v.posPart) E from
+      (VectorMeasure.sub_apply _ _ _).symm]
+  calc |(u.posPart - v.posPart) E|
+      ≤ ((u.posPart - v.posPart).totalVariation Set.univ).toReal :=
+        abs_apply_le_totalVariation_univ _ hE
+    _ = ‖u.posPart - v.posPart‖ := (norm_def _).symm
+    _ = ‖u ⊔ 0 - v ⊔ 0‖ := by rw [h_eq_u, h_eq_v]
+    _ ≤ ‖u - v‖ := norm_sup_sub_sup_le_norm u v 0
 
-/-- The Jordan positive part of `s`, viewed as a signed measure. -/
-noncomputable def posPart (s : SignedMeasure α) : SignedMeasure α :=
-  s.toJordanDecomposition.posPart.toSignedMeasure
+/-- The set of regular signed measures is closed in the total-variation
+norm. -/
+theorem isClosed_isRegular :
+    IsClosed {s : SignedMeasure K | IsRegular s} := by
+  refine isSeqClosed_iff_isClosed.mp fun {sₙ s} hsₙ hlim => ?_
+  have key : ∀ {t : SignedMeasure K} {tₙ : ℕ → SignedMeasure K},
+      (∀ n, (tₙ n).toJordanDecomposition.posPart.Regular) →
+      Filter.Tendsto tₙ Filter.atTop (nhds t) →
+      t.toJordanDecomposition.posPart.Regular := by
+    intro t tₙ htₙ hlim'
+    apply Measure.Regular.of_uniform_approx
+    intro ε hε
+    obtain ⟨N, hN⟩ := Metric.tendsto_atTop.mp hlim' ε hε
+    have hN' : ‖tₙ N - t‖ < ε := by
+      have := hN N le_rfl; rwa [dist_eq_norm] at this
+    refine ⟨(tₙ N).toJordanDecomposition.posPart, inferInstance, htₙ N, ?_⟩
+    intro E hE
+    exact lt_of_le_of_lt (toReal_posPart_sub_le_norm_of_signed hE) hN'
+  have hpos := key (fun n => (hsₙ n).posPart_regular) hlim
+  have hlim_neg : Filter.Tendsto (fun n => -(sₙ n)) Filter.atTop (nhds (-s)) := hlim.neg
+  have hneg : s.toJordanDecomposition.negPart.Regular := by
+    have h := key (fun n => by rw [toJordanDecomposition_neg]; exact (hsₙ n).negPart_regular)
+      hlim_neg
+    rw [toJordanDecomposition_neg] at h; exact h
+  haveI := hpos; haveI := hneg
+  change (s.toJordanDecomposition.posPart + s.toJordanDecomposition.negPart).Regular
+  infer_instance
 
-/-- The Jordan negative part of `s`, viewed as a signed measure. -/
-noncomputable def negPart (s : SignedMeasure α) : SignedMeasure α :=
-  s.toJordanDecomposition.negPart.toSignedMeasure
+/-! ### `M(K)` as a closed vector sublattice -/
 
-/-- Reconstructing a signed measure from its Jordan parts:
-`s = s.posPart - s.negPart`. Direct from
-`JordanDecomposition.toSignedMeasure_toJordanDecomposition`. -/
-theorem posPart_sub_negPart (s : SignedMeasure α) :
-    s.posPart - s.negPart = s := by
-  unfold posPart negPart
-  exact s.toSignedMeasure_toJordanDecomposition
+/-- The submodule of regular signed measures. -/
+def regularSubmodule : Submodule ℝ (SignedMeasure K) where
+  carrier := {s | IsRegular s}
+  add_mem' := IsRegular.add
+  zero_mem' := IsRegular.zero
+  smul_mem' := IsRegular.smul
 
-/-- The positive part is non-negative as a signed measure. Direct from
-`Measure.toSignedMeasure_nonneg` for finite measures. -/
-theorem zero_le_posPart (s : SignedMeasure α) : 0 ≤ s.posPart :=
-  Measure.zero_le_toSignedMeasure _
+/-- The vector sublattice of regular signed measures. -/
+noncomputable def regularSublattice : VectorSublattice (SignedMeasure K) :=
+  VectorSublattice.ofAbsClosed regularSubmodule fun _ hs => IsRegular.abs hs
 
-/-- The negative part is non-negative as a signed measure. -/
-theorem zero_le_negPart (s : SignedMeasure α) : 0 ≤ s.negPart :=
-  Measure.zero_le_toSignedMeasure _
+/-- `M(K)` — the Banach lattice of regular signed Borel measures on `K`. -/
+abbrev _root_.MofK (K : Type*) [TopologicalSpace K] [T2Space K] [CompactSpace K]
+    [MeasurableSpace K] [BorelSpace K] : Type _ :=
+  ↥(regularSublattice (K := K)).toSubmodule
 
-/-- Order characterisation: `0 ≤ s` iff the Jordan negative part vanishes.
-This is the bridge between the pointwise order on `SignedMeasure α` and the
-Jordan-decomposition machinery. -/
-theorem nonneg_iff_negPart_eq_zero {s : SignedMeasure α} :
-    0 ≤ s ↔ s.negPart = 0 := by
-  refine ⟨fun hs => ?_, fun h => ?_⟩
-  · have hs' : (0 : SignedMeasure α) ≤[Set.univ] s :=
-      (VectorMeasure.le_restrict_univ_iff_le _ _).mpr hs
-    let j : JordanDecomposition α :=
-      { posPart := s.toMeasureOfZeroLE Set.univ MeasurableSet.univ hs'
-        negPart := 0
-        mutuallySingular := Measure.MutuallySingular.zero_right }
-    have hj : s.toJordanDecomposition = j := by
-      refine toJordanDecomposition_eq ?_
-      change s = (s.toMeasureOfZeroLE Set.univ MeasurableSet.univ hs').toSignedMeasure
-                  - (0 : Measure α).toSignedMeasure
-      rw [Measure.toSignedMeasure_zero, sub_zero, toMeasureOfZeroLE_toSignedMeasure s hs']
-    change s.toJordanDecomposition.negPart.toSignedMeasure = 0
-    rw [hj]
-    exact Measure.toSignedMeasure_zero
-  · have heq := posPart_sub_negPart s
-    rw [h, sub_zero] at heq
-    exact heq ▸ zero_le_posPart s
+/-- Membership in the regular sublattice is regularity. -/
+theorem mem_regularSublattice_iff {s : SignedMeasure K} :
+    s ∈ regularSublattice (K := K) ↔ IsRegular s := Iff.rfl
 
-/-- The positive part dominates `s`: `s ≤ s.posPart`. -/
-private theorem self_le_posPart (s : SignedMeasure α) : s ≤ s.posPart := by
-  intro i hi
-  have h := posPart_sub_negPart s
-  have hi' : (s.posPart - s.negPart) i = s i := by rw [h]
-  rw [VectorMeasure.sub_apply] at hi'
-  have hn : (0 : SignedMeasure α) i ≤ s.negPart i := zero_le_negPart s i hi
-  rw [VectorMeasure.zero_apply] at hn
-  linarith
+/-- `M(K)` is closed as a subset of `SignedMeasure K`. -/
+theorem isClosed_MofK :
+    IsClosed (regularSublattice (K := K) : Set (SignedMeasure K)) :=
+  isClosed_isRegular
 
-/-- Universal property of the positive part: `(s - t).posPart` is the smallest
-non-negative signed measure `u` with `s - t ≤ u`. This is the key lemma behind
-the lattice axioms for `⊔`. -/
-theorem posPart_isLeast (s : SignedMeasure α) :
-    IsLeast {u : SignedMeasure α | 0 ≤ u ∧ s ≤ u} s.posPart := by
-  refine ⟨⟨zero_le_posPart s, self_le_posPart s⟩, ?_⟩
-  rintro u ⟨hu0, hsu⟩
-  obtain ⟨P, hP, hPpos, hPneg, hposEq, _⟩ := s.toJordanDecomposition_spec
-  intro i hi
-  have hpp : s.posPart i = s (P ∩ i) := by
-    change (s.toJordanDecomposition.posPart).toSignedMeasure i = s (P ∩ i)
-    rw [Measure.toSignedMeasure_apply_measurable hi, hposEq,
-        toMeasureOfZeroLE_real_apply _ hPpos hP hi]
-  rw [hpp]
-  have h1 : s (P ∩ i) ≤ u (P ∩ i) := hsu _ (hP.inter hi)
-  have hdisj : Disjoint (P ∩ i) (i \ P) :=
-    Set.disjoint_sdiff_right.mono_left Set.inter_subset_left
-  have huni : (P ∩ i) ∪ (i \ P) = i := by
-    rw [Set.inter_comm]; exact Set.inter_union_diff i P
-  have h2 : u (P ∩ i) + u (i \ P) = u i := by
-    rw [← VectorMeasure.of_union hdisj (hP.inter hi) (hi.diff hP), huni]
-  have h3 : (0 : SignedMeasure α) (i \ P) ≤ u (i \ P) := hu0 _ (hi.diff hP)
-  rw [VectorMeasure.zero_apply] at h3
-  linarith
+/-- `M(K)` is a Banach lattice. -/
+noncomputable instance instBanachLatticeMofK : BanachLattice (MofK K) :=
+  VectorSublattice.instBanachLatticeSubtype _ isClosed_MofK
 
-/-! ### Lattice structure -/
+end MeasureTheory.SignedMeasure
 
-/-- Maximum of two signed measures via the Jordan positive part of their
-difference. -/
-noncomputable instance instMax : Max (SignedMeasure α) where
-  max s t := t + (s - t).posPart
+/-! ### Isomorphism with signed Baire measures -/
 
-/-- Minimum of two signed measures. -/
-noncomputable instance instMin : Min (SignedMeasure α) where
-  min s t := s - (s - t).posPart
+section BaireEquiv
 
-theorem max_def (s t : SignedMeasure α) : s ⊔ t = t + (s - t).posPart := rfl
+open MeasureTheory MeasureTheory.SignedMeasure BaireMeasure
 
-theorem min_def (s t : SignedMeasure α) : s ⊓ t = s - (s - t).posPart := rfl
+variable {K : Type*} [TopologicalSpace K] [T2Space K] [CompactSpace K]
+  [MeasurableSpace K] [BorelSpace K] [Nonempty K]
 
-/-- The lattice instance extends the existing `PartialOrder` on
-`SignedMeasure α`. The lattice axioms reduce, via `posPart_isLeast`, to the
-universal property of the Jordan positive part. -/
-noncomputable instance instLattice : Lattice (SignedMeasure α) where
-  __ := (inferInstance : PartialOrder (SignedMeasure α))
-  sup := Max.max
-  inf := Min.min
-  le_sup_left s t := by
-    intro i hi
-    have h := self_le_posPart (s - t) i hi
-    rw [VectorMeasure.sub_apply] at h
-    change s i ≤ (t + (s - t).posPart) i
-    rw [VectorMeasure.add_apply]
-    linarith
-  le_sup_right s t := by
-    intro i hi
-    have h := zero_le_posPart (s - t) i hi
-    rw [VectorMeasure.zero_apply] at h
-    change t i ≤ (t + (s - t).posPart) i
-    rw [VectorMeasure.add_apply]
-    linarith
-  sup_le s t u hsu htu := by
-    have h0 : (0 : SignedMeasure α) ≤ u - t := by
-      intro i hi
-      rw [VectorMeasure.zero_apply, VectorMeasure.sub_apply]
-      linarith [htu i hi]
-    have h1 : s - t ≤ u - t := by
-      intro i hi
-      rw [VectorMeasure.sub_apply, VectorMeasure.sub_apply]
-      linarith [hsu i hi]
-    have h2 : (s - t).posPart ≤ u - t :=
-      (posPart_isLeast (s - t)).2 ⟨h0, h1⟩
-    intro i hi
-    change (t + (s - t).posPart) i ≤ u i
-    have := h2 i hi
-    rw [VectorMeasure.sub_apply] at this
-    rw [VectorMeasure.add_apply]
-    linarith
-  inf_le_left s t := by
-    intro i hi
-    have h := zero_le_posPart (s - t) i hi
-    rw [VectorMeasure.zero_apply] at h
-    change (s - (s - t).posPart) i ≤ s i
-    rw [VectorMeasure.sub_apply]
-    linarith
-  inf_le_right s t := by
-    intro i hi
-    have h := self_le_posPart (s - t) i hi
-    rw [VectorMeasure.sub_apply] at h
-    change (s - (s - t).posPart) i ≤ t i
-    rw [VectorMeasure.sub_apply]
-    linarith
-  le_inf u s t hus hut := by
-    have h0 : (0 : SignedMeasure α) ≤ s - u := by
-      intro i hi
-      rw [VectorMeasure.zero_apply, VectorMeasure.sub_apply]
-      linarith [hus i hi]
-    have h1 : s - t ≤ s - u := by
-      intro i hi
-      rw [VectorMeasure.sub_apply, VectorMeasure.sub_apply]
-      linarith [hut i hi]
-    have h2 : (s - t).posPart ≤ s - u :=
-      (posPart_isLeast (s - t)).2 ⟨h0, h1⟩
-    intro i hi
-    change u i ≤ (s - (s - t).posPart) i
-    have := h2 i hi
-    rw [VectorMeasure.sub_apply] at this
-    rw [VectorMeasure.sub_apply]
-    linarith
+private noncomputable instance instNACG_BaireSM :
+    NormedAddCommGroup (@SignedMeasure K (baire K)) := by
+  letI : MeasurableSpace K := baire K; infer_instance
 
-/-- Translation invariance of the order: the addition on `SignedMeasure α` is
-set-wise, hence preserves the set-wise order. -/
-instance instIsOrderedAddMonoid : IsOrderedAddMonoid (SignedMeasure α) where
-  add_le_add_left a b h c := by
-    intro i hi
-    rw [VectorMeasure.add_apply, VectorMeasure.add_apply]
-    linarith [h i hi]
+private noncomputable instance instModule_BaireSM :
+    Module ℝ (@SignedMeasure K (baire K)) := by
+  letI : MeasurableSpace K := baire K; infer_instance
 
-/-- Multiplication by a non-negative real preserves the order: `(c • s) i =
-c • s i`, and `c • _` is monotone on `ℝ` for `0 ≤ c`. -/
-instance instPosSMulMono : PosSMulMono ℝ (SignedMeasure α) where
-  smul_le_smul_of_nonneg_left := fun _ hc _ _ h i hi => by
-    rw [VectorMeasure.smul_apply, VectorMeasure.smul_apply]
-    exact mul_le_mul_of_nonneg_left (h i hi) hc
+private noncomputable instance instLattice_BaireSM :
+    Lattice (@SignedMeasure K (baire K)) := by
+  letI : MeasurableSpace K := baire K; infer_instance
 
-/-- `SignedMeasure α` is a real vector lattice. The `VectorLattice` axioms
-reduce to `instPosSMulMono` and the lattice structure already in place. -/
-noncomputable instance instVectorLattice : VectorLattice (SignedMeasure α) where
+private noncomputable instance instIOAM_BaireSM :
+    IsOrderedAddMonoid (@SignedMeasure K (baire K)) := by
+  letI : MeasurableSpace K := baire K; infer_instance
 
-/-! ### Modulus and total variation
+private noncomputable instance instBL_BaireSM :
+    BanachLattice (@SignedMeasure K (baire K)) := by
+  letI : MeasurableSpace K := baire K; infer_instance
 
-The vector-lattice modulus `|s| = s.posPart + s.negPart` (a non-negative
-signed measure) corresponds, via `Measure.toSignedMeasure`, to the
-total-variation measure of Mathlib's `SignedMeasure.totalVariation`. -/
+private noncomputable instance instAL_BaireSM :
+    ALSpace (@SignedMeasure K (baire K)) := by
+  letI : MeasurableSpace K := baire K; infer_instance
 
-private theorem supZero_eq_posPart (s : SignedMeasure α) : s ⊔ 0 = s.posPart := by
-  change 0 + (s - 0).posPart = s.posPart
-  rw [zero_add, sub_zero]
+/-- `M(K)` is isometrically isomorphic as a Banach lattice to the space of
+finite signed measures on the Baire σ-algebra of `K`. The forward map is
+restriction to Baire-measurable sets; the inverse is the unique regular Borel
+extension. -/
+noncomputable def MofK.baireEquiv :
+    BanachLatEquiv (MofK K) (@SignedMeasure K (baire K)) := by
+  have hmeas := BorelSpace.measurable_eq (α := K)
+  subst hmeas
+  letI : MeasurableSpace K := borel K
+  set hle : baire K ≤ borel K := baire_le_borel (α := K) with hle_def
+  -- Forward: μ ↦ μ.trim hle
+  let fwd : SignedMeasure K → @SignedMeasure K (baire K) := fun μ => μ.trim hle
+  -- Inverse: s ↦ borelExtension s
+  let invf : @SignedMeasure K (baire K) → SignedMeasure K := fun s => borelExtension s
+  -- Apply-on-Baire agreement
+  have fwd_apply : ∀ (μ : SignedMeasure K) {t : Set K},
+      @MeasurableSet K (baire K) t → fwd μ t = μ t :=
+    fun _ _ ht => VectorMeasure.trim_measurableSet_eq hle ht
+  have invf_apply : ∀ (s : @SignedMeasure K (baire K)) {t : Set K},
+      @MeasurableSet K (baire K) t → invf s t = s t :=
+    fun s _ ht => borelExtension_apply s ht
+  have invf_regular : ∀ s : @SignedMeasure K (baire K), (invf s).IsRegular :=
+    fun s => borelExtension_regular s
+  -- Left/right inverse
+  have left_inv : ∀ (μ : SignedMeasure K), μ.IsRegular → invf (fwd μ) = μ := fun μ hμ =>
+    (borelExtension_unique (fwd μ) μ hμ (fun _ ht => (fwd_apply μ ht).symm)).symm
+  have right_inv : ∀ s : @SignedMeasure K (baire K), fwd (invf s) = s := fun s => by
+    refine VectorMeasure.ext fun t ht => ?_
+    rw [fwd_apply (invf s) ht, invf_apply s ht]
+  -- Linearity of fwd
+  have fwd_add : ∀ μ ν : SignedMeasure K, fwd (μ + ν) = fwd μ + fwd ν := fun μ ν => by
+    refine VectorMeasure.ext fun t ht => ?_
+    rw [fwd_apply _ ht, VectorMeasure.add_apply, VectorMeasure.add_apply,
+        fwd_apply _ ht, fwd_apply _ ht]
+  have fwd_smul : ∀ (c : ℝ) (μ : SignedMeasure K), fwd (c • μ) = c • fwd μ := fun c μ => by
+    refine VectorMeasure.ext fun t ht => ?_
+    rw [fwd_apply _ ht, VectorMeasure.smul_apply, VectorMeasure.smul_apply, fwd_apply _ ht]
+  have fwd_neg : ∀ (μ : SignedMeasure K), fwd (-μ) = -fwd μ := fun μ => by
+    refine VectorMeasure.ext fun t ht => ?_
+    rw [fwd_apply _ ht, VectorMeasure.neg_apply, VectorMeasure.neg_apply, fwd_apply _ ht]
+  have fwd_sub : ∀ μ ν : SignedMeasure K, fwd (μ - ν) = fwd μ - fwd ν := fun μ ν => by
+    rw [sub_eq_add_neg, sub_eq_add_neg, fwd_add, fwd_neg]
+  -- Positivity preservation
+  have fwd_nonneg : ∀ {μ : SignedMeasure K}, 0 ≤ μ → 0 ≤ fwd μ := fun {μ} hμ t ht => by
+    rw [VectorMeasure.zero_apply, fwd_apply _ ht]
+    have := hμ t (hle t ht)
+    rwa [VectorMeasure.zero_apply] at this
+  have invf_nonneg : ∀ {s : @SignedMeasure K (baire K)}, 0 ≤ s → 0 ≤ invf s :=
+    fun hs => borelExtension_nonneg hs
+  have fwd_nonneg_iff : ∀ {μ : SignedMeasure K}, μ.IsRegular → (0 ≤ fwd μ ↔ 0 ≤ μ) := by
+    intro μ hμ
+    refine ⟨fun h => ?_, fwd_nonneg⟩
+    have h' := invf_nonneg h
+    rwa [left_inv μ hμ] at h'
+  -- Order preservation biconditional
+  have fwd_le_iff : ∀ {μ ν : SignedMeasure K}, μ.IsRegular → ν.IsRegular →
+      (fwd μ ≤ fwd ν ↔ μ ≤ ν) := by
+    intros μ ν hμ hν
+    constructor
+    · intro h
+      have h1 : 0 ≤ fwd (ν - μ) := by rw [fwd_sub]; exact sub_nonneg.mpr h
+      exact sub_nonneg.mp ((fwd_nonneg_iff (SignedMeasure.IsRegular.sub hν hμ)).mp h1)
+    · intro h
+      have h1 : 0 ≤ fwd (ν - μ) := fwd_nonneg (sub_nonneg.mpr h)
+      rw [fwd_sub] at h1
+      exact sub_nonneg.mp h1
+  -- Norm preservation
+  have norm_le_fwd : ∀ (μ : SignedMeasure K), μ.IsRegular → ‖μ‖ ≤ ‖fwd μ‖ := fun μ hμ => by
+    calc ‖μ‖ = ‖invf (fwd μ)‖ := by rw [left_inv μ hμ]
+      _ = ‖borelExtension (fwd μ)‖ := rfl
+      _ ≤ ‖fwd μ‖ := borelExtension_norm_le (fwd μ)
+  have norm_fwd_nn : ∀ (s : SignedMeasure K), 0 ≤ s → ‖fwd s‖ = ‖s‖ := fun s hs => by
+    have hfwd_nn : (0 : @SignedMeasure K (baire K)) ≤ fwd s := fwd_nonneg hs
+    have h1 : ‖fwd s‖ = ((fwd s : @SignedMeasure K (baire K)) Set.univ : ℝ) :=
+      @SignedMeasure.norm_of_nonneg K (baire K) (fwd s) hfwd_nn
+    have h2 : ‖s‖ = (s Set.univ : ℝ) := SignedMeasure.norm_of_nonneg hs
+    rw [h1, h2]
+    exact fwd_apply s (@MeasurableSet.univ K (baire K))
+  have norm_fwd_le : ∀ (μ : SignedMeasure K), ‖fwd μ‖ ≤ ‖μ‖ := fun μ => by
+    set P := μ.toJordanDecomposition.posPart with hP_def
+    set N := μ.toJordanDecomposition.negPart with hN_def
+    have hμ_eq : μ = P.toSignedMeasure - N.toSignedMeasure :=
+      (SignedMeasure.toSignedMeasure_toJordanDecomposition μ).symm
+    have hP_nn : (0 : SignedMeasure K) ≤ P.toSignedMeasure := Measure.zero_le_toSignedMeasure _
+    have hN_nn : (0 : SignedMeasure K) ≤ N.toSignedMeasure := Measure.zero_le_toSignedMeasure _
+    have h_sum : ‖P.toSignedMeasure‖ + ‖N.toSignedMeasure‖ = ‖μ‖ := by
+      rw [SignedMeasure.norm_of_nonneg hP_nn, SignedMeasure.norm_of_nonneg hN_nn,
+          Measure.toSignedMeasure_apply_measurable MeasurableSet.univ,
+          Measure.toSignedMeasure_apply_measurable MeasurableSet.univ,
+          SignedMeasure.norm_def μ]
+      unfold SignedMeasure.totalVariation
+      rw [Measure.add_apply, measureReal_def, measureReal_def,
+          ← ENNReal.toReal_add (measure_ne_top _ _) (measure_ne_top _ _)]
+    have hfwd_eq : fwd μ = fwd P.toSignedMeasure - fwd N.toSignedMeasure := by
+      conv_lhs => rw [hμ_eq]
+      exact fwd_sub P.toSignedMeasure N.toSignedMeasure
+    calc ‖fwd μ‖
+        = ‖fwd P.toSignedMeasure - fwd N.toSignedMeasure‖ := by rw [hfwd_eq]
+      _ ≤ ‖fwd P.toSignedMeasure‖ + ‖fwd N.toSignedMeasure‖ := norm_sub_le _ _
+      _ = ‖P.toSignedMeasure‖ + ‖N.toSignedMeasure‖ := by
+          rw [norm_fwd_nn _ hP_nn, norm_fwd_nn _ hN_nn]
+      _ = ‖μ‖ := h_sum
+  have norm_eq : ∀ (μ : MofK K), ‖fwd μ.val‖ = ‖μ.val‖ := fun μ =>
+    le_antisymm (norm_fwd_le μ.val) (norm_le_fwd μ.val μ.property)
+  have sup_reg : ∀ {μ ν : SignedMeasure K}, μ.IsRegular → ν.IsRegular →
+      (μ ⊔ ν).IsRegular := fun hμ hν => regularSublattice.sup_mem hμ hν
+  have inf_reg : ∀ {μ ν : SignedMeasure K}, μ.IsRegular → ν.IsRegular →
+      (μ ⊓ ν).IsRegular := fun hμ hν => regularSublattice.inf_mem hμ hν
+  have fwd_sup : ∀ (μ ν : SignedMeasure K), μ.IsRegular → ν.IsRegular →
+      fwd (μ ⊔ ν) = fwd μ ⊔ fwd ν := fun μ ν hμ hν => by
+    have hsup_reg : (μ ⊔ ν).IsRegular := sup_reg hμ hν
+    apply le_antisymm
+    · have hz_reg : (invf (fwd μ ⊔ fwd ν)).IsRegular := invf_regular _
+      have hz_eq : fwd (invf (fwd μ ⊔ fwd ν)) = fwd μ ⊔ fwd ν := right_inv _
+      have hμ_le : μ ≤ invf (fwd μ ⊔ fwd ν) := by
+        apply (fwd_le_iff hμ hz_reg).mp
+        rw [hz_eq]; exact le_sup_left
+      have hν_le : ν ≤ invf (fwd μ ⊔ fwd ν) := by
+        apply (fwd_le_iff hν hz_reg).mp
+        rw [hz_eq]; exact le_sup_right
+      have h := (fwd_le_iff hsup_reg hz_reg).mpr (sup_le hμ_le hν_le)
+      rwa [hz_eq] at h
+    · exact sup_le ((fwd_le_iff hμ hsup_reg).mpr le_sup_left)
+                   ((fwd_le_iff hν hsup_reg).mpr le_sup_right)
+  have fwd_inf : ∀ (μ ν : SignedMeasure K), μ.IsRegular → ν.IsRegular →
+      fwd (μ ⊓ ν) = fwd μ ⊓ fwd ν := fun μ ν hμ hν => by
+    have hinf_reg : (μ ⊓ ν).IsRegular := inf_reg hμ hν
+    apply le_antisymm
+    · exact le_inf ((fwd_le_iff hinf_reg hμ).mpr inf_le_left)
+                   ((fwd_le_iff hinf_reg hν).mpr inf_le_right)
+    · have hz_reg : (invf (fwd μ ⊓ fwd ν)).IsRegular := invf_regular _
+      have hz_eq : fwd (invf (fwd μ ⊓ fwd ν)) = fwd μ ⊓ fwd ν := right_inv _
+      have hle_μ : invf (fwd μ ⊓ fwd ν) ≤ μ := by
+        apply (fwd_le_iff hz_reg hμ).mp
+        rw [hz_eq]; exact inf_le_left
+      have hle_ν : invf (fwd μ ⊓ fwd ν) ≤ ν := by
+        apply (fwd_le_iff hz_reg hν).mp
+        rw [hz_eq]; exact inf_le_right
+      have h := (fwd_le_iff hz_reg hinf_reg).mpr (le_inf hle_μ hle_ν)
+      rwa [hz_eq] at h
+  -- Assemble the BanachLatEquiv
+  exact {
+    toLinearIsometryEquiv :=
+      { toFun := fun μ => fwd μ.val
+        invFun := fun s => ⟨invf s, invf_regular s⟩
+        map_add' := fun μ ν => fwd_add μ.val ν.val
+        map_smul' := fun c μ => fwd_smul c μ.val
+        left_inv := fun μ => Subtype.ext (left_inv μ.val μ.property)
+        right_inv := right_inv
+        norm_map' := norm_eq }
+    map_sup' := fun μ ν => fwd_sup μ.val ν.val μ.property ν.property
+    map_inf' := fun μ ν => fwd_inf μ.val ν.val μ.property ν.property }
 
-private theorem negSupZero_eq_negPart (s : SignedMeasure α) : (-s) ⊔ 0 = s.negPart := by
-  rw [supZero_eq_posPart]
-  change (-s).toJordanDecomposition.posPart.toSignedMeasure =
-    s.toJordanDecomposition.negPart.toSignedMeasure
-  apply Measure.toSignedMeasure_congr
-  rw [SignedMeasure.toJordanDecomposition_neg]
-  rfl
+end BaireEquiv
 
-/-- Modulus as the sum of Jordan parts. Direct from `posPart_sub_negPart`,
-`zero_le_posPart`, `zero_le_negPart`, and the formula
-`|x| = x⁺ + x⁻` valid in any vector lattice. -/
-theorem abs_eq_posPart_add_negPart (s : SignedMeasure α) :
-    |s| = s.posPart + s.negPart := by
-  rw [← posPart_add_negPart s, posPart_def, negPart_def, supZero_eq_posPart,
-    negSupZero_eq_negPart]
+/-! ### Riesz representation: `M(K) ≃ C(K, ℝ)*` -/
 
-/-- Identification of the modulus with the total variation: applying `|s|` (a
-non-negative signed measure) to a measurable set returns the total-variation
-measure of `s` on that set. -/
-theorem abs_apply_eq_totalVariation (s : SignedMeasure α) (i : Set α)
-    (hi : MeasurableSet i) :
-    (|s| : SignedMeasure α) i = (s.totalVariation i).toReal := by
-  rw [abs_eq_posPart_add_negPart, VectorMeasure.add_apply]
-  change s.toJordanDecomposition.posPart.toSignedMeasure i +
-      s.toJordanDecomposition.negPart.toSignedMeasure i = _
-  rw [Measure.toSignedMeasure_apply_measurable hi,
-      Measure.toSignedMeasure_apply_measurable hi,
-      SignedMeasure.totalVariation, ← measureReal_def, measureReal_add_apply]
+section Riesz
 
-/-! ### Total-variation norm
+open MeasureTheory MeasureTheory.SignedMeasure
 
-We package `s ↦ (s.totalVariation univ).toReal` as an `AddGroupNorm`, then
-upgrade to a `NormedAddCommGroup` via `AddGroupNorm.toNormedAddCommGroup`. -/
+variable {K : Type*} [TopologicalSpace K] [T2Space K] [CompactSpace K]
+  [MeasurableSpace K] [BorelSpace K] [Nonempty K]
 
-/-- The total variation, as an additive group norm on `SignedMeasure α`. The
-four field obligations reduce, via `BanLat.Preliminaries.SignedMeasure`, to
-`totalVariation_zero_eq`, `toReal_totalVariation_add_univ_le`,
-`SignedMeasure.totalVariation_neg`, and
-`eq_zero_of_totalVariation_univ_eq_zero`. -/
-noncomputable def tvAddGroupNorm : AddGroupNorm (SignedMeasure α) where
-  toFun s := (s.totalVariation Set.univ).toReal
-  map_zero' := by rw [totalVariation_zero_eq]; simp
-  add_le' s t := toReal_totalVariation_add_univ_le s t
-  neg' s := by rw [SignedMeasure.totalVariation_neg]
-  eq_zero_of_map_eq_zero' s h := by
-    apply eq_zero_of_totalVariation_univ_eq_zero
-    rcases (ENNReal.toReal_eq_zero_iff _).mp h with h₁ | h₁
-    · exact h₁
-    · exact absurd h₁ (totalVariation_univ_lt_top s).ne
+/-- The linear equivalence underlying the Riesz–Markov–Kakutani isomorphism. -/
+private noncomputable def rieszLinearEquiv :
+    MofK K ≃ₗ[ℝ] NormDualSpace C(K, ℝ) where
+  toFun μ := signedMeasureFunctional μ.val
+  invFun φ := ⟨rieszSignedMeasure φ, rieszSignedMeasure_isRegular φ⟩
+  left_inv μ :=
+    Subtype.ext (rieszSignedMeasure_signedMeasureFunctional μ.property)
+  right_inv := signedMeasureFunctional_rieszSignedMeasure
+  map_add' μ ν := signedMeasureFunctional_add μ.val ν.val
+  map_smul' c μ := signedMeasureFunctional_smul c μ.val
 
-/-- Total-variation norm structure on `SignedMeasure α`. -/
-noncomputable instance instNormedAddCommGroup :
-    NormedAddCommGroup (SignedMeasure α) :=
-  tvAddGroupNorm.toNormedAddCommGroup
+/-- **Riesz–Markov–Kakutani representation theorem** for `C(K, ℝ)`. -/
+noncomputable def rieszEquiv :
+    BanachLatEquiv (MofK K) (NormDualSpace C(K, ℝ)) where
+  toLinearIsometryEquiv :=
+    { rieszLinearEquiv with
+      norm_map' := fun μ => norm_signedMeasureFunctional μ.property }
+  map_sup' μ ν := signedMeasureFunctional_sup μ.property ν.property
+  map_inf' μ ν := signedMeasureFunctional_inf μ.property ν.property
 
-/-- The norm of a signed measure is its total variation on the universe. -/
-theorem norm_def (s : SignedMeasure α) :
-    ‖s‖ = (s.totalVariation Set.univ).toReal := rfl
+@[simp]
+theorem rieszEquiv_apply (μ : MofK K) (f : C(K, ℝ)) :
+    rieszEquiv μ f = signedMeasureIntegral μ.val f :=
+  signedMeasureFunctional_apply μ.val f
 
-/-! ### Compatibility of the norm with scalar multiplication and the order
+/-- The Riesz isomorphism preserves positivity. -/
+theorem rieszEquiv_nonneg_iff {μ : MofK K} :
+    0 ≤ (rieszEquiv : BanachLatEquiv (MofK K) _) μ ↔ 0 ≤ μ :=
+  signedMeasureFunctional_nonneg_iff μ.property
 
-The two compatibility properties — solidness of the norm and homogeneity under
-scalar multiplication — give the `NormedVectorLattice` instance, and
-completeness then yields `BanachLattice`. -/
+end Riesz
 
-/-- The total-variation norm is solid: if `|s| ≤ |t|` (as signed measures) then
-`‖s‖ ≤ ‖t‖`. Argument: applying both sides to `Set.univ` and using
-`abs_apply_eq_totalVariation` reduces this to monotonicity of
-`(·).toReal` on finite values of the total variation. -/
-private theorem norm_le_of_abs_le_abs {s t : SignedMeasure α} (h : |s| ≤ |t|) :
-    ‖s‖ ≤ ‖t‖ := by
-  rw [norm_def, norm_def]
-  have hst := h Set.univ MeasurableSet.univ
-  rw [abs_apply_eq_totalVariation _ _ MeasurableSet.univ,
-      abs_apply_eq_totalVariation _ _ MeasurableSet.univ] at hst
-  exact hst
+/-! ### AL-space structure on `M(K)` -/
 
-instance instHasSolidNorm : HasSolidNorm (SignedMeasure α) where
-  solid := fun {_ _} h => norm_le_of_abs_le_abs h
+noncomputable instance MeasureTheory.SignedMeasure.instALSpaceMofK
+    {K : Type*} [TopologicalSpace K] [T2Space K] [CompactSpace K]
+    [MeasurableSpace K] [BorelSpace K] : ALSpace (MofK K) where
+  norm_add_eq_of_nonneg {x y} hx hy := by
+    change ‖x.val + y.val‖ = ‖x.val‖ + ‖y.val‖
+    exact ALSpace.norm_add_eq_of_nonneg hx hy
 
-/-- Homogeneity of the norm under real scalar multiplication. Argument:
-`norm_def` reduces this to `totalVariation_smul_univ` from the preliminaries. -/
-private theorem norm_smul_eq (c : ℝ) (s : SignedMeasure α) :
-    ‖c • s‖ = ‖c‖ * ‖s‖ := by
-  rw [norm_def, norm_def, totalVariation_smul_univ, ENNReal.toReal_mul,
-      ENNReal.toReal_ofReal (abs_nonneg c), Real.norm_eq_abs]
-
-instance instNormSMulClass : NormSMulClass ℝ (SignedMeasure α) where
-  norm_smul := norm_smul_eq
-
-/-- `SignedMeasure α` is a normed vector lattice. -/
-noncomputable instance instNormedVectorLattice :
-    NormedVectorLattice (SignedMeasure α) where
-
-/-! ### Completeness and Banach lattice instance
-
-Completeness of `(SignedMeasure α, ‖·‖_TV)` is the **Vitali–Hahn–Saks**
-theorem in disguise: a TV-Cauchy sequence of finite signed measures has a
-set-wise limit which is itself a finite signed measure, with TV convergence.
-
-A clean proof proceeds by:
-1. extracting set-wise limits `s univ_E := lim n, sₙ E` for each measurable
-   `E`, using completeness of `ℝ`;
-2. checking countable additivity of the resulting set function via
-   Vitali–Hahn–Saks (uniform countable additivity passes to limits);
-3. verifying TV convergence directly from the Cauchy hypothesis.
--/
-
-/-- `SignedMeasure α` is complete in the total-variation norm. The reduction
-to `exists_tv_limit_of_cauchy` is a translation between `dist`/`Tendsto` in the
-metric topology and the total-variation form of the Cauchy/limit conditions. -/
-instance instCompleteSpace : CompleteSpace (SignedMeasure α) := by
-  refine Metric.complete_of_cauchySeq_tendsto fun u hu => ?_
-  rw [Metric.cauchySeq_iff] at hu
-  have hu' : ∀ ε > 0, ∃ N, ∀ m ≥ N, ∀ n ≥ N,
-      ((u m - u n).totalVariation Set.univ).toReal < ε := fun ε hε => by
-    obtain ⟨N, hN⟩ := hu ε hε
-    refine ⟨N, fun m hm n hn => ?_⟩
-    have h := hN m hm n hn
-    rwa [dist_eq_norm, norm_def] at h
-  obtain ⟨t, ht⟩ := exists_tv_limit_of_cauchy u hu'
-  refine ⟨t, Metric.tendsto_atTop.mpr fun ε hε => ?_⟩
-  obtain ⟨N, hN⟩ := ht ε hε
-  refine ⟨N, fun n hn => ?_⟩
-  rw [dist_eq_norm, norm_def]
-  exact hN n hn
-
-/-- `SignedMeasure α` is a Banach lattice. -/
-noncomputable instance instBanachLattice : BanachLattice (SignedMeasure α) where
-
-/-! ### Total variation and the order: positivity criterion
-
-A direct corollary of `totalVariation_univ_eq_of_nonneg`: for non-negative
-signed measures the norm equals the value at `univ`. -/
-
-/-- For a non-negative signed measure, the norm is just the (real-valued)
-total mass `s univ`. -/
-theorem norm_of_nonneg {s : SignedMeasure α} (hs : 0 ≤ s) :
-    ‖s‖ = (s Set.univ : ℝ) := by
-  rw [norm_def, totalVariation_univ_eq_of_nonneg hs]
-
-/-! ### Atoms of `M(K)` and Dirac deltas
-
-In a vector lattice, an **atom** (`IsVLAtom`) is a strictly positive element
-whose order interval `[0, a]` is one-dimensional: every `0 ≤ x ≤ a` is a
-scalar multiple of `a`. For the Banach lattice `M(K) = SignedMeasure α` with
-measurable singletons, the atoms are precisely the strictly positive scalar
-multiples of the Dirac measures `δ_x` at points `x ∈ K`. -/
+/-! ### Atoms and Dirac deltas in `M(K)` -/
 
 section Atoms
 
-variable [MeasurableSingletonClass α]
+open MeasureTheory MeasureTheory.SignedMeasure
 
-/-- The Dirac delta at a point, viewed as a finite signed measure. -/
-noncomputable def dirac (x : α) : SignedMeasure α :=
-  (Measure.dirac x).toSignedMeasure
+variable {K : Type*} [TopologicalSpace K] [T2Space K] [CompactSpace K]
+  [MeasurableSpace K] [BorelSpace K] [Nonempty K]
+  [@MeasurableSingletonClass K (baire K)]
 
-omit [MeasurableSingletonClass α] in
-/-- The Dirac delta evaluates to `1` on any measurable set containing the
-point. -/
-theorem dirac_apply_of_mem {x : α} {i : Set α} (hi : MeasurableSet i)
-    (hx : x ∈ i) : dirac x i = 1 := by
-  unfold dirac
-  rw [Measure.toSignedMeasure_apply_measurable hi, measureReal_def,
-      Measure.dirac_apply_of_mem hx, ENNReal.toReal_one]
+noncomputable def MofK.dirac (x : K) : MofK K :=
+  MofK.baireEquiv.toLinearIsometryEquiv.symm
+    (@SignedMeasure.dirac K (baire K) x)
 
-omit [MeasurableSingletonClass α] in
-/-- The Dirac delta evaluates to `0` on any measurable set not containing the
-point. -/
-theorem dirac_apply_of_notMem {x : α} {i : Set α} (hi : MeasurableSet i)
-    (hx : x ∉ i) : dirac x i = 0 := by
-  unfold dirac
-  rw [Measure.toSignedMeasure_apply_measurable hi, measureReal_def,
-      Measure.dirac_apply' x hi, Set.indicator_of_notMem hx, ENNReal.toReal_zero]
+set_option maxHeartbeats 400000 in
+-- transferring positivity through `baireEquiv.symm` is unification-heavy
+omit [@MeasurableSingletonClass K (baire K)] in
+theorem MofK.zero_le_dirac (x : K) : 0 ≤ MofK.dirac x := by
+  have hδ : (0 : @SignedMeasure K (baire K)) ≤ @SignedMeasure.dirac K (baire K) x :=
+    @SignedMeasure.zero_le_dirac K (baire K) x
+  let φ : MofK K ≃ₗᵢ[ℝ] @SignedMeasure K (baire K) :=
+    MofK.baireEquiv.toLinearIsometryEquiv
+  change 0 ≤ φ.symm (@SignedMeasure.dirac K (baire K) x)
+  have h0 : φ.symm 0 = 0 := φ.symm.map_zero
+  have hφsup : ∀ (a b : MofK K), φ (a ⊔ b) = φ a ⊔ φ b := MofK.baireEquiv.map_sup'
+  have hsup : φ.symm (0 ⊔ @SignedMeasure.dirac K (baire K) x) =
+      φ.symm 0 ⊔ φ.symm (@SignedMeasure.dirac K (baire K) x) := by
+    apply φ.injective
+    rw [φ.apply_symm_apply, hφsup, φ.apply_symm_apply, φ.apply_symm_apply]
+  rw [sup_eq_right.mpr hδ, h0] at hsup
+  exact le_sup_left.trans hsup.symm.le
 
-omit [MeasurableSingletonClass α] in
-/-- The Dirac delta is non-negative as a signed measure. -/
-theorem zero_le_dirac (x : α) : (0 : SignedMeasure α) ≤ dirac x :=
-  Measure.zero_le_toSignedMeasure _
+omit [@MeasurableSingletonClass K (baire K)] in
+theorem MofK.norm_dirac (x : K) : ‖MofK.dirac x‖ = 1 := by
+  change ‖MofK.baireEquiv.toLinearIsometryEquiv.symm _‖ = 1
+  rw [LinearIsometryEquiv.norm_map]
+  exact @SignedMeasure.norm_dirac K (baire K) x
 
-/-- The Dirac delta is non-zero. -/
-theorem dirac_ne_zero (x : α) : dirac x ≠ 0 := by
-  intro h
-  have h₁ : dirac x {x} = 1 :=
-    dirac_apply_of_mem (measurableSet_singleton x) (Set.mem_singleton x)
-  rw [h, VectorMeasure.zero_apply] at h₁
-  exact one_ne_zero h₁.symm
+omit [@MeasurableSingletonClass K (baire K)] in
+theorem MofK.dirac_ne_zero (x : K) : MofK.dirac x ≠ 0 := by
+  rw [ne_eq, ← norm_eq_zero, MofK.norm_dirac]; exact one_ne_zero
 
-omit [MeasurableSingletonClass α] in
-/-- The norm (total variation) of a Dirac delta is `1`. -/
-theorem norm_dirac (x : α) : ‖dirac x‖ = 1 := by
-  rw [norm_of_nonneg (zero_le_dirac x)]
-  exact dirac_apply_of_mem MeasurableSet.univ (Set.mem_univ x)
+set_option maxHeartbeats 400000 in
+-- transferring lattice-disjointness through `baireEquiv.symm` is unification-heavy
+theorem MofK.isVLDisjoint_dirac_of_ne {x y : K} (h : x ≠ y) :
+    IsVLDisjoint (MofK.dirac x) (MofK.dirac y) := by
+  have hB : IsVLDisjoint (@SignedMeasure.dirac K (baire K) x)
+      (@SignedMeasure.dirac K (baire K) y) :=
+    @SignedMeasure.isVLDisjoint_dirac_of_ne K (baire K) _ x y h
+  let φ : MofK K ≃ₗᵢ[ℝ] @SignedMeasure K (baire K) :=
+    MofK.baireEquiv.toLinearIsometryEquiv
+  have hφsup_fwd : ∀ (a b : MofK K), φ (a ⊔ b) = φ a ⊔ φ b := MofK.baireEquiv.map_sup'
+  have hφinf_fwd : ∀ (a b : MofK K), φ (a ⊓ b) = φ a ⊓ φ b := MofK.baireEquiv.map_inf'
+  have hφsup : ∀ (a b : @SignedMeasure K (baire K)),
+      φ.symm (a ⊔ b) = φ.symm a ⊔ φ.symm b := fun a b => by
+    apply φ.injective
+    rw [φ.apply_symm_apply, hφsup_fwd, φ.apply_symm_apply, φ.apply_symm_apply]
+  have hφabs : ∀ (a : @SignedMeasure K (baire K)), φ.symm (|a|) = |φ.symm a| := fun a => by
+    change φ.symm (a ⊔ -a) = _
+    rw [hφsup]
+    change φ.symm a ⊔ φ.symm (-a) = φ.symm a ⊔ -φ.symm a
+    rw [map_neg]
+  have hφinf : ∀ (a b : @SignedMeasure K (baire K)),
+      φ.symm (a ⊓ b) = φ.symm a ⊓ φ.symm b := fun a b => by
+    apply φ.injective
+    rw [φ.apply_symm_apply, hφinf_fwd, φ.apply_symm_apply, φ.apply_symm_apply]
+  change |MofK.dirac x| ⊓ |MofK.dirac y| = 0
+  change |φ.symm (@SignedMeasure.dirac K (baire K) x)| ⊓
+    |φ.symm (@SignedMeasure.dirac K (baire K) y)| = 0
+  rw [← hφabs, ← hφabs, ← hφinf,
+      show |@SignedMeasure.dirac K (baire K) x| ⊓
+        |@SignedMeasure.dirac K (baire K) y| = 0 from hB]
+  exact φ.symm.map_zero
 
-/-- The Dirac measures at two distinct points are mutually singular. -/
-private theorem mutuallySingular_dirac_dirac {x y : α} (h : x ≠ y) :
-    Measure.dirac x ⟂ₘ Measure.dirac y := by
-  refine ⟨{x}ᶜ, (measurableSet_singleton x).compl, ?_, ?_⟩
-  · rw [Measure.dirac_apply]
-    exact Set.indicator_of_notMem (by simp) _
-  · rw [compl_compl, Measure.dirac_apply]
-    exact Set.indicator_of_notMem (Set.mem_singleton_iff.not.mpr h.symm) _
-
-/-- The positive part of `dirac x - dirac y` is `dirac x` when `x ≠ y`. -/
-private theorem posPart_dirac_sub_dirac {x y : α} (h : x ≠ y) :
-    (dirac x - dirac y).posPart = dirac x := by
-  let j : JordanDecomposition α :=
-    { posPart := Measure.dirac x
-      negPart := Measure.dirac y
-      mutuallySingular := mutuallySingular_dirac_dirac h }
-  have hjd : (dirac x - dirac y).toJordanDecomposition = j :=
-    toJordanDecomposition_eq rfl
-  change (dirac x - dirac y).toJordanDecomposition.posPart.toSignedMeasure =
-       (Measure.dirac x).toSignedMeasure
-  rw [hjd]
-
-/-- Two Dirac deltas at distinct points are vector-lattice disjoint. -/
-theorem isVLDisjoint_dirac_of_ne {x y : α} (h : x ≠ y) :
-    IsVLDisjoint (dirac x) (dirac y) := by
-  refine isVLDisjoint_of_inf_eq_zero ?_
-  change dirac x - (dirac x - dirac y).posPart = 0
-  rw [posPart_dirac_sub_dirac h, sub_self]
-
-omit [MeasurableSingletonClass α] in
-/-- A non-negative signed measure dominated by `dirac x` vanishes outside `x`. -/
-private theorem apply_eq_zero_of_notMem_of_le_dirac {x : α} {y : SignedMeasure α}
-    (hy0 : 0 ≤ y) (hyd : y ≤ dirac x) {i : Set α} (hi : MeasurableSet i)
-    (hx : x ∉ i) : y i = 0 := by
-  have h1 : (0 : SignedMeasure α) i ≤ y i := hy0 _ hi
-  rw [VectorMeasure.zero_apply] at h1
-  have h2 : y i ≤ dirac x i := hyd _ hi
-  rw [dirac_apply_of_notMem hi hx] at h2
-  linarith
-
-/-- A non-negative signed measure dominated by `dirac x` is determined on sets
-containing `x` by its value on the singleton `{x}`. -/
-private theorem apply_eq_singleton_of_mem_of_le_dirac {x : α} {y : SignedMeasure α}
-    (hy0 : 0 ≤ y) (hyd : y ≤ dirac x) {i : Set α} (hi : MeasurableSet i)
-    (hx : x ∈ i) : y i = y {x} := by
-  have hx_set : MeasurableSet ({x} : Set α) := measurableSet_singleton x
-  have h_subset : ({x} : Set α) ⊆ i := Set.singleton_subset_iff.mpr hx
-  have h_split : y ({x} : Set α) + y (i \ {x}) = y i :=
-    VectorMeasure.of_add_of_diff hx_set hi h_subset
-  have h_diff_zero : y (i \ {x}) = 0 :=
-    apply_eq_zero_of_notMem_of_le_dirac hy0 hyd (hi.diff hx_set) (by simp)
-  rw [h_diff_zero, add_zero] at h_split
-  exact h_split.symm
-
-/-- The Dirac delta is itself an atom of `M(K)`. -/
-theorem isVLAtom_dirac (x : α) : IsVLAtom (dirac x) := by
-  refine ⟨lt_of_le_of_ne (zero_le_dirac x) (Ne.symm (dirac_ne_zero x)), ?_⟩
+set_option maxHeartbeats 400000 in
+-- transferring atom property through `baireEquiv` is unification-heavy
+theorem MofK.isVLAtom_dirac (x : K) : IsVLAtom (MofK.dirac x) := by
+  refine ⟨lt_of_le_of_ne (MofK.zero_le_dirac x) (Ne.symm (MofK.dirac_ne_zero x)), ?_⟩
+  let φ : MofK K ≃ₗᵢ[ℝ] @SignedMeasure K (baire K) :=
+    MofK.baireEquiv.toLinearIsometryEquiv
+  have hδ : IsVLAtom (@SignedMeasure.dirac K (baire K) x) :=
+    @SignedMeasure.isVLAtom_dirac K (baire K) _ x
+  have hφ_sup : ∀ a b : MofK K, φ (a ⊔ b) = φ a ⊔ φ b := MofK.baireEquiv.map_sup'
+  have hφ_le : ∀ {a b : MofK K}, φ a ≤ φ b ↔ a ≤ b := by
+    intros a b
+    refine ⟨fun h => ?_, fun h => ?_⟩
+    · have heq : φ a ⊔ φ b = φ b := sup_eq_right.mpr h
+      rw [← hφ_sup] at heq
+      exact sup_eq_right.mp (φ.injective heq)
+    · rw [show b = a ⊔ b from (sup_eq_right.mpr h).symm, hφ_sup]
+      exact le_sup_left
   intro y hy0 hyd
-  refine ⟨y {x}, ?_⟩
-  ext i hi
-  rw [VectorMeasure.smul_apply, smul_eq_mul]
-  by_cases hx : x ∈ i
-  · rw [dirac_apply_of_mem hi hx, mul_one]
-    exact apply_eq_singleton_of_mem_of_le_dirac hy0 hyd hi hx
-  · rw [dirac_apply_of_notMem hi hx, mul_zero]
-    exact apply_eq_zero_of_notMem_of_le_dirac hy0 hyd hi hx
+  have h_eq : φ (MofK.dirac x) = @SignedMeasure.dirac K (baire K) x := φ.apply_symm_apply _
+  have hφ0 : (φ (0 : MofK K) : @SignedMeasure K (baire K)) = 0 := φ.map_zero
+  have hφy_nn : (0 : @SignedMeasure K (baire K)) ≤ φ y := hφ0 ▸ hφ_le.mpr hy0
+  have hφy_le : φ y ≤ @SignedMeasure.dirac K (baire K) x := h_eq ▸ hφ_le.mpr hyd
+  obtain ⟨c, hc⟩ := hδ.2 (φ y) hφy_nn hφy_le
+  refine ⟨c, ?_⟩
+  have h1 : y = φ.symm (φ y) := (φ.symm_apply_apply y).symm
+  rw [h1, hc, map_smul]
+  rfl
 
-/-- A strictly positive scalar multiple of a Dirac delta is an atom of
-`M(K)`. -/
-theorem isVLAtom_smul_dirac {c : ℝ} (hc : 0 < c) (x : α) :
-    IsVLAtom (c • dirac x) :=
-  IsVLAtom.smul (isVLAtom_dirac x) hc
+theorem MofK.isVLAtom_smul_dirac {c : ℝ} (hc : 0 < c) (x : K) :
+    IsVLAtom (c • MofK.dirac x) :=
+  MofK.isVLAtom_dirac x |>.smul hc
 
-omit [MeasurableSingletonClass α] in
-/-- A non-negative signed measure is monotone with respect to set inclusion. -/
-private lemma le_of_subset_of_nonneg {s : SignedMeasure α} (hs : 0 ≤ s)
-    {A B : Set α} (hA : MeasurableSet A) (hB : MeasurableSet B) (h : A ⊆ B) :
-    s A ≤ s B := by
-  have h1 := VectorMeasure.of_add_of_diff hA hB h (v := s)
-  have h2 : (0 : SignedMeasure α) (B \ A) ≤ s (B \ A) := hs _ (hB.diff hA)
-  rw [VectorMeasure.zero_apply] at h2
-  linarith
-
-omit [MeasurableSingletonClass α] in
-/-- For a vector-lattice atom of `M(K)`, every measurable set takes value either
-`0` or the full mass `s univ`. The proof uses the atom property applied to the
-"restriction of `s` to `A`" as a signed measure. -/
-private lemma atom_value_eq_zero_or_univ (s : SignedMeasure α) (hs : IsVLAtom s)
-    {A : Set α} (hA : MeasurableSet A) :
-    s A = 0 ∨ s A = s Set.univ := by
-  have hs0 : 0 ≤ s := hs.1.le
-  have hs0A : (0 : SignedMeasure α) ≤[A] s :=
-    VectorMeasure.restrict_le_restrict_of_subset_le 0 s (fun j hj _ => hs0 j hj)
-  let t : SignedMeasure α := (s.toMeasureOfZeroLE A hA hs0A).toSignedMeasure
-  have ht_apply : ∀ {i : Set α}, MeasurableSet i → t i = s (A ∩ i) := by
-    intro i hi
-    change ((s.toMeasureOfZeroLE A hA hs0A).toSignedMeasure) i = _
-    rw [Measure.toSignedMeasure_apply_measurable hi,
-        toMeasureOfZeroLE_real_apply _ _ _ hi]
-  have ht0 : 0 ≤ t := Measure.zero_le_toSignedMeasure _
-  have hts : t ≤ s := fun i hi => by
-    rw [ht_apply hi]
-    exact le_of_subset_of_nonneg hs0 (hA.inter hi) hi Set.inter_subset_right
-  obtain ⟨c, hc⟩ := hs.2 t ht0 hts
-  have h1 : t Set.univ = s A := by rw [ht_apply MeasurableSet.univ, Set.inter_univ]
-  have h2 : t Set.univ = c * s Set.univ := by
-    rw [hc, VectorMeasure.smul_apply, smul_eq_mul]
-  have h3 : t A = s A := by rw [ht_apply hA, Set.inter_self]
-  have h4 : t A = c * s A := by
-    rw [hc, VectorMeasure.smul_apply, smul_eq_mul]
-  have h_univ : s A = c * s Set.univ := h1 ▸ h2
-  have h_A : s A = c * s A := h3 ▸ h4
-  rcases eq_or_ne (s A) 0 with hsA0 | hsA_ne
-  · exact Or.inl hsA0
-  · have hc1 : c = 1 := by
-      have hh : s A * (1 - c) = 0 := by linarith
-      rcases mul_eq_zero.mp hh with h | h
-      · exact absurd h hsA_ne
-      · linarith
-    rw [hc1, one_mul] at h_univ
-    exact Or.inr h_univ
-
-/-- For a non-negative signed measure on a countable space with positive total
-mass, some singleton has positive mass. This is the bridge from the
-"two-valued" property of an atom to a concrete point of concentration. -/
-private lemma exists_singleton_pos [Countable α] {s : SignedMeasure α}
-    (hs0 : 0 ≤ s) (hs_univ : 0 < s Set.univ) : ∃ x, 0 < s {x} := by
-  by_contra h
-  push_neg at h
-  have h_zero : ∀ x, s ({x} : Set α) = 0 := fun x => by
-    have h1 := h x
-    have h2 : (0 : SignedMeasure α) ({x} : Set α) ≤ s {x} :=
-      hs0 _ (measurableSet_singleton x)
-    rw [VectorMeasure.zero_apply] at h2
-    linarith
-  have h_disj : Pairwise (Function.onFun Disjoint (fun x : α => ({x} : Set α))) := by
-    intro x y hxy
-    exact Set.disjoint_singleton.mpr hxy
-  have h_meas : ∀ x : α, MeasurableSet ({x} : Set α) := fun x => measurableSet_singleton x
-  have h_sum : (s : VectorMeasure α ℝ) (⋃ x : α, ({x} : Set α)) =
-      ∑' x : α, s ({x} : Set α) :=
-    VectorMeasure.of_disjoint_iUnion h_meas h_disj
-  rw [Set.iUnion_of_singleton α] at h_sum
-  rw [h_sum] at hs_univ
-  simp only [h_zero, tsum_zero] at hs_univ
-  exact lt_irrefl _ hs_univ
-
-/-- **Atoms of `M(K)` are exactly the positive multiples of Dirac deltas.**
-A finite signed measure is a vector-lattice atom of `M(K)` iff it is a
-strictly positive scalar multiple of some Dirac delta `δ_x`. This identifies
-the atoms of the Banach lattice `M(K)` with the parametrised family
-`{c • δ_x : 0 < c, x ∈ K}`.
-
-The countability hypothesis on `α` is essential: without it, two-valued
-atomless measures (e.g., on the countable-or-cocountable `σ`-algebra of an
-uncountable set) provide vector-lattice atoms that are not Dirac deltas. -/
-theorem isVLAtom_iff_exists_smul_dirac [Countable α] (s : SignedMeasure α) :
-    IsVLAtom s ↔ ∃ (c : ℝ) (x : α), 0 < c ∧ s = c • dirac x := by
-  refine ⟨fun hs => ?_, ?_⟩
-  · have hs0 : 0 ≤ s := hs.1.le
-    have hs_univ : 0 < s Set.univ := by
-      have h_norm : 0 < ‖s‖ := norm_pos_iff.mpr hs.ne_zero
-      rwa [norm_of_nonneg hs0] at h_norm
-    obtain ⟨x, hx⟩ := exists_singleton_pos hs0 hs_univ
-    have hsx : s {x} = s Set.univ := by
-      rcases atom_value_eq_zero_or_univ s hs (measurableSet_singleton x) with h | h
-      · linarith
-      · exact h
-    refine ⟨s Set.univ, x, hs_univ, ?_⟩
-    ext i hi
-    rw [VectorMeasure.smul_apply, smul_eq_mul]
-    by_cases hxi : x ∈ i
-    · rw [dirac_apply_of_mem hi hxi, mul_one]
-      rcases atom_value_eq_zero_or_univ s hs hi with h_i_zero | h_i_univ
-      · exfalso
-        have h_le : s {x} ≤ s i := le_of_subset_of_nonneg hs0
-          (measurableSet_singleton x) hi (Set.singleton_subset_iff.mpr hxi)
-        linarith
-      · exact h_i_univ
-    · rw [dirac_apply_of_notMem hi hxi, mul_zero]
-      rcases atom_value_eq_zero_or_univ s hs hi with h_i_zero | h_i_univ
-      · exact h_i_zero
-      · exfalso
-        have hdisj : Disjoint ({x} : Set α) i := Set.disjoint_singleton_left.mpr hxi
-        have h_add : s ({x} ∪ i) = s {x} + s i :=
-          VectorMeasure.of_union hdisj (measurableSet_singleton x) hi
-        have h_le : s ({x} ∪ i) ≤ s Set.univ := le_of_subset_of_nonneg hs0
-          ((measurableSet_singleton x).union hi) MeasurableSet.univ (Set.subset_univ _)
-        rw [h_add, hsx, h_i_univ] at h_le
-        linarith
-  · rintro ⟨c, x, hc, rfl⟩
-    exact isVLAtom_smul_dirac hc x
-
-/-! ### Discrete–continuous decomposition
-
-A finite signed measure `s` is **discrete** (or *purely atomic*) if it is a
-countable signed combination of Dirac deltas — equivalently, an element of
-the band generated by atoms in the sense of `BanLat.Atom`. It is
-**continuous** (or *atomless*) if its total variation `|s|` has no atoms in
-the sense of `MeasureTheory.NoAtoms`, equivalently `|s|({x}) = 0` for every
-`x ∈ K`.
-
-> **Note (Mathlib coverage).** `MeasureTheory.NoAtoms` is the Mathlib
-> typeclass for atomless (= continuous) measures. There is, however, no
-> Mathlib notion of a *discrete* measure on a general measurable space, nor
-> the discrete–continuous decomposition stated below. The countable-space
-> version `MeasureTheory.Measure.sum_smul_dirac` covers only the case where
-> `α` itself is countable.
--/
-
-omit [MeasurableSingletonClass α] in
-/-- The value of a signed measure on any set is bounded in absolute value by the
-total-variation norm. -/
-private lemma abs_apply_le_norm (s : SignedMeasure α) (E : Set α) :
-    |s E| ≤ ‖s‖ := by
-  by_cases hE : MeasurableSet E
-  · have h_tv : (|s| : SignedMeasure α) E ≤ ‖s‖ := by
-      rw [abs_apply_eq_totalVariation s E hE, norm_def]
-      exact ENNReal.toReal_mono (totalVariation_univ_lt_top s).ne
-        (measure_mono (Set.subset_univ E))
-    have h_pos : s E ≤ (|s| : SignedMeasure α) E := le_abs_self s E hE
-    have h_neg : -s E ≤ (|s| : SignedMeasure α) E := by
-      have h := (neg_le_abs s) E hE
-      rwa [VectorMeasure.neg_apply] at h
-    exact abs_le.mpr ⟨by linarith, by linarith⟩
-  · rw [VectorMeasure.not_measurable s hE, abs_zero]
-    exact norm_nonneg s
-
-omit [MeasurableSingletonClass α] in
-/-- Evaluation of a signed measure at a fixed set, packaged as a continuous linear
-map `M(K) →L[ℝ] ℝ`. Used to commute infinite sums with pointwise evaluation. -/
-private noncomputable def applyCLM (E : Set α) : SignedMeasure α →L[ℝ] ℝ :=
-  LinearMap.mkContinuous
-    { toFun := fun s => s E
-      map_add' := fun s t => VectorMeasure.add_apply s t E
-      map_smul' := fun c s => by rw [VectorMeasure.smul_apply]; rfl }
-    1
-    (fun s => by rw [Real.norm_eq_abs, one_mul]; exact abs_apply_le_norm s E)
-
-/-- The total variation of a signed measure on a singleton equals the absolute
-value of the signed measure on that singleton, a consequence of mutual
-singularity of the Jordan parts. -/
-private lemma totalVariation_singleton_toReal (s : SignedMeasure α) (x : α) :
-    (s.totalVariation ({x} : Set α)).toReal = |s ({x} : Set α)| := by
-  obtain ⟨i, hi₁, hi₂, hi₃, hpos, hneg⟩ := s.toJordanDecomposition_spec
-  have hxm : MeasurableSet ({x} : Set α) := measurableSet_singleton x
-  rw [SignedMeasure.totalVariation, Measure.add_apply, hpos, hneg]
-  rw [ENNReal.toReal_add (measure_ne_top _ _) (measure_ne_top _ _)]
-  rw [← measureReal_def, ← measureReal_def,
-      toMeasureOfZeroLE_real_apply _ hi₂ hi₁ hxm,
-      toMeasureOfLEZero_real_apply _ hi₃ hi₁.compl hxm]
-  by_cases hx : x ∈ i
-  · have h1 : i ∩ ({x} : Set α) = ({x} : Set α) :=
-      Set.inter_eq_right.mpr (Set.singleton_subset_iff.mpr hx)
-    have h2 : iᶜ ∩ ({x} : Set α) = ∅ :=
-      Set.inter_singleton_of_notMem (fun h => h hx)
-    rw [h1, h2, VectorMeasure.empty, neg_zero, add_zero]
-    have h_nn : 0 ≤ s ({x} : Set α) := by
-      have h := (VectorMeasure.restrict_le_restrict_iff _ _ hi₁).mp hi₂ hxm
-        (Set.singleton_subset_iff.mpr hx)
-      rwa [VectorMeasure.zero_apply] at h
-    exact (abs_of_nonneg h_nn).symm
-  · have h1 : i ∩ ({x} : Set α) = ∅ :=
-      Set.inter_singleton_of_notMem hx
-    have h2 : iᶜ ∩ ({x} : Set α) = ({x} : Set α) :=
-      Set.inter_eq_right.mpr (Set.singleton_subset_iff.mpr hx)
-    rw [h1, h2, VectorMeasure.empty, zero_add]
-    have h_np : s ({x} : Set α) ≤ 0 := by
-      have h := (VectorMeasure.restrict_le_restrict_iff _ _ hi₁.compl).mp hi₃ hxm
-        (Set.singleton_subset_iff.mpr hx)
-      rwa [VectorMeasure.zero_apply] at h
-    exact (abs_of_nonpos h_np).symm
-
-/-- The absolute values of a signed measure on singletons form a summable family
-when the index type is countable. -/
-private lemma summable_abs_singleton [Countable α] (s : SignedMeasure α) :
-    Summable (fun x : α => |s ({x} : Set α)|) := by
-  have h_disj : Pairwise (Function.onFun Disjoint (fun x : α => ({x} : Set α))) :=
-    fun _ _ hxy => Set.disjoint_singleton.mpr hxy
-  have h_meas : ∀ x : α, MeasurableSet ({x} : Set α) := fun x => measurableSet_singleton x
-  have h_tsum_eq : s.totalVariation (⋃ x : α, ({x} : Set α)) =
-      ∑' x : α, s.totalVariation {x} := measure_iUnion h_disj h_meas
-  rw [Set.iUnion_of_singleton α] at h_tsum_eq
-  have h_finite : (∑' x : α, s.totalVariation ({x} : Set α)) ≠ ⊤ :=
-    h_tsum_eq ▸ (totalVariation_univ_lt_top s).ne
-  have h_sum_tv : Summable (fun x : α => (s.totalVariation ({x} : Set α)).toReal) :=
-    ENNReal.summable_toReal h_finite
-  exact h_sum_tv.of_nonneg_of_le (fun _ => abs_nonneg _)
-    (fun x => (totalVariation_singleton_toReal s x).symm.le)
-
-/-- For a countable measurable space, every signed measure is the sum over
-singletons of its pointwise values weighted by Dirac deltas. -/
-private lemma tsum_singleton_smul_dirac_eq [Countable α] (s : SignedMeasure α) :
-    (∑' x : α, s ({x} : Set α) • dirac x) = s := by
-  have hsum_smul : Summable (fun x : α => s ({x} : Set α) • dirac x) := by
-    refine Summable.of_norm ?_
-    simpa only [norm_smul, Real.norm_eq_abs, norm_dirac, mul_one]
-      using summable_abs_singleton s
-  refine VectorMeasure.ext (fun E hE => ?_)
-  have h_apply : ∀ t : SignedMeasure α, applyCLM E t = t E := fun _ => rfl
-  rw [← h_apply, ContinuousLinearMap.map_tsum (applyCLM E) hsum_smul]
-  simp_rw [h_apply]
-  have h_term : ∀ x : α, (s ({x} : Set α) • dirac x) E = s (({x} : Set α) ∩ E) := by
-    intro x
-    rw [VectorMeasure.smul_apply, smul_eq_mul]
-    by_cases hx : x ∈ E
-    · rw [dirac_apply_of_mem hE hx, mul_one]
-      congr 1
-      exact (Set.inter_eq_left.mpr (Set.singleton_subset_iff.mpr hx)).symm
-    · rw [dirac_apply_of_notMem hE hx, mul_zero,
-          Set.singleton_inter_of_notMem hx, VectorMeasure.empty]
-  simp_rw [h_term]
-  rw [← VectorMeasure.of_disjoint_iUnion (v := s)
-    (fun x => (measurableSet_singleton x).inter hE)
-    (fun _ _ hxy => (Set.disjoint_singleton.mpr hxy).inter_left _ |>.inter_right _)]
-  congr 1
-  ext y
-  simp
-
-/-- **Discrete–continuous decomposition of `M(K)`** (countable case). Every finite
-signed measure on a countable measurable space decomposes as the sum of a
-*discrete* part — an absolutely-summable signed combination of Dirac deltas,
-indexed by a countable set of atoms — and a *continuous* (atomless) part, where
-the latter has total variation in `MeasureTheory.NoAtoms`. The general case
-requires infrastructure for decomposing measures into atomic and continuous
-parts that is not yet available in Mathlib. -/
-theorem exists_discrete_continuous_decomposition [Countable α] (s : SignedMeasure α) :
-    ∃ (D : Set α) (c : α → ℝ) (sc : SignedMeasure α),
-      D.Countable ∧
-      Summable (fun x : D => |c x.val|) ∧
-      MeasureTheory.NoAtoms sc.totalVariation ∧
-      s = (∑' x : D, c x.val • dirac x.val) + sc := by
-  refine ⟨Set.univ, fun x => s ({x} : Set α), 0, Set.countable_univ, ?_, ?_, ?_⟩
-  · exact ((Equiv.Set.univ α).summable_iff).mpr (summable_abs_singleton s)
-  · rw [SignedMeasure.totalVariation_zero]
-    exact ⟨fun _ => rfl⟩
-  · rw [add_zero]
-    symm
-    rw [show (∑' x : ↑(Set.univ : Set α), s ({x.val} : Set α) • dirac x.val) =
-          ∑' x : α, s ({x} : Set α) • dirac x from
-          (Equiv.Set.univ α).tsum_eq (fun x : α => s ({x} : Set α) • dirac x)]
-    exact tsum_singleton_smul_dirac_eq s
+set_option maxHeartbeats 400000 in
+-- transferring the atom classification through `baireEquiv` is unification-heavy
+theorem MofK.isVLAtom_iff_exists_smul_dirac [Countable K] (s : MofK K) :
+    IsVLAtom s ↔ ∃ (c : ℝ) (x : K), 0 < c ∧ s = c • MofK.dirac x := by
+  let φ : MofK K ≃ₗᵢ[ℝ] @SignedMeasure K (baire K) :=
+    MofK.baireEquiv.toLinearIsometryEquiv
+  have hφ_sup : ∀ a b : MofK K, φ (a ⊔ b) = φ a ⊔ φ b := MofK.baireEquiv.map_sup'
+  have hφ_le : ∀ {a b : MofK K}, φ a ≤ φ b ↔ a ≤ b := by
+    intros a b
+    refine ⟨fun h => ?_, fun h => ?_⟩
+    · have heq : φ a ⊔ φ b = φ b := sup_eq_right.mpr h
+      rw [← hφ_sup] at heq
+      exact sup_eq_right.mp (φ.injective heq)
+    · rw [show b = a ⊔ b from (sup_eq_right.mpr h).symm, hφ_sup]
+      exact le_sup_left
+  have hφ0 : (φ (0 : MofK K) : @SignedMeasure K (baire K)) = 0 := φ.map_zero
+  -- Transfer IsVLAtom via φ
+  have hatom_iff : IsVLAtom s ↔ IsVLAtom (φ s) := by
+    refine ⟨fun h => ?_, fun h => ?_⟩
+    · refine ⟨?_, ?_⟩
+      · have h1 : 0 ≤ φ s := hφ0 ▸ hφ_le.mpr h.1.le
+        have h2 : φ s ≠ 0 :=
+          fun heq => h.1.ne' (φ.injective (by rw [heq, φ.map_zero]))
+        exact lt_of_le_of_ne h1 (Ne.symm h2)
+      · intro y hy0 hys
+        have hφz : φ (φ.symm y) = y := φ.apply_symm_apply y
+        have hz_nn : (0 : MofK K) ≤ φ.symm y := by
+          apply hφ_le.mp; rw [φ.map_zero, hφz]; exact hy0
+        have hz_le_s : φ.symm y ≤ s := by
+          apply hφ_le.mp; rw [hφz]; exact hys
+        obtain ⟨c, hc⟩ := h.2 (φ.symm y) hz_nn hz_le_s
+        exact ⟨c, by rw [← hφz, hc, map_smul]⟩
+    · refine ⟨?_, ?_⟩
+      · have h1 : 0 ≤ s := hφ_le.mp (by rw [hφ0]; exact h.1.le)
+        have h2 : s ≠ 0 := fun heq => h.1.ne' (by rw [heq, φ.map_zero])
+        exact lt_of_le_of_ne h1 (Ne.symm h2)
+      · intro y hy0 hys
+        have hnn : (0 : @SignedMeasure K (baire K)) ≤ φ y := hφ0 ▸ hφ_le.mpr hy0
+        have hle : φ y ≤ φ s := hφ_le.mpr hys
+        obtain ⟨c, hc⟩ := h.2 (φ y) hnn hle
+        refine ⟨c, ?_⟩
+        apply φ.injective
+        rw [hc, map_smul]
+  have hφδ : ∀ x : K, φ (MofK.dirac x) = @SignedMeasure.dirac K (baire K) x :=
+    fun x => φ.apply_symm_apply _
+  rw [hatom_iff,
+      @SignedMeasure.isVLAtom_iff_exists_smul_dirac K (baire K) _ _ (φ s)]
+  refine exists_congr fun c => exists_congr fun x => and_congr_right fun _ => ?_
+  constructor
+  · intro hφs
+    apply φ.injective
+    rw [hφs, map_smul, hφδ]
+  · intro hs
+    rw [hs, map_smul, hφδ]
 
 end Atoms
 
-end SignedMeasure
-end MeasureTheory
+/-! ### Principal bands and `L¹` in `M(K)` -/
+
+section PrincipalBands
+
+open MeasureTheory MeasureTheory.SignedMeasure BaireMeasure
+
+universe u
+
+variable {K : Type u} [TopologicalSpace K] [T2Space K] [CompactSpace K]
+  [MeasurableSpace K] [BorelSpace K] [Nonempty K]
+
+/-- Transfer of principal bands by a Banach lattice equivalence, for non-negative
+elements. -/
+private lemma principalBand_image_mem_of_bLE
+    {A B : Type*} [NormedAddCommGroup A] [NormedAddCommGroup B]
+    [Lattice A] [Lattice B]
+    [IsOrderedAddMonoid A] [IsOrderedAddMonoid B]
+    [BanachLattice A] [BanachLattice B]
+    [IsOrderContinuousNorm A]
+    (φ : BanachLatEquiv A B)
+    {a z : A} (ha : 0 ≤ a) (hz : 0 ≤ z)
+    (hmem : z ∈ Band.principalBand a) :
+    φ z ∈ Band.principalBand (φ a) := by
+  set T : A →L[ℝ] B := φ.toContinuousLinearEquiv.toContinuousLinearMap
+  have hsup : ∀ x y : A, T (x ⊔ y) = T x ⊔ T y := φ.map_sup'
+  have hinf : ∀ x y : A, T (x ⊓ y) = T x ⊓ T y := φ.map_inf'
+  have hTa_nn : 0 ≤ T a := by
+    have heq : T a = T a ⊔ 0 := by
+      rw [← map_zero T, ← hsup, sup_of_le_left ha]
+    exact le_sup_right.trans heq.symm.le
+  have hTz_nn : 0 ≤ T z := by
+    have heq : T z = T z ⊔ 0 := by
+      rw [← map_zero T, ← hsup, sup_of_le_left hz]
+    exact le_sup_right.trans heq.symm.le
+  have hlub : IsLUB (Set.range (fun n : ℕ => z ⊓ n • a)) z :=
+    (Band.mem_principalBand_iff_isLUB ha hz).mp hmem
+  set u : ℕ → A := fun n => z ⊓ n • a
+  have hu_mono : Monotone u := fun m n hmn =>
+    inf_le_inf_left z (nsmul_le_nsmul_left ha hmn)
+  have hu_bdd : BddAbove (Set.range u) :=
+    ⟨z, by rintro _ ⟨n, rfl⟩; exact inf_le_left⟩
+  obtain ⟨z', hz'_lub, htend⟩ :=
+    BanachLattice.tendsto_of_monotone_bddAbove hu_mono hu_bdd
+  have hz'_eq : z' = z := IsLUB.unique hz'_lub hlub
+  rw [hz'_eq] at htend
+  have hTtend : Filter.Tendsto (fun n => T (u n)) Filter.atTop (nhds (T z)) :=
+    T.continuous.tendsto z |>.comp htend
+  have hT_u : ∀ n, T (u n) = T z ⊓ n • T a := fun n => by
+    change T (z ⊓ n • a) = T z ⊓ n • T a
+    rw [hinf z (n • a), map_nsmul T n a]
+  have hTu_mem : ∀ n, T (u n) ∈ (Band.principalBand (T a) : Set B) := fun n => by
+    rw [hT_u n]
+    apply Band.principal_le_principalBand
+    refine ⟨n, n.cast_nonneg, ?_⟩
+    have h_nn : 0 ≤ T z ⊓ n • T a := le_inf hTz_nn (nsmul_nonneg hTa_nn n)
+    rw [abs_of_nonneg h_nn, abs_of_nonneg hTa_nn, Nat.cast_smul_eq_nsmul]
+    exact inf_le_right
+  exact (Band.isClosed_coe _).mem_of_tendsto hTtend
+    (Filter.Eventually.of_forall hTu_mem)
+
+/-- Transfer of principal bands by a Banach lattice equivalence. -/
+private lemma principalBand_image_mem_of_bLE_general
+    {A B : Type*} [NormedAddCommGroup A] [NormedAddCommGroup B]
+    [Lattice A] [Lattice B]
+    [IsOrderedAddMonoid A] [IsOrderedAddMonoid B]
+    [BanachLattice A] [BanachLattice B]
+    [IsOrderContinuousNorm A]
+    (φ : BanachLatEquiv A B)
+    {a z : A} (ha : 0 ≤ a) (hmem : z ∈ Band.principalBand a) :
+    φ z ∈ Band.principalBand (φ a) := by
+  have habs : |z| ∈ Band.principalBand a := (Band.principalBand a).abs_mem hmem
+  have hp_nn : 0 ≤ z⁺ := posPart_nonneg z
+  have hn_nn : 0 ≤ z⁻ := negPart_nonneg z
+  have hp_le : z⁺ ≤ |z| := by
+    rw [← posPart_add_negPart z]; exact le_add_of_nonneg_right hn_nn
+  have hn_le : z⁻ ≤ |z| := by
+    rw [← posPart_add_negPart z]; exact le_add_of_nonneg_left hp_nn
+  have hp_mem : z⁺ ∈ Band.principalBand a :=
+    (Band.principalBand a).solid habs hp_nn hp_le
+  have hn_mem : z⁻ ∈ Band.principalBand a :=
+    (Band.principalBand a).solid habs hn_nn hn_le
+  have hφp : φ z⁺ ∈ Band.principalBand (φ a) :=
+    principalBand_image_mem_of_bLE φ ha hp_nn hp_mem
+  have hφn : φ z⁻ ∈ Band.principalBand (φ a) :=
+    principalBand_image_mem_of_bLE φ ha hn_nn hn_mem
+  have hdecomp : φ z = φ z⁺ - φ z⁻ := by
+    have h : (z⁺ - z⁻ : A) = z := posPart_sub_negPart z
+    conv_lhs => rw [← h]
+    change φ.toLinearIsometryEquiv (z⁺ - z⁻) = _
+    exact map_sub _ _ _
+  rw [hdecomp]
+  exact (Band.principalBand (φ a)).toSubmodule.sub_mem hφp hφn
+
+/-- The symmetric map of `MofK.baireEquiv` viewed as a Banach-lattice
+equivalence. -/
+private noncomputable def MofK.baireEquiv_symm :
+    BanachLatEquiv (@SignedMeasure K (baire K)) (MofK K) := by
+  set φ : BanachLatEquiv (MofK K) (@SignedMeasure K (baire K)) := MofK.baireEquiv
+  have hsymm_sup : ∀ (b c : @SignedMeasure K (baire K)),
+      φ.toLinearIsometryEquiv.symm (b ⊔ c) =
+        φ.toLinearIsometryEquiv.symm b ⊔ φ.toLinearIsometryEquiv.symm c := by
+    intro b c
+    apply φ.toLinearIsometryEquiv.injective
+    have h1 : φ (φ.toLinearIsometryEquiv.symm b ⊔ φ.toLinearIsometryEquiv.symm c) =
+        φ (φ.toLinearIsometryEquiv.symm b) ⊔ φ (φ.toLinearIsometryEquiv.symm c) :=
+      φ.map_sup' _ _
+    rw [φ.toLinearIsometryEquiv.apply_symm_apply]
+    change b ⊔ c = φ (φ.toLinearIsometryEquiv.symm b ⊔ φ.toLinearIsometryEquiv.symm c)
+    rw [h1]
+    change b ⊔ c = φ.toLinearIsometryEquiv (φ.toLinearIsometryEquiv.symm b) ⊔
+      φ.toLinearIsometryEquiv (φ.toLinearIsometryEquiv.symm c)
+    rw [φ.toLinearIsometryEquiv.apply_symm_apply,
+        φ.toLinearIsometryEquiv.apply_symm_apply]
+  have hsymm_inf : ∀ (b c : @SignedMeasure K (baire K)),
+      φ.toLinearIsometryEquiv.symm (b ⊓ c) =
+        φ.toLinearIsometryEquiv.symm b ⊓ φ.toLinearIsometryEquiv.symm c := by
+    intro b c
+    apply φ.toLinearIsometryEquiv.injective
+    have h1 : φ (φ.toLinearIsometryEquiv.symm b ⊓ φ.toLinearIsometryEquiv.symm c) =
+        φ (φ.toLinearIsometryEquiv.symm b) ⊓ φ (φ.toLinearIsometryEquiv.symm c) :=
+      φ.map_inf' _ _
+    rw [φ.toLinearIsometryEquiv.apply_symm_apply]
+    change b ⊓ c = φ (φ.toLinearIsometryEquiv.symm b ⊓ φ.toLinearIsometryEquiv.symm c)
+    rw [h1]
+    change b ⊓ c = φ.toLinearIsometryEquiv (φ.toLinearIsometryEquiv.symm b) ⊓
+      φ.toLinearIsometryEquiv (φ.toLinearIsometryEquiv.symm c)
+    rw [φ.toLinearIsometryEquiv.apply_symm_apply,
+        φ.toLinearIsometryEquiv.apply_symm_apply]
+  exact
+    { toLinearIsometryEquiv := φ.toLinearIsometryEquiv.symm
+      map_sup' := hsymm_sup
+      map_inf' := hsymm_inf }
+
+/-- `baireEquiv` restricts to a Banach-lattice equivalence between principal
+bands. -/
+private noncomputable def MofK.principalBand_baireEquiv {μ : MofK K} (hμ : 0 ≤ μ) :
+    BanachLatEquiv ↥(Band.principalBand μ).toSubmodule
+      ↥(Band.principalBand (MofK.baireEquiv μ)).toSubmodule := by
+  set φ : BanachLatEquiv (MofK K) (@SignedMeasure K (baire K)) := MofK.baireEquiv
+  let φs : BanachLatEquiv (@SignedMeasure K (baire K)) (MofK K) := MofK.baireEquiv_symm
+  have hμ' : (0 : @SignedMeasure K (baire K)) ≤ φ μ := by
+    have h0 : φ (0 : MofK K) = 0 := φ.toLinearIsometryEquiv.map_zero
+    have hs : φ (0 ⊔ μ) = φ 0 ⊔ φ μ := φ.map_sup' 0 μ
+    rw [sup_eq_right.mpr hμ, h0] at hs
+    exact le_sup_left.trans hs.symm.le
+  have hφsymm_μ : φs (φ μ) = μ :=
+    φ.toLinearIsometryEquiv.symm_apply_apply μ
+  have hmem_fwd : ∀ {v : MofK K}, v ∈ Band.principalBand μ →
+      φ v ∈ Band.principalBand (φ μ) :=
+    fun hv => principalBand_image_mem_of_bLE_general φ hμ hv
+  have hmem_bwd : ∀ {w : @SignedMeasure K (baire K)},
+      w ∈ Band.principalBand (φ μ) →
+      φs w ∈ Band.principalBand μ := by
+    intro w hw
+    have h := principalBand_image_mem_of_bLE_general φs hμ' hw
+    rwa [hφsymm_μ] at h
+  refine
+    { toLinearIsometryEquiv :=
+        { toFun := fun v => ⟨φ v.val, hmem_fwd v.property⟩
+          invFun := fun w => ⟨φs w.val, hmem_bwd w.property⟩
+          map_add' := fun v w => Subtype.ext (by
+            change φ.toLinearIsometryEquiv (v.val + w.val) =
+              φ.toLinearIsometryEquiv v.val + φ.toLinearIsometryEquiv w.val
+            exact map_add _ _ _)
+          map_smul' := fun c v => Subtype.ext (by
+            change φ.toLinearIsometryEquiv (c • v.val) =
+              c • φ.toLinearIsometryEquiv v.val
+            exact map_smul _ _ _)
+          left_inv := fun v => Subtype.ext
+            (φ.toLinearIsometryEquiv.symm_apply_apply _)
+          right_inv := fun w => Subtype.ext
+            (φ.toLinearIsometryEquiv.apply_symm_apply _)
+          norm_map' := fun v => φ.toLinearIsometryEquiv.norm_map _ }
+      map_sup' := fun v w => Subtype.ext (φ.map_sup' _ _)
+      map_inf' := fun v w => Subtype.ext (φ.map_inf' _ _) }
+
+theorem MofK.exists_principalBand_banachLatEquivL1 {μ : MofK K} (hμ : 0 ≤ μ) :
+    ∃ (Ω : Type u) (_ : MeasurableSpace Ω) (ν : Measure Ω) (_ : IsFiniteMeasure ν),
+      Nonempty (BanachLatEquiv ↥(Band.principalBand μ).toSubmodule (Lp ℝ 1 ν)) := by
+  set φ : BanachLatEquiv (MofK K) (@SignedMeasure K (baire K)) := MofK.baireEquiv
+  have hμ' : (0 : @SignedMeasure K (baire K)) ≤ φ μ := by
+    have h0 : φ (0 : MofK K) = 0 := φ.toLinearIsometryEquiv.map_zero
+    have hs : φ (0 ⊔ μ) = φ 0 ⊔ φ μ := φ.map_sup' 0 μ
+    rw [sup_eq_right.mpr hμ, h0] at hs
+    exact le_sup_left.trans hs.symm.le
+  let β : BanachLatEquiv ↥(Band.principalBand μ).toSubmodule
+      ↥(Band.principalBand (φ μ)).toSubmodule := MofK.principalBand_baireEquiv hμ
+  -- Extract posPart and finiteness from the Jordan decomposition of φ μ on baire K
+  let jd := @MeasureTheory.SignedMeasure.toJordanDecomposition K (baire K) (φ μ)
+  haveI hpos_fin : @MeasureTheory.IsFiniteMeasure K (baire K)
+      (@MeasureTheory.JordanDecomposition.posPart K (baire K) jd) :=
+    @MeasureTheory.JordanDecomposition.posPart_finite K (baire K) jd
+  let γ := @MeasureTheory.SignedMeasure.principalBandBanachLatEquivL1 K (baire K) (φ μ) hμ'
+  have h_sup : ∀ v w : ↥(Band.principalBand μ).toSubmodule,
+      γ (β (v ⊔ w)) = γ (β v) ⊔ γ (β w) := fun v w => by
+    have h1 : β (v ⊔ w) = β v ⊔ β w := β.map_sup' v w
+    have h2 : γ (β v ⊔ β w) = γ (β v) ⊔ γ (β w) := γ.map_sup' _ _
+    rw [h1, h2]
+  have h_inf : ∀ v w : ↥(Band.principalBand μ).toSubmodule,
+      γ (β (v ⊓ w)) = γ (β v) ⊓ γ (β w) := fun v w => by
+    have h1 : β (v ⊓ w) = β v ⊓ β w := β.map_inf' v w
+    have h2 : γ (β v ⊓ β w) = γ (β v) ⊓ γ (β w) := γ.map_inf' _ _
+    rw [h1, h2]
+  let ψ := ({ toLinearIsometryEquiv := β.toLinearIsometryEquiv.trans γ.toLinearIsometryEquiv
+              map_sup' := h_sup
+              map_inf' := h_inf } : BanachLatEquiv _ _)
+  exact ⟨_, _, _, hpos_fin, ⟨ψ⟩⟩
+
+end PrincipalBands

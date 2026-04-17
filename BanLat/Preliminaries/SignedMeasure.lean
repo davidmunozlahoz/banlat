@@ -210,7 +210,7 @@ Radon–Nikodym theorem:
 /-- **Step 3 (TV ↔ L¹ isometry).** For a measurable integrable real-valued
 function, the total variation of the associated signed measure on the universe
 equals the L¹ norm of the function. -/
-private lemma totalVariation_withDensityᵥ_apply_univ {μ : Measure α}
+lemma totalVariation_withDensityᵥ_apply_univ {μ : Measure α}
     {f : α → ℝ} (hfm : Measurable f) (hfi : Integrable f μ) :
     (SignedMeasure.totalVariation (μ.withDensityᵥ f) Set.univ).toReal =
       ∫ x, |f x| ∂μ := by

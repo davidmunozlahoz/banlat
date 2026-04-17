@@ -11,7 +11,7 @@ added one at a time and verified before proceeding.
 - Formalise only what is asked. Do not add speculative definitions, instances,
   or lemmas beyond the stated goal.
 - The `Library/` directory contains reference monographs (currently
-  `troitsky2022.pdf` and `aliprantis_burkinshaw2006.pdf`). Consult them when
+  `troitsky2025.pdf` and `aliprantis_burkinshaw2006.pdf`). Consult them when
   looking for results to formalise or to understand the mathematical context.
 - When needed, search the codebase and Mathlib (use `lean_local_search`,
   `lean_loogle`, or `lean_leansearch`) for relevant results and definitions. If the result already exists in Mathlib,
@@ -57,3 +57,9 @@ There are two operating modes:
 
 See **[STYLE.md](STYLE.md)** for the full naming conventions, documentation
 standards, and code-style rules.
+
+**Never reference monographs or external sources in Lean files.** No
+"Troitsky 8.5.5", "(Aliprantis–Burkinshaw 1.3.7)", "Corollary X.Y.Z" headings,
+or similar citations in doc-comments, theorem names, section dividers, or
+inline comments. Statements and proofs should stand on their own.
+References to Mathlib declarations are fine.

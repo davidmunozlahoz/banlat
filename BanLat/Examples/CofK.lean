@@ -1,9 +1,9 @@
 import BanLat.AMSpace
 import BanLat.Dual
-import BanLat.Examples.MofK
+import BanLat.Preliminaries.Regularity
+import BanLat.Examples.SignedMeasure
 import Mathlib.Topology.ContinuousMap.Compact
 import Mathlib.Topology.ContinuousMap.Lattice
-import Mathlib.Topology.Metrizable.Urysohn
 import Mathlib.MeasureTheory.Integral.Bochner.Basic
 import Mathlib.MeasureTheory.Integral.RieszMarkovKakutani.Real
 import Mathlib.MeasureTheory.Constructions.BorelSpace.Basic
@@ -159,28 +159,19 @@ gauge norm with respect to the constant function `1`. -/
 noncomputable instance instAMSpaceWithUnitCofK :
     AMSpaceWithUnit C(K, ℝ) where
   unit := ContinuousMap.const K 1
-  unit_pos := by
-    apply lt_of_le_of_ne
-    · intro x; simp
-    · intro h
-      have := congr_fun
-        (congr_arg ContinuousMap.toFun h)
-        (Classical.arbitrary K)
-      simp at this
+  unit_pos := IsStrongUnit.pos
   norm_eq_gaugeNorm := norm_eq_gaugeNorm_const
 
 /-! ### Riesz representation: the dual is a space of measures
 
-For a compact metrizable space `K` equipped with its Borel σ-algebra, the
+For a compact Hausdorff space `K` equipped with its Borel σ-algebra, the
 **Riesz–Markov–Kakutani representation theorem** identifies the norm dual of
-`C(K, ℝ)` with the space `M(K) = SignedMeasure K` of finite signed Borel
-measures. The Banach lattice structure on `M(K)` is established in
-`BanLat.Examples.MofK`; here we state the identification itself. The
-metrizability hypothesis ensures that every finite Borel measure is regular,
-which is needed for the bijection: in greater generality the dual is the
-space of *regular* signed Borel measures.
+`C(K, ℝ)` with the Banach lattice `M(K)` of *regular* signed Borel measures
+on `K`. The Banach lattice structure on `M(K)` — as the closed sublattice of
+`SignedMeasure K` cut out by regularity — is established in
+`BanLat.Examples.MofK`; here we state the identification itself.
 
-The map sends a measure `μ` to the continuous linear functional
+The map sends a measure `μ ∈ M(K)` to the continuous linear functional
 `f ↦ ∫ x, f x ∂μ`, defined via the Jordan decomposition of `μ`. The map is
 real-linear, isometric (`‖μ‖ = |μ|(K)`), and preserves the lattice operations
 `⊔` and `⊓`, so it is a Banach lattice isomorphism.
@@ -191,7 +182,7 @@ open scoped CompactlySupported
 
 section Riesz
 
-variable [MeasurableSpace K] [BorelSpace K] [T2Space K] [MetrizableSpace K]
+variable [MeasurableSpace K] [BorelSpace K] [T2Space K]
 
 /-- Integration of a continuous function on a compact Hausdorff space against
 a finite signed Borel measure, defined via the Jordan decomposition of the
@@ -200,7 +191,7 @@ noncomputable def signedMeasureIntegral (μ : SignedMeasure K) (f : C(K, ℝ)) :
   ∫ x, f x ∂μ.toJordanDecomposition.posPart -
     ∫ x, f x ∂μ.toJordanDecomposition.negPart
 
-omit [Nonempty K] [T2Space K] [MetrizableSpace K] in
+omit [Nonempty K] [T2Space K] in
 /-- A continuous function on a compact space is integrable against any finite
 measure. -/
 private theorem continuousMap_integrable (f : C(K, ℝ)) (ν : Measure K)
@@ -230,11 +221,11 @@ private noncomputable def signedMeasureLinearMap (μ : SignedMeasure K) :
       integral_const_mul]
     ring
 
-omit [Nonempty K] [T2Space K] [MetrizableSpace K] in
+omit [Nonempty K] [T2Space K] in
 private theorem signedMeasureLinearMap_apply (μ : SignedMeasure K) (f : C(K, ℝ)) :
     signedMeasureLinearMap μ f = signedMeasureIntegral μ f := rfl
 
-omit [Nonempty K] [T2Space K] [MetrizableSpace K] in
+omit [Nonempty K] [T2Space K] in
 /-- The bound `|⟨μ, f⟩| ≤ ‖μ‖ · ‖f‖∞`, the standard estimate from
 `|∫ f dν| ≤ ν(K) · ‖f‖∞` applied to each Jordan part. -/
 private theorem signedMeasureLinearMap_norm_bound (μ : SignedMeasure K) (f : C(K, ℝ)) :
@@ -272,7 +263,7 @@ noncomputable def signedMeasureFunctional (μ : SignedMeasure K) :
     NormDualSpace C(K, ℝ) :=
   (signedMeasureLinearMap μ).mkContinuous ‖μ‖ (signedMeasureLinearMap_norm_bound μ)
 
-omit [Nonempty K] [T2Space K] [MetrizableSpace K] in
+omit [Nonempty K] [T2Space K] in
 /-- The functional associated to a signed measure agrees with
 `signedMeasureIntegral`. -/
 @[simp]
@@ -280,7 +271,7 @@ theorem signedMeasureFunctional_apply (μ : SignedMeasure K) (f : C(K, ℝ)) :
     signedMeasureFunctional μ f = signedMeasureIntegral μ f := rfl
 
 omit [TopologicalSpace K] [CompactSpace K] [Nonempty K] [BorelSpace K] [T2Space K]
-  [MetrizableSpace K] in
+  in
 /-- Each signed measure is the difference of its two Jordan parts viewed as
 signed measures. -/
 private theorem eq_jordan_diff (μ : SignedMeasure K) :
@@ -288,7 +279,7 @@ private theorem eq_jordan_diff (μ : SignedMeasure K) :
       - μ.toJordanDecomposition.negPart.toSignedMeasure :=
   (SignedMeasure.toSignedMeasure_toJordanDecomposition μ).symm
 
-omit [Nonempty K] [T2Space K] [MetrizableSpace K] in
+omit [Nonempty K] [T2Space K] in
 /-- If a signed measure `μ` decomposes as `α.toSignedMeasure - β.toSignedMeasure` for
 finite Borel measures `α, β` (not necessarily the Jordan decomposition), then
 `signedMeasureIntegral μ f = ∫ f dα - ∫ f dβ`. The Jordan parts and `(α, β)` may
@@ -348,30 +339,30 @@ private noncomputable def toCcPositive (φ : NormDualSpace C(K, ℝ)) (hφ : 0 �
       change NormDualSpace.toOrderDualSpace 0 ≤ NormDualSpace.toOrderDualSpace φ at hφ
       exact hφ f.toContinuousMap (by intro x; exact hf x))
 
-omit [Nonempty K] [MeasurableSpace K] [BorelSpace K] [T2Space K] [MetrizableSpace K] in
+omit [Nonempty K] [MeasurableSpace K] [BorelSpace K] [T2Space K] in
 private theorem toCcPositive_apply (φ : NormDualSpace C(K, ℝ)) (hφ : 0 ≤ φ)
     (f : K →C_c ℝ) : toCcPositive φ hφ f = φ f.toContinuousMap := rfl
 
 /-- The finite regular Borel measure on `K` representing a non-negative continuous
 linear functional on `C(K, ℝ)`. -/
-private noncomputable def rieszMeasureOfNonneg (φ : NormDualSpace C(K, ℝ)) (hφ : 0 ≤ φ) :
+noncomputable def rieszMeasureOfNonneg (φ : NormDualSpace C(K, ℝ)) (hφ : 0 ≤ φ) :
     Measure K :=
   RealRMK.rieszMeasure (toCcPositive φ hφ)
 
 omit [Nonempty K] in
-private instance rieszMeasureOfNonneg_isFinite (φ : NormDualSpace C(K, ℝ)) (hφ : 0 ≤ φ) :
+instance rieszMeasureOfNonneg_isFinite (φ : NormDualSpace C(K, ℝ)) (hφ : 0 ≤ φ) :
     IsFiniteMeasure (rieszMeasureOfNonneg φ hφ) := by
   unfold rieszMeasureOfNonneg; infer_instance
 
 omit [Nonempty K] in
-private instance rieszMeasureOfNonneg_regular (φ : NormDualSpace C(K, ℝ)) (hφ : 0 ≤ φ) :
+instance rieszMeasureOfNonneg_regular (φ : NormDualSpace C(K, ℝ)) (hφ : 0 ≤ φ) :
     (rieszMeasureOfNonneg φ hφ).Regular := by
   unfold rieszMeasureOfNonneg; infer_instance
 
 omit [Nonempty K] in
 /-- Integration of a continuous function against the Riesz measure of a
 non-negative functional recovers the functional. -/
-private theorem integral_rieszMeasureOfNonneg (φ : NormDualSpace C(K, ℝ)) (hφ : 0 ≤ φ)
+theorem integral_rieszMeasureOfNonneg (φ : NormDualSpace C(K, ℝ)) (hφ : 0 ≤ φ)
     (f : C(K, ℝ)) : ∫ x, f x ∂(rieszMeasureOfNonneg φ hφ) = φ f := by
   have h := RealRMK.integral_rieszMeasure (toCcPositive φ hφ)
     (CompactlySupportedContinuousMap.continuousMapEquiv (β := ℝ) f)
@@ -399,20 +390,24 @@ theorem rieszSignedMeasure_integral (φ : NormDualSpace C(K, ℝ)) (f : C(K, ℝ
 /-! #### The two constructions are mutually inverse -/
 
 omit [Nonempty K] in
-private theorem signedMeasureFunctional_rieszSignedMeasure
+theorem signedMeasureFunctional_rieszSignedMeasure
     (φ : NormDualSpace C(K, ℝ)) :
     signedMeasureFunctional (rieszSignedMeasure φ) = φ := by
   ext f
   rw [signedMeasureFunctional_apply, rieszSignedMeasure_integral]
 
 omit [Nonempty K] in
-/-- `signedMeasureFunctional` is injective: a finite signed Borel measure on a
-compact metrizable space is determined by integration against continuous functions.
-This uses regularity of the Jordan parts (automatic under metrizability) and the
-uniqueness theorem for regular measures. -/
-private theorem signedMeasureFunctional_injective :
-    Function.Injective (signedMeasureFunctional : SignedMeasure K → NormDualSpace C(K, ℝ)) := by
-  intro μ ν hfun
+/-- Injectivity of `signedMeasureFunctional` on regular signed measures:
+integration against continuous functions determines a regular signed Borel
+measure uniquely. This is the uniqueness half of Riesz–Markov–Kakutani, via
+`MeasureTheory.Measure.ext_of_integral_eq_on_compactlySupported`. -/
+theorem signedMeasureFunctional_injective_of_regular
+    {μ ν : SignedMeasure K} (hμ : μ.IsRegular) (hν : ν.IsRegular)
+    (hfun : signedMeasureFunctional μ = signedMeasureFunctional ν) : μ = ν := by
+  haveI := hμ.posPart_regular
+  haveI := hμ.negPart_regular
+  haveI := hν.posPart_regular
+  haveI := hν.negPart_regular
   have hint : ∀ f : C(K, ℝ),
       ∫ x, f x ∂(μ.toJordanDecomposition.posPart + ν.toJordanDecomposition.negPart) =
       ∫ x, f x ∂(ν.toJordanDecomposition.posPart + μ.toJordanDecomposition.negPart) := by
@@ -444,17 +439,79 @@ private theorem signedMeasureFunctional_injective :
   rw [← SignedMeasure.toSignedMeasure_toJordanDecomposition μ,
     ← SignedMeasure.toSignedMeasure_toJordanDecomposition ν, hsigned]
 
+omit [TopologicalSpace K] [CompactSpace K] [Nonempty K] [BorelSpace K] [T2Space K] in
+/-- The Jordan decomposition of `α.toSignedMeasure` for a finite positive
+measure `α` is `(α, 0)`. -/
+private theorem jordan_of_toSignedMeasure (α : Measure K) [IsFiniteMeasure α] :
+    α.toSignedMeasure.toJordanDecomposition =
+      { posPart := α
+        negPart := 0
+        mutuallySingular := Measure.MutuallySingular.zero_right } := by
+  apply SignedMeasure.toJordanDecomposition_eq
+  change α.toSignedMeasure =
+    α.toSignedMeasure - (0 : Measure K).toSignedMeasure
+  rw [Measure.toSignedMeasure_zero, sub_zero]
+
+omit [CompactSpace K] [Nonempty K] [BorelSpace K] [T2Space K] in
+/-- The signed measure associated by `toSignedMeasure` to a finite regular
+Borel measure is itself regular. -/
+theorem isRegular_toSignedMeasure {α : Measure K}
+    [IsFiniteMeasure α] (hα : α.Regular) :
+    α.toSignedMeasure.IsRegular := by
+  have hja := jordan_of_toSignedMeasure α
+  show α.toSignedMeasure.totalVariation.Regular
+  rw [SignedMeasure.totalVariation, hja]
+  show (α + 0).Regular
+  rw [add_zero]; exact hα
+
 omit [Nonempty K] in
-private theorem rieszSignedMeasure_signedMeasureFunctional
-    (μ : SignedMeasure K) :
+/-- The Riesz signed measure associated to any continuous linear functional on
+`C(K, ℝ)` is regular. Its Jordan parts are (sub-)Riesz measures of the lattice
+parts `φ⁺`/`φ⁻`, each of which is automatically a regular Borel measure by
+`RealRMK.regular_rieszMeasure`. -/
+theorem rieszSignedMeasure_isRegular (φ : NormDualSpace C(K, ℝ)) :
+    (rieszSignedMeasure φ).IsRegular :=
+  SignedMeasure.IsRegular.sub
+    (isRegular_toSignedMeasure (α := rieszMeasureOfNonneg φ⁺ (posPart_nonneg _))
+      inferInstance)
+    (isRegular_toSignedMeasure (α := rieszMeasureOfNonneg φ⁻ (negPart_nonneg _))
+      inferInstance)
+
+omit [Nonempty K] in
+/-- The modulus of a regular signed measure is regular. -/
+theorem MeasureTheory.SignedMeasure.IsRegular.abs {s : SignedMeasure K} (hs : s.IsRegular) :
+    |s|.IsRegular := by
+  haveI := hs.posPart_regular
+  haveI := hs.negPart_regular
+  set μ := s.toJordanDecomposition.posPart + s.toJordanDecomposition.negPart
+  let j : JordanDecomposition K :=
+    ⟨μ, 0, Measure.MutuallySingular.zero_right⟩
+  have habs : |s| = j.toSignedMeasure := by
+    rw [SignedMeasure.abs_eq_posPart_add_negPart]
+    show s.toJordanDecomposition.posPart.toSignedMeasure +
+        s.toJordanDecomposition.negPart.toSignedMeasure = j.toSignedMeasure
+    show _ = j.posPart.toSignedMeasure - j.negPart.toSignedMeasure
+    show _ = μ.toSignedMeasure - (0 : Measure K).toSignedMeasure
+    rw [Measure.toSignedMeasure_zero, sub_zero, ← Measure.toSignedMeasure_add]
+  have habs_jd : |s|.toJordanDecomposition = j :=
+    SignedMeasure.toJordanDecomposition_eq habs
+  show |s|.totalVariation.Regular
+  rw [SignedMeasure.totalVariation, habs_jd]
+  show (μ + 0).Regular
+  rw [add_zero]; infer_instance
+
+omit [Nonempty K] in
+theorem rieszSignedMeasure_signedMeasureFunctional
+    {μ : SignedMeasure K} (hμ : μ.IsRegular) :
     rieszSignedMeasure (signedMeasureFunctional μ) = μ :=
-  signedMeasureFunctional_injective
+  signedMeasureFunctional_injective_of_regular
+    (rieszSignedMeasure_isRegular _) hμ
     (signedMeasureFunctional_rieszSignedMeasure (signedMeasureFunctional μ))
 
 /-! #### Linearity, isometry, and lattice preservation -/
 
-omit [Nonempty K] [T2Space K] [MetrizableSpace K] in
-private theorem signedMeasureFunctional_add (μ ν : SignedMeasure K) :
+omit [Nonempty K] [T2Space K] in
+theorem signedMeasureFunctional_add (μ ν : SignedMeasure K) :
     signedMeasureFunctional (μ + ν) =
       signedMeasureFunctional μ + signedMeasureFunctional ν := by
   ext f
@@ -472,7 +529,7 @@ private theorem signedMeasureFunctional_add (μ ν : SignedMeasure K) :
   unfold signedMeasureIntegral
   ring
 
-omit [CompactSpace K] [Nonempty K] [BorelSpace K] [T2Space K] [MetrizableSpace K] in
+omit [CompactSpace K] [Nonempty K] [BorelSpace K] [T2Space K] in
 /-- The integral against `c • μ` equals `c` times the integral against `μ`. The
 case-split on the sign of `c` is needed because the Jordan decomposition swaps
 positive and negative parts under negation. -/
@@ -493,20 +550,20 @@ private theorem signedMeasureIntegral_smul (c : ℝ) (μ : SignedMeasure K) (f :
       NNReal.smul_def, NNReal.smul_def, Real.coe_toNNReal _ hc, smul_eq_mul, smul_eq_mul]
     ring
 
-omit [Nonempty K] [T2Space K] [MetrizableSpace K] in
-private theorem signedMeasureFunctional_smul (c : ℝ) (μ : SignedMeasure K) :
+omit [Nonempty K] [T2Space K] in
+theorem signedMeasureFunctional_smul (c : ℝ) (μ : SignedMeasure K) :
     signedMeasureFunctional (c • μ) = c • signedMeasureFunctional μ := by
   ext f
   simp only [signedMeasureFunctional_apply, ContinuousLinearMap.smul_apply, smul_eq_mul]
   exact signedMeasureIntegral_smul c μ f
 
-omit [Nonempty K] [T2Space K] [MetrizableSpace K] in
-private theorem signedMeasureFunctional_neg (μ : SignedMeasure K) :
+omit [Nonempty K] [T2Space K] in
+theorem signedMeasureFunctional_neg (μ : SignedMeasure K) :
     signedMeasureFunctional (-μ) = -signedMeasureFunctional μ := by
   rw [show (-μ : SignedMeasure K) = (-1 : ℝ) • μ from (neg_one_smul ℝ μ).symm,
     signedMeasureFunctional_smul, neg_one_smul]
 
-omit [Nonempty K] [T2Space K] [MetrizableSpace K] in
+omit [Nonempty K] [T2Space K] in
 private theorem signedMeasureFunctional_zero :
     signedMeasureFunctional (0 : SignedMeasure K) = 0 := by
   ext f
@@ -515,8 +572,8 @@ private theorem signedMeasureFunctional_zero :
     JordanDecomposition.zero_negPart, integral_zero_measure, sub_zero]
   rfl
 
-omit [Nonempty K] [T2Space K] [MetrizableSpace K] in
-private theorem signedMeasureFunctional_sub (μ ν : SignedMeasure K) :
+omit [Nonempty K] [T2Space K] in
+theorem signedMeasureFunctional_sub (μ ν : SignedMeasure K) :
     signedMeasureFunctional (μ - ν) =
       signedMeasureFunctional μ - signedMeasureFunctional ν := by
   rw [sub_eq_add_neg, signedMeasureFunctional_add, signedMeasureFunctional_neg,
@@ -529,7 +586,7 @@ from the Jordan decomposition. The backward direction follows from the bijection
 together with the analogous statement for `rieszSignedMeasure`. -/
 
 omit [TopologicalSpace K] [CompactSpace K] [Nonempty K] [BorelSpace K] [T2Space K]
-    [MetrizableSpace K] in
+    in
 /-- For a non-negative signed measure `μ`, the Jordan negative part vanishes as
 a measure (not just as a signed measure), allowing us to drop the second integral
 in `signedMeasureIntegral`. -/
@@ -542,10 +599,10 @@ private theorem jordan_negPart_eq_zero
     rw [Measure.toSignedMeasure_zero]; exact h
   exact Measure.toSignedMeasure_eq_toSignedMeasure_iff.mp h1
 
-omit [Nonempty K] [T2Space K] [MetrizableSpace K] in
+omit [Nonempty K] [T2Space K] in
 /-- The forward direction of positivity preservation: integration against a
 non-negative signed measure yields a non-negative functional. -/
-private theorem signedMeasureFunctional_nonneg
+theorem signedMeasureFunctional_nonneg
     {μ : SignedMeasure K} (hμ : 0 ≤ μ) :
     0 ≤ signedMeasureFunctional μ := by
   have hzero : μ.toJordanDecomposition.negPart = 0 := jordan_negPart_eq_zero hμ
@@ -577,7 +634,7 @@ omit [Nonempty K] in
 non-negative functional `φ` produces a non-negative signed measure. The proof
 exhibits a non-negative signed measure `ν` whose `signedMeasureFunctional` is
 `φ`, and concludes by injectivity of `signedMeasureFunctional`. -/
-private theorem rieszSignedMeasure_nonneg
+theorem rieszSignedMeasure_nonneg
     {φ : NormDualSpace C(K, ℝ)} (hφ : 0 ≤ φ) :
     0 ≤ rieszSignedMeasure φ := by
   set ν : SignedMeasure K := (rieszMeasureOfNonneg φ hφ).toSignedMeasure with hν_def
@@ -594,82 +651,125 @@ private theorem rieszSignedMeasure_nonneg
         congrArg JordanDecomposition.negPart hjd,
       integral_zero_measure, sub_zero]
     exact integral_rieszMeasureOfNonneg φ hφ g
+  have hν_reg : ν.IsRegular := by
+    show ν.totalVariation.Regular
+    rw [SignedMeasure.totalVariation, hjd]
+    show (rieszMeasureOfNonneg φ hφ + 0).Regular
+    rw [add_zero]; infer_instance
   have heq : rieszSignedMeasure φ = ν :=
-    signedMeasureFunctional_injective
+    signedMeasureFunctional_injective_of_regular
+      (rieszSignedMeasure_isRegular _) hν_reg
       (by rw [signedMeasureFunctional_rieszSignedMeasure, hfunc])
   rw [heq]
   exact hν_nonneg
 
 omit [Nonempty K] in
-/-- Positivity preservation for `signedMeasureFunctional`: a signed measure is
-non-negative iff its associated functional is non-negative. The forward
-direction is `signedMeasureFunctional_nonneg`; the backward direction uses
-`rieszSignedMeasure_nonneg` and the fact that the two maps are mutually
-inverse. -/
-private theorem signedMeasureFunctional_nonneg_iff {μ : SignedMeasure K} :
+/-- Positivity preservation for `signedMeasureFunctional`: for a regular signed
+measure, non-negativity of the measure is equivalent to non-negativity of the
+associated functional. -/
+theorem signedMeasureFunctional_nonneg_iff
+    {μ : SignedMeasure K} (hμ : μ.IsRegular) :
     0 ≤ signedMeasureFunctional μ ↔ 0 ≤ μ := by
   refine ⟨fun h => ?_, signedMeasureFunctional_nonneg⟩
   have := rieszSignedMeasure_nonneg h
-  rwa [rieszSignedMeasure_signedMeasureFunctional] at this
+  rwa [rieszSignedMeasure_signedMeasureFunctional hμ] at this
 
 omit [Nonempty K] in
-/-- Order preservation: `signedMeasureFunctional` is an order embedding. The
-proof is the standard reduction `μ ≤ ν ↔ 0 ≤ ν - μ` combined with linearity
-and `signedMeasureFunctional_nonneg_iff`. -/
-private theorem signedMeasureFunctional_le_iff {μ ν : SignedMeasure K} :
+/-- Order preservation: for regular signed measures, `signedMeasureFunctional`
+is an order embedding. -/
+theorem signedMeasureFunctional_le_iff
+    {μ ν : SignedMeasure K} (hμ : μ.IsRegular) (hν : ν.IsRegular) :
     signedMeasureFunctional μ ≤ signedMeasureFunctional ν ↔ μ ≤ ν := by
   rw [← sub_nonneg (a := signedMeasureFunctional ν), ← signedMeasureFunctional_sub,
-    signedMeasureFunctional_nonneg_iff, sub_nonneg]
+    signedMeasureFunctional_nonneg_iff (SignedMeasure.IsRegular.sub hν hμ), sub_nonneg]
 
 omit [Nonempty K] in
-/-- The order isomorphism between `SignedMeasure K` and `NormDualSpace C(K, ℝ)`
-underlying the Riesz–Markov–Kakutani correspondence. Used to derive lattice
-preservation via `OrderIso.map_sup` and `OrderIso.map_inf`. -/
-private noncomputable def signedMeasureOrderIso :
-    SignedMeasure K ≃o NormDualSpace C(K, ℝ) where
-  toFun := signedMeasureFunctional
-  invFun := rieszSignedMeasure
-  left_inv := rieszSignedMeasure_signedMeasureFunctional
-  right_inv := signedMeasureFunctional_rieszSignedMeasure
-  map_rel_iff' := signedMeasureFunctional_le_iff
+/-- The positive part of a regular signed measure is regular: decompose as
+`s⁺ = (1/2) • (s + |s|)` and combine the add, abs, and smul closure lemmas. -/
+theorem isRegular_posPart {s : SignedMeasure K} (hs : s.IsRegular) :
+    s⁺.IsRegular := by
+  have key : s + |s| = (2 : ℕ) • s⁺ := add_abs_eq_two_nsmul_posPart s
+  have h2 : s⁺ = (2 : ℝ)⁻¹ • (s + |s|) := by
+    rw [key, ← Nat.cast_smul_eq_nsmul ℝ 2]
+    simp only [Nat.cast_ofNat, smul_smul]
+    rw [inv_mul_cancel₀ (by norm_num : (2 : ℝ) ≠ 0), one_smul]
+  rw [h2]
+  exact SignedMeasure.IsRegular.smul _
+    (SignedMeasure.IsRegular.add hs (SignedMeasure.IsRegular.abs hs))
 
 omit [Nonempty K] in
-/-- Lattice preservation for the supremum: integration against `μ ⊔ ν` produces
-the supremum of the two functionals. This is `OrderIso.map_sup` applied to
-`signedMeasureOrderIso`. -/
-private theorem signedMeasureFunctional_sup (μ ν : SignedMeasure K) :
+theorem isRegular_sup {μ ν : SignedMeasure K}
+    (hμ : μ.IsRegular) (hν : ν.IsRegular) : (μ ⊔ ν).IsRegular := by
+  rw [sup_eq_add_posPart]
+  exact SignedMeasure.IsRegular.add hμ
+    (isRegular_posPart (SignedMeasure.IsRegular.sub hν hμ))
+
+omit [Nonempty K] in
+theorem isRegular_inf {μ ν : SignedMeasure K}
+    (hμ : μ.IsRegular) (hν : ν.IsRegular) : (μ ⊓ ν).IsRegular := by
+  rw [inf_eq_sub_posPart]
+  exact SignedMeasure.IsRegular.sub hμ
+    (isRegular_posPart (SignedMeasure.IsRegular.sub hμ hν))
+
+omit [Nonempty K] in
+/-- Lattice preservation for the supremum on the regular sublattice. -/
+theorem signedMeasureFunctional_sup
+    {μ ν : SignedMeasure K} (hμ : μ.IsRegular) (hν : ν.IsRegular) :
     signedMeasureFunctional (μ ⊔ ν) =
-      signedMeasureFunctional μ ⊔ signedMeasureFunctional ν :=
-  signedMeasureOrderIso.map_sup μ ν
+      signedMeasureFunctional μ ⊔ signedMeasureFunctional ν := by
+  set F := signedMeasureFunctional μ ⊔ signedMeasureFunctional ν with hF
+  set σ := rieszSignedMeasure F with hσ
+  have hσ_reg : σ.IsRegular := rieszSignedMeasure_isRegular F
+  have hSσ : signedMeasureFunctional σ = F :=
+    signedMeasureFunctional_rieszSignedMeasure F
+  apply le_antisymm
+  · have h1 : μ ≤ σ := (signedMeasureFunctional_le_iff hμ hσ_reg).mp
+      (by rw [hSσ]; exact le_sup_left)
+    have h2 : ν ≤ σ := (signedMeasureFunctional_le_iff hν hσ_reg).mp
+      (by rw [hSσ]; exact le_sup_right)
+    have h4 := (signedMeasureFunctional_le_iff (isRegular_sup hμ hν) hσ_reg).mpr
+      (sup_le h1 h2)
+    rw [hSσ] at h4; exact h4
+  · refine sup_le ?_ ?_
+    · exact (signedMeasureFunctional_le_iff hμ (isRegular_sup hμ hν)).mpr le_sup_left
+    · exact (signedMeasureFunctional_le_iff hν (isRegular_sup hμ hν)).mpr le_sup_right
 
 omit [Nonempty K] in
-/-- Lattice preservation for the infimum: integration against `μ ⊓ ν` produces
-the infimum of the two functionals. -/
-private theorem signedMeasureFunctional_inf (μ ν : SignedMeasure K) :
+/-- Lattice preservation for the infimum on the regular sublattice. -/
+theorem signedMeasureFunctional_inf
+    {μ ν : SignedMeasure K} (hμ : μ.IsRegular) (hν : ν.IsRegular) :
     signedMeasureFunctional (μ ⊓ ν) =
-      signedMeasureFunctional μ ⊓ signedMeasureFunctional ν :=
-  signedMeasureOrderIso.map_inf μ ν
+      signedMeasureFunctional μ ⊓ signedMeasureFunctional ν := by
+  have hid : μ ⊓ ν = μ + ν - (μ ⊔ ν) := eq_sub_of_add_eq (inf_add_sup μ ν)
+  rw [hid, signedMeasureFunctional_sub, signedMeasureFunctional_add,
+    signedMeasureFunctional_sup hμ hν]
+  exact (eq_sub_of_add_eq (inf_add_sup (signedMeasureFunctional μ)
+    (signedMeasureFunctional ν))).symm
 
 omit [Nonempty K] in
 /-- Modulus preservation: the absolute value of the functional equals the
 functional of the absolute value. Reduces via `a⁺ + a⁻ = |a|` and supremum
 preservation. -/
-private theorem signedMeasureFunctional_abs (μ : SignedMeasure K) :
+private theorem signedMeasureFunctional_abs
+    {μ : SignedMeasure K} (hμ : μ.IsRegular) :
     |signedMeasureFunctional μ| = signedMeasureFunctional |μ| := by
   have hpos : (signedMeasureFunctional μ)⁺ = signedMeasureFunctional μ⁺ := by
-    rw [posPart_def, posPart_def, signedMeasureFunctional_sup,
+    rw [posPart_def, posPart_def,
+      signedMeasureFunctional_sup hμ (SignedMeasure.IsRegular.zero),
       signedMeasureFunctional_zero]
   have hneg : (signedMeasureFunctional μ)⁻ = signedMeasureFunctional μ⁻ := by
-    rw [negPart_def, negPart_def, signedMeasureFunctional_sup,
+    rw [negPart_def, negPart_def,
+      signedMeasureFunctional_sup (SignedMeasure.IsRegular.neg hμ)
+        (SignedMeasure.IsRegular.zero),
       signedMeasureFunctional_neg, signedMeasureFunctional_zero]
   rw [← posPart_add_negPart (signedMeasureFunctional μ), hpos, hneg,
     ← signedMeasureFunctional_add, posPart_add_negPart]
 
-omit [T2Space K] [MetrizableSpace K] in
+omit [T2Space K] in
 /-- For a non-negative signed measure, the operator norm of the associated
 functional equals the total variation. The lower bound is witnessed by the
 constant function `1`: `signedMeasureFunctional μ 1 = μ(K) = ‖μ‖`. -/
-private theorem norm_signedMeasureFunctional_of_nonneg
+theorem norm_signedMeasureFunctional_of_nonneg
     {μ : SignedMeasure K} (hμ : 0 ≤ μ) :
     ‖signedMeasureFunctional μ‖ = ‖μ‖ := by
   refine le_antisymm
@@ -710,48 +810,11 @@ underlying measure. Argument: pass to absolute values via `norm_abs_eq_norm`,
 use modulus preservation to swap `|signedMeasureFunctional μ|` for
 `signedMeasureFunctional |μ|`, then apply
 `norm_signedMeasureFunctional_of_nonneg` to the non-negative `|μ|`. -/
-private theorem norm_signedMeasureFunctional (μ : SignedMeasure K) :
+theorem norm_signedMeasureFunctional
+    {μ : SignedMeasure K} (hμ : μ.IsRegular) :
     ‖signedMeasureFunctional μ‖ = ‖μ‖ := by
-  rw [← norm_abs_eq_norm (signedMeasureFunctional μ), signedMeasureFunctional_abs,
+  rw [← norm_abs_eq_norm (signedMeasureFunctional μ),
+    signedMeasureFunctional_abs hμ,
     norm_signedMeasureFunctional_of_nonneg (abs_nonneg μ), norm_abs_eq_norm]
-
-/-- The underlying linear equivalence of the Riesz–Markov–Kakutani isomorphism. -/
-private noncomputable def rieszLinearEquiv :
-    SignedMeasure K ≃ₗ[ℝ] NormDualSpace C(K, ℝ) where
-  toFun := signedMeasureFunctional
-  invFun := rieszSignedMeasure
-  left_inv := rieszSignedMeasure_signedMeasureFunctional
-  right_inv := signedMeasureFunctional_rieszSignedMeasure
-  map_add' := signedMeasureFunctional_add
-  map_smul' := signedMeasureFunctional_smul
-
-/-- The underlying linear isometric equivalence of the Riesz–Markov–Kakutani
-isomorphism. -/
-private noncomputable def rieszLinearIsometryEquiv :
-    SignedMeasure K ≃ₗᵢ[ℝ] NormDualSpace C(K, ℝ) where
-  toLinearEquiv := rieszLinearEquiv
-  norm_map' := norm_signedMeasureFunctional
-
-/-- **Riesz–Markov–Kakutani representation theorem** for `C(K, ℝ)`. For a
-compact Hausdorff space `K`, integration against a finite signed Borel measure
-is a Banach lattice isomorphism between `SignedMeasure K` and the norm dual of
-`C(K, ℝ)`: it is a real-linear isometric equivalence that also preserves the
-lattice operations `⊔` and `⊓`. -/
-noncomputable def rieszEquiv :
-    BanachLatEquiv (SignedMeasure K) (NormDualSpace C(K, ℝ)) where
-  toLinearIsometryEquiv := rieszLinearIsometryEquiv
-  map_sup' := signedMeasureFunctional_sup
-  map_inf' := signedMeasureFunctional_inf
-
-@[simp]
-theorem rieszEquiv_apply (μ : SignedMeasure K) (f : C(K, ℝ)) :
-    rieszEquiv μ f = signedMeasureIntegral μ f := rfl
-
-/-- The Riesz isomorphism preserves positivity: a signed measure is non-negative
-iff its associated functional is non-negative on `C(K, ℝ)`. This is a direct
-consequence of `rieszEquiv` being a lattice isomorphism. -/
-theorem rieszEquiv_nonneg_iff {μ : SignedMeasure K} :
-    0 ≤ (rieszEquiv : BanachLatEquiv (SignedMeasure K) _) μ ↔ 0 ≤ μ :=
-  signedMeasureFunctional_nonneg_iff
 
 end Riesz

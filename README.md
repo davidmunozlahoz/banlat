@@ -2,7 +2,13 @@
 
 The Banach lattices library in Lean.
 
-## 👀 Overview
+## ToDo
+- [ ] Create a third mode, the prune mode, where we go through the
+    library removing unnecesary result, optimizing the existing ones, and
+    removing superfluous comments written in the development process but
+    which do not contribute to the library.
+
+## Overview
 
 ### Foundations
 
@@ -17,10 +23,17 @@ The Banach lattices library in Lean.
 
 - **`BanLat/Sublattice.lean`** — Vector sublattices: linear subspaces closed
   under the lattice operations, characterised by closure under `|·|`.
+- **`BanLat/OrderDense.lean`** — Order dense subsets of a vector lattice:
+  a subset is order dense when every strictly positive element dominates a
+  strictly positive element of the subset. Order dense vector sublattices.
 - **`BanLat/Ideal.lean`** — Order ideals as solid sublattices, with the basic
-  characterisations.
+  characterisations. Principal ideals and the gauge norm.
 - **`BanLat/Band.lean`** — Bands (order-closed ideals), disjoint complements,
-  and projection bands.
+  band generation, principal bands, and projection bands. The projection
+  property (PP) and principal projection property (PPP). Maximal disjoint
+  families (existence via Zorn), weak order units, principal band projections
+  under PPP, and the decomposition lemma (`isLUB` of the family of principal
+  band projections for a maximal disjoint family).
 - **`BanLat/Atom.lean`** — Atoms, atomic vector lattices, and the
   decomposition into atomic and continuous parts.
 - **`BanLat/Quotient.lean`** — Quotients of vector and Banach lattices by
@@ -47,8 +60,13 @@ The Banach lattices library in Lean.
   operations, the Archimedean property, closedness of the positive cone, and
   monotone convergence.
 - **`BanLat/Banach.lean`** — Banach lattices and Banach lattice isomorphisms.
-- **`BanLat/OrderContinuous.lean`** — Order continuous norms; Nakano,
-  Meyer–Nieberg, and Ando theorems.
+- **`BanLat/OrderContinuous.lean`** — Order continuous norms. Nakano's theorem:
+  a Banach lattice is order continuous and σ-order complete iff every monotone
+  bounded sequence converges. One direction of Meyer–Nieberg: an order
+  continuous norm forces order-bounded disjoint sequences to converge to zero.
+  Countability of pairwise disjoint sets. The decomposition lemma
+  (unconditional summability of principal band projections). One direction of
+  Ando: an order continuous norm forces closed ideals to be projection bands.
 - **`BanLat/Dual.lean`** — The order dual and the norm dual of a (Banach)
   lattice, and their coincidence in the Banach setting.
 - **`BanLat/Bidual.lean`** — The bidual of a Banach lattice and the canonical
@@ -59,9 +77,13 @@ The Banach lattices library in Lean.
 ### Special classes and representation
 
 - **`BanLat/AMSpace.lean`** — AM-spaces and AM-spaces with unit; strong units.
-- **`BanLat/ALSpace.lean`** — AL-spaces and their order continuity.
-- **`BanLat/Kakutani.lean`** — Bohnenblust–Kakutani–Krein representation of an
-  AM-space with unit as `C(K, ℝ)` via the Gelfand transform.
+- **`BanLat/ALSpace.lean`** — AL-spaces: the AL-axiom, norm identities, order
+  continuity, closed sublattice inheritance. Duality: the norm dual of an
+  AM-space is an AL-space, and vice versa. The dual of a non-trivial AL-space
+  is an AM-space with unit via the canonical unit functional.
+- **`BanLat/KakutaniAM.lean`** — Bohnenblust–Kakutani–Krein representation of
+  an AM-space with unit as `C(K, ℝ)` via the Gelfand transform on lattice
+  characters.
 
 ### Examples
 

@@ -1,4 +1,4 @@
-import BanLat.Basic
+import BanLat.Banach
 import Mathlib.Order.Sublattice
 
 /-!
@@ -110,4 +110,66 @@ theorem toSubmodule_injective :
   intro p q h
   cases p; cases q; congr
 
+/-! ### Lattice structure on the underlying subtype
+
+A vector sublattice `Y` inherits a lattice and vector-lattice structure from
+the ambient space, with `⊔` and `⊓` computed pointwise. -/
+
+/-- The lattice structure on the underlying subtype of a vector sublattice. -/
+noncomputable instance instLatticeSubtype : Lattice ↥Y.toSubmodule :=
+  Subtype.lattice (P := fun x => x ∈ Y.toSubmodule)
+    (fun _ _ hx hy => Y.sup_mem hx hy) (fun _ _ hx hy => Y.inf_mem hx hy)
+
+/-- The subtype of a vector sublattice is an ordered additive monoid. -/
+instance instIsOrderedAddMonoidSubtype :
+    IsOrderedAddMonoid ↥Y.toSubmodule where
+  add_le_add_left := by
+    intro a b (h : a.1 ≤ b.1) c; exact add_le_add_left h c.1
+  add_le_add_right := by
+    intro a b (h : a.1 ≤ b.1) c; exact add_le_add_right h c.1
+
+/-- Scalar multiplication by non-negative reals is monotone on the subtype of
+a vector sublattice. -/
+instance instPosSMulMonoSubtype : PosSMulMono ℝ ↥Y.toSubmodule where
+  smul_le_smul_of_nonneg_left := by
+    intro a ha b₁ b₂ h
+    change (a • b₁).1 ≤ (a • b₂).1
+    exact smul_le_smul_of_nonneg_left h ha
+
+/-- The subtype of a vector sublattice is itself a vector lattice. -/
+instance instVectorLatticeSubtype : VectorLattice ↥Y.toSubmodule := ⟨⟩
+
 end VectorSublattice
+
+/-! ### Normed and Banach lattice structure on sublattices -/
+
+section Normed
+
+variable {X : Type*} [NormedAddCommGroup X] [Lattice X] [IsOrderedAddMonoid X]
+  [NormedVectorLattice X]
+
+namespace VectorSublattice
+
+variable (Y : VectorSublattice X)
+
+/-- A vector sublattice of a normed vector lattice is itself a normed vector
+lattice under the induced norm and lattice operations. -/
+instance instNormedVectorLatticeSubtype :
+    NormedVectorLattice ↥Y.toSubmodule where
+  solid := by
+    intro x y h
+    change ‖x.1‖ ≤ ‖y.1‖
+    exact HasSolidNorm.solid h
+  norm_smul a x := norm_smul a x.1
+
+/-- A norm-closed vector sublattice of a Banach lattice is itself a Banach
+lattice under the induced structures. -/
+noncomputable instance instBanachLatticeSubtype [BanachLattice X]
+    (hclosed : IsClosed (Y : Set X)) : BanachLattice ↥Y.toSubmodule where
+  toCompleteSpace := by
+    haveI : IsClosed (Y.toSubmodule : Set X) := hclosed
+    infer_instance
+
+end VectorSublattice
+
+end Normed

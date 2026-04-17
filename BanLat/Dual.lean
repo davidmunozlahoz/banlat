@@ -86,6 +86,12 @@ theorem isRegularOp (φ : OrderDualSpace X) :
     IsRegularOp φ.toLinearMap :=
   IsOrderBounded.isRegularOp φ.isOrderBounded'
 
+variable (X) in
+/-- The order dual separates points of `X`: every nonzero element is detected by
+some order bounded functional. -/
+def SeparatesPoints : Prop :=
+  ∀ x : X, (∀ φ : OrderDualSpace X, φ x = 0) → x = 0
+
 end OrderDualSpace
 
 /-! ### The norm dual -/
@@ -329,6 +335,11 @@ theorem norm_of_nonneg {φ : NormDualSpace X} (hφ : 0 ≤ φ) :
       exact h1
     exact hbound.trans (hφabs.trans (by rw [mul_comm]))
   · exact csSup_le hne hub
+
+/-- For a Banach lattice, the order dual separates points. -/
+theorem orderDual_separatesPoints :
+    OrderDualSpace.SeparatesPoints X :=
+  sorry
 
 end BanachLattice
 

@@ -1,5 +1,7 @@
 import BanLat.Sublattice
 import BanLat.Normed
+import BanLat.Banach
+import Mathlib.Analysis.Normed.Group.Completeness
 
 /-!
 # Order ideals of vector lattices
@@ -447,5 +449,204 @@ noncomputable def principalNormedVectorLattice [IsVLArchimedean X]
       change gaugeNorm a (r • x.1) = ‖r‖ * gaugeNorm a x.1
       rw [gaugeNorm_smul a r x.1, Real.norm_eq_abs]
   }
+
+/-! ### Sum of ideals -/
+
+/-- A non-negative element dominated by a sum `u₁ + u₂` of positive elements of
+`J₁` and `J₂` can be split accordingly, so it lies in `J₁ + J₂`. -/
+private theorem sum_pos_mem (J₁ J₂ : OrderIdeal X) {v u₁ u₂ : X}
+    (hu₁ : u₁ ∈ J₁) (hu₂ : u₂ ∈ J₂) (hu₁0 : 0 ≤ u₁) (hu₂0 : 0 ≤ u₂)
+    (hv0 : 0 ≤ v) (hvle : v ≤ u₁ + u₂) :
+    v ∈ J₁.toSubmodule + J₂.toSubmodule := by
+  have hv₁ : v ⊓ u₁ ∈ J₁ := J₁.solid hu₁ (le_inf hv0 hu₁0) inf_le_right
+  have heq : v - v ⊓ u₁ = (v - u₁)⁺ := by
+    rw [inf_eq_sub_posPart_sub]; abel
+  have hv₂ : v - v ⊓ u₁ ∈ J₂ := by
+    rw [heq]
+    exact J₂.solid hu₂ (posPart_nonneg _)
+      (sup_le (sub_le_iff_le_add'.mpr hvle) hu₂0)
+  refine Submodule.mem_sup.mpr ⟨v ⊓ u₁, hv₁, v - v ⊓ u₁, hv₂, ?_⟩
+  abel
+
+/-- The sum of two order ideals (as submodules) is again an order ideal. -/
+def sum (J₁ J₂ : OrderIdeal X) : OrderIdeal X :=
+  ofSolid (J₁.toSubmodule + J₂.toSubmodule) <| by
+    intro x y hx hyx
+    obtain ⟨x₁, hx₁, x₂, hx₂, rfl⟩ := Submodule.mem_sup.mp hx
+    -- `|y| ≤ |x₁| + |x₂|`; split `y⁺` and `y⁻` separately using `sum_pos_mem`.
+    have habs : |y| ≤ |x₁| + |x₂| := le_trans hyx (abs_add_le x₁ x₂)
+    have h_pos_le : y⁺ ≤ |x₁| + |x₂| :=
+      le_trans (sup_le (le_abs_self y) (abs_nonneg y)) habs
+    have h_neg_le : y⁻ ≤ |x₁| + |x₂| :=
+      le_trans (sup_le (neg_le_abs y) (abs_nonneg y)) habs
+    have hpos : y⁺ ∈ J₁.toSubmodule + J₂.toSubmodule :=
+      sum_pos_mem J₁ J₂ (J₁.abs_mem hx₁) (J₂.abs_mem hx₂)
+        (abs_nonneg _) (abs_nonneg _) (posPart_nonneg _) h_pos_le
+    have hneg : y⁻ ∈ J₁.toSubmodule + J₂.toSubmodule :=
+      sum_pos_mem J₁ J₂ (J₁.abs_mem hx₁) (J₂.abs_mem hx₂)
+        (abs_nonneg _) (abs_nonneg _) (negPart_nonneg _) h_neg_le
+    have := (J₁.toSubmodule + J₂.toSubmodule).sub_mem hpos hneg
+    rwa [posPart_sub_negPart] at this
+
+/-- The underlying submodule of `sum J₁ J₂` is `J₁.toSubmodule + J₂.toSubmodule`. -/
+@[simp]
+theorem sum_toSubmodule (J₁ J₂ : OrderIdeal X) :
+    (sum J₁ J₂).toSubmodule = J₁.toSubmodule + J₂.toSubmodule := rfl
+
+/-- **Bounded decomposition** in the sum of two ideals: every element of
+`J₁ + J₂` admits a splitting `z = a + b` with `a ∈ J₁`, `b ∈ J₂` and the
+lattice estimates `|a| ≤ |z|`, `|b| ≤ |z|`. -/
+theorem exists_sum_decomp (J₁ J₂ : OrderIdeal X) {z : X}
+    (hz : z ∈ J₁.toSubmodule + J₂.toSubmodule) :
+    ∃ a b : X, a ∈ J₁ ∧ b ∈ J₂ ∧ a + b = z ∧ |a| ≤ |z| ∧ |b| ≤ |z| := by
+  obtain ⟨u₁, hu₁, u₂, hu₂, rfl⟩ := Submodule.mem_sup.mp hz
+  have habs : |u₁ + u₂| ≤ |u₁| + |u₂| := abs_add_le u₁ u₂
+  -- Positive part split
+  have hxp_le : (u₁ + u₂)⁺ ≤ |u₁| + |u₂| :=
+    le_trans (sup_le (le_abs_self _) (abs_nonneg _)) habs
+  let ap := (u₁ + u₂)⁺ ⊓ |u₁|
+  have hap_nn : 0 ≤ ap := le_inf (posPart_nonneg _) (abs_nonneg _)
+  have hap_le_xp : ap ≤ (u₁ + u₂)⁺ := inf_le_left
+  have hap_mem : ap ∈ J₁ := J₁.solid (J₁.abs_mem hu₁) hap_nn inf_le_right
+  let bp := (u₁ + u₂)⁺ - ap
+  have hbp_eq : bp = ((u₁ + u₂)⁺ - |u₁|)⁺ := by
+    change (u₁ + u₂)⁺ - (u₁ + u₂)⁺ ⊓ |u₁| = ((u₁ + u₂)⁺ - |u₁|)⁺
+    rw [inf_eq_sub_posPart_sub]; abel
+  have hbp_nn : 0 ≤ bp := by rw [hbp_eq]; exact posPart_nonneg _
+  have hbp_le_xp : bp ≤ (u₁ + u₂)⁺ := sub_le_self _ hap_nn
+  have hbp_mem : bp ∈ J₂ := by
+    rw [hbp_eq]
+    exact J₂.solid (J₂.abs_mem hu₂) (posPart_nonneg _)
+      (sup_le (sub_le_iff_le_add'.mpr hxp_le) (abs_nonneg _))
+  have hab_p_sum : ap + bp = (u₁ + u₂)⁺ := by
+    change ap + ((u₁ + u₂)⁺ - ap) = _
+    abel
+  -- Negative part split
+  have hxn_le : (u₁ + u₂)⁻ ≤ |u₁| + |u₂| :=
+    le_trans (sup_le (neg_le_abs _) (abs_nonneg _)) habs
+  let an := (u₁ + u₂)⁻ ⊓ |u₁|
+  have han_nn : 0 ≤ an := le_inf (negPart_nonneg _) (abs_nonneg _)
+  have han_le_xn : an ≤ (u₁ + u₂)⁻ := inf_le_left
+  have han_mem : an ∈ J₁ := J₁.solid (J₁.abs_mem hu₁) han_nn inf_le_right
+  let bn := (u₁ + u₂)⁻ - an
+  have hbn_eq : bn = ((u₁ + u₂)⁻ - |u₁|)⁺ := by
+    change (u₁ + u₂)⁻ - (u₁ + u₂)⁻ ⊓ |u₁| = ((u₁ + u₂)⁻ - |u₁|)⁺
+    rw [inf_eq_sub_posPart_sub]; abel
+  have hbn_nn : 0 ≤ bn := by rw [hbn_eq]; exact posPart_nonneg _
+  have hbn_le_xn : bn ≤ (u₁ + u₂)⁻ := sub_le_self _ han_nn
+  have hbn_mem : bn ∈ J₂ := by
+    rw [hbn_eq]
+    exact J₂.solid (J₂.abs_mem hu₂) (posPart_nonneg _)
+      (sup_le (sub_le_iff_le_add'.mpr hxn_le) (abs_nonneg _))
+  have hab_n_sum : an + bn = (u₁ + u₂)⁻ := by
+    change an + ((u₁ + u₂)⁻ - an) = _
+    abel
+  -- Assemble
+  refine ⟨ap - an, bp - bn,
+    J₁.toSubmodule.sub_mem hap_mem han_mem,
+    J₂.toSubmodule.sub_mem hbp_mem hbn_mem, ?_, ?_, ?_⟩
+  · calc ap - an + (bp - bn)
+        = (ap + bp) - (an + bn) := by abel
+      _ = (u₁ + u₂)⁺ - (u₁ + u₂)⁻ := by rw [hab_p_sum, hab_n_sum]
+      _ = u₁ + u₂ := posPart_sub_negPart _
+  · calc |ap - an|
+        = |ap + (-an)| := by rw [sub_eq_add_neg]
+      _ ≤ |ap| + |(-an)| := abs_add_le _ _
+      _ = ap + an := by rw [abs_of_nonneg hap_nn, abs_neg, abs_of_nonneg han_nn]
+      _ ≤ (u₁ + u₂)⁺ + (u₁ + u₂)⁻ := add_le_add hap_le_xp han_le_xn
+      _ = |u₁ + u₂| := posPart_add_negPart _
+  · calc |bp - bn|
+        = |bp + (-bn)| := by rw [sub_eq_add_neg]
+      _ ≤ |bp| + |(-bn)| := abs_add_le _ _
+      _ = bp + bn := by rw [abs_of_nonneg hbp_nn, abs_neg, abs_of_nonneg hbn_nn]
+      _ ≤ (u₁ + u₂)⁺ + (u₁ + u₂)⁻ := add_le_add hbp_le_xp hbn_le_xn
+      _ = |u₁ + u₂| := posPart_add_negPart _
+
+/-! ### Sum of closed ideals in a Banach lattice -/
+
+section ClosedSum
+
+variable {X : Type*} [NormedAddCommGroup X] [Lattice X] [IsOrderedAddMonoid X]
+  [BanachLattice X]
+
+/-- **Norm-bounded decomposition** in the sum of two ideals of a normed vector
+lattice: every element of `J₁ + J₂` splits as `z = a + b` with `a ∈ J₁`,
+`b ∈ J₂` and `‖a‖ ≤ ‖z‖`, `‖b‖ ≤ ‖z‖`. -/
+private theorem exists_sum_decomp_norm (J₁ J₂ : OrderIdeal X) {z : X}
+    (hz : z ∈ J₁.toSubmodule + J₂.toSubmodule) :
+    ∃ a b : X, a ∈ J₁ ∧ b ∈ J₂ ∧ a + b = z ∧ ‖a‖ ≤ ‖z‖ ∧ ‖b‖ ≤ ‖z‖ := by
+  obtain ⟨a, b, ha, hb, hsum, habs_a, habs_b⟩ := exists_sum_decomp J₁ J₂ hz
+  refine ⟨a, b, ha, hb, hsum, ?_, ?_⟩
+  · rw [← norm_abs_eq_norm z]; exact norm_le_norm_of_abs_le_abs (by rwa [abs_abs])
+  · rw [← norm_abs_eq_norm z]; exact norm_le_norm_of_abs_le_abs (by rwa [abs_abs])
+
+/-- The sum of two closed order ideals in a Banach lattice is again closed. -/
+theorem isClosed_sum {J₁ J₂ : OrderIdeal X}
+    (h₁ : IsClosed (J₁ : Set X)) (h₂ : IsClosed (J₂ : Set X)) :
+    IsClosed ((sum J₁ J₂ : OrderIdeal X) : Set X) := by
+  rw [← isSeqClosed_iff_isClosed]
+  intro z_seq z hz_mem hz_lim
+  -- Extract a subsequence whose consecutive distances are summable.
+  have hCauchy : CauchySeq z_seq := hz_lim.cauchySeq
+  obtain ⟨φ, hφ_mono, hφ_sum⟩ :=
+    Metric.exists_subseq_summable_dist_of_cauchySeq z_seq hCauchy
+  -- The subsequence still converges to z.
+  have hsub_lim : Filter.Tendsto (z_seq ∘ φ) Filter.atTop (nhds z) :=
+    hz_lim.comp hφ_mono.tendsto_atTop
+  -- Differences along the subsequence.
+  set w : ℕ → X := fun k => z_seq (φ (k + 1)) - z_seq (φ k) with hw_def
+  have hw_norm : ∀ k, ‖w k‖ = dist (z_seq (φ (k + 1))) (z_seq (φ k)) := by
+    intro k; rw [hw_def, dist_eq_norm]
+  have hw_summable : Summable fun k => ‖w k‖ := by
+    simpa [hw_norm] using hφ_sum
+  have hw_mem : ∀ k, w k ∈ J₁.toSubmodule + J₂.toSubmodule := fun k =>
+    (J₁.toSubmodule + J₂.toSubmodule).sub_mem (hz_mem _) (hz_mem _)
+  -- Decompose each difference with norm bounds.
+  choose a b ha hb hab ha_norm hb_norm using
+    fun k => exists_sum_decomp_norm J₁ J₂ (hw_mem k)
+  have ha_summable : Summable fun k => ‖a k‖ :=
+    hw_summable.of_nonneg_of_le (fun _ => norm_nonneg _) ha_norm
+  have hb_summable : Summable fun k => ‖b k‖ :=
+    hw_summable.of_nonneg_of_le (fun _ => norm_nonneg _) hb_norm
+  have ha_sum : Summable a := ha_summable.of_norm
+  have hb_sum : Summable b := hb_summable.of_norm
+  obtain ⟨A, hA_hasSum⟩ := ha_sum
+  obtain ⟨B, hB_hasSum⟩ := hb_sum
+  -- The partial sums of `a` live in the closed ideal `J₁`, hence so does `A`.
+  have hA_mem : A ∈ J₁ :=
+    h₁.mem_of_tendsto hA_hasSum
+      (Filter.Eventually.of_forall fun s =>
+        J₁.toSubmodule.sum_mem (fun k _ => ha k))
+  have hB_mem : B ∈ J₂ :=
+    h₂.mem_of_tendsto hB_hasSum
+      (Filter.Eventually.of_forall fun s =>
+        J₂.toSubmodule.sum_mem (fun k _ => hb k))
+  -- `w k = a k + b k`, so `HasSum w (A + B)`.
+  have hw_hasSum : HasSum w (A + B) := by
+    have : HasSum (fun k => a k + b k) (A + B) := hA_hasSum.add hB_hasSum
+    convert this using 1
+    funext k; exact (hab k).symm
+  -- Telescoping: partial sums of `w` tend to `z - z_seq (φ 0)`.
+  have htelescope : Filter.Tendsto
+      (fun n : ℕ => ∑ k ∈ Finset.range n, w k) Filter.atTop
+      (nhds (z - z_seq (φ 0))) := by
+    have hsum_eq : ∀ n, (∑ k ∈ Finset.range n, w k)
+        = z_seq (φ n) - z_seq (φ 0) := by
+      intro n
+      simpa [hw_def] using
+        Finset.sum_range_sub (fun k => z_seq (φ k)) n
+    simp only [hsum_eq]
+    exact hsub_lim.sub_const _
+  -- Identify the two limits of the partial sums.
+  have hAB_eq : A + B = z - z_seq (φ 0) :=
+    tendsto_nhds_unique hw_hasSum.tendsto_sum_nat htelescope
+  have hz_eq : z = z_seq (φ 0) + (A + B) := by rw [hAB_eq]; abel
+  change z ∈ (J₁.toSubmodule + J₂.toSubmodule : Submodule ℝ X)
+  rw [hz_eq]
+  exact (J₁.toSubmodule + J₂.toSubmodule).add_mem
+    (hz_mem (φ 0))
+    (Submodule.mem_sup.mpr ⟨A, hA_mem, B, hB_mem, rfl⟩)
+
+end ClosedSum
 
 end OrderIdeal
