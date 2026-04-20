@@ -99,3 +99,7 @@ The Banach lattices library in Lean.
 - **`BanLat/Preliminaries/SignedMeasure.lean`** — Auxiliary measure-theoretic
   facts about `SignedMeasure.totalVariation` and the Jordan decomposition,
   used by `Examples/MofK.lean`.
+
+## Future
+
+- (M. T.) Once we finish the banach lattice library containing the “books” on Banach lattices and move to putting papers in the library, it probably makes sense to also collect the results in “advanced” books on Banach lattices as well. Can probably get LLMs to help us understand the Banach lattice literature in both lean-type encyclopaedic ways and simultaneously in human-readable, digestible but still comprehensive books. We should not just record information in lean, but also learn a lot about our subject while doing it that will be super useful later for future research
