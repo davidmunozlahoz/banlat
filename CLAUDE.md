@@ -21,7 +21,7 @@ added one at a time and verified before proceeding.
 - After writing or modifying any declaration, use the Lean MCP
   (`lean_diagnostic_messages`) to confirm the file compiles before moving on.
 
-There are two operating modes:
+There are three operating modes:
 
 **State mode** — activated when asked to state (but not prove) a result.
 - Fill every proof body with `sorry`.
@@ -50,6 +50,41 @@ There are two operating modes:
    tactic block be replaced by a single lemma call? Aim for a soft cap of
    **~20 lines per proof body** (excluding `private` helpers). If a proof
    exceeds this, consider extracting the heavy step into a `private lemma`.
+
+**Blueprint mode** — activated when asked to write or extend the blueprint.
+The blueprint lives under `blueprint/src/` and follows the
+[`leanblueprint`](https://github.com/PatrickMassot/leanblueprint) conventions.
+Chapters are separate `.tex` files `\input`'d from `content.tex`; start a new
+chapter only when explicitly instructed.
+
+- **No proofs.** Never include `\begin{proof} … \end{proof}` blocks in the
+  blueprint. Only statements (definitions, lemmas, theorems, etc.).
+- **No private lemmas.** Only `public` Lean declarations appear in the
+  blueprint. Conversely, every public declaration in the scope of the chapter
+  must have a corresponding blueprint entry.
+- **Environments.** Use `definition`, `lemma`, `proposition`, `theorem`,
+  `corollary` from `macros/common.tex`. Add a `\label{type:short_name}` to
+  every statement (e.g. `\label{def:vector-lattice}`,
+  `\label{thm:riesz-decomp}`).
+- **Lean linkage.** On every statement, attach:
+  - `\lean{Fully.Qualified.Name}` — fully qualified Lean name(s). Multiple
+    names are comma-separated.
+  - `\leanok` — **only** if the referenced Lean declaration currently
+    compiles (verify with `lean_diagnostic_messages` or by inspecting the
+    file). Omit `\leanok` when the Lean counterpart is still `sorry`-ed or
+    does not yet exist.
+  - `\uses{label1, label2, …}` — blueprint labels of statements this result
+    depends on. This drives the dependency graph; keep it accurate.
+- **Prose.** Statements should be self-contained mathematical English, not
+  Lean syntax. Do not cite monographs (see the rule below).
+- **Workflow.**
+  1. Identify the public Lean declarations in the relevant file(s).
+  2. For each, search the existing blueprint to avoid duplicates.
+  3. Write the entry with `\label`, `\lean`, `\uses`, and `\leanok` (if
+     applicable).
+  4. After editing, run `leanblueprint checkdecls` mentally: every `\lean{…}`
+     name must exist in the project; every `\uses{…}` label must be defined
+     somewhere in the blueprint.
 
 ---
 
