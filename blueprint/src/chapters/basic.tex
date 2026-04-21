@@ -1,3 +1,835 @@
 \chapter{The Basics}
 
+The results the reader may find missing in this chapter are likely
+already part of \verb|mathlib|. Some statements may have an
+``unusually formal'' formulation. The reason is that we try to keep
+the blueprint as similar as possible to the code. The blueprint is a
+compromise between the Lean code and the informal human maths.
+
+\section{Vector lattices and the Archimedean property}
+
+This section sets up the basic order-theoretic algebra underpinning the
+rest of the library. We work first in the generality of a lattice-ordered
+abelian group, establishing the fundamental identities for the positive
+part $x^+$, the negative part $x^-$, and the absolute value $\lvert x\rvert$,
+together with the uniqueness of the positive part and the interaction of
+the lattice operations with translation and with arbitrary suprema and
+infima. We then specialise to \emph{vector lattices}, i.e.\ real vector
+spaces with a compatible lattice structure, and record how non-negative
+scalars distribute over the lattice operations, culminating in the identity
+$\lvert \lambda x\rvert = \lvert \lambda\rvert\,\lvert x\rvert$. The section
+closes with the Archimedean property, which plays a foundational role in
+later chapters: we give two equivalent formulations and use them to show
+that an Archimedean vector lattice of rank at least two necessarily has
+vectors which are neither positive nor negative.
+
+\subsection{Lattice-ordered abelian groups}
+
+Throughout this subsection $X$ denotes an additive abelian group equipped
+with a lattice order compatible with addition (an
+\emph{$\ell$-group}). We write $x^+ := x \sqcup 0$, $x^- := (-x) \sqcup 0$
+and $\lvert x \rvert := x \sqcup (-x)$.
+
+\begin{lemma}
+\label{lem:abs-eq-zero-iff-zero}
+\lean{abs_eq_zero_iff_zero}
+\leanok
+Let $X$ be a lattice-ordered abelian group and let $x \in X$. Then
+$\lvert x \rvert = 0$ if and only if $x = 0$.
+\end{lemma}
+
+\begin{lemma}
+\label{lem:uniqueness-posPart}
+\lean{uniqueness_posPart}
+\leanok
+Let $X$ be a lattice-ordered abelian group, let $x \in X$, and suppose
+$u, v \in X$ satisfy $x = u - v$ and $u \sqcap v = 0$. Then $u = x^+$.
+\end{lemma}
+
+\begin{lemma}
+\label{lem:sup-eq-add-posPart}
+\lean{sup_eq_add_posPart}
+\leanok
+For all $x, y$ in a lattice-ordered abelian group,
+$x \sqcup y = x + (y - x)^+.$
+\end{lemma}
+
+\begin{lemma}
+\label{lem:inf-eq-sub-posPart}
+\lean{inf_eq_sub_posPart}
+\leanok
+For all $x, y$ in a lattice-ordered abelian group,
+$x \sqcap y = x - (x - y)^+.$
+\end{lemma}
+
+\begin{lemma}
+\label{lem:sub-inf-eq-posPart}
+\lean{sub_inf_eq_posPart}
+\leanok
+For all $x, y$ in a lattice-ordered abelian group,
+$x - x \sqcap y = (x - y)^+.$
+\end{lemma}
+
+\begin{lemma}
+\label{lem:posPart-add-le}
+\lean{posPart_add_le}
+\leanok
+For all $x, y$ in a lattice-ordered abelian group,
+$(x + y)^+ \le x^+ + y^+.$
+\end{lemma}
+
+\begin{lemma}
+\label{lem:inf-le-inf-add-inf-of-nonneg}
+\lean{inf_le_inf_add_inf_of_nonneg}
+\leanok
+Let $X$ be a lattice-ordered abelian group and let $x, a, b \in X$ with
+$0 \le x$, $0 \le a$, and $0 \le b$. Then
+$x \sqcap (a + b) \le x \sqcap a + x \sqcap b.$
+\end{lemma}
+
+\begin{lemma}
+\label{lem:isLUB-const-add}
+\lean{isLUB_const_add}
+\leanok
+Let $X$ be a lattice-ordered abelian group, let $A \subseteq X$ and
+$a, x \in X$. If $a = \sup A$, then
+$x + a = \sup \{x + z : z \in A\}$.
+\end{lemma}
+
+\begin{lemma}
+\label{lem:isGLB-const-add}
+\lean{isGLB_const_add}
+\leanok
+Let $X$ be a lattice-ordered abelian group, let $A \subseteq X$ and
+$a, x \in X$. If $a = \inf A$, then
+$x + a = \inf \{x + z : z \in A\}$.
+\end{lemma}
+
+\begin{lemma}
+\label{lem:isLUB-inf-const}
+\lean{isLUB_inf_const}
+\leanok
+\uses{lem:inf-eq-sub-posPart, lem:sub-inf-eq-posPart}
+Let $X$ be a lattice-ordered abelian group, let $A \subseteq X$ and
+$a, x \in X$. If $a = \sup A$, then
+$x \sqcap a = \sup \{x \sqcap z : z \in A\}$.
+\end{lemma}
+
+\begin{lemma}
+\label{lem:isGLB-sup-const}
+\lean{isGLB_sup_const}
+\leanok
+\uses{lem:sup-eq-add-posPart}
+Let $X$ be a lattice-ordered abelian group, let $A \subseteq X$ and
+$a, x \in X$. If $a = \inf A$, then
+$x \sqcup a = \inf \{x \sqcup z : z \in A\}$.
+\end{lemma}
+
+\begin{lemma}
+\label{lem:isGLB-add-sets}
+\lean{isGLB_add_sets}
+\leanok
+Let $X$ be a lattice-ordered abelian group, let $A, B \subseteq X$ and
+$a, b \in X$. If $a = \inf A$ and $b = \inf B$, then
+$a + b = \inf \{p + q : p \in A,\ q \in B\}$.
+\end{lemma}
+
+\begin{lemma}
+\label{lem:isGLB-sup-sets}
+\lean{isGLB_sup_sets}
+\leanok
+\uses{lem:isGLB-sup-const}
+Let $X$ be a lattice-ordered abelian group, let $A, B \subseteq X$ and
+$a, b \in X$. If $a = \inf A$ and $b = \inf B$, then
+$a \sqcup b = \inf \{p \sqcup q : p \in A,\ q \in B\}$.
+\end{lemma}
+
+\begin{lemma}
+\label{lem:isGLB-union}
+\lean{isGLB_union}
+\leanok
+Let $X$ be a lattice, let $A, B \subseteq X$ and $a, b \in X$. If
+$a = \inf A$ and $b = \inf B$, then $a \sqcap b = \inf (A \cup B)$.
+\end{lemma}
+
+\subsection{Vector lattices}
+
+A \emph{vector lattice} is a lattice-ordered abelian group equipped with
+a real vector space structure whose scalar multiplication by non-negative
+reals is monotone. Throughout this subsection $X$ denotes a vector
+lattice.
+
+\begin{definition}
+\label{def:vector-lattice}
+\lean{VectorLattice}
+\leanok
+Let $X$ be an additive abelian group equipped with a lattice structure
+compatible with addition. A \emph{vector lattice} structure on $X$
+consists of a real vector space structure on $X$ for which scalar
+multiplication by non-negative reals is monotone: for all $\lambda \ge 0$
+and $x \le y$ in $X$, $\lambda x \le \lambda y$.
+\end{definition}
+
+\begin{lemma}
+\label{lem:nonneg-smul-sup}
+\lean{nonneg_smul_sup}
+\leanok
+Let $X$ be a vector lattice, let $x, y \in X$ and let $\lambda \in
+\mathbb{R}$ with $\lambda \ge 0$. Then
+$\lambda \cdot (x \sqcup y) = (\lambda x) \sqcup (\lambda y).$
+\end{lemma}
+
+\begin{lemma}
+\label{lem:isLUB-smul-of-nonneg}
+\lean{isLUB_smul_of_nonneg}
+\leanok
+Let $X$ be a vector lattice, let $A \subseteq X$ and $a \in X$, and let
+$\lambda \in \mathbb{R}$ with $\lambda \ge 0$. If $a = \sup A$, then
+$\lambda a = \sup \{\lambda z : z \in A\}$.
+\end{lemma}
+
+\begin{lemma}
+\label{lem:isGLB-smul-of-nonneg}
+\lean{isGLB_smul_of_nonneg}
+\leanok
+Let $X$ be a vector lattice, let $A \subseteq X$ and $a \in X$, and let
+$\lambda \in \mathbb{R}$ with $\lambda \ge 0$. If $a = \inf A$, then
+$\lambda a = \inf \{\lambda z : z \in A\}$.
+\end{lemma}
+
+\begin{lemma}
+\label{lem:nonneg-smul-inf}
+\lean{nonneg_smul_inf}
+\leanok
+\uses{lem:nonneg-smul-sup}
+Let $X$ be a vector lattice, let $x, y \in X$ and let $\lambda \in
+\mathbb{R}$ with $\lambda \ge 0$. Then
+$\lambda \cdot (x \sqcap y) = (\lambda x) \sqcap (\lambda y).$
+\end{lemma}
+
+\begin{lemma}
+\label{lem:sup-smul-nonneg}
+\lean{sup_smul_nonneg}
+\leanok
+Let $X$ be a vector lattice, let $x \in X$ with $0 \le x$ and let
+$\alpha, \beta \in \mathbb{R}$. Then
+$(\alpha \sqcup \beta) \cdot x = (\alpha x) \sqcup (\beta x).$
+\end{lemma}
+
+\begin{lemma}
+\label{lem:inf-smul-nonneg}
+\lean{inf_smul_nonneg}
+\leanok
+Let $X$ be a vector lattice, let $x \in X$ with $0 \le x$ and let
+$\alpha, \beta \in \mathbb{R}$. Then
+$(\alpha \sqcap \beta) \cdot x = (\alpha x) \sqcap (\beta x).$
+\end{lemma}
+
+\begin{theorem}
+\label{thm:abs-smul}
+\lean{abs_smul'}
+\leanok
+\uses{lem:nonneg-smul-sup}
+Let $X$ be a vector lattice, let $x \in X$ and $\alpha \in \mathbb{R}$.
+Then $\lvert \alpha x \rvert = \lvert \alpha\rvert \cdot \lvert x\rvert.$
+\end{theorem}
+
+\begin{lemma}
+\label{lem:disjoint-smul}
+\lean{disjoint_smul}
+\leanok
+\uses{lem:nonneg-smul-inf}
+Let $X$ be a vector lattice, let $x, y \in X$ with $x \sqcap y = 0$ and
+let $\lambda \in \mathbb{R}$ with $0 \le \lambda$. Then
+$(\lambda x) \sqcap y = 0.$
+\end{lemma}
+
+\subsection{The Archimedean property}
+
+\begin{definition}
+\label{def:is-vl-archimedean}
+\lean{IsVLArchimedean}
+\leanok
+A lattice-ordered abelian group $X$ is called \emph{Archimedean} when,
+for every $x, y \in X$ with $0 \le x$ and $n \cdot x \le y$ for all
+$n \in \mathbb{N}$, one has $x = 0$.
+\end{definition}
+
+\begin{lemma}
+\label{lem:is-vl-archimedean-iff-le-zero}
+\lean{isVLArchimedean_iff_le_zero_of_forall_nsmul_le}
+\leanok
+\uses{def:is-vl-archimedean}
+Let $X$ be a lattice-ordered abelian group. Then $X$ is Archimedean if
+and only if for all $x, y \in X$ the condition $n \cdot x \le y$ for all
+$n \in \mathbb{N}$ implies $x \le 0$.
+\end{lemma}
+
+\begin{lemma}
+\label{lem:is-vl-archimedean-iff-isGLB-inv-smul}
+\lean{isVLArchimedean_iff_isGLB_inv_smul}
+\leanok
+\uses{def:is-vl-archimedean, lem:is-vl-archimedean-iff-le-zero}
+A vector lattice $X$ is Archimedean if and only if for every $u \in X$
+with $0 \le u$,
+$\inf \{ n^{-1} \cdot u : n \in \mathbb{N},\ n > 0 \} = 0$.
+\end{lemma}
+
+\begin{lemma}
+\label{lem:infinitesimal-eq-zero}
+\lean{infinitesimal_eq_zero}
+\leanok
+\uses{def:is-vl-archimedean, lem:abs-eq-zero-iff-zero}
+Let $X$ be an Archimedean lattice-ordered abelian group and let
+$x, y \in X$. If $n \cdot \lvert x \rvert \le y$ for all $n \in
+\mathbb{N}$, then $x = 0$.
+\end{lemma}
+
+\begin{theorem}
+\label{thm:exists-not-nonneg-not-nonpos}
+\lean{exists_not_nonneg_not_nonpos_of_one_lt_rank}
+\leanok
+\uses{def:is-vl-archimedean, lem:infinitesimal-eq-zero, thm:abs-smul}
+Let $X$ be an Archimedean vector lattice with dimension
+strictly greater than $1$. Then there exists $x \in X$ which is neither
+non-negative nor non-positive.
+\end{theorem}
+
+\section{Riesz decomposition}
+
+This section collects the Riesz decomposition theorem and its standard
+refinements in a lattice-ordered abelian group $X$. The binary form
+splits a positive element dominated by a sum of two positive elements
+into a corresponding sum. Iterating and combining the argument yields a
+matrix form for two partitions of the same positive sum, a version with
+a finite sum on the left hand side, a decomposition adapted to the
+absolute value, and an identification of sum intervals
+$[0, x] + [0, y] = [0, x + y]$ for $x, y \ge 0$.
+
+\begin{theorem}
+\label{thm:riesz-decomposition}
+\lean{riesz_decomposition}
+\leanok
+Let $X$ be a lattice-ordered abelian group and let $x, y, z \in X$ with
+$0 \le x$, $0 \le y$, $0 \le z$ and $x \le y + z$. Then there exist
+$x_1, x_2 \in X$ with $0 \le x_1 \le y$, $0 \le x_2 \le z$ and
+$x = x_1 + x_2$.
+\end{theorem}
+
+\begin{theorem}
+\label{thm:riesz-decomposition-matrix}
+\lean{riesz_decomposition_matrix}
+\leanok
+\uses{thm:riesz-decomposition}
+Let $X$ be a lattice-ordered abelian group, let $m, n \in \mathbb{N}$,
+let $u : \{0, \dots, m-1\} \to X$ and $z : \{0, \dots, n-1\} \to X$
+with $0 \le u_i$ for all $i$ and $0 \le z_j$ for all $j$, and
+$\sum_i u_i = \sum_j z_j$. Then there exists a family
+$x : \{0, \dots, m-1\} \times \{0, \dots, n-1\} \to X$ with $0 \le x_{ij}$
+for all $i, j$ such that $u_i = \sum_j x_{ij}$ for every $i$ and
+$z_j = \sum_i x_{ij}$ for every $j$.
+\end{theorem}
+
+\begin{theorem}
+\label{thm:riesz-decomposition-sum-le}
+\lean{riesz_decomposition_sum_le}
+\leanok
+\uses{thm:riesz-decomposition, thm:riesz-decomposition-matrix}
+Let $X$ be a lattice-ordered abelian group, let $k \in \mathbb{N}$, let
+$u : \{0, \dots, k-1\} \to X$ and $x, y \in X$ with $0 \le u_i$ for all
+$i$, $0 \le x$, $0 \le y$ and $\sum_i u_i \le x + y$. Then there exist
+$v, w : \{0, \dots, k-1\} \to X$ with $0 \le v_i$ and $0 \le w_i$ for
+all $i$, $\sum_i v_i \le x$, $\sum_i w_i \le y$, and $u_i = v_i + w_i$
+for every $i$.
+\end{theorem}
+
+\begin{theorem}
+\label{thm:exists-abs-decomposition}
+\lean{exists_abs_decomposition}
+\leanok
+\uses{thm:riesz-decomposition, lem:uniqueness-posPart}
+Let $X$ be a lattice-ordered abelian group, let $x, u, v \in X$ with
+$0 \le u$, $0 \le v$ and $\lvert x \rvert = u + v$. Then there exist
+$y, z \in X$ with $x = y + z$, $\lvert y \rvert = u$ and
+$\lvert z \rvert = v$.
+\end{theorem}
+
+\begin{theorem}
+\label{thm:riesz-decomposition-abs}
+\lean{riesz_decomposition_abs}
+\leanok
+\uses{thm:riesz-decomposition, thm:exists-abs-decomposition}
+Let $X$ be a lattice-ordered abelian group, let $n \in \mathbb{N}$, let
+$x \in X$ and let $v : \{0, \dots, n-1\} \to X$ with $0 \le v_i$ for
+every $i$ and $\lvert x \rvert \le \sum_i v_i$. Then there exists
+$y : \{0, \dots, n-1\} \to X$ with $x = \sum_i y_i$ and
+$\lvert y_i \rvert \le \lvert x \rvert \sqcap v_i$ for every $i$.
+\end{theorem}
+
+\begin{theorem}
+\label{thm:Icc-add-Icc-of-nonneg}
+\lean{Icc_add_Icc_of_nonneg}
+\leanok
+\uses{thm:riesz-decomposition}
+Let $X$ be a lattice-ordered abelian group and let $x, y \in X$ with
+$0 \le x$ and $0 \le y$. Then
+$[0, x] + [0, y] = [0, x + y]$
+as subsets of $X$.
+\end{theorem}
+
+\section{Normed and Banach lattices}
+
+A \emph{normed vector lattice} is a real vector lattice equipped with a
+norm satisfying the solid axiom $\lvert x \rvert \le \lvert y \rvert
+\Rightarrow \lVert x \rVert \le \lVert y \rVert$. This compatibility
+between the norm and the lattice operations has a number of immediate
+consequences: the lattice operations $\sqcup$, $\sqcap$ and
+$\lvert \cdot \rvert$ are norm-continuous, the space is automatically
+Archimedean, the positive cone is norm-closed, order intervals are
+norm-closed and norm-bounded, and monotone norm-convergent sequences
+converge to their supremum. A \emph{Banach lattice} is a normed vector
+lattice whose norm is complete.
+
+\begin{definition}
+\label{def:normed-vector-lattice}
+\lean{NormedVectorLattice}
+\leanok
+\uses{def:vector-lattice}
+Let $X$ be a normed abelian group equipped with a compatible lattice
+structure. A \emph{normed vector lattice} structure on $X$ consists of
+a vector lattice structure together with the solid axiom
+$\lvert x \rvert \le \lvert y \rvert \implies \lVert x \rVert \le
+\lVert y \rVert$ for all $x, y \in X$, and the identity $\lVert
+\lambda x \rVert = \lvert \lambda \rvert \, \lVert x \rVert$ for all
+$\lambda \in \mathbb{R}$ and $x \in X$.
+\end{definition}
+
+\begin{lemma}
+\label{lem:normed-vector-lattice-normed-space}
+\lean{NormedVectorLattice.instNormedSpace}
+\leanok
+\uses{def:normed-vector-lattice}
+Every normed vector lattice is a normed space over $\mathbb{R}$.
+\end{lemma}
+
+\begin{theorem}
+\label{thm:continuous-sup}
+\lean{NormedVectorLattice.continuous_sup}
+\leanok
+\uses{def:normed-vector-lattice}
+Let $X$ be a normed vector lattice. The map $(x, y) \mapsto x \sqcup y$
+from $X \times X$ to $X$ is continuous.
+\end{theorem}
+
+\begin{theorem}
+\label{thm:continuous-inf}
+\lean{NormedVectorLattice.continuous_inf}
+\leanok
+\uses{def:normed-vector-lattice}
+Let $X$ be a normed vector lattice. The map $(x, y) \mapsto x \sqcap y$
+from $X \times X$ to $X$ is continuous.
+\end{theorem}
+
+\begin{theorem}
+\label{thm:lipschitz-abs}
+\lean{NormedVectorLattice.lipschitzWith_abs}
+\leanok
+\uses{def:normed-vector-lattice}
+Let $X$ be a normed vector lattice. The map $x \mapsto \lvert x \rvert$
+from $X$ to $X$ is Lipschitz with constant $1$.
+\end{theorem}
+
+\begin{theorem}
+\label{thm:normed-vector-lattice-archimedean}
+\lean{NormedVectorLattice.instIsVLArchimedean}
+\leanok
+\uses{def:normed-vector-lattice, def:is-vl-archimedean}
+Every normed vector lattice is Archimedean.
+\end{theorem}
+
+\begin{lemma}
+\label{lem:normed-vector-lattice-orderClosedTopology}
+\lean{NormedVectorLattice.instOrderClosedTopology}
+\leanok
+\uses{def:normed-vector-lattice}
+Let $X$ be a normed vector lattice. The order relation on $X$ is closed
+in the norm topology.
+\end{lemma}
+
+\begin{theorem}
+\label{thm:isClosed-nonneg-cone}
+\lean{NormedVectorLattice.isClosed_nonneg_cone}
+\leanok
+\uses{lem:normed-vector-lattice-orderClosedTopology}
+Let $X$ be a normed vector lattice. The positive cone
+$\{x \in X : 0 \le x\}$ is norm-closed.
+\end{theorem}
+
+\begin{theorem}
+\label{thm:le-of-tendsto-of-tendsto}
+\lean{NormedVectorLattice.le_of_tendsto_of_tendsto}
+\leanok
+\uses{lem:normed-vector-lattice-orderClosedTopology}
+Let $X$ be a normed vector lattice, let $u, v : \mathbb{N} \to X$ and
+$a, b \in X$. If $u_n \to a$ and $v_n \to b$ in norm and
+$u_n \le v_n$ for every $n$, then $a \le b$.
+\end{theorem}
+
+\begin{theorem}
+\label{thm:isLUB-of-monotone-tendsto}
+\lean{NormedVectorLattice.isLUB_of_monotone_tendsto}
+\leanok
+\uses{lem:normed-vector-lattice-orderClosedTopology}
+Let $X$ be a normed vector lattice, let $u : \mathbb{N} \to X$ be
+monotone and let $l \in X$. If $u_n \to l$ in norm, then $l$ is the
+least upper bound of the range of $u$.
+\end{theorem}
+
+\begin{theorem}
+\label{thm:isGLB-of-antitone-tendsto}
+\lean{NormedVectorLattice.isGLB_of_antitone_tendsto}
+\leanok
+\uses{lem:normed-vector-lattice-orderClosedTopology}
+Let $X$ be a normed vector lattice, let $u : \mathbb{N} \to X$ be
+antitone and let $l \in X$. If $u_n \to l$ in norm, then $l$ is the
+greatest lower bound of the range of $u$.
+\end{theorem}
+
+\begin{lemma}
+\label{lem:isClosed-interval}
+\lean{NormedVectorLattice.isClosed_interval}
+\leanok
+\uses{lem:normed-vector-lattice-orderClosedTopology}
+Let $X$ be a normed vector lattice and let $a, b \in X$. The order
+interval $[a, b]$ is norm-closed.
+\end{lemma}
+
+\begin{lemma}
+\label{lem:norm-le-norm-abs-sup-abs-of-mem-Icc}
+\lean{NormedVectorLattice.norm_le_norm_abs_sup_abs_of_mem_Icc}
+\leanok
+\uses{def:normed-vector-lattice}
+Let $X$ be a normed vector lattice, let $a, b \in X$ and let
+$x \in [a, b]$. Then $\lVert x \rVert \le \lVert \lvert a \rvert \sqcup
+\lvert b \rvert \rVert$.
+\end{lemma}
+
+\begin{theorem}
+\label{thm:isBounded-of-bddBelow-bddAbove}
+\lean{NormedVectorLattice.isBounded_of_bddBelow_bddAbove}
+\leanok
+\uses{lem:norm-le-norm-abs-sup-abs-of-mem-Icc}
+Let $X$ be a normed vector lattice and let $s \subseteq X$ be both
+bounded below and bounded above in the order. Then $s$ is norm-bounded.
+\end{theorem}
+
+\begin{definition}
+\label{def:banach-lattice}
+\lean{BanachLattice}
+\leanok
+\uses{def:normed-vector-lattice}
+A \emph{Banach lattice} is a normed vector lattice whose underlying
+normed space is complete.
+\end{definition}
+
+\section{Disjointness}
+
+Two elements of a lattice-ordered abelian group are \emph{disjoint} when
+the infimum of their absolute values vanishes. This section develops the
+elementary calculus of disjointness: symmetry, the zero rules, the
+Birkhoff identity $\lvert x + y \rvert = \lvert x \rvert + \lvert y \rvert$
+for disjoint pairs, uniqueness of the positive/negative decomposition,
+compatibility with scalar multiplication and with monotonicity under the
+absolute value, and closure under finite suprema and sums. From these one
+deduces the finite-family identity
+$\lvert \sum_i \alpha_i x_i \rvert = \sum_i \lvert \alpha_i \rvert
+\lvert x_i \rvert$ for pairwise-disjoint families, from which any
+pairwise-disjoint family of non-zero vectors is linearly independent over
+$\mathbb{R}$. The section closes with a normed-lattice statement: a norm
+limit of a pairwise-disjoint sequence must be zero.
+
+\begin{definition}
+\label{def:isVLDisjoint}
+\lean{IsVLDisjoint}
+\leanok
+Let $X$ be a lattice-ordered abelian group and let $x, y \in X$. We say
+$x$ and $y$ are \emph{disjoint} when $\lvert x \rvert \sqcap \lvert y
+\rvert = 0$.
+\end{definition}
+
+\begin{lemma}
+\label{lem:isVLDisjoint-comm}
+\lean{isVLDisjoint_comm}
+\leanok
+\uses{def:isVLDisjoint}
+Let $X$ be a lattice-ordered abelian group and let $x, y \in X$. Then
+$x$ and $y$ are disjoint if and only if $y$ and $x$ are disjoint.
+\end{lemma}
+
+\begin{lemma}
+\label{lem:isVLDisjoint-zero-left}
+\lean{isVLDisjoint_zero_left}
+\leanok
+\uses{def:isVLDisjoint}
+Let $X$ be a lattice-ordered abelian group and let $x \in X$. Then $0$
+and $x$ are disjoint.
+\end{lemma}
+
+\begin{lemma}
+\label{lem:isVLDisjoint-zero-right}
+\lean{isVLDisjoint_zero_right}
+\leanok
+\uses{def:isVLDisjoint}
+Let $X$ be a lattice-ordered abelian group and let $x \in X$. Then $x$
+and $0$ are disjoint.
+\end{lemma}
+
+\begin{lemma}
+\label{lem:inf-eq-zero-of-isVLDisjoint}
+\lean{inf_eq_zero_of_isVLDisjoint}
+\leanok
+\uses{def:isVLDisjoint}
+Let $X$ be a lattice-ordered abelian group and let $x, y \in X$ with
+$0 \le x$ and $0 \le y$. If $x$ and $y$ are disjoint, then $x \sqcap y
+= 0$.
+\end{lemma}
+
+\begin{lemma}
+\label{lem:isVLDisjoint-of-inf-eq-zero}
+\lean{isVLDisjoint_of_inf_eq_zero}
+\leanok
+\uses{def:isVLDisjoint}
+Let $X$ be a lattice-ordered abelian group and let $x, y \in X$ with
+$x \sqcap y = 0$. Then $x$ and $y$ are disjoint.
+\end{lemma}
+
+\begin{theorem}
+\label{thm:isVLDisjoint-decomposition-unique}
+\lean{isVLDisjoint_decomposition_unique}
+\leanok
+\uses{def:isVLDisjoint, lem:inf-eq-zero-of-isVLDisjoint, lem:uniqueness-posPart}
+Let $X$ be a lattice-ordered abelian group and let $u_1, v_1, u_2, v_2
+\in X$ be non-negative elements. If $u_1$ and $v_1$ are disjoint, $u_2$
+and $v_2$ are disjoint, and $u_1 - v_1 = u_2 - v_2$, then $u_1 = u_2$
+and $v_1 = v_2$.
+\end{theorem}
+
+\begin{theorem}
+\label{thm:abs-add-of-isVLDisjoint}
+\lean{abs_add_of_isVLDisjoint}
+\leanok
+\uses{def:isVLDisjoint, lem:uniqueness-posPart, lem:inf-le-inf-add-inf-of-nonneg}
+Let $X$ be a lattice-ordered abelian group and let $x, y \in X$ be
+disjoint. Then $\lvert x + y \rvert = \lvert x \rvert + \lvert y \rvert$.
+\end{theorem}
+
+\begin{lemma}
+\label{lem:abs-sup-of-isVLDisjoint}
+\lean{abs_sup_of_isVLDisjoint}
+\leanok
+\uses{def:isVLDisjoint}
+Let $X$ be a lattice-ordered abelian group and let $x, y \in X$ with
+$0 \le x$, $0 \le y$ and $x$, $y$ disjoint. Then $\lvert x \sqcup y
+\rvert = \lvert x \rvert \sqcup \lvert y \rvert$.
+\end{lemma}
+
+\begin{lemma}
+\label{lem:isVLDisjoint-posPart-negPart}
+\lean{isVLDisjoint_posPart_negPart}
+\leanok
+\uses{def:isVLDisjoint, lem:isVLDisjoint-of-inf-eq-zero}
+Let $X$ be a lattice-ordered abelian group and let $x \in X$. Then
+$x^+$ and $x^-$ are disjoint.
+\end{lemma}
+
+\begin{lemma}
+\label{lem:isVLDisjoint-mono-right}
+\lean{IsVLDisjoint.mono_right}
+\leanok
+\uses{def:isVLDisjoint}
+Let $X$ be a lattice-ordered abelian group and let $x, y, z \in X$. If
+$x$ and $y$ are disjoint and $\lvert z \rvert \le \lvert y \rvert$, then
+$x$ and $z$ are disjoint.
+\end{lemma}
+
+\begin{lemma}
+\label{lem:isVLDisjoint-mono-left}
+\lean{IsVLDisjoint.mono_left}
+\leanok
+\uses{def:isVLDisjoint, lem:isVLDisjoint-mono-right, lem:isVLDisjoint-comm}
+Let $X$ be a lattice-ordered abelian group and let $x, y, z \in X$. If
+$x$ and $y$ are disjoint and $\lvert z \rvert \le \lvert x \rvert$, then
+$z$ and $y$ are disjoint.
+\end{lemma}
+
+\begin{lemma}
+\label{lem:isVLDisjoint-smul-left}
+\lean{IsVLDisjoint.smul_left}
+\leanok
+\uses{def:isVLDisjoint, thm:abs-smul, lem:disjoint-smul}
+Let $X$ be a vector lattice and let $x, y \in X$ be disjoint. For every
+$\alpha \in \mathbb{R}$, $\alpha x$ and $y$ are disjoint.
+\end{lemma}
+
+\begin{lemma}
+\label{lem:isVLDisjoint-smul-right}
+\lean{IsVLDisjoint.smul_right}
+\leanok
+\uses{def:isVLDisjoint, lem:isVLDisjoint-smul-left, lem:isVLDisjoint-comm}
+Let $X$ be a vector lattice and let $x, y \in X$ be disjoint. For every
+$\alpha \in \mathbb{R}$, $x$ and $\alpha y$ are disjoint.
+\end{lemma}
+
+\begin{theorem}
+\label{thm:exists-pair-ne-zero-isVLDisjoint}
+\lean{exists_pair_ne_zero_isVLDisjoint}
+\leanok
+\uses{def:isVLDisjoint, lem:isVLDisjoint-posPart-negPart, thm:exists-not-nonneg-not-nonpos}
+Let $X$ be an Archimedean vector lattice with dimension strictly greater
+than $1$. Then there exist non-zero $u, v \in X$ with $u$ and $v$
+disjoint.
+\end{theorem}
+
+\begin{lemma}
+\label{lem:add-eq-sup-of-isVLDisjoint-of-nonneg}
+\lean{add_eq_sup_of_isVLDisjoint_of_nonneg}
+\leanok
+\uses{def:isVLDisjoint, lem:inf-eq-zero-of-isVLDisjoint}
+Let $X$ be a lattice-ordered abelian group and let $x, y \in X$ with
+$0 \le x$, $0 \le y$ and $x$, $y$ disjoint. Then $x + y = x \sqcup y$.
+\end{lemma}
+
+\begin{lemma}
+\label{lem:sup-abs-eq-add-abs-of-isVLDisjoint}
+\lean{sup_abs_eq_add_abs_of_isVLDisjoint}
+\leanok
+\uses{def:isVLDisjoint}
+Let $X$ be a lattice-ordered abelian group and let $x, y \in X$ be
+disjoint. Then $\lvert x \rvert \sqcup \lvert y \rvert = \lvert x \rvert
++ \lvert y \rvert$.
+\end{lemma}
+
+\begin{lemma}
+\label{lem:abs-add-eq-sup-abs-of-isVLDisjoint}
+\lean{abs_add_eq_sup_abs_of_isVLDisjoint}
+\leanok
+\uses{thm:abs-add-of-isVLDisjoint, lem:sup-abs-eq-add-abs-of-isVLDisjoint}
+Let $X$ be a lattice-ordered abelian group and let $x, y \in X$ be
+disjoint. Then $\lvert x + y \rvert = \lvert x \rvert \sqcup \lvert y
+\rvert$.
+\end{lemma}
+
+\begin{lemma}
+\label{lem:isVLDisjoint-sup-right}
+\lean{IsVLDisjoint.sup_right}
+\leanok
+\uses{def:isVLDisjoint, lem:inf-le-inf-add-inf-of-nonneg}
+Let $X$ be a lattice-ordered abelian group and let $x, y, z \in X$. If
+$x$ and $y$ are disjoint and $x$ and $z$ are disjoint, then $x$ and
+$y \sqcup z$ are disjoint.
+\end{lemma}
+
+\begin{lemma}
+\label{lem:isVLDisjoint-add-right}
+\lean{IsVLDisjoint.add_right}
+\leanok
+\uses{def:isVLDisjoint, lem:inf-le-inf-add-inf-of-nonneg}
+Let $X$ be a lattice-ordered abelian group and let $x, y, z \in X$. If
+$x$ and $y$ are disjoint and $x$ and $z$ are disjoint, then $x$ and
+$y + z$ are disjoint.
+\end{lemma}
+
+\begin{lemma}
+\label{lem:isVLDisjoint-sup-left}
+\lean{IsVLDisjoint.sup_left}
+\leanok
+\uses{lem:isVLDisjoint-sup-right, lem:isVLDisjoint-comm}
+Let $X$ be a lattice-ordered abelian group and let $x, y, z \in X$. If
+$x$ and $z$ are disjoint and $y$ and $z$ are disjoint, then $x \sqcup y$
+and $z$ are disjoint.
+\end{lemma}
+
+\begin{lemma}
+\label{lem:isVLDisjoint-add-left}
+\lean{IsVLDisjoint.add_left}
+\leanok
+\uses{lem:isVLDisjoint-add-right, lem:isVLDisjoint-comm}
+Let $X$ be a lattice-ordered abelian group and let $x, y, z \in X$. If
+$x$ and $z$ are disjoint and $y$ and $z$ are disjoint, then $x + y$ and
+$z$ are disjoint.
+\end{lemma}
+
+\begin{lemma}
+\label{lem:isVLDisjoint-sub-inf}
+\lean{isVLDisjoint_sub_inf}
+\leanok
+\uses{def:isVLDisjoint, lem:sub-inf-eq-posPart, lem:isVLDisjoint-posPart-negPart}
+Let $X$ be a lattice-ordered abelian group and let $x, y \in X$. Then
+$x - x \sqcap y$ and $y - x \sqcap y$ are disjoint.
+\end{lemma}
+
+\begin{theorem}
+\label{thm:isVLDisjoint-posPart-sub-smul}
+\lean{isVLDisjoint_posPart_sub_smul}
+\leanok
+\uses{def:isVLDisjoint, lem:isVLDisjoint-posPart-negPart, lem:isVLDisjoint-smul-right, lem:nonneg-smul-sup}
+Let $X$ be a vector lattice, let $x, y \in X$ and $\lambda \in \mathbb{R}$
+with $0 < \lambda$. Then $(x - \lambda y)^+$ and $(y - \lambda^{-1} x)^+$
+are disjoint.
+\end{theorem}
+
+\begin{theorem}
+\label{thm:sum-eq-sup-of-pairwise-isVLDisjoint-of-nonneg}
+\lean{sum_eq_sup_of_pairwise_isVLDisjoint_of_nonneg}
+\leanok
+\uses{def:isVLDisjoint, lem:add-eq-sup-of-isVLDisjoint-of-nonneg, lem:isVLDisjoint-add-right}
+Let $X$ be a lattice-ordered abelian group, let $n \in \mathbb{N}$ with
+$n > 0$, and let $f : \{0, \dots, n-1\} \to X$ be a family of
+non-negative elements which is pairwise disjoint. Then
+$\sum_i f_i = \bigsqcup_i f_i$.
+\end{theorem}
+
+\begin{theorem}
+\label{thm:abs-sum-of-pairwise-isVLDisjoint}
+\lean{abs_sum_of_pairwise_isVLDisjoint}
+\leanok
+\uses{def:isVLDisjoint, thm:abs-add-of-isVLDisjoint, thm:abs-smul, lem:isVLDisjoint-smul-left, lem:isVLDisjoint-smul-right, lem:isVLDisjoint-add-right}
+Let $X$ be a vector lattice, let $n \in \mathbb{N}$, and let
+$x : \{0, \dots, n-1\} \to X$ be a pairwise-disjoint family. For every
+$\alpha : \{0, \dots, n-1\} \to \mathbb{R}$,
+$\lvert \sum_i \alpha_i x_i \rvert = \sum_i \lvert \alpha_i \rvert
+\lvert x_i \rvert$.
+\end{theorem}
+
+\begin{theorem}
+\label{thm:sup-smul-eq-sum-of-pairwise-isVLDisjoint-of-nonneg}
+\lean{sup_smul_eq_sum_of_pairwise_isVLDisjoint_of_nonneg}
+\leanok
+\uses{thm:sum-eq-sup-of-pairwise-isVLDisjoint-of-nonneg, lem:isVLDisjoint-smul-left, lem:isVLDisjoint-smul-right}
+Let $X$ be a vector lattice, let $n \in \mathbb{N}$ with $n > 0$, and let
+$x : \{0, \dots, n-1\} \to X$ be a pairwise-disjoint family of
+non-negative elements. For every non-negative family
+$\alpha : \{0, \dots, n-1\} \to \mathbb{R}$,
+$\sum_i \alpha_i x_i = \bigsqcup_i \alpha_i x_i$.
+\end{theorem}
+
+\begin{theorem}
+\label{thm:linearIndependent-of-pairwise-isVLDisjoint}
+\lean{linearIndependent_of_pairwise_isVLDisjoint}
+\leanok
+\uses{thm:abs-sum-of-pairwise-isVLDisjoint, lem:abs-eq-zero-iff-zero}
+Let $X$ be a vector lattice, let $n \in \mathbb{N}$, and let
+$x : \{0, \dots, n-1\} \to X$ be a pairwise-disjoint family of non-zero
+elements. Then $x$ is linearly independent over $\mathbb{R}$.
+\end{theorem}
+
+\begin{theorem}
+\label{thm:eq-zero-of-pairwise-isVLDisjoint-tendsto}
+\lean{eq_zero_of_pairwise_isVLDisjoint_tendsto}
+\leanok
+\uses{def:isVLDisjoint, def:normed-vector-lattice, thm:abs-add-of-isVLDisjoint}
+Let $Y$ be a normed vector lattice, let $u : \mathbb{N} \to Y$ be a
+pairwise-disjoint sequence, and let $x \in Y$. If $u_n \to x$ in norm,
+then $x = 0$.
+\end{theorem}
 

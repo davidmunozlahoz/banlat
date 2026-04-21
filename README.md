@@ -7,8 +7,65 @@ The Banach lattices library in Lean.
     library removing unnecesary result, optimizing the existing ones, and
     removing superfluous comments written in the development process but
     which do not contribute to the library.
+- [ ] State and prove that every disjoint sequence of non-zero vectors in a
+    Banach lattice is a 1-unconditional basic sequence.
+- [ ] Add Banach lattices induced by 1-unconditional bases (for this
+  we will have to formalize first bases in Banach spaces).
+
+## Blueprinted
+
+Progress tracker for adding files to the blueprint:
+
+### Foundations
+- [x] `BanLat/Basic.lean`
+- [x] `BanLat/RieszDec.lean`
+- [ ] `BanLat/OrderComplete.lean`
+- [x] `BanLat/Disjoint.lean`
+
+### Substructures
+- [ ] `BanLat/Sublattice.lean`
+- [ ] `BanLat/OrderDense.lean`
+- [ ] `BanLat/Ideal.lean`
+- [ ] `BanLat/Band.lean`
+- [ ] `BanLat/Atom.lean`
+- [ ] `BanLat/Quotient.lean`
+
+### Operators
+- [ ] `BanLat/Operators/Hom.lean`
+- [ ] `BanLat/Operators/Positive.lean`
+- [ ] `BanLat/Operators/OrderBounded.lean`
+- [ ] `BanLat/Operators/RieszKantorovich.lean`
+- [ ] `BanLat/Operators/Regular.lean`
+- [ ] `BanLat/Operators/IntervalPreserving.lean`
+- [ ] `BanLat/Operators/Extension.lean`
+
+### Normed and Banach lattices
+- [x] `BanLat/Normed.lean`
+- [ ] `BanLat/OrderContinuous.lean`
+- [ ] `BanLat/Dual.lean`
+- [ ] `BanLat/Bidual.lean`
+- [ ] `BanLat/Pi.lean`
+
+### Special classes and representation
+- [ ] `BanLat/AMSpace.lean`
+- [ ] `BanLat/ALSpace.lean`
+- [ ] `BanLat/KakutaniAM.lean`
+- [ ] `BanLat/KakutaniAL.lean`
+
+### Examples
+- [ ] `BanLat/Examples/Lp.lean`
+- [ ] `BanLat/Examples/CofK.lean`
+- [ ] `BanLat/Examples/MofK.lean`
+- [ ] `BanLat/Examples/SignedMeasure.lean`
+
+### Preliminaries
+- [ ] `BanLat/Preliminaries/SignedMeasure.lean`
+- [ ] `BanLat/Preliminaries/Regularity.lean`
+- [ ] `BanLat/Preliminaries/Baire.lean`
 
 ## Overview
+
+This is very likely outdated; I only update it once in a while.
 
 ### Foundations
 
@@ -18,6 +75,13 @@ The Banach lattices library in Lean.
 - **`BanLat/OrderComplete.lean`** — Order completeness (`IsOrderComplete`) and
   σ-order completeness as `Prop`-valued analogues of Mathlib's
   `ConditionallyCompleteLattice`, with their basic implications.
+- **`BanLat/Disjoint.lean`** — Disjointness `IsVLDisjoint x y ↔ |x| ⊓ |y| = 0`:
+  symmetry, zero rules, the Birkhoff identity `|x + y| = |x| + |y|`,
+  compatibility with scalar multiplication, monotonicity, closure under finite
+  suprema and sums, the finite-family identity
+  `|∑ i, α i • x i| = ∑ i, |α i| • |x i|`, linear independence of pairwise
+  disjoint non-zero families, and the vanishing of norm limits of pairwise
+  disjoint sequences in a normed vector lattice.
 
 ### Substructures
 

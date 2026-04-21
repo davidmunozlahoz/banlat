@@ -1,4 +1,4 @@
-import BanLat.Banach
+import BanLat.Operators.Hom
 
 /-!
 # Positive operators

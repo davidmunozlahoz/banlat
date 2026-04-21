@@ -1,8 +1,7 @@
 import BanLat.ALSpace
 import BanLat.AMSpace
-import BanLat.Banach
-import BanLat.OrderDense
 import BanLat.Operators.Hom
+import BanLat.OrderDense
 import Mathlib.Analysis.Normed.Lp.PiLp
 
 /-!

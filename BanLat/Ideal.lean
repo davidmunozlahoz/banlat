@@ -1,6 +1,5 @@
 import BanLat.Sublattice
 import BanLat.Normed
-import BanLat.Banach
 import Mathlib.Analysis.Normed.Group.Completeness
 
 /-!

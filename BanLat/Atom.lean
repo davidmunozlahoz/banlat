@@ -563,20 +563,6 @@ private lemma decomp_of_atom_nonneg [IsVLArchimedean X]
     change |x - C • a| ⊓ |a| = 0
     rw [habs_x, habs_a]; exact hy_zero
 
-/-- Disjointness with `a` extends to disjointness with any scalar multiple. -/
-private lemma isVLDisjoint_smul_of_isVLDisjoint {a z : X} (ha_nn : 0 ≤ a)
-    (hz : IsVLDisjoint z a) (k : ℝ) : IsVLDisjoint z (k • a) := by
-  have habs_a : |a| = a := abs_of_nonneg ha_nn
-  have hz' : |z| ⊓ a = 0 := by
-    have : |z| ⊓ |a| = 0 := hz
-    rwa [habs_a] at this
-  have habs_ka : |k • a| = (|k| : ℝ) • a := by rw [abs_smul', habs_a]
-  change |z| ⊓ |k • a| = 0
-  rw [habs_ka]
-  have h1 : a ⊓ |z| = 0 := by rw [inf_comm]; exact hz'
-  have h2 : ((|k| : ℝ) • a) ⊓ |z| = 0 := disjoint_smul a |z| (|k| : ℝ) (abs_nonneg k) h1
-  rw [inf_comm]; exact h2
-
 theorem exists_projectionBand_principalBand_of_isVLAtom [IsVLArchimedean X]
     {a : X} (h : IsVLAtom a) :
     ∃ P : ProjectionBand X, (P : Set X) = (Band.principalBand a : Set X) := by
@@ -613,7 +599,7 @@ theorem exists_projectionBand_principalBand_of_isVLAtom [IsVLArchimedean X]
       have hy_set : y ∈ (Band.principalBand a : Set X) := hy
       rw [hpb_eq] at hy_set
       obtain ⟨k, rfl⟩ := hy_set
-      exact isVLDisjoint_smul_of_isVLDisjoint ha_nn hdisj_a k
+      exact hdisj_a.smul_right k
   obtain ⟨P, hP⟩ := (ProjectionBand.projectionBand_iff_add_disjointComplement
     (Band.principalBand a).toOrderIdeal).mpr hdec
   exact ⟨P, hP⟩

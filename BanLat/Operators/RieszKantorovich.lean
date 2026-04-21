@@ -1,5 +1,6 @@
 import BanLat.Operators.OrderBounded
 import BanLat.OrderComplete
+import BanLat.RieszDec
 
 /-!
 # The Riesz-Kantorovich theorem

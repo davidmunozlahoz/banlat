@@ -1,5 +1,6 @@
 import BanLat.AMSpace
 import BanLat.Examples.CofK
+import BanLat.RieszDec
 import Mathlib.Topology.ContinuousMap.Compact
 import Mathlib.Topology.ContinuousMap.StoneWeierstrass
 
@@ -205,7 +206,9 @@ private theorem mem_of_disjoint_notMem (M : OrderIdeal X)
   have hz₂_le_cy : z₂ ≤ c • y := by
     have h1 : z₂ ≤ c • |y| := hz₂_le_u.trans hu_bound
     rwa [abs_of_nonneg hy_nn] at h1
-  have hz₂_disj_cy : (c • y) ⊓ z₂ = 0 := disjoint_smul y z₂ c hc hy_z₂
+  have hz₂_disj_cy : (c • y) ⊓ z₂ = 0 :=
+    inf_eq_zero_of_isVLDisjoint (smul_nonneg hc hy_nn) hz₂_nn
+      ((isVLDisjoint_of_inf_eq_zero hy_z₂).smul_left c)
   have hz₂_zero : z₂ = 0 := by
     have h := inf_eq_left.mpr hz₂_le_cy
     rw [inf_comm] at hz₂_disj_cy
@@ -858,8 +861,10 @@ private theorem exists_lattice_character_ge_one_of_pos_part_ne_zero
       exact lt_irrefl _ (lt_of_lt_of_le unit_pos hc_le)
     · -- c > 0
       have hdisj : (x - e)⁺ ⊓ (x - e)⁻ = 0 := posPart_inf_negPart_eq_zero _
-      have hdisj_smul : (x - e)⁺ ⊓ c • (x - e)⁻ = 0 := by
-        rw [inf_comm]; exact disjoint_smul _ _ c hc_nn (by rw [inf_comm]; exact hdisj)
+      have hdisj_smul : (x - e)⁺ ⊓ c • (x - e)⁻ = 0 :=
+        inf_eq_zero_of_isVLDisjoint (posPart_nonneg _)
+          (smul_nonneg hc_nn (negPart_nonneg _))
+          ((isVLDisjoint_of_inf_eq_zero hdisj).smul_right c)
       have h_pos_disj_e : (x - e)⁺ ⊓ e = 0 := by
         apply le_antisymm _ (le_inf (posPart_nonneg _) unit_pos.le)
         calc (x - e)⁺ ⊓ e ≤ (x - e)⁺ ⊓ (c • (x - e)⁻) :=
@@ -867,10 +872,10 @@ private theorem exists_lattice_character_ge_one_of_pos_part_ne_zero
           _ = 0 := hdisj_smul
       have h_pos_le : (x - e)⁺ ≤ ‖(x - e)⁺‖ • e :=
         (abs_le'.mp (abs_le_norm_smul_unit (x - e)⁺)).1
-      have h_pos_disj_smul_e : (x - e)⁺ ⊓ (‖(x - e)⁺‖ • e) = 0 := by
-        rw [inf_comm]
-        exact disjoint_smul _ _ ‖(x - e)⁺‖ (norm_nonneg _)
-          (by rw [inf_comm]; exact h_pos_disj_e)
+      have h_pos_disj_smul_e : (x - e)⁺ ⊓ (‖(x - e)⁺‖ • e) = 0 :=
+        inf_eq_zero_of_isVLDisjoint (posPart_nonneg _)
+          (smul_nonneg (norm_nonneg _) unit_pos.le)
+          ((isVLDisjoint_of_inf_eq_zero h_pos_disj_e).smul_right _)
       have h_pos_eq : (x - e)⁺ = (x - e)⁺ ⊓ (‖(x - e)⁺‖ • e) := by
         rw [inf_eq_left.mpr h_pos_le]
       rw [h_pos_disj_smul_e] at h_pos_eq

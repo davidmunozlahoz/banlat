@@ -879,7 +879,8 @@ theorem MofK.mem_continuousPart_iff (μ : MofK K) :
       rwa [habs_d] at hh'
     have hd_disj_μ : MofK.dirac y ⊓ |μ| = 0 := by rw [inf_comm]; exact hh
     have hcd_disj : (c • MofK.dirac y) ⊓ |μ| = 0 :=
-      disjoint_smul (MofK.dirac y) (|μ|) c hc.le hd_disj_μ
+      inf_eq_zero_of_isVLDisjoint hcd_nn (abs_nonneg _)
+        ((isVLDisjoint_of_inf_eq_zero hd_disj_μ).smul_left c)
     show |μ| ⊓ |a| = 0
     rw [ha, abs_of_nonneg hcd_nn, inf_comm]; exact hcd_disj
 

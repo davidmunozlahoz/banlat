@@ -57,6 +57,15 @@ The blueprint lives under `blueprint/src/` and follows the
 Chapters are separate `.tex` files `\input`'d from `content.tex`; start a new
 chapter only when explicitly instructed.
 
+- **Faithfulness to the formal statement (CRITICAL — highest priority).** The
+  informal statement in the blueprint must correspond **exactly** to the
+  formal Lean declaration it points to via `\lean{…}`. Every hypothesis,
+  typeclass assumption, side condition, and quantifier in the Lean signature
+  must be stated explicitly in the prose — no implicit conventions, no
+  "obvious" assumptions left out, no strengthening or weakening. The blueprint
+  is a primary tool for catching misstated results; a mismatch here defeats
+  its purpose. After writing each entry, re-read the Lean signature side by
+  side with the prose to confirm they agree.
 - **No proofs.** Never include `\begin{proof} … \end{proof}` blocks in the
   blueprint. Only statements (definitions, lemmas, theorems, etc.).
 - **No private lemmas.** Only `public` Lean declarations appear in the
@@ -77,6 +86,14 @@ chapter only when explicitly instructed.
     depends on. This drives the dependency graph; keep it accurate.
 - **Prose.** Statements should be self-contained mathematical English, not
   Lean syntax. Do not cite monographs (see the rule below).
+- **Consistency.** Nomenclature and notation must remain consistent across the
+  blueprint. It is a single coherent and cohesive document: the same concept
+  gets the same name and symbol everywhere, and terminology introduced in one
+  chapter is reused (not redefined) in later chapters.
+- **Section intros.** Begin every `\section` (and `\subsection`, when
+  non-trivial) with a short paragraph describing what the section covers, why
+  it matters, and how it fits with neighbouring sections. This intro precedes
+  the first formal environment and is plain prose (no `\label`, no `\lean`).
 - **Workflow.**
   1. Identify the public Lean declarations in the relevant file(s).
   2. For each, search the existing blueprint to avoid duplicates.

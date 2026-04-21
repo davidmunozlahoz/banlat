@@ -1,5 +1,6 @@
 import BanLat.Ideal
 import BanLat.OrderComplete
+import BanLat.Disjoint
 import BanLat.Operators.Hom
 
 /-!
@@ -20,138 +21,6 @@ structural results.
 
 variable {X : Type*} [AddCommGroup X] [Lattice X] [IsOrderedAddMonoid X]
   [VectorLattice X]
-
-/-! ### Disjointness -/
-
-/-- Two elements of a lattice-ordered group are **disjoint** when
-`|x| ⊓ |y| = 0`. -/
-def IsVLDisjoint (x y : X) : Prop := |x| ⊓ |y| = 0
-
-omit [IsOrderedAddMonoid X] [VectorLattice X] in
-@[simp]
-theorem isVLDisjoint_comm {x y : X} :
-    IsVLDisjoint x y ↔ IsVLDisjoint y x := by
-  unfold IsVLDisjoint; rw [inf_comm]
-
-omit [VectorLattice X] in
-/-- Zero is disjoint from every element. -/
-theorem isVLDisjoint_zero_left (x : X) : IsVLDisjoint 0 x := by
-  unfold IsVLDisjoint; simp [abs_zero]
-
-omit [VectorLattice X] in
-/-- Disjoint positive elements satisfy `x ⊓ y = 0`. -/
-theorem inf_eq_zero_of_isVLDisjoint {x y : X} (hx : 0 ≤ x) (hy : 0 ≤ y)
-    (h : IsVLDisjoint x y) : x ⊓ y = 0 := by
-  unfold IsVLDisjoint at h; rwa [abs_of_nonneg hx, abs_of_nonneg hy] at h
-
-omit [VectorLattice X] in
-/-- If `x ⊓ y = 0` then `x` and `y` are disjoint. -/
-theorem isVLDisjoint_of_inf_eq_zero {x y : X}
-    (h : x ⊓ y = 0) : IsVLDisjoint x y := by
-  have hx : 0 ≤ x := h ▸ inf_le_left
-  have hy : 0 ≤ y := h ▸ inf_le_right
-  unfold IsVLDisjoint; rwa [abs_of_nonneg hx, abs_of_nonneg hy]
-
-omit [VectorLattice X] in
-/-- Disjoint decomposition is unique: if `x = u₁ - v₁ = u₂ - v₂` with
-`u₁ ⊥ v₁` and `u₂ ⊥ v₂` (all non-negative), then `u₁ = u₂` and
-`v₁ = v₂`. -/
-theorem isVLDisjoint_decomposition_unique {u₁ v₁ u₂ v₂ : X}
-    (hu₁ : 0 ≤ u₁) (hv₁ : 0 ≤ v₁) (hu₂ : 0 ≤ u₂) (hv₂ : 0 ≤ v₂)
-    (hd₁ : IsVLDisjoint u₁ v₁) (hd₂ : IsVLDisjoint u₂ v₂)
-    (h : u₁ - v₁ = u₂ - v₂) : u₁ = u₂ ∧ v₁ = v₂ := by
-  have h1 := inf_eq_zero_of_isVLDisjoint hu₁ hv₁ hd₁
-  have h2 := inf_eq_zero_of_isVLDisjoint hu₂ hv₂ hd₂
-  have eq1 : u₁ = (u₁ - v₁)⁺ :=
-    uniqueness_posPart (u₁ - v₁) rfl h1
-  have eq2 : u₂ = (u₂ - v₂)⁺ :=
-    uniqueness_posPart (u₂ - v₂) rfl h2
-  have hu : u₁ = u₂ := by rw [eq1, h, ← eq2]
-  refine ⟨hu, ?_⟩
-  have := h; rw [hu, sub_eq_add_neg, sub_eq_add_neg] at this
-  exact neg_injective (add_left_cancel this)
-
-omit [IsOrderedAddMonoid X] [VectorLattice X] in
-private theorem inf_eq_zero_of_le_disjoint {a b c d : X}
-    (ha : 0 ≤ a) (hb : 0 ≤ b) (hac : a ≤ c) (hbd : b ≤ d)
-    (hcd : c ⊓ d = 0) : a ⊓ b = 0 :=
-  le_antisymm (hcd ▸ inf_le_inf hac hbd) (le_inf ha hb)
-
-omit [VectorLattice X] in
-/-- If `x ⊥ y` then `|x + y| = |x| + |y|` (Birkhoff identity). -/
-theorem abs_add_of_isVLDisjoint {x y : X} (h : IsVLDisjoint x y) :
-    |x + y| = |x| + |y| := by
-  -- Extract pairwise disjointness of parts
-  have hd : |x| ⊓ |y| = 0 := h
-  have hxp_yp : x⁺ ⊓ y⁺ = 0 := inf_eq_zero_of_le_disjoint
-    (posPart_nonneg x) (posPart_nonneg y)
-    (sup_le (le_abs_self x) (abs_nonneg x))
-    (sup_le (le_abs_self y) (abs_nonneg y)) hd
-  have hxp_yn : x⁺ ⊓ y⁻ = 0 := inf_eq_zero_of_le_disjoint
-    (posPart_nonneg x) (negPart_nonneg y)
-    (sup_le (le_abs_self x) (abs_nonneg x))
-    (sup_le (neg_le_abs y) (abs_nonneg y)) hd
-  have hxn_yp : x⁻ ⊓ y⁺ = 0 := inf_eq_zero_of_le_disjoint
-    (negPart_nonneg x) (posPart_nonneg y)
-    (sup_le (neg_le_abs x) (abs_nonneg x))
-    (sup_le (le_abs_self y) (abs_nonneg y)) hd
-  have hxn_yn : x⁻ ⊓ y⁻ = 0 := inf_eq_zero_of_le_disjoint
-    (negPart_nonneg x) (negPart_nonneg y)
-    (sup_le (neg_le_abs x) (abs_nonneg x))
-    (sup_le (neg_le_abs y) (abs_nonneg y)) hd
-  -- Show (x⁺ + y⁺) ⊓ (x⁻ + y⁻) = 0
-  have hxn_xp : x⁻ ⊓ x⁺ = 0 := by
-    rw [inf_comm]; exact posPart_inf_negPart_eq_zero x
-  have hyn_yp : y⁻ ⊓ y⁺ = 0 := by
-    rw [inf_comm]; exact posPart_inf_negPart_eq_zero y
-  have term1 : (x⁺ + y⁺) ⊓ x⁻ = 0 := by
-    apply le_antisymm _ (le_inf (add_nonneg (posPart_nonneg x) (posPart_nonneg y))
-      (negPart_nonneg x))
-    rw [inf_comm]
-    calc x⁻ ⊓ (x⁺ + y⁺)
-        ≤ x⁻ ⊓ x⁺ + x⁻ ⊓ y⁺ := inf_le_inf_add_inf_of_nonneg x⁻ x⁺ y⁺
-            (negPart_nonneg x) (posPart_nonneg x) (posPart_nonneg y)
-      _ = 0 := by rw [hxn_xp, hxn_yp, add_zero]
-  have term2 : (x⁺ + y⁺) ⊓ y⁻ = 0 := by
-    apply le_antisymm _ (le_inf (add_nonneg (posPart_nonneg x) (posPart_nonneg y))
-      (negPart_nonneg y))
-    rw [inf_comm]
-    calc y⁻ ⊓ (x⁺ + y⁺)
-        ≤ y⁻ ⊓ x⁺ + y⁻ ⊓ y⁺ := inf_le_inf_add_inf_of_nonneg y⁻ x⁺ y⁺
-            (negPart_nonneg y) (posPart_nonneg x) (posPart_nonneg y)
-      _ = 0 := by rw [inf_comm y⁻ x⁺, hxp_yn, hyn_yp, add_zero]
-  have sum_disj : (x⁺ + y⁺) ⊓ (x⁻ + y⁻) = 0 := by
-    apply le_antisymm _ (le_inf (add_nonneg (posPart_nonneg x) (posPart_nonneg y))
-      (add_nonneg (negPart_nonneg x) (negPart_nonneg y)))
-    calc (x⁺ + y⁺) ⊓ (x⁻ + y⁻)
-        ≤ (x⁺ + y⁺) ⊓ x⁻ + (x⁺ + y⁺) ⊓ y⁻ :=
-          inf_le_inf_add_inf_of_nonneg (x⁺ + y⁺) x⁻ y⁻
-            (add_nonneg (posPart_nonneg x) (posPart_nonneg y))
-            (negPart_nonneg x) (negPart_nonneg y)
-      _ = 0 := by rw [term1, term2, add_zero]
-  -- By uniqueness_posPart, (x + y)⁺ = x⁺ + y⁺
-  have hdec : x + y = (x⁺ + y⁺) - (x⁻ + y⁻) := by
-    calc x + y = (x⁺ - x⁻) + (y⁺ - y⁻) := by
-          rw [posPart_sub_negPart, posPart_sub_negPart]
-      _ = (x⁺ + y⁺) - (x⁻ + y⁻) := by abel
-  have hup := uniqueness_posPart (x + y) hdec sum_disj
-  have hun : (x + y)⁻ = x⁻ + y⁻ := by
-    have h3 := posPart_sub_negPart (x + y)
-    rw [← hup] at h3
-    -- h3 : (x⁺ + y⁺) - (x + y)⁻ = x + y
-    have h4 : x⁺ + y⁺ - (x + y)⁻ = x⁺ + y⁺ - (x⁻ + y⁻) := by
-      rw [h3, hdec]
-    exact sub_right_injective h4
-  calc |x + y| = (x + y)⁺ + (x + y)⁻ := (posPart_add_negPart (x + y)).symm
-    _ = (x⁺ + y⁺) + (x⁻ + y⁻) := by rw [← hup, hun]
-    _ = (x⁺ + x⁻) + (y⁺ + y⁻) := by abel
-    _ = |x| + |y| := by rw [posPart_add_negPart, posPart_add_negPart]
-
-omit [VectorLattice X] in
-/-- If `x ⊥ y` then `|x ⊔ y| = |x| ⊔ |y|`. -/
-theorem abs_sup_of_isVLDisjoint {x y : X} (hx : 0 ≤ x) (hy : 0 ≤ y)
-    (_ : IsVLDisjoint x y) : |x ⊔ y| = |x| ⊔ |y| := by
-  rw [abs_of_nonneg (le_sup_of_le_left hx), abs_of_nonneg hx, abs_of_nonneg hy]
 
 /-! ### Disjoint complement -/
 
@@ -396,10 +265,7 @@ def disjointComplementOrderIdeal (A : Set X) : OrderIdeal X where
               rw [inf_comm (a := |a|) (b := |x|), hx a ha,
                   inf_comm (a := |a|) (b := |y|), hy a ha, add_zero]
       zero_mem' := fun a _ => by unfold IsVLDisjoint; simp [abs_zero]
-      smul_mem' := fun r x hx a ha => by
-        unfold IsVLDisjoint
-        rw [abs_smul' x r]
-        exact disjoint_smul |x| |a| |r| (abs_nonneg r) (hx a ha) }
+      smul_mem' := fun r x hx a ha => (hx a ha).smul_left r }
   sup_mem' := fun {x y} hx hy a ha => by
     unfold IsVLDisjoint
     apply le_antisymm _ (le_inf (abs_nonneg _) (abs_nonneg _))

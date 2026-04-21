@@ -1,12 +1,14 @@
 # Fdb version 4
-["pdflatex"] 1776708732.91461 "print.tex" "/home/david/phd/lean/banlat/blueprint/print/print.pdf" "print" 1776708734.67041 0
-  "/home/david/phd/lean/banlat/blueprint/print/print.aux" 1776708734.26583 334 b1c177fc09ec72558e83c1e14f3868da "pdflatex"
-  "/home/david/phd/lean/banlat/blueprint/print/print.out" 1776708734.26683 96 260aa5f281a5fc08f85384fbd1a67040 "pdflatex"
+["pdflatex"] 1776763202.51513 "print.tex" "/home/david/phd/lean/banlat/blueprint/print/print.pdf" "print" 1776763204.45001 0
+  "/home/david/phd/lean/banlat/blueprint/print/print.aux" 1776763204.21824 4479 aeb84733d775036562fb71252af6f801 "pdflatex"
+  "/home/david/phd/lean/banlat/blueprint/print/print.out" 1776763204.21924 1273 f13a3ea063e39707b828b37f83b0ec78 "pdflatex"
   "/usr/share/texmf-dist/fonts/map/fontname/texfonts.map" 1775415801 3524 cb3e574dea2d1052e39280babc910dc8 ""
   "/usr/share/texmf-dist/fonts/tfm/adobe/zapfding/pzdr.tfm" 1775415801 1528 f853c4d1b4e0550255e02831fdc8496f ""
   "/usr/share/texmf-dist/fonts/tfm/public/amsfonts/symbols/msam10.tfm" 1775415801 916 f87d7c45f9c908e672703b83b72241a3 ""
+  "/usr/share/texmf-dist/fonts/tfm/public/amsfonts/symbols/msam5.tfm" 1775415801 924 9904cf1d39e9767e7a3622f2a125a565 ""
   "/usr/share/texmf-dist/fonts/tfm/public/amsfonts/symbols/msam7.tfm" 1775415801 928 2dc8d444221b7a635bb58038579b861a ""
   "/usr/share/texmf-dist/fonts/tfm/public/amsfonts/symbols/msbm10.tfm" 1775415801 908 2921f8a10601f252058503cc6570e581 ""
+  "/usr/share/texmf-dist/fonts/tfm/public/amsfonts/symbols/msbm5.tfm" 1775415801 940 75ac932a52f80982a9f8ea75d03a34cf ""
   "/usr/share/texmf-dist/fonts/tfm/public/amsfonts/symbols/msbm7.tfm" 1775415801 940 228d6584342e91276bf566bcf9716b83 ""
   "/usr/share/texmf-dist/fonts/tfm/public/cm/cmmi12.tfm" 1775415801 1524 4414a8315f39513458b80dfc63bff03a ""
   "/usr/share/texmf-dist/fonts/tfm/public/cm/cmmi6.tfm" 1775415801 1512 f21f83efb36853c0b70002322c1ab3ad ""
@@ -76,9 +78,9 @@
   "/usr/share/texmf-dist/tex/latex/url/url.sty" 1775415801 12796 8edb7d69a20b857904dd0ea757c14ec9 ""
   "/usr/share/texmf-dist/web2c/texmf.cnf" 1775415801 43569 fd570f2fa160877d211e859f687312ba ""
   "/var/lib/texmf/web2c/xetex/xelatex.fmt" 1775978422 5580294 7650c2500fdd8ef44df4a97a306bf0e3 ""
-  "chapters/basic.tex" 1776708667.88016 23 0f3f9f9021595cb7b664d38a285b06f0 ""
+  "chapters/basic.tex" 1776762889.62115 17478 3d11df67e8ad7b7c5e0e5073d36d011d ""
   "content.tex" 1776708685.01236 388 8ae05755fcef64e3c1952a6794794e89 ""
-  "macros/common.tex" 1776708603.64485 820 60fafcc3aa944a5e60030581a943ef6b ""
+  "macros/common.tex" 1776763197.8802 830 01105ff464e8ed56760325798aeea9ed ""
   "macros/print.tex" 1776708603.64596 1101 87627b2ec24fef68edc71c13f43f7bab ""
   "print.tex" 1776708603.65796 1144 f24ead034d8744c2cf49c92842ad00ca ""
   (generated)

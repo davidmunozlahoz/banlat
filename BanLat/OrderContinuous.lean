@@ -1,4 +1,4 @@
-import BanLat.Banach
+import BanLat.Normed
 import BanLat.Band
 import BanLat.OrderComplete
 
@@ -184,7 +184,8 @@ private lemma le_zero_of_lb_upperBounds_sub [IsVLArchimedean X]
         simpa [succ_nsmul] using h
   obtain ⟨w₀, hw₀⟩ := hbd
   obtain ⟨a₀, ha₀⟩ := hne
-  exact le_zero_of_forall_nsmul_le (fun n => key n w₀ hw₀ a₀ ha₀)
+  exact isVLArchimedean_iff_le_zero_of_forall_nsmul_le.mp inferInstance
+    (fun n => key n w₀ hw₀ a₀ ha₀)
 
 /-- An order continuous Banach lattice is order complete. -/
 instance isOrderComplete_of_isOrderContinuousNorm [IsOrderContinuousNorm X] :

@@ -1,6 +1,5 @@
 import BanLat.Ideal
 import BanLat.Operators.Hom
-import BanLat.Banach
 import Mathlib.LinearAlgebra.Quotient.Defs
 import Mathlib.LinearAlgebra.Quotient.Basic
 

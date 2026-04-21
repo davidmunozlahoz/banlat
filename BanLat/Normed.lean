@@ -3,12 +3,12 @@ import Mathlib.Analysis.Normed.Order.Lattice
 import Mathlib.Topology.Order.MonotoneConvergence
 
 /-!
-# Normed vector lattices
+# Normed vector lattices and Banach lattices
 
 A **normed vector lattice** is a real vector lattice whose norm satisfies the solid
 axiom: `|x| ≤ |y|` implies `‖x‖ ≤ ‖y‖`. This single condition encodes compatibility
-between the norm and the lattice structure. If the norm is complete, the space is a
-Banach lattice.
+between the norm and the lattice structure. A **Banach lattice** is a normed vector
+lattice whose norm is complete.
 
 The main structural consequences proved here are:
 - Lattice operations `⊔`, `⊓`, and `|·|` are norm-continuous.
@@ -18,6 +18,8 @@ The main structural consequences proved here are:
 - Every order interval is closed and norm-bounded.
 - Monotone Convergence: a monotone sequence that converges in norm converges to its
   supremum; dually for antitone sequences.
+
+The final section introduces the `BanachLattice` class.
 -/
 
 /-- A normed vector lattice is a real vector lattice equipped with a lattice norm:
@@ -135,3 +137,11 @@ theorem isBounded_of_bddBelow_bddAbove {s : Set X}
     exact norm_le_norm_abs_sup_abs_of_mem_Icc ⟨ha hx, hb hx⟩⟩
 
 end NormedVectorLattice
+
+/-!
+## Banach lattices
+-/
+
+/-- A Banach lattice is a normed vector lattice with a complete norm. -/
+class BanachLattice (X : Type*) [NormedAddCommGroup X] [Lattice X]
+    [IsOrderedAddMonoid X] extends NormedVectorLattice X, CompleteSpace X

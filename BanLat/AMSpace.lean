@@ -1,4 +1,4 @@
-import BanLat.Banach
+import BanLat.Normed
 import BanLat.Ideal
 import Mathlib.Order.Zorn
 

@@ -1,5 +1,7 @@
-import BanLat.Basic
+import BanLat.Normed
 import Mathlib.Algebra.Order.Module.Basic
+import Mathlib.Topology.Algebra.Module.Equiv
+import Mathlib.Analysis.Normed.Operator.LinearIsometry
 
 /-!
 # Morphisms of vector lattices
@@ -10,6 +12,9 @@ proposition-valued predicate characterising such maps, and `VecLatEquiv`, the ty
 vector lattice isomorphisms. Key results include the characterisation of vector lattice
 homomorphisms by their behaviour on absolute values (`of_abs`) and the fact that every
 vector lattice homomorphism is monotone.
+
+The final section introduces `BanachLatEquiv`, the type of Banach lattice isometries:
+real linear isometric equivalences that also preserve `⊔` and `⊓`.
 -/
 
 /-- A vector lattice homomorphism from `X` to `Y`: a real-linear map that also preserves
@@ -298,3 +303,46 @@ def trans {Z : Type*} [AddCommGroup Z] [Lattice Z] [IsOrderedAddMonoid Z] [Vecto
       rw [e₁.map_inf', e₂.map_inf'] }
 
 end VecLatEquiv
+
+/-! ## Banach lattice isometries -/
+
+/-- A **Banach lattice isometry** between two Banach lattices: a real linear
+isometric equivalence that also preserves the lattice operations `⊔` and `⊓`.
+Such a map is automatically an order isomorphism. -/
+structure BanachLatEquiv (X Y : Type*)
+    [NormedAddCommGroup X] [NormedAddCommGroup Y]
+    [Lattice X] [Lattice Y]
+    [IsOrderedAddMonoid X] [IsOrderedAddMonoid Y]
+    [BanachLattice X] [BanachLattice Y]
+    extends X ≃ₗᵢ[ℝ] Y, LatticeHom X Y
+
+namespace BanachLatEquiv
+
+variable {X Y : Type*}
+  [NormedAddCommGroup X] [NormedAddCommGroup Y]
+  [Lattice X] [Lattice Y]
+  [IsOrderedAddMonoid X] [IsOrderedAddMonoid Y]
+  [BanachLattice X] [BanachLattice Y]
+
+/-- The canonical `FunLike` instance, making `BanachLatEquiv X Y` a type of
+functions `X → Y`. -/
+instance instFunLike : FunLike (BanachLatEquiv X Y) X Y where
+  coe e := e.toFun
+  coe_injective' := by
+    intro f g h
+    cases f; cases g
+    congr 1
+    exact LinearIsometryEquiv.toLinearEquiv_injective
+      (LinearEquiv.toEquiv_injective (Equiv.coe_inj.mp h))
+
+/-- Coerce a `BanachLatEquiv` to a continuous linear equivalence. -/
+noncomputable def toContinuousLinearEquiv (e : BanachLatEquiv X Y) : X ≃L[ℝ] Y :=
+  e.toLinearIsometryEquiv.toContinuousLinearEquiv
+
+/-- Coerce a `BanachLatEquiv` to a `VecLatEquiv`. -/
+def toVecLatEquiv (e : BanachLatEquiv X Y) : VecLatEquiv X Y :=
+  { e.toLinearIsometryEquiv.toLinearEquiv with
+    map_sup' := e.map_sup'
+    map_inf' := e.map_inf' }
+
+end BanachLatEquiv

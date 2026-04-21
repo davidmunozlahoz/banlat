@@ -1,6 +1,6 @@
 import BanLat.ALSpace
 import BanLat.Atom
-import BanLat.Banach
+import BanLat.Normed
 import BanLat.Examples.Lp
 import BanLat.OrderContinuous
 import BanLat.Preliminaries.SignedMeasure

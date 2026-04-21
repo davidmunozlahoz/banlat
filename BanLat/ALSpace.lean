@@ -1,5 +1,5 @@
 import BanLat.AMSpace
-import BanLat.Banach
+import BanLat.Normed
 import BanLat.Dual
 import BanLat.Ideal
 import BanLat.OrderContinuous
