@@ -69,12 +69,33 @@ chapter only when explicitly instructed.
 - **No proofs.** Never include `\begin{proof} … \end{proof}` blocks in the
   blueprint. Only statements (definitions, lemmas, theorems, etc.).
 - **No private lemmas.** Only `public` Lean declarations appear in the
-  blueprint. Conversely, every public declaration in the scope of the chapter
-  must have a corresponding blueprint entry.
+  blueprint. Conversely, every public declaration with genuine mathematical
+  content in the scope of the chapter must have a corresponding blueprint
+  entry. Purely technical plumbing is omitted: obvious coercion simp lemmas
+  (e.g.\ `coe_foo` lemmas stating that the carrier agrees with the expected
+  set), auto-generated or definitionally trivial typeclass instances that
+  carry no mathematical content beyond a coercion (e.g.\ `SetLike`,
+  `CoeHead`, `PartialOrder` lifted from set inclusion), tautological
+  restatements of a definition (e.g.\ an `_mem` lemma asserting the defining
+  closure condition of a substructure, such as `VectorSublattice.sup_mem`
+  saying that a vector sublattice is closed under $\sqcup$), and similar
+  definitional unfolding lemmas. When in doubt, ask: would a mathematician
+  reading the blueprint learn something from this entry? If the entry would
+  merely restate a coercion, a typeclass, or the defining condition of a
+  structure the reader already takes for granted, skip it.
 - **Environments.** Use `definition`, `lemma`, `proposition`, `theorem`,
   `corollary` from `macros/common.tex`. Add a `\label{type:short_name}` to
   every statement (e.g. `\label{def:vector-lattice}`,
-  `\label{thm:riesz-decomp}`).
+  `\label{thm:riesz-decomp}`). The environment reflects the mathematical
+  content of the statement, not the Lean keyword. A Lean `def` is a
+  blueprint `\begin{definition}` only when it introduces a genuinely new
+  concept or named object; when it merely records a fact about existing
+  objects (e.g.\ `PointedCone.supClosure`, which observes that the
+  already-defined sup-closure of a pointed cone is itself a pointed cone,
+  or `VectorSublattice.ofAbsClosed`, which observes that a submodule
+  closed under $\lvert \cdot \rvert$ is a vector sublattice), the
+  blueprint entry is a `\begin{lemma}` (or theorem, proposition) and the
+  label is prefixed `lem:` (or `thm:`, etc.).
 - **Lean linkage.** On every statement, attach:
   - `\lean{Fully.Qualified.Name}` — fully qualified Lean name(s). Multiple
     names are comma-separated.
@@ -85,7 +106,15 @@ chapter only when explicitly instructed.
   - `\uses{label1, label2, …}` — blueprint labels of statements this result
     depends on. This drives the dependency graph; keep it accurate.
 - **Prose.** Statements should be self-contained mathematical English, not
-  Lean syntax. Do not cite monographs (see the rule below).
+  Lean syntax. Identify a structure with its underlying set in the
+  informal convention: refer to a vector sublattice `Y` as "Y", not "the
+  underlying subset of Y" or "the subtype of Y", and write "Y is a
+  normed vector lattice" rather than "the underlying subtype of Y
+  carries a normed vector lattice structure". Reserve "underlying set"
+  or "underlying submodule" for statements that are genuinely about a
+  set- or submodule-level equality (e.g.\ "the underlying set of the
+  generated sublattice equals the sup-closure of the inf-closure of
+  $M$"). Do not cite monographs (see the rule below).
 - **Consistency.** Nomenclature and notation must remain consistent across the
   blueprint. It is a single coherent and cohesive document: the same concept
   gets the same name and symbol everywhere, and terminology introduced in one

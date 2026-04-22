@@ -11,6 +11,9 @@ The Banach lattices library in Lean.
     Banach lattice is a 1-unconditional basic sequence.
 - [ ] Add Banach lattices induced by 1-unconditional bases (for this
   we will have to formalize first bases in Banach spaces).
+  For these: Let X be a Banach sequence space. Closed sublattices of X are
+    exactly the closed spans of (finite or infinite) disjoint positive sequences.
+- [ ] Add all the necessary results to the files in examples.
 
 ## Blueprinted
 
@@ -23,7 +26,7 @@ Progress tracker for adding files to the blueprint:
 - [x] `BanLat/Disjoint.lean`
 
 ### Substructures
-- [ ] `BanLat/Sublattice.lean`
+- [x] `BanLat/Sublattice.lean`
 - [ ] `BanLat/OrderDense.lean`
 - [ ] `BanLat/Ideal.lean`
 - [ ] `BanLat/Band.lean`

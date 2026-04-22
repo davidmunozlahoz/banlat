@@ -1,7 +1,7 @@
 # Fdb version 4
-["pdflatex"] 1776763202.51513 "print.tex" "/home/david/phd/lean/banlat/blueprint/print/print.pdf" "print" 1776763204.45001 0
-  "/home/david/phd/lean/banlat/blueprint/print/print.aux" 1776763204.21824 4479 aeb84733d775036562fb71252af6f801 "pdflatex"
-  "/home/david/phd/lean/banlat/blueprint/print/print.out" 1776763204.21924 1273 f13a3ea063e39707b828b37f83b0ec78 "pdflatex"
+["pdflatex"] 1776872585.71009 "print.tex" "/home/david/phd/lean/banlat/blueprint/print/print.pdf" "print" 1776872587.8154 0
+  "/home/david/phd/lean/banlat/blueprint/print/print.aux" 1776872587.58231 9802 163a9d887267f101450d6f9d6140cb65 "pdflatex"
+  "/home/david/phd/lean/banlat/blueprint/print/print.out" 1776872587.58331 2424 b17c1a0b8b4f7261b236700a2ba0c3e9 "pdflatex"
   "/usr/share/texmf-dist/fonts/map/fontname/texfonts.map" 1775415801 3524 cb3e574dea2d1052e39280babc910dc8 ""
   "/usr/share/texmf-dist/fonts/tfm/adobe/zapfding/pzdr.tfm" 1775415801 1528 f853c4d1b4e0550255e02831fdc8496f ""
   "/usr/share/texmf-dist/fonts/tfm/public/amsfonts/symbols/msam10.tfm" 1775415801 916 f87d7c45f9c908e672703b83b72241a3 ""
@@ -78,8 +78,9 @@
   "/usr/share/texmf-dist/tex/latex/url/url.sty" 1775415801 12796 8edb7d69a20b857904dd0ea757c14ec9 ""
   "/usr/share/texmf-dist/web2c/texmf.cnf" 1775415801 43569 fd570f2fa160877d211e859f687312ba ""
   "/var/lib/texmf/web2c/xetex/xelatex.fmt" 1775978422 5580294 7650c2500fdd8ef44df4a97a306bf0e3 ""
-  "chapters/basic.tex" 1776762889.62115 17478 3d11df67e8ad7b7c5e0e5073d36d011d ""
-  "content.tex" 1776708685.01236 388 8ae05755fcef64e3c1952a6794794e89 ""
+  "chapters/basic.tex" 1776764006.9324 28295 a5a5feb926aafda214b91b2b02dc2bda ""
+  "chapters/substructures.tex" 1776872523.75284 11833 e8e83c54d15d8a3555711bc2af3105b4 ""
+  "content.tex" 1776869464.95534 419 66f3f0a7dc6ebcc8899ed686ad6087d5 ""
   "macros/common.tex" 1776763197.8802 830 01105ff464e8ed56760325798aeea9ed ""
   "macros/print.tex" 1776708603.64596 1101 87627b2ec24fef68edc71c13f43f7bab ""
   "print.tex" 1776708603.65796 1144 f24ead034d8744c2cf49c92842ad00ca ""
