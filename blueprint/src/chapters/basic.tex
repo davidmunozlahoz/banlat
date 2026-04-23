@@ -1,10 +1,14 @@
 \chapter{The Basics}
 
-The results the reader may find missing in this chapter are likely
-already part of \verb|mathlib|. Some statements may have an
-``unusually formal'' formulation. The reason is that we try to keep
-the blueprint as similar as possible to the code. The blueprint is a
-compromise between the Lean code and the informal human maths.
+This chapter develops the basic order-theoretic algebra that
+underpins the rest of the library: lattice-ordered abelian groups
+and the identities governing positive part, negative part and
+absolute value; vector lattices and their interaction with scalar
+multiplication; the Archimedean property; the Riesz decomposition
+theorem; normed and Banach lattices and the automatic continuity of
+the lattice operations; the calculus of disjointness; and finally
+the two order-completeness conditions (Dedekind and sigma Dedekind)
+together with their restriction to the positive cone.
 
 \section{Vector lattices and the Archimedean property}
 
@@ -20,15 +24,18 @@ scalars distribute over the lattice operations, culminating in the identity
 $\lvert \lambda x\rvert = \lvert \lambda\rvert\,\lvert x\rvert$. The section
 closes with the Archimedean property, which plays a foundational role in
 later chapters: we give two equivalent formulations and use them to show
-that an Archimedean vector lattice of rank at least two necessarily has
-vectors which are neither positive nor negative.
+that an Archimedean vector lattice of dimension strictly greater than
+$1$ necessarily contains vectors that are neither non-negative nor
+non-positive.
 
 \subsection{Lattice-ordered abelian groups}
 
-Throughout this subsection $X$ denotes an additive abelian group equipped
-with a lattice order compatible with addition (an
-\emph{$\ell$-group}). We write $x^+ := x \sqcup 0$, $x^- := (-x) \sqcup 0$
-and $\lvert x \rvert := x \sqcup (-x)$.
+Throughout this subsection $X$ denotes a \emph{lattice-ordered abelian
+group}: an additive abelian group equipped with a lattice order whose
+translations are order-preserving. We write
+$x^+ := x \vee 0$, $x^- := (-x) \vee 0$ and
+$\lvert x \rvert := x \vee (-x)$ for the positive part, negative part
+and absolute value of $x \in X$.
 
 \begin{lemma}
 \label{lem:abs-eq-zero-iff-zero}
@@ -43,7 +50,7 @@ $\lvert x \rvert = 0$ if and only if $x = 0$.
 \lean{uniqueness_posPart}
 \leanok
 Let $X$ be a lattice-ordered abelian group, let $x \in X$, and suppose
-$u, v \in X$ satisfy $x = u - v$ and $u \sqcap v = 0$. Then $u = x^+$.
+$u, v \in X$ satisfy $x = u - v$ and $u \wedge v = 0$. Then $u = x^+$.
 \end{lemma}
 
 \begin{lemma}
@@ -51,7 +58,7 @@ $u, v \in X$ satisfy $x = u - v$ and $u \sqcap v = 0$. Then $u = x^+$.
 \lean{sup_eq_add_posPart}
 \leanok
 For all $x, y$ in a lattice-ordered abelian group,
-$x \sqcup y = x + (y - x)^+.$
+$x \vee y = x + (y - x)^+.$
 \end{lemma}
 
 \begin{lemma}
@@ -59,7 +66,7 @@ $x \sqcup y = x + (y - x)^+.$
 \lean{inf_eq_sub_posPart}
 \leanok
 For all $x, y$ in a lattice-ordered abelian group,
-$x \sqcap y = x - (x - y)^+.$
+$x \wedge y = x - (x - y)^+.$
 \end{lemma}
 
 \begin{lemma}
@@ -67,7 +74,7 @@ $x \sqcap y = x - (x - y)^+.$
 \lean{sub_inf_eq_posPart}
 \leanok
 For all $x, y$ in a lattice-ordered abelian group,
-$x - x \sqcap y = (x - y)^+.$
+$x - x \wedge y = (x - y)^+.$
 \end{lemma}
 
 \begin{lemma}
@@ -84,7 +91,7 @@ $(x + y)^+ \le x^+ + y^+.$
 \leanok
 Let $X$ be a lattice-ordered abelian group and let $x, a, b \in X$ with
 $0 \le x$, $0 \le a$, and $0 \le b$. Then
-$x \sqcap (a + b) \le x \sqcap a + x \sqcap b.$
+$x \wedge (a + b) \le x \wedge a + x \wedge b.$
 \end{lemma}
 
 \begin{lemma}
@@ -112,7 +119,7 @@ $x + a = \inf \{x + z : z \in A\}$.
 \uses{lem:inf-eq-sub-posPart, lem:sub-inf-eq-posPart}
 Let $X$ be a lattice-ordered abelian group, let $A \subseteq X$ and
 $a, x \in X$. If $a = \sup A$, then
-$x \sqcap a = \sup \{x \sqcap z : z \in A\}$.
+$x \wedge a = \sup \{x \wedge z : z \in A\}$.
 \end{lemma}
 
 \begin{lemma}
@@ -122,7 +129,7 @@ $x \sqcap a = \sup \{x \sqcap z : z \in A\}$.
 \uses{lem:sup-eq-add-posPart}
 Let $X$ be a lattice-ordered abelian group, let $A \subseteq X$ and
 $a, x \in X$. If $a = \inf A$, then
-$x \sqcup a = \inf \{x \sqcup z : z \in A\}$.
+$x \vee a = \inf \{x \vee z : z \in A\}$.
 \end{lemma}
 
 \begin{lemma}
@@ -141,7 +148,7 @@ $a + b = \inf \{p + q : p \in A,\ q \in B\}$.
 \uses{lem:isGLB-sup-const}
 Let $X$ be a lattice-ordered abelian group, let $A, B \subseteq X$ and
 $a, b \in X$. If $a = \inf A$ and $b = \inf B$, then
-$a \sqcup b = \inf \{p \sqcup q : p \in A,\ q \in B\}$.
+$a \vee b = \inf \{p \vee q : p \in A,\ q \in B\}$.
 \end{lemma}
 
 \begin{lemma}
@@ -149,7 +156,7 @@ $a \sqcup b = \inf \{p \sqcup q : p \in A,\ q \in B\}$.
 \lean{isGLB_union}
 \leanok
 Let $X$ be a lattice, let $A, B \subseteq X$ and $a, b \in X$. If
-$a = \inf A$ and $b = \inf B$, then $a \sqcap b = \inf (A \cup B)$.
+$a = \inf A$ and $b = \inf B$, then $a \wedge b = \inf (A \cup B)$.
 \end{lemma}
 
 \subsection{Vector lattices}
@@ -176,7 +183,7 @@ and $x \le y$ in $X$, $\lambda x \le \lambda y$.
 \leanok
 Let $X$ be a vector lattice, let $x, y \in X$ and let $\lambda \in
 \mathbb{R}$ with $\lambda \ge 0$. Then
-$\lambda \cdot (x \sqcup y) = (\lambda x) \sqcup (\lambda y).$
+$\lambda \cdot (x \vee y) = (\lambda x) \vee (\lambda y).$
 \end{lemma}
 
 \begin{lemma}
@@ -204,7 +211,7 @@ $\lambda a = \inf \{\lambda z : z \in A\}$.
 \uses{lem:nonneg-smul-sup}
 Let $X$ be a vector lattice, let $x, y \in X$ and let $\lambda \in
 \mathbb{R}$ with $\lambda \ge 0$. Then
-$\lambda \cdot (x \sqcap y) = (\lambda x) \sqcap (\lambda y).$
+$\lambda \cdot (x \wedge y) = (\lambda x) \wedge (\lambda y).$
 \end{lemma}
 
 \begin{lemma}
@@ -213,7 +220,7 @@ $\lambda \cdot (x \sqcap y) = (\lambda x) \sqcap (\lambda y).$
 \leanok
 Let $X$ be a vector lattice, let $x \in X$ with $0 \le x$ and let
 $\alpha, \beta \in \mathbb{R}$. Then
-$(\alpha \sqcup \beta) \cdot x = (\alpha x) \sqcup (\beta x).$
+$(\alpha \vee \beta) \cdot x = (\alpha x) \vee (\beta x).$
 \end{lemma}
 
 \begin{lemma}
@@ -222,7 +229,7 @@ $(\alpha \sqcup \beta) \cdot x = (\alpha x) \sqcup (\beta x).$
 \leanok
 Let $X$ be a vector lattice, let $x \in X$ with $0 \le x$ and let
 $\alpha, \beta \in \mathbb{R}$. Then
-$(\alpha \sqcap \beta) \cdot x = (\alpha x) \sqcap (\beta x).$
+$(\alpha \wedge \beta) \cdot x = (\alpha x) \wedge (\beta x).$
 \end{lemma}
 
 \begin{theorem}
@@ -239,12 +246,18 @@ Then $\lvert \alpha x \rvert = \lvert \alpha\rvert \cdot \lvert x\rvert.$
 \lean{disjoint_smul}
 \leanok
 \uses{lem:nonneg-smul-inf}
-Let $X$ be a vector lattice, let $x, y \in X$ with $x \sqcap y = 0$ and
+Let $X$ be a vector lattice, let $x, y \in X$ with $x \wedge y = 0$ and
 let $\lambda \in \mathbb{R}$ with $0 \le \lambda$. Then
-$(\lambda x) \sqcap y = 0.$
+$(\lambda x) \wedge y = 0.$
 \end{lemma}
 
 \subsection{The Archimedean property}
+
+A lattice-ordered abelian group is \emph{Archimedean} when no non-zero
+positive element is infinitesimal with respect to some other element.
+We record two equivalent formulations of this property and deduce that
+in an Archimedean vector lattice of dimension at least two there exist
+vectors which are neither negative nor positive.
 
 \begin{definition}
 \label{def:is-vl-archimedean}
@@ -292,7 +305,7 @@ $x, y \in X$. If $n \cdot \lvert x \rvert \le y$ for all $n \in
 \uses{def:is-vl-archimedean, lem:infinitesimal-eq-zero, thm:abs-smul}
 Let $X$ be an Archimedean vector lattice with dimension
 strictly greater than $1$. Then there exists $x \in X$ which is neither
-non-negative nor non-positive.
+negative nor positive.
 \end{theorem}
 
 \section{Riesz decomposition}
@@ -363,7 +376,7 @@ Let $X$ be a lattice-ordered abelian group, let $n \in \mathbb{N}$, let
 $x \in X$ and let $v : \{0, \dots, n-1\} \to X$ with $0 \le v_i$ for
 every $i$ and $\lvert x \rvert \le \sum_i v_i$. Then there exists
 $y : \{0, \dots, n-1\} \to X$ with $x = \sum_i y_i$ and
-$\lvert y_i \rvert \le \lvert x \rvert \sqcap v_i$ for every $i$.
+$\lvert y_i \rvert \le \lvert x \rvert \wedge v_i$ for every $i$.
 \end{theorem}
 
 \begin{theorem}
@@ -383,7 +396,7 @@ A \emph{normed vector lattice} is a real vector lattice equipped with a
 norm satisfying the solid axiom $\lvert x \rvert \le \lvert y \rvert
 \Rightarrow \lVert x \rVert \le \lVert y \rVert$. This compatibility
 between the norm and the lattice operations has a number of immediate
-consequences: the lattice operations $\sqcup$, $\sqcap$ and
+consequences: the lattice operations $\vee$, $\wedge$ and
 $\lvert \cdot \rvert$ are norm-continuous, the space is automatically
 Archimedean, the positive cone is norm-closed, order intervals are
 norm-closed and norm-bounded, and monotone norm-convergent sequences
@@ -417,7 +430,7 @@ Every normed vector lattice is a normed space over $\mathbb{R}$.
 \lean{NormedVectorLattice.continuous_sup}
 \leanok
 \uses{def:normed-vector-lattice}
-Let $X$ be a normed vector lattice. The map $(x, y) \mapsto x \sqcup y$
+Let $X$ be a normed vector lattice. The map $(x, y) \mapsto x \vee y$
 from $X \times X$ to $X$ is continuous.
 \end{theorem}
 
@@ -426,7 +439,7 @@ from $X \times X$ to $X$ is continuous.
 \lean{NormedVectorLattice.continuous_inf}
 \leanok
 \uses{def:normed-vector-lattice}
-Let $X$ be a normed vector lattice. The map $(x, y) \mapsto x \sqcap y$
+Let $X$ be a normed vector lattice. The map $(x, y) \mapsto x \wedge y$
 from $X \times X$ to $X$ is continuous.
 \end{theorem}
 
@@ -510,7 +523,7 @@ interval $[a, b]$ is norm-closed.
 \leanok
 \uses{def:normed-vector-lattice}
 Let $X$ be a normed vector lattice, let $a, b \in X$ and let
-$x \in [a, b]$. Then $\lVert x \rVert \le \lVert \lvert a \rvert \sqcup
+$x \in [a, b]$. Then $\lVert x \rVert \le \lVert \lvert a \rvert \vee
 \lvert b \rvert \rVert$.
 \end{lemma}
 
@@ -553,7 +566,7 @@ limit of a pairwise-disjoint sequence must be zero.
 \lean{IsVLDisjoint}
 \leanok
 Let $X$ be a lattice-ordered abelian group and let $x, y \in X$. We say
-$x$ and $y$ are \emph{disjoint} when $\lvert x \rvert \sqcap \lvert y
+$x$ and $y$ are \emph{disjoint} when $\lvert x \rvert \wedge \lvert y
 \rvert = 0$.
 \end{definition}
 
@@ -590,7 +603,7 @@ and $0$ are disjoint.
 \leanok
 \uses{def:isVLDisjoint}
 Let $X$ be a lattice-ordered abelian group and let $x, y \in X$ with
-$0 \le x$ and $0 \le y$. If $x$ and $y$ are disjoint, then $x \sqcap y
+$0 \le x$ and $0 \le y$. If $x$ and $y$ are disjoint, then $x \wedge y
 = 0$.
 \end{lemma}
 
@@ -600,7 +613,7 @@ $0 \le x$ and $0 \le y$. If $x$ and $y$ are disjoint, then $x \sqcap y
 \leanok
 \uses{def:isVLDisjoint}
 Let $X$ be a lattice-ordered abelian group and let $x, y \in X$ with
-$x \sqcap y = 0$. Then $x$ and $y$ are disjoint.
+$x \wedge y = 0$. Then $x$ and $y$ are disjoint.
 \end{lemma}
 
 \begin{theorem}
@@ -629,8 +642,8 @@ disjoint. Then $\lvert x + y \rvert = \lvert x \rvert + \lvert y \rvert$.
 \leanok
 \uses{def:isVLDisjoint}
 Let $X$ be a lattice-ordered abelian group and let $x, y \in X$ with
-$0 \le x$, $0 \le y$ and $x$, $y$ disjoint. Then $\lvert x \sqcup y
-\rvert = \lvert x \rvert \sqcup \lvert y \rvert$.
+$0 \le x$, $0 \le y$ and $x$, $y$ disjoint. Then $\lvert x \vee y
+\rvert = \lvert x \rvert \vee \lvert y \rvert$.
 \end{lemma}
 
 \begin{lemma}
@@ -696,7 +709,7 @@ disjoint.
 \leanok
 \uses{def:isVLDisjoint, lem:inf-eq-zero-of-isVLDisjoint}
 Let $X$ be a lattice-ordered abelian group and let $x, y \in X$ with
-$0 \le x$, $0 \le y$ and $x$, $y$ disjoint. Then $x + y = x \sqcup y$.
+$0 \le x$, $0 \le y$ and $x$, $y$ disjoint. Then $x + y = x \vee y$.
 \end{lemma}
 
 \begin{lemma}
@@ -705,7 +718,7 @@ $0 \le x$, $0 \le y$ and $x$, $y$ disjoint. Then $x + y = x \sqcup y$.
 \leanok
 \uses{def:isVLDisjoint}
 Let $X$ be a lattice-ordered abelian group and let $x, y \in X$ be
-disjoint. Then $\lvert x \rvert \sqcup \lvert y \rvert = \lvert x \rvert
+disjoint. Then $\lvert x \rvert \vee \lvert y \rvert = \lvert x \rvert
 + \lvert y \rvert$.
 \end{lemma}
 
@@ -715,7 +728,7 @@ disjoint. Then $\lvert x \rvert \sqcup \lvert y \rvert = \lvert x \rvert
 \leanok
 \uses{thm:abs-add-of-isVLDisjoint, lem:sup-abs-eq-add-abs-of-isVLDisjoint}
 Let $X$ be a lattice-ordered abelian group and let $x, y \in X$ be
-disjoint. Then $\lvert x + y \rvert = \lvert x \rvert \sqcup \lvert y
+disjoint. Then $\lvert x + y \rvert = \lvert x \rvert \vee \lvert y
 \rvert$.
 \end{lemma}
 
@@ -726,7 +739,7 @@ disjoint. Then $\lvert x + y \rvert = \lvert x \rvert \sqcup \lvert y
 \uses{def:isVLDisjoint, lem:inf-le-inf-add-inf-of-nonneg}
 Let $X$ be a lattice-ordered abelian group and let $x, y, z \in X$. If
 $x$ and $y$ are disjoint and $x$ and $z$ are disjoint, then $x$ and
-$y \sqcup z$ are disjoint.
+$y \vee z$ are disjoint.
 \end{lemma}
 
 \begin{lemma}
@@ -745,7 +758,7 @@ $y + z$ are disjoint.
 \leanok
 \uses{lem:isVLDisjoint-sup-right, lem:isVLDisjoint-comm}
 Let $X$ be a lattice-ordered abelian group and let $x, y, z \in X$. If
-$x$ and $z$ are disjoint and $y$ and $z$ are disjoint, then $x \sqcup y$
+$x$ and $z$ are disjoint and $y$ and $z$ are disjoint, then $x \vee y$
 and $z$ are disjoint.
 \end{lemma}
 
@@ -765,7 +778,7 @@ $z$ are disjoint.
 \leanok
 \uses{def:isVLDisjoint, lem:sub-inf-eq-posPart, lem:isVLDisjoint-posPart-negPart}
 Let $X$ be a lattice-ordered abelian group and let $x, y \in X$. Then
-$x - x \sqcap y$ and $y - x \sqcap y$ are disjoint.
+$x - x \wedge y$ and $y - x \wedge y$ are disjoint.
 \end{lemma}
 
 \begin{theorem}
@@ -786,7 +799,7 @@ are disjoint.
 Let $X$ be a lattice-ordered abelian group, let $n \in \mathbb{N}$ with
 $n > 0$, and let $f : \{0, \dots, n-1\} \to X$ be a family of
 non-negative elements which is pairwise disjoint. Then
-$\sum_i f_i = \bigsqcup_i f_i$.
+$\sum_i f_i = \bigvee_i f_i$.
 \end{theorem}
 
 \begin{theorem}
@@ -810,7 +823,7 @@ Let $X$ be a vector lattice, let $n \in \mathbb{N}$ with $n > 0$, and let
 $x : \{0, \dots, n-1\} \to X$ be a pairwise-disjoint family of
 non-negative elements. For every non-negative family
 $\alpha : \{0, \dots, n-1\} \to \mathbb{R}$,
-$\sum_i \alpha_i x_i = \bigsqcup_i \alpha_i x_i$.
+$\sum_i \alpha_i x_i = \bigvee_i \alpha_i x_i$.
 \end{theorem}
 
 \begin{theorem}
@@ -831,5 +844,104 @@ elements. Then $x$ is linearly independent over $\mathbb{R}$.
 Let $Y$ be a normed vector lattice, let $u : \mathbb{N} \to Y$ be a
 pairwise-disjoint sequence, and let $x \in Y$. If $u_n \to x$ in norm,
 then $x = 0$.
+\end{theorem}
+
+\section{Order completeness}
+
+A lattice is \emph{Dedekind complete} (or \emph{order complete}) when
+every non-empty subset that is bounded above admits a supremum, and its
+\emph{sigma} analogue is obtained by restricting the requirement to
+countable subsets. On a vector lattice either property can be checked
+on the restricted class of non-negative elements, and indeed only on
+increasing bounded above nets (respectively sequences) of non-negative
+elements. The section closes by showing that every Dedekind complete
+lattice is sigma Dedekind complete, and that sigma Dedekind
+completeness already forces the Archimedean property in any
+lattice-ordered abelian group.
+
+On a vector lattice, Dedekind completeness can be checked either on
+increasing bounded above nets of non-negative elements, or on
+non-empty bounded above sets of non-negative elements.
+
+\begin{theorem}
+\label{thm:conditionallyCompleteLatticeOfPosNet}
+\lean{conditionallyCompleteLatticeOfPosNet}
+\leanok
+\uses{def:vector-lattice}
+Let $X$ be a vector lattice. If every bounded above increasing net of
+non-negative elements of $X$ admits a least upper bound, then $X$ is
+Dedekind complete.
+\end{theorem}
+
+\begin{theorem}
+\label{thm:conditionallyCompleteLatticeOfPosSet}
+\lean{conditionallyCompleteLatticeOfPosSet}
+\leanok
+\uses{def:vector-lattice}
+Let $X$ be a vector lattice. If every non-empty bounded above set of
+non-negative elements of $X$ admits a least upper bound, then $X$ is
+Dedekind complete.
+\end{theorem}
+
+\subsection{Sigma order completeness}
+
+A lattice is \emph{sigma Dedekind complete} (or \emph{sigma order
+complete}) when every non-empty countable subset that is bounded above
+admits a supremum, and every non-empty countable subset that is
+bounded below admits an infimum.
+
+\begin{definition}
+\label{def:sigmaConditionallyCompleteLattice}
+\lean{SigmaConditionallyCompleteLattice}
+\leanok
+A lattice $X$ is \emph{sigma Dedekind complete} when every non-empty
+countable subset of $X$ which is bounded above admits a supremum, and
+every non-empty countable subset of $X$ which is bounded below admits
+an infimum.
+\end{definition}
+
+\begin{lemma}
+\label{lem:conditionallyCompleteLattice-toSigmaConditionallyCompleteLattice}
+\lean{ConditionallyCompleteLattice.toSigmaConditionallyCompleteLattice}
+\leanok
+\uses{def:sigmaConditionallyCompleteLattice}
+Every Dedekind complete lattice is sigma Dedekind complete.
+\end{lemma}
+
+As with Dedekind completeness, sigma Dedekind completeness on a
+vector lattice can be checked on the restricted class of non-negative
+elements, or even only on increasing bounded above sequences of
+non-negative elements.
+
+\begin{theorem}
+\label{thm:sigmaConditionallyCompleteLatticeOfPosSeq}
+\lean{sigmaConditionallyCompleteLatticeOfPosSeq}
+\leanok
+\uses{def:vector-lattice, def:sigmaConditionallyCompleteLattice}
+Let $X$ be a vector lattice. If every bounded above increasing
+sequence of non-negative elements of $X$ admits a least upper bound,
+then $X$ is sigma Dedekind complete.
+\end{theorem}
+
+\begin{theorem}
+\label{thm:sigmaConditionallyCompleteLatticeOfPosCountableSet}
+\lean{sigmaConditionallyCompleteLatticeOfPosCountableSet}
+\leanok
+\uses{def:vector-lattice, def:sigmaConditionallyCompleteLattice}
+Let $X$ be a vector lattice. If every non-empty bounded above
+countable set of non-negative elements of $X$ admits a least upper
+bound, then $X$ is sigma Dedekind complete.
+\end{theorem}
+
+Sigma conditional completeness alone forces the Archimedean
+property in the lattice-ordered group setting.
+
+\begin{theorem}
+\label{thm:isVLArchimedean-of-sigmaConditionallyCompleteLattice}
+\lean{IsVLArchimedean_of_sigmaConditionallyCompleteLattice}
+\leanok
+\uses{def:is-vl-archimedean, def:sigmaConditionallyCompleteLattice}
+Every sigma Dedekind complete lattice-ordered abelian group is
+Archimedean.
 \end{theorem}
 
