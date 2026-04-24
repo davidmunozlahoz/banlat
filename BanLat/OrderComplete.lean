@@ -1,242 +1,374 @@
 import BanLat.Basic
 import Mathlib.Order.ConditionallyCompleteLattice.Basic
+import Mathlib.Data.Set.Countable
 
 /-!
-# Order completeness and sigma order completeness
+# Sigma conditional completeness
 
-A lattice is **order complete** (`IsOrderComplete`) if every non-empty bounded
-above subset has a least upper bound. This is the `Prop`-valued analogue of
-Mathlib's `ConditionallyCompleteLattice`. A weaker sequential variant is
-**sigma order completeness** (`IsSigmaOrderComplete`): every non-empty bounded
-above countable set has a least upper bound. The main results stated here are:
-- `IsOrderComplete` is the `Prop` analogue of `ConditionallyCompleteLattice`;
-  the two are equivalent for lattices.
-- Order completeness implies sigma order completeness.
-- Sigma order completeness implies the Archimedean property.
-- Equivalent characterisations of both notions for vector lattices.
+Mathlib's `ConditionallyCompleteLattice` records Dedekind completeness of a
+lattice. This file states the natural characterisations of that property on a
+vector lattice, introduces its sequential analogue
+`SigmaConditionallyCompleteLattice`, and records the basic relationships
+between these notions and the Archimedean property.
+
+The main statements are:
+
+- on a vector lattice, a `ConditionallyCompleteLattice` structure can be
+  built once every increasing bounded above net of positive elements (or
+  equivalently every non-empty bounded above set of positive elements)
+  admits a least upper bound;
+- sigma conditional completeness of a vector lattice can likewise be
+  checked on increasing bounded above sequences of positive elements, or
+  on non-empty bounded above countable sets of positive elements;
+- every conditionally complete lattice is sigma conditionally complete;
+- every sigma conditionally complete lattice-ordered group is Archimedean.
 -/
 
 open Set
 
-/-! ### Order completeness -/
+universe u
 
-/-- A preorder is **order complete** (Dedekind complete) if every non-empty
-bounded above subset has a least upper bound. -/
-class IsOrderComplete (X : Type*) [Preorder X] : Prop where
-  isLUB_of_bddAbove : ∀ {S : Set X}, BddAbove S → S.Nonempty → ∃ x, IsLUB S x
+/-! ### Shared helpers -/
 
-/-- Every non-empty bounded below set in an order complete preorder has a
-greatest lower bound. -/
-theorem isGLB_of_bddBelow [Preorder X] [IsOrderComplete X]
-    {S : Set X} (hb : BddBelow S) (hne : S.Nonempty) :
-    ∃ x, IsGLB S x := by
-  obtain ⟨x, hx⟩ := IsOrderComplete.isLUB_of_bddAbove
-    hne.bddAbove_lowerBounds hb
-  exact ⟨x, isLUB_lowerBounds.mp hx⟩
+/-- Shift trick: in a lattice-ordered group, given a predicate `P` preserved
+under pointwise transformations and a hypothesis producing a least upper bound
+for `P`-sets of positive elements, the same hypothesis extends to any
+`P`-set that is non-empty and bounded above. -/
+private lemma exists_isLUB_of_pos_of_shift
+    {X : Type*} [AddCommGroup X] [Lattice X] [IsOrderedAddMonoid X]
+    {P : Set X → Prop}
+    (hP_image : ∀ {S : Set X} (f : X → X), P S → P (f '' S))
+    (Hpos : ∀ {S : Set X}, P S → S ⊆ {x | 0 ≤ x} → S.Nonempty → BddAbove S →
+      ∃ x, IsLUB S x)
+    {S : Set X} (hPS : P S) (hne : S.Nonempty) (hbdd : BddAbove S) :
+    ∃ x, IsLUB S x := by
+  obtain ⟨s₀, hs₀⟩ := hne
+  obtain ⟨c, hc⟩ := hbdd
+  have hcs₀ : s₀ ≤ c := hc hs₀
+  set T : Set X := (fun x => (x - s₀)⁺) '' S with hT_def
+  have hPT : P T := hP_image _ hPS
+  have hTpos : T ⊆ {x | 0 ≤ x} := by
+    rintro _ ⟨x, _, rfl⟩; exact posPart_nonneg _
+  have hTne : T.Nonempty := ⟨_, s₀, hs₀, rfl⟩
+  have hTbdd : BddAbove T := ⟨c - s₀, by
+    rintro _ ⟨x, hx, rfl⟩
+    calc (x - s₀)⁺ ≤ (c - s₀)⁺ := posPart_mono (sub_le_sub_right (hc hx) _)
+      _ = c - s₀ := posPart_of_nonneg (sub_nonneg.mpr hcs₀)⟩
+  obtain ⟨w, hw⟩ := Hpos hPT hTpos hTne hTbdd
+  refine ⟨w + s₀, ?_, ?_⟩
+  · intro x hx
+    calc x = (x - s₀) + s₀ := by abel
+      _ ≤ (x - s₀)⁺ + s₀ := by gcongr; exact le_posPart _
+      _ ≤ w + s₀ := by gcongr; exact hw.1 ⟨x, hx, rfl⟩
+  · intro c' hc'
+    have hcs₀' : s₀ ≤ c' := hc' hs₀
+    have hubT : c' - s₀ ∈ upperBounds T := by
+      rintro _ ⟨x, hx, rfl⟩
+      calc (x - s₀)⁺ ≤ (c' - s₀)⁺ := posPart_mono (sub_le_sub_right (hc' hx) _)
+        _ = c' - s₀ := posPart_of_nonneg (sub_nonneg.mpr hcs₀')
+    exact le_sub_iff_add_le.mp (hw.2 hubT)
 
-/-- A conditionally complete lattice is order complete. -/
-instance (priority := 100) ConditionallyCompleteLattice.toIsOrderComplete
-    {X : Type*} [ConditionallyCompleteLattice X] :
-    IsOrderComplete X :=
-  ⟨fun hb hne ↦ ⟨sSup _, isLUB_csSup hne hb⟩⟩
-
-/-- An order complete lattice carries a canonical `ConditionallyCompleteLattice`
-structure. -/
-noncomputable def conditionallyCompleteLatticeOfIsOrderComplete
-    (X : Type*) [Lattice X] [IsOrderComplete X] [Nonempty X] :
+/-- Build a `ConditionallyCompleteLattice` structure from a blanket hypothesis
+that every non-empty bounded above set has a least upper bound. -/
+private noncomputable def conditionallyCompleteLatticeOfHasLUB
+    {X : Type*} [AddCommGroup X] [Lattice X] [IsOrderedAddMonoid X]
+    (hLUB : ∀ {S : Set X}, S.Nonempty → BddAbove S → ∃ x, IsLUB S x) :
     ConditionallyCompleteLattice X := by
   classical
-  letI : SupSet X := ⟨fun S ↦
-    if h : BddAbove S ∧ S.Nonempty then
-      (IsOrderComplete.isLUB_of_bddAbove h.1 h.2).choose
-    else Classical.arbitrary X⟩
-  exact conditionallyCompleteLatticeOfLatticeOfsSup X
-    fun S hb hne ↦ by
-      have : sSup S =
-        (IsOrderComplete.isLUB_of_bddAbove hb hne).choose :=
-        dif_pos ⟨hb, hne⟩
-      rw [this]
-      exact (IsOrderComplete.isLUB_of_bddAbove hb hne).choose_spec
+  have hne_neg : ∀ (s : Set X), s.Nonempty → (-s).Nonempty := fun s hne => by
+    obtain ⟨x, hx⟩ := hne
+    exact ⟨-x, Set.mem_neg.mpr (by rwa [neg_neg])⟩
+  let sSup_fn : Set X → X := fun S =>
+    if h : S.Nonempty ∧ BddAbove S then Classical.choose (hLUB h.1 h.2) else 0
+  exact
+  { (inferInstance : Lattice X) with
+    sSup := sSup_fn
+    sInf := fun S => -sSup_fn (-S)
+    le_csSup := fun s a hb ha => by
+      have hne : s.Nonempty := ⟨a, ha⟩
+      change a ≤ sSup_fn s
+      simp only [sSup_fn, dif_pos (⟨hne, hb⟩ : s.Nonempty ∧ BddAbove s)]
+      exact (Classical.choose_spec (hLUB hne hb)).1 ha
+    csSup_le := fun s a hne ha => by
+      have hb : BddAbove s := ⟨a, ha⟩
+      change sSup_fn s ≤ a
+      simp only [sSup_fn, dif_pos (⟨hne, hb⟩ : s.Nonempty ∧ BddAbove s)]
+      exact (Classical.choose_spec (hLUB hne hb)).2 ha
+    csInf_le := fun s a hb ha => by
+      change -sSup_fn (-s) ≤ a
+      have hne' : (-s).Nonempty := hne_neg s ⟨a, ha⟩
+      have hbdd' : BddAbove (-s) := bddAbove_neg.mpr hb
+      simp only [sSup_fn, dif_pos (⟨hne', hbdd'⟩ : (-s).Nonempty ∧ BddAbove (-s))]
+      rw [neg_le]
+      exact (Classical.choose_spec (hLUB hne' hbdd')).1
+        (Set.mem_neg.mpr (by rwa [neg_neg]))
+    le_csInf := fun s a hne ha => by
+      change a ≤ -sSup_fn (-s)
+      have hb : BddBelow s := ⟨a, ha⟩
+      have hne' : (-s).Nonempty := hne_neg s hne
+      have hbdd' : BddAbove (-s) := bddAbove_neg.mpr hb
+      simp only [sSup_fn, dif_pos (⟨hne', hbdd'⟩ : (-s).Nonempty ∧ BddAbove (-s))]
+      rw [le_neg]
+      apply (Classical.choose_spec (hLUB hne' hbdd')).2
+      intro y hy
+      rw [Set.mem_neg] at hy
+      rw [le_neg]
+      exact ha hy }
 
+/-- From the existence of a least upper bound for every increasing bounded
+above net of positive elements, deduce the same conclusion for any non-empty
+bounded above set of positive elements. The net is obtained by indexing over
+non-empty finite subsets ordered by inclusion. -/
+private lemma exists_isLUB_pos_set_of_pos_net
+    {X : Type u} [AddCommGroup X] [Lattice X] [IsOrderedAddMonoid X]
+    (H : ∀ {ι : Type u} [Preorder ι] [IsDirected ι (· ≤ ·)] [Nonempty ι]
+        {u : ι → X}, Monotone u → (∀ i, 0 ≤ u i) →
+        BddAbove (range u) → ∃ x, IsLUB (range u) x)
+    {S : Set X} (hpos : S ⊆ {x | 0 ≤ x}) (hne : S.Nonempty)
+    (hbdd : BddAbove S) : ∃ x, IsLUB S x := by
+  classical
+  let ι : Type u := {F : Finset X // F.Nonempty ∧ ↑F ⊆ S}
+  letI : Preorder ι := inferInstance
+  letI : IsDirected ι (· ≤ ·) := ⟨fun F G =>
+    ⟨⟨F.1 ∪ G.1, Finset.Nonempty.mono Finset.subset_union_left F.2.1, by
+      rw [Finset.coe_union]; exact Set.union_subset F.2.2 G.2.2⟩,
+      Finset.subset_union_left, Finset.subset_union_right⟩⟩
+  letI : Nonempty ι := by
+    obtain ⟨s₀, hs₀⟩ := hne
+    exact ⟨⟨{s₀}, Finset.singleton_nonempty _, by simpa using hs₀⟩⟩
+  let u : ι → X := fun F => F.1.sup' F.2.1 id
+  have hmono : Monotone u := fun F G h =>
+    Finset.sup'_mono id h F.2.1
+  have hu_pos : ∀ F, 0 ≤ u F := fun F => by
+    obtain ⟨x, hx⟩ := F.2.1
+    calc (0 : X) ≤ x := hpos (F.2.2 hx)
+      _ ≤ u F := Finset.le_sup' id hx
+  have hu_bdd : BddAbove (range u) := by
+    obtain ⟨c, hc⟩ := hbdd
+    refine ⟨c, ?_⟩
+    rintro _ ⟨F, rfl⟩
+    refine Finset.sup'_le F.2.1 id fun i hi => hc (F.2.2 ?_)
+    exact Finset.mem_coe.mpr hi
+  obtain ⟨w, hw⟩ := H hmono hu_pos hu_bdd
+  refine ⟨w, ?_, ?_⟩
+  · intro x hx
+    have hmem : u ⟨{x}, Finset.singleton_nonempty _, by simpa using hx⟩ = x := by
+      simp [u, Finset.sup'_singleton]
+    calc x = u ⟨{x}, Finset.singleton_nonempty _, by simpa using hx⟩ := hmem.symm
+      _ ≤ w := hw.1 ⟨_, rfl⟩
+  · intro c hc
+    apply hw.2
+    rintro _ ⟨F, rfl⟩
+    refine Finset.sup'_le F.2.1 id fun i hi => hc (F.2.2 ?_)
+    exact Finset.mem_coe.mpr hi
 
-/-! ### Sigma order completeness -/
+/-! ### Characterisations of `ConditionallyCompleteLattice` -/
 
-/-- A preorder is **sigma order complete** if every non-empty bounded above
-countable subset has a least upper bound. -/
-class IsSigmaOrderComplete (X : Type*) [Preorder X] : Prop where
-  isLUB_of_bddAbove_countable :
-    ∀ {S : Set X}, S.Countable → BddAbove S → S.Nonempty → ∃ x, IsLUB S x
+/-- On a vector lattice, a `ConditionallyCompleteLattice` structure exists
+provided every increasing net of positive elements that is bounded above has
+a least upper bound. The net is indexed by a type in the same universe as
+the carrier. -/
+noncomputable def conditionallyCompleteLatticeOfPosNet
+    (X : Type u) [AddCommGroup X] [Lattice X] [IsOrderedAddMonoid X]
+    [VectorLattice X] [Nonempty X]
+    (H : ∀ {ι : Type u} [Preorder ι] [IsDirected ι (· ≤ ·)] [Nonempty ι]
+        {u : ι → X}, Monotone u → (∀ i, 0 ≤ u i) →
+        BddAbove (range u) → ∃ x, IsLUB (range u) x) :
+    ConditionallyCompleteLattice X :=
+  conditionallyCompleteLatticeOfHasLUB
+    (exists_isLUB_of_pos_of_shift (P := fun _ => True)
+      (fun _ _ => trivial)
+      (fun _ hpos hne hbdd => exists_isLUB_pos_set_of_pos_net H hpos hne hbdd)
+      trivial)
 
-/-- Every non-empty bounded below countable set in a sigma order complete
-ordered group has a greatest lower bound. -/
-theorem isGLB_of_bddBelow_countable
-    [AddCommGroup X] [Lattice X] [IsOrderedAddMonoid X]
-    [IsSigmaOrderComplete X]
-    {S : Set X} (hc : S.Countable) (hb : BddBelow S) (hne : S.Nonempty) :
-    ∃ x, IsGLB S x := by
-  have hcn : (-S).Countable := by
-    have : -S = Neg.neg '' S := by ext; simp [Set.mem_neg]
+/-- On a vector lattice, a `ConditionallyCompleteLattice` structure exists
+provided every non-empty bounded above set of positive elements has a least
+upper bound. -/
+noncomputable def conditionallyCompleteLatticeOfPosSet
+    (X : Type*) [AddCommGroup X] [Lattice X] [IsOrderedAddMonoid X]
+    [VectorLattice X] [Nonempty X]
+    (H : ∀ {S : Set X}, S ⊆ {x | 0 ≤ x} → S.Nonempty → BddAbove S →
+      ∃ x, IsLUB S x) :
+    ConditionallyCompleteLattice X :=
+  conditionallyCompleteLatticeOfHasLUB
+    (exists_isLUB_of_pos_of_shift (P := fun _ => True)
+      (fun _ _ => trivial) (fun _ hpos hne hbdd => H hpos hne hbdd) trivial)
+
+/-! ### Sigma conditional completeness -/
+
+/-- A lattice is **sigma conditionally complete** when non-empty bounded
+countable subsets admit suprema and infima: for every countable set `s`,
+`sSup s` is the least upper bound if `s` is bounded above, and `sInf s` is
+the greatest lower bound if `s` is bounded below. -/
+class SigmaConditionallyCompleteLattice (X : Type*)
+    extends Lattice X, SupSet X, InfSet X where
+  le_csSup : ∀ (s : Set X) (a : X), s.Countable → BddAbove s → a ∈ s → a ≤ sSup s
+  csSup_le : ∀ (s : Set X) (a : X), s.Countable → s.Nonempty →
+    a ∈ upperBounds s → sSup s ≤ a
+  csInf_le : ∀ (s : Set X) (a : X), s.Countable → BddBelow s → a ∈ s → sInf s ≤ a
+  le_csInf : ∀ (s : Set X) (a : X), s.Countable → s.Nonempty →
+    a ∈ lowerBounds s → a ≤ sInf s
+
+/-- Every conditionally complete lattice is sigma conditionally complete. -/
+instance (priority := 100) ConditionallyCompleteLattice.toSigmaConditionallyCompleteLattice
+    {X : Type*} [ConditionallyCompleteLattice X] :
+    SigmaConditionallyCompleteLattice X where
+  le_csSup _ _ _ hb ha := _root_.le_csSup hb ha
+  csSup_le _ _ _ hne ha := _root_.csSup_le hne ha
+  csInf_le _ _ _ hb ha := _root_.csInf_le hb ha
+  le_csInf _ _ _ hne ha := _root_.le_csInf hne ha
+
+/-! ### Characterisations of sigma conditional completeness -/
+
+/-- Build a `SigmaConditionallyCompleteLattice` structure from a hypothesis
+that every countable non-empty bounded above set has a least upper bound. -/
+private noncomputable def sigmaConditionallyCompleteLatticeOfHasCountableLUB
+    {X : Type*} [AddCommGroup X] [Lattice X] [IsOrderedAddMonoid X]
+    (hLUB : ∀ {S : Set X}, S.Countable → S.Nonempty → BddAbove S →
+      ∃ x, IsLUB S x) :
+    SigmaConditionallyCompleteLattice X := by
+  classical
+  have hne_neg : ∀ (s : Set X), s.Nonempty → (-s).Nonempty := fun s hne => by
+    obtain ⟨x, hx⟩ := hne
+    exact ⟨-x, Set.mem_neg.mpr (by rwa [neg_neg])⟩
+  have hcount_neg : ∀ (s : Set X), s.Countable → (-s).Countable := fun s hc => by
+    have : -s = (fun x => -x) '' s := by ext; simp [Set.mem_neg]
     rw [this]; exact hc.image _
-  obtain ⟨x, hx⟩ := IsSigmaOrderComplete.isLUB_of_bddAbove_countable
-    hcn hb.neg hne.neg
-  exact ⟨-x, isLUB_neg'.mp (by rwa [neg_neg])⟩
+  let sSup_fn : Set X → X := fun S =>
+    if h : S.Countable ∧ S.Nonempty ∧ BddAbove S
+    then Classical.choose (hLUB h.1 h.2.1 h.2.2) else 0
+  exact
+  { (inferInstance : Lattice X) with
+    sSup := sSup_fn
+    sInf := fun S => -sSup_fn (-S)
+    le_csSup := fun s a hc hb ha => by
+      have hne : s.Nonempty := ⟨a, ha⟩
+      change a ≤ sSup_fn s
+      simp only [sSup_fn,
+        dif_pos (⟨hc, hne, hb⟩ : s.Countable ∧ s.Nonempty ∧ BddAbove s)]
+      exact (Classical.choose_spec (hLUB hc hne hb)).1 ha
+    csSup_le := fun s a hc hne ha => by
+      have hb : BddAbove s := ⟨a, ha⟩
+      change sSup_fn s ≤ a
+      simp only [sSup_fn,
+        dif_pos (⟨hc, hne, hb⟩ : s.Countable ∧ s.Nonempty ∧ BddAbove s)]
+      exact (Classical.choose_spec (hLUB hc hne hb)).2 ha
+    csInf_le := fun s a hc hb ha => by
+      change -sSup_fn (-s) ≤ a
+      have hc' : (-s).Countable := hcount_neg s hc
+      have hne' : (-s).Nonempty := hne_neg s ⟨a, ha⟩
+      have hbdd' : BddAbove (-s) := bddAbove_neg.mpr hb
+      simp only [sSup_fn,
+        dif_pos (⟨hc', hne', hbdd'⟩ : (-s).Countable ∧ (-s).Nonempty ∧ BddAbove (-s))]
+      rw [neg_le]
+      exact (Classical.choose_spec (hLUB hc' hne' hbdd')).1
+        (Set.mem_neg.mpr (by rwa [neg_neg]))
+    le_csInf := fun s a hc hne ha => by
+      change a ≤ -sSup_fn (-s)
+      have hb : BddBelow s := ⟨a, ha⟩
+      have hc' : (-s).Countable := hcount_neg s hc
+      have hne' : (-s).Nonempty := hne_neg s hne
+      have hbdd' : BddAbove (-s) := bddAbove_neg.mpr hb
+      simp only [sSup_fn,
+        dif_pos (⟨hc', hne', hbdd'⟩ : (-s).Countable ∧ (-s).Nonempty ∧ BddAbove (-s))]
+      rw [le_neg]
+      apply (Classical.choose_spec (hLUB hc' hne' hbdd')).2
+      intro y hy
+      rw [Set.mem_neg] at hy
+      rw [le_neg]
+      exact ha hy }
 
-/-! ### Implications between completeness notions -/
+/-- From the existence of a least upper bound for every increasing bounded
+above sequence of positive elements, deduce the same conclusion for every
+non-empty bounded above countable set of positive elements. The sequence is
+obtained by enumerating the set and taking finite suprema. -/
+private lemma exists_isLUB_pos_countable_set_of_pos_seq
+    {X : Type*} [AddCommGroup X] [Lattice X] [IsOrderedAddMonoid X]
+    (H : ∀ {u : ℕ → X}, Monotone u → (∀ n, 0 ≤ u n) →
+      BddAbove (range u) → ∃ x, IsLUB (range u) x)
+    {S : Set X} (hpos : S ⊆ {x | 0 ≤ x}) (hcount : S.Countable)
+    (hne : S.Nonempty) (hbdd : BddAbove S) : ∃ x, IsLUB S x := by
+  classical
+  obtain ⟨g, hg⟩ := hcount.exists_eq_range hne
+  let u : ℕ → X := fun n =>
+    (Finset.range (n + 1)).sup' Finset.nonempty_range_add_one g
+  have hg_pos : ∀ i, 0 ≤ g i := fun i => hpos (hg ▸ mem_range_self i)
+  have hg_le : ∀ i c, c ∈ upperBounds S → g i ≤ c := fun i c hc =>
+    hc (hg ▸ mem_range_self i)
+  have hmono : Monotone u := fun m n hmn =>
+    Finset.sup'_mono g (Finset.range_subset_range.mpr (Nat.succ_le_succ hmn))
+      Finset.nonempty_range_add_one
+  have hu_pos : ∀ n, 0 ≤ u n := fun n => by
+    calc (0 : X) ≤ g 0 := hg_pos 0
+      _ ≤ u n := Finset.le_sup' g (Finset.mem_range.mpr (Nat.succ_pos n))
+  have hu_bdd : BddAbove (range u) := by
+    obtain ⟨c, hc⟩ := hbdd
+    refine ⟨c, ?_⟩
+    rintro _ ⟨n, rfl⟩
+    exact Finset.sup'_le _ _ fun i _ => hg_le i c hc
+  obtain ⟨w, hw⟩ := H hmono hu_pos hu_bdd
+  refine ⟨w, ?_, ?_⟩
+  · intro x hx
+    rw [hg] at hx
+    obtain ⟨n, rfl⟩ := hx
+    exact (Finset.le_sup' g (Finset.self_mem_range_succ n)).trans (hw.1 ⟨n, rfl⟩)
+  · intro c hc
+    apply hw.2
+    rintro _ ⟨n, rfl⟩
+    exact Finset.sup'_le _ _ fun i _ => hg_le i c hc
 
-/-- Order completeness implies sigma order completeness. -/
-instance (priority := 100) IsOrderComplete.toIsSigmaOrderComplete
-    {X : Type*} [Preorder X] [IsOrderComplete X] :
-    IsSigmaOrderComplete X :=
-  ⟨fun _ hb hne ↦ IsOrderComplete.isLUB_of_bddAbove hb hne⟩
+/-- On a vector lattice, a `SigmaConditionallyCompleteLattice` structure
+exists provided every increasing bounded above sequence of positive elements
+has a least upper bound. -/
+noncomputable def sigmaConditionallyCompleteLatticeOfPosSeq
+    (X : Type*) [AddCommGroup X] [Lattice X] [IsOrderedAddMonoid X]
+    [VectorLattice X] [Nonempty X]
+    (H : ∀ {u : ℕ → X}, Monotone u → (∀ n, 0 ≤ u n) →
+      BddAbove (range u) → ∃ x, IsLUB (range u) x) :
+    SigmaConditionallyCompleteLattice X :=
+  sigmaConditionallyCompleteLatticeOfHasCountableLUB
+    (exists_isLUB_of_pos_of_shift (P := Set.Countable)
+      (fun f hc => hc.image f)
+      (fun hc hpos hne hbdd =>
+        exists_isLUB_pos_countable_set_of_pos_seq H hpos hc hne hbdd))
 
-section LatticeOrderedGroup
+/-- On a vector lattice, a `SigmaConditionallyCompleteLattice` structure
+exists provided every non-empty bounded above countable set of positive
+elements has a least upper bound. -/
+noncomputable def sigmaConditionallyCompleteLatticeOfPosCountableSet
+    (X : Type*) [AddCommGroup X] [Lattice X] [IsOrderedAddMonoid X]
+    [VectorLattice X] [Nonempty X]
+    (H : ∀ {S : Set X}, S ⊆ {x | 0 ≤ x} → S.Countable → S.Nonempty →
+      BddAbove S → ∃ x, IsLUB S x) :
+    SigmaConditionallyCompleteLattice X :=
+  sigmaConditionallyCompleteLatticeOfHasCountableLUB
+    (exists_isLUB_of_pos_of_shift (P := Set.Countable)
+      (fun f hc => hc.image f)
+      (fun hc hpos hne hbdd => H hpos hc hne hbdd))
 
-variable {X : Type*} [AddCommGroup X] [Lattice X] [IsOrderedAddMonoid X]
+/-! ### Archimedean property -/
 
-/-- Every sigma order complete lattice-ordered group is Archimedean in the
-vector-lattice sense. -/
-theorem IsVLArchimedean_of_isSigmaOrderComplete
-    [IsSigmaOrderComplete X] : IsVLArchimedean X where
-  eq_zero_of_nonneg_of_forall_nsmul_le {x y} hx hle := by
-    obtain ⟨s, hs⟩ := IsSigmaOrderComplete.isLUB_of_bddAbove_countable
-      (Set.countable_range _) ⟨y, by rintro _ ⟨n, rfl⟩; exact hle n⟩
-      ⟨0, 0, by simp⟩
-    have hub : s - x ∈ upperBounds (Set.range fun n : ℕ ↦ n • x) := by
-      rintro _ ⟨n, rfl⟩
-      have : (n + 1) • x ≤ s := hs.1 ⟨n + 1, rfl⟩
-      rw [succ_nsmul] at this
-      exact le_sub_iff_add_le.mpr (add_comm (n • x) x ▸ this)
-    have hle0 : x ≤ 0 := by
-      have h := sub_nonneg.mpr (hs.2 hub)
-      rw [sub_sub_cancel_left] at h
-      exact neg_nonneg.mp h
-    exact le_antisymm hle0 hx
-
-end LatticeOrderedGroup
-
-/-! ### Characterisations for vector lattices -/
-
-section VectorLattice
-
-variable {X : Type*} [AddCommGroup X] [Lattice X] [IsOrderedAddMonoid X]
-  [VectorLattice X]
-
-/-! #### Order completeness equivalences -/
-
-omit [VectorLattice X] in
-/-- In a vector lattice, order completeness is equivalent to every bounded
-above non-empty subset of the positive cone having a supremum. -/
-theorem isOrderComplete_iff_pos_bddAbove_isLUB :
-    IsOrderComplete X ↔
-    (∀ {S : Set X}, S ⊆ {x | 0 ≤ x} → BddAbove S → S.Nonempty →
-      ∃ x, IsLUB S x) := by
-  refine ⟨fun _ _ _ hb hne ↦ IsOrderComplete.isLUB_of_bddAbove hb hne, fun H ↦ ?_⟩
-  refine ⟨fun {S} hb hne ↦ ?_⟩
-  obtain ⟨s₀, hs₀⟩ := hne
-  obtain ⟨b, hb'⟩ := hb
-  set T : Set X := (fun s ↦ (s ⊔ s₀) - s₀) '' S with hT_def
-  have hTpos : T ⊆ {x | 0 ≤ x} := by
-    rintro _ ⟨s, _, rfl⟩
-    exact sub_nonneg.mpr le_sup_right
-  have hTbdd : BddAbove T := by
-    refine ⟨(b ⊔ s₀) - s₀, ?_⟩
-    rintro _ ⟨s, hs, rfl⟩
-    exact sub_le_sub_right (sup_le_sup_right (hb' hs) _) _
-  have hTne : T.Nonempty := ⟨0, s₀, hs₀, by simp⟩
-  obtain ⟨y, hy⟩ := H hTpos hTbdd hTne
-  refine ⟨y + s₀, ?_, ?_⟩
-  · intro s hs
-    have h1 : (s ⊔ s₀) - s₀ ≤ y := hy.1 ⟨s, hs, rfl⟩
-    have h2 : s ⊔ s₀ ≤ y + s₀ := sub_le_iff_le_add.mp h1
-    exact le_sup_left.trans h2
-  · intro u hu
-    have hu₀ : s₀ ≤ u := hu hs₀
-    have huT : u - s₀ ∈ upperBounds T := by
-      rintro _ ⟨s, hs, rfl⟩
-      exact sub_le_sub_right (sup_le (hu hs) hu₀) _
-    exact le_sub_iff_add_le.mp (hy.2 huT)
-
-/-! #### Sigma order completeness equivalences -/
-
-omit [AddCommGroup X] [IsOrderedAddMonoid X] [VectorLattice X] in
-/-- In a vector lattice, sigma order completeness is equivalent to every
-increasing bounded sequence having a least upper bound. -/
-theorem isSigmaOrderComplete_iff_mono_bddAbove_isLUB :
-    IsSigmaOrderComplete X ↔
-    (∀ {u : ℕ → X}, Monotone u → BddAbove (range u) →
-      ∃ x, IsLUB (range u) x) := by
-  refine ⟨fun _ _ hmono hbdd ↦
-    IsSigmaOrderComplete.isLUB_of_bddAbove_countable (countable_range _) hbdd
-      (range_nonempty _), fun H ↦ ?_⟩
-  refine ⟨fun {S} hc hb hne ↦ ?_⟩
-  obtain ⟨f, rfl⟩ := hc.exists_eq_range hne
-  let u : ℕ → X := fun n ↦ Nat.rec (f 0) (fun k uk ↦ uk ⊔ f (k+1)) n
-  have hmono : Monotone u :=
-    monotone_nat_of_le_succ fun _ ↦ le_sup_left
-  have hfle : ∀ n, f n ≤ u n := by
-    intro n
-    cases n with
-    | zero => exact le_refl _
-    | succ k => exact le_sup_right
-  have hu_le : ∀ {v : X}, (∀ k, f k ≤ v) → ∀ n, u n ≤ v := by
-    intro v hv n
-    induction n with
-    | zero => exact hv 0
-    | succ k ih => exact sup_le ih (hv (k+1))
-  obtain ⟨b, hbf⟩ := hb
-  obtain ⟨x, hx⟩ := H hmono
-    ⟨b, by rintro _ ⟨n, rfl⟩; exact hu_le (fun k ↦ hbf ⟨k, rfl⟩) n⟩
-  refine ⟨x, ?_, fun v hv ↦ hx.2 ?_⟩
-  · rintro _ ⟨n, rfl⟩
-    exact (hfle n).trans (hx.1 ⟨n, rfl⟩)
-  · rintro _ ⟨n, rfl⟩
-    exact hu_le (fun k ↦ hv ⟨k, rfl⟩) n
-
-omit [VectorLattice X] in
-/-- In a vector lattice, sigma order completeness is equivalent to every
-decreasing bounded sequence having a greatest lower bound. -/
-theorem isSigmaOrderComplete_iff_anti_bddBelow_isGLB :
-    IsSigmaOrderComplete X ↔
-    (∀ {u : ℕ → X}, Antitone u → BddBelow (range u) →
-      ∃ x, IsGLB (range u) x) := by
-  refine ⟨fun _ _ _ hbdd ↦
-    isGLB_of_bddBelow_countable (countable_range _) hbdd (range_nonempty _),
-    fun H ↦ isSigmaOrderComplete_iff_mono_bddAbove_isLUB.mpr fun {u} hmono hbdd ↦ ?_⟩
-  obtain ⟨b, hb⟩ := hbdd
-  obtain ⟨y, hy⟩ := H (u := fun n ↦ -u n)
-    (fun _ _ h ↦ neg_le_neg (hmono h))
-    ⟨-b, by rintro _ ⟨n, rfl⟩; exact neg_le_neg (hb ⟨n, rfl⟩)⟩
-  refine ⟨-y, ?_, fun w hw ↦ ?_⟩
-  · rintro _ ⟨n, rfl⟩
-    exact le_neg.mp (hy.1 ⟨n, rfl⟩)
-  · have hlb : -w ∈ lowerBounds (range fun k ↦ -u k) := by
-      rintro _ ⟨n, rfl⟩
-      exact neg_le_neg (hw ⟨n, rfl⟩)
-    exact neg_le.mp (hy.2 hlb)
-
-omit [VectorLattice X] in
-/-- In a vector lattice, sigma order completeness is equivalent to every
-positive increasing bounded sequence having a least upper bound. -/
-theorem isSigmaOrderComplete_iff_pos_mono_bddAbove_isLUB :
-    IsSigmaOrderComplete X ↔
-    (∀ {u : ℕ → X}, Monotone u → (∀ n, 0 ≤ u n) →
-      BddAbove (range u) → ∃ x, IsLUB (range u) x) := by
-  refine ⟨fun h _ hmono _ hbdd ↦
-    isSigmaOrderComplete_iff_mono_bddAbove_isLUB.mp h hmono hbdd,
-    fun H ↦ isSigmaOrderComplete_iff_mono_bddAbove_isLUB.mpr fun {u} hmono hbdd ↦ ?_⟩
-  obtain ⟨b, hb⟩ := hbdd
-  set v : ℕ → X := fun n ↦ u n - u 0
-  have hvmono : Monotone v := fun _ _ hmn ↦ sub_le_sub_right (hmono hmn) _
-  have hvpos : ∀ n, 0 ≤ v n := fun n ↦ sub_nonneg.mpr (hmono (Nat.zero_le n))
-  have hvbdd : BddAbove (range v) :=
-    ⟨b - u 0, by rintro _ ⟨n, rfl⟩; exact sub_le_sub_right (hb ⟨n, rfl⟩) _⟩
-  obtain ⟨y, hy⟩ := H hvmono hvpos hvbdd
-  refine ⟨y + u 0, ?_, fun w hw ↦ ?_⟩
-  · rintro _ ⟨n, rfl⟩
-    exact sub_le_iff_le_add.mp (hy.1 ⟨n, rfl⟩)
-  · have hub : w - u 0 ∈ upperBounds (range v) := by
-      rintro _ ⟨n, rfl⟩
-      exact sub_le_sub_right (hw ⟨n, rfl⟩) _
-    exact le_sub_iff_add_le.mp (hy.2 hub)
-
-end VectorLattice
+/-- Every sigma conditionally complete lattice-ordered group is Archimedean
+in the vector-lattice sense. -/
+theorem IsVLArchimedean_of_sigmaConditionallyCompleteLattice
+    {X : Type*} [SigmaConditionallyCompleteLattice X] [AddCommGroup X]
+    [IsOrderedAddMonoid X] : IsVLArchimedean X := by
+  refine ⟨fun {x y} hx hn => ?_⟩
+  set S : Set X := Set.range (fun n : ℕ => n • x) with hS_def
+  have hS_count : S.Countable := Set.countable_range _
+  have hS_ne : S.Nonempty := ⟨0 • x, 0, rfl⟩
+  have hS_bdd : BddAbove S := ⟨y, by rintro _ ⟨n, rfl⟩; exact hn n⟩
+  set u := sSup S with hu_def
+  have hm : ∀ m : ℕ, m • x ≤ u := fun m =>
+    SigmaConditionallyCompleteLattice.le_csSup S _ hS_count hS_bdd ⟨m, rfl⟩
+  have hub : u - x ∈ upperBounds S := by
+    rintro _ ⟨m, rfl⟩
+    rw [le_sub_iff_add_le, ← succ_nsmul]
+    exact hm (m + 1)
+  have hu' : u ≤ u - x :=
+    SigmaConditionallyCompleteLattice.csSup_le S _ hS_count hS_ne hub
+  have hx_nonpos : x ≤ 0 := by
+    have h : u + x ≤ u := le_sub_iff_add_le.mp hu'
+    have h' : u + x ≤ u + 0 := by rwa [add_zero]
+    exact (add_le_add_iff_left u).mp h'
+  exact le_antisymm hx_nonpos hx

@@ -106,7 +106,20 @@ chapter only when explicitly instructed.
   - `\uses{label1, label2, …}` — blueprint labels of statements this result
     depends on. This drives the dependency graph; keep it accurate.
 - **Prose.** Statements should be self-contained mathematical English, not
-  Lean syntax. Identify a structure with its underlying set in the
+  Lean syntax. Use the standard nomenclature and formulations a working
+  mathematician would expect, not transliterations of the Lean definition:
+  e.g.\ state "sigma Dedekind complete" in terms of countable bounded
+  suprema/infima, not as the four-clause `sSup`/`sInf` typeclass; avoid
+  talking about universes, `Nonempty` typeclass instances, or "extending
+  the ambient lattice order". Consult the monographs in `Library/`
+  (`troitsky2025.pdf`, `aliprantis_burkinshaw2006.pdf`) to pick natural
+  phrasing, conventional terminology, **and standard mathematical
+  notation**, even when the Lean name or notation suggests otherwise
+  (but do not cite them — see the rule below). In particular, use the
+  book notation for lattice operations ($x \vee y$, $x \wedge y$) rather
+  than Lean's ($x \sqcup y$, $x \sqcap y$); similarly for any other
+  symbol where Lean and the standard literature diverge. Identify a
+  structure with its underlying set in the
   informal convention: refer to a vector sublattice `Y` as "Y", not "the
   underlying subset of Y" or "the subtype of Y", and write "Y is a
   normed vector lattice" rather than "the underlying subtype of Y

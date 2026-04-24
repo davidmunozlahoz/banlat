@@ -22,13 +22,13 @@ Progress tracker for adding files to the blueprint:
 ### Foundations
 - [x] `BanLat/Basic.lean`
 - [x] `BanLat/RieszDec.lean`
-- [ ] `BanLat/OrderComplete.lean`
+- [x] `BanLat/OrderComplete.lean`
 - [x] `BanLat/Disjoint.lean`
 
 ### Substructures
 - [x] `BanLat/Sublattice.lean`
 - [ ] `BanLat/OrderDense.lean`
-- [ ] `BanLat/Ideal.lean`
+- [x] `BanLat/Ideal.lean`
 - [ ] `BanLat/Band.lean`
 - [ ] `BanLat/Atom.lean`
 - [ ] `BanLat/Quotient.lean`

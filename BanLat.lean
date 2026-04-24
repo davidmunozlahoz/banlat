@@ -7,6 +7,7 @@ import BanLat.Operators.RieszKantorovich
 import BanLat.Normed
 import BanLat.Disjoint
 import BanLat.Sublattice
+import BanLat.LLexpr
 import BanLat.OrderDense
 import BanLat.Ideal
 import BanLat.Band

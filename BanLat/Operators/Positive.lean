@@ -1,14 +1,20 @@
-import BanLat.Operators.Hom
+import BanLat.Normed
+import Mathlib.Algebra.Order.Module.Basic
+import Mathlib.Topology.Algebra.Module.Equiv
 
 /-!
 # Positive operators
 
 A linear map between vector lattices is **positive** if it sends non-negative elements to
-non-negative elements. For linear maps, positivity is equivalent to monotonicity. A positive
-operator satisfies `|f x| ≤ f |x|`, and every positive operator from a Banach lattice to a
-normed vector lattice is automatically continuous. As a corollary, every vector lattice
-isomorphism between Banach lattices is a Banach space isomorphism.
+non-negative elements. For linear maps, positivity is equivalent to monotonicity, and a
+positive operator satisfies `|f x| ≤ f |x|`.
+
+The **extension lemma** shows that an additive map on the positive cone extends uniquely
+to a positive linear operator when the codomain is Archimedean. Finally, every positive
+operator from a Banach lattice to a normed vector lattice is automatically continuous.
 -/
+
+/-! ## Definition and basic properties -/
 
 variable {X Y : Type*} [AddCommGroup X] [AddCommGroup Y] [Lattice X] [Lattice Y]
   [IsOrderedAddMonoid X] [IsOrderedAddMonoid Y] [VectorLattice X] [VectorLattice Y]
@@ -35,6 +41,8 @@ theorem abs_le_map_abs {f : X →ₗ[ℝ] Y} (hf : Positive f) (x : X) : |f x| �
   · exact (monotone_iff.mpr hf) (by rw [abs]; exact le_sup_left)
   · have h : f (-x) ≤ f |x| := (monotone_iff.mpr hf) (by rw [abs]; exact le_sup_right)
     rwa [map_neg] at h
+
+/-! ## Extension from the positive cone -/
 
 section ExtensionLemma
 
@@ -236,76 +244,9 @@ theorem extension_unique {f : X →ₗ[ℝ] Y} (_hf : Positive f)
   rw [← hext _ (posPart_nonneg _), ← hext _ (negPart_nonneg _), ← map_sub]
   congr 1; exact (posPart_sub_negPart x).symm
 
-/-- An additive bijection between positive cones extends to a vector lattice
-isomorphism when the codomain is Archimedean. -/
-noncomputable def extensionEquiv
-    (hτ_inj : ∀ x y, 0 ≤ x → 0 ≤ y → τ x = τ y → x = y)
-    (hτ_surj : ∀ y, 0 ≤ y → ∃ x, 0 ≤ x ∧ τ x = y) :
-    VecLatEquiv X Y := by
-  set T := extension hτ_nn hτ_add
-  have hT_inj : Function.Injective T := by
-    intro a b hab
-    have h : T (a - b) = 0 := by
-      rw [map_sub]; exact sub_eq_zero.mpr hab
-    rw [extension_apply] at h
-    have heq : (a - b)⁺ = (a - b)⁻ :=
-      hτ_inj _ _ (posPart_nonneg _) (negPart_nonneg _) (sub_eq_zero.mp h)
-    have hsub := posPart_sub_negPart (a - b)
-    rw [heq, sub_self] at hsub
-    exact sub_eq_zero.mp hsub.symm
-  have hT_surj : Function.Surjective T := by
-    intro y
-    obtain ⟨a, ha, haτ⟩ := hτ_surj y⁺ (posPart_nonneg y)
-    obtain ⟨b, hb, hbτ⟩ := hτ_surj y⁻ (negPart_nonneg y)
-    exact ⟨a - b, by
-      rw [map_sub, extension_nonneg hτ_nn hτ_add ha,
-        extension_nonneg hτ_nn hτ_add hb, haτ, hbτ,
-        posPart_sub_negPart]⟩
-  -- T is order-reflecting: 0 ≤ Tx → 0 ≤ x
-  have hT_bipos : ∀ x, 0 ≤ T x → 0 ≤ x := by
-    intro x hTx
-    rw [extension_apply] at hTx
-    have hτle : τ x⁻ ≤ τ x⁺ := sub_nonneg.mp hTx
-    obtain ⟨c, hc, hcτ⟩ := hτ_surj _ hTx
-    have hsum : τ (x⁻ + c) = τ x⁺ := by
-      rw [hτ_add _ _ (negPart_nonneg _) hc, hcτ, add_sub_cancel]
-    have heq : x⁻ + c = x⁺ :=
-      hτ_inj _ _ (add_nonneg (negPart_nonneg _) hc) (posPart_nonneg _) hsum
-    have hle : x⁻ ≤ x⁺ := heq ▸ le_add_of_nonneg_right hc
-    have : x⁻ = 0 := (inf_eq_left.mpr hle).symm.trans
-      ((inf_comm x⁻ x⁺).trans (posPart_inf_negPart_eq_zero x))
-    rw [← posPart_sub_negPart x, this, sub_zero]
-    exact posPart_nonneg _
-  -- T⁻¹ is monotone (from bipositivity + positivity)
-  have hT_inv_mono : ∀ a b, T a ≤ T b → a ≤ b := by
-    intro a b hab
-    have : 0 ≤ T (b - a) := by rw [map_sub]; exact sub_nonneg.mpr hab
-    exact sub_nonneg.mp (hT_bipos _ this)
-  have hT_mono : Monotone T := monotone_iff.mpr (extension_positive hτ_nn hτ_add)
-  -- T preserves ⊔
-  have hT_sup : ∀ a b, T (a ⊔ b) = T a ⊔ T b := by
-    intro a b
-    apply le_antisymm
-    · obtain ⟨c, hc⟩ := hT_surj (T a ⊔ T b)
-      have hca : a ≤ c := hT_inv_mono _ _ (hc ▸ le_sup_left)
-      have hcb : b ≤ c := hT_inv_mono _ _ (hc ▸ le_sup_right)
-      rw [← hc]; exact hT_mono (sup_le hca hcb)
-    · exact sup_le (hT_mono le_sup_left) (hT_mono le_sup_right)
-  -- T preserves ⊓
-  have hT_inf : ∀ a b, T (a ⊓ b) = T a ⊓ T b := by
-    intro a b
-    apply le_antisymm
-    · exact le_inf (hT_mono inf_le_left) (hT_mono inf_le_right)
-    · obtain ⟨c, hc⟩ := hT_surj (T a ⊓ T b)
-      have hca : c ≤ a := hT_inv_mono _ _ (hc ▸ inf_le_left)
-      have hcb : c ≤ b := hT_inv_mono _ _ (hc ▸ inf_le_right)
-      rw [← hc]; exact hT_mono (le_inf hca hcb)
-  exact
-    { (LinearEquiv.ofBijective T ⟨hT_inj, hT_surj⟩) with
-      map_sup' := hT_sup
-      map_inf' := hT_inf }
-
 end ExtensionLemma
+
+/-! ## Automatic continuity on Banach lattices -/
 
 variable {X Y : Type*} [NormedAddCommGroup X] [NormedAddCommGroup Y]
   [Lattice X] [Lattice Y] [IsOrderedAddMonoid X] [IsOrderedAddMonoid Y]
@@ -348,18 +289,3 @@ theorem continuous {f : X →ₗ[ℝ] Y} (hf : Positive f) : Continuous f := by
     (not_lt.mpr hN.le)
 
 end Positive
-
-namespace VecLatEquiv
-
-variable {X Y : Type*} [NormedAddCommGroup X] [NormedAddCommGroup Y]
-  [Lattice X] [Lattice Y] [IsOrderedAddMonoid X] [IsOrderedAddMonoid Y]
-  [BanachLattice X] [BanachLattice Y]
-
-/-- A vector lattice isomorphism between Banach lattices extends to a continuous linear
-equivalence. -/
-noncomputable def toContinuousLinearEquiv (e : VecLatEquiv X Y) : X ≃L[ℝ] Y :=
-  ContinuousLinearEquiv.mk e.toLinearEquiv
-    (Positive.continuous (Positive.monotone_iff.mp e.toVecLatHom.monotone))
-    (Positive.continuous (Positive.monotone_iff.mp e.symm.toVecLatHom.monotone))
-
-end VecLatEquiv

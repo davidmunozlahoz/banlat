@@ -1,7 +1,7 @@
 # Fdb version 4
-["pdflatex"] 1776872585.71009 "print.tex" "/home/david/phd/lean/banlat/blueprint/print/print.pdf" "print" 1776872587.8154 0
-  "/home/david/phd/lean/banlat/blueprint/print/print.aux" 1776872587.58231 9802 163a9d887267f101450d6f9d6140cb65 "pdflatex"
-  "/home/david/phd/lean/banlat/blueprint/print/print.out" 1776872587.58331 2424 b17c1a0b8b4f7261b236700a2ba0c3e9 "pdflatex"
+["pdflatex"] 1776946071.89889 "print.tex" "/home/david/phd/lean/banlat/blueprint/print/print.pdf" "print" 1776946073.91952 0
+  "/home/david/phd/lean/banlat/blueprint/print/print.aux" 1776946073.68444 14570 1520df337d8a1042055499a248492b9a "pdflatex"
+  "/home/david/phd/lean/banlat/blueprint/print/print.out" 1776946073.68544 4774 7586615e7c663dcdfebda2ac8c728af6 "pdflatex"
   "/usr/share/texmf-dist/fonts/map/fontname/texfonts.map" 1775415801 3524 cb3e574dea2d1052e39280babc910dc8 ""
   "/usr/share/texmf-dist/fonts/tfm/adobe/zapfding/pzdr.tfm" 1775415801 1528 f853c4d1b4e0550255e02831fdc8496f ""
   "/usr/share/texmf-dist/fonts/tfm/public/amsfonts/symbols/msam10.tfm" 1775415801 916 f87d7c45f9c908e672703b83b72241a3 ""
@@ -78,8 +78,8 @@
   "/usr/share/texmf-dist/tex/latex/url/url.sty" 1775415801 12796 8edb7d69a20b857904dd0ea757c14ec9 ""
   "/usr/share/texmf-dist/web2c/texmf.cnf" 1775415801 43569 fd570f2fa160877d211e859f687312ba ""
   "/var/lib/texmf/web2c/xetex/xelatex.fmt" 1775978422 5580294 7650c2500fdd8ef44df4a97a306bf0e3 ""
-  "chapters/basic.tex" 1776764006.9324 28295 a5a5feb926aafda214b91b2b02dc2bda ""
-  "chapters/substructures.tex" 1776872523.75284 11833 e8e83c54d15d8a3555711bc2af3105b4 ""
+  "chapters/basic.tex" 1776940161.66841 33461 80ed0a7d973b1f7a3287cfd5abb80cfc ""
+  "chapters/substructures.tex" 1776939381.89561 26031 a7e6f168771791fb7bbc496dd88d0adc ""
   "content.tex" 1776869464.95534 419 66f3f0a7dc6ebcc8899ed686ad6087d5 ""
   "macros/common.tex" 1776763197.8802 830 01105ff464e8ed56760325798aeea9ed ""
   "macros/print.tex" 1776708603.64596 1101 87627b2ec24fef68edc71c13f43f7bab ""

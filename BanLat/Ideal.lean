@@ -162,17 +162,6 @@ theorem self_mem_principal (a : X) : a ∈ principal a :=
 
 /-! ### Lattice structure -/
 
-/-- The whole space is an order ideal. -/
-instance : Top (OrderIdeal X) where
-  top := {
-    toVectorSublattice := ⊤
-    solid' := fun _ _ _ => Submodule.mem_top
-  }
-
-/-- Every element belongs to `⊤`. -/
-@[simp]
-theorem mem_top {x : X} : x ∈ (⊤ : OrderIdeal X) := Submodule.mem_top
-
 /-- The intersection of two order ideals is an order ideal. -/
 def inf (J₁ J₂ : OrderIdeal X) : OrderIdeal X where
   toSubmodule := J₁.toSubmodule ⊓ J₂.toSubmodule
@@ -492,6 +481,31 @@ def sum (J₁ J₂ : OrderIdeal X) : OrderIdeal X :=
 theorem sum_toSubmodule (J₁ J₂ : OrderIdeal X) :
     (sum J₁ J₂).toSubmodule = J₁.toSubmodule + J₂.toSubmodule := rfl
 
+/-- **Positive decomposition** in the sum of two ideals: every non-negative
+element of `J₁ + J₂` admits a splitting `y = y₁ + y₂` with `0 ≤ y₁ ∈ J₁` and
+`0 ≤ y₂ ∈ J₂`. -/
+theorem exists_sum_decomp_nonneg (J₁ J₂ : OrderIdeal X) {y : X}
+    (hy : y ∈ J₁.toSubmodule + J₂.toSubmodule) (hy0 : 0 ≤ y) :
+    ∃ y₁ y₂ : X, y₁ ∈ J₁ ∧ y₂ ∈ J₂ ∧ y₁ + y₂ = y ∧ 0 ≤ y₁ ∧ 0 ≤ y₂ := by
+  obtain ⟨u₁, hu₁, u₂, hu₂, rfl⟩ := Submodule.mem_sup.mp hy
+  have hau₁ : |u₁| ∈ J₁ := J₁.abs_mem hu₁
+  have hau₂ : |u₂| ∈ J₂ := J₂.abs_mem hu₂
+  have hau₁_nn : 0 ≤ |u₁| := abs_nonneg _
+  have hau₂_nn : 0 ≤ |u₂| := abs_nonneg _
+  have hyle : u₁ + u₂ ≤ |u₁| + |u₂| :=
+    add_le_add (le_abs_self u₁) (le_abs_self u₂)
+  refine ⟨(u₁ + u₂) ⊓ |u₁|, (u₁ + u₂) - (u₁ + u₂) ⊓ |u₁|,
+    J₁.solid hau₁ (le_inf hy0 hau₁_nn) inf_le_right,
+    ?_, by abel, le_inf hy0 hau₁_nn, ?_⟩
+  · have heq : (u₁ + u₂) - (u₁ + u₂) ⊓ |u₁| = ((u₁ + u₂) - |u₁|)⁺ := by
+      rw [inf_eq_sub_posPart_sub]; abel
+    rw [heq]
+    exact J₂.solid hau₂ (posPart_nonneg _)
+      (sup_le (sub_le_iff_le_add'.mpr hyle) hau₂_nn)
+  · have heq : (u₁ + u₂) - (u₁ + u₂) ⊓ |u₁| = ((u₁ + u₂) - |u₁|)⁺ := by
+      rw [inf_eq_sub_posPart_sub]; abel
+    rw [heq]; exact posPart_nonneg _
+
 /-- **Bounded decomposition** in the sum of two ideals: every element of
 `J₁ + J₂` admits a splitting `z = a + b` with `a ∈ J₁`, `b ∈ J₂` and the
 lattice estimates `|a| ≤ |z|`, `|b| ≤ |z|`. -/
@@ -561,12 +575,240 @@ theorem exists_sum_decomp (J₁ J₂ : OrderIdeal X) {z : X}
       _ ≤ (u₁ + u₂)⁺ + (u₁ + u₂)⁻ := add_le_add hbp_le_xp hbn_le_xn
       _ = |u₁ + u₂| := posPart_add_negPart _
 
-/-! ### Sum of closed ideals in a Banach lattice -/
+/-! ### Complete lattice structure -/
 
-section ClosedSum
+/-- Order ideals of `X`, ordered by inclusion, form a **partial order**. -/
+instance : PartialOrder (OrderIdeal X) := .ofSetLike (OrderIdeal X) X
+
+/-- Arbitrary intersections of order ideals are order ideals. -/
+instance : InfSet (OrderIdeal X) where
+  sInf S :=
+    { toSubmodule := sInf ((·.toSubmodule) '' S)
+      sup_mem' := fun {x y} hx hy => by
+        have hx' := (Submodule.mem_sInf).mp hx
+        have hy' := (Submodule.mem_sInf).mp hy
+        refine (Submodule.mem_sInf).mpr ?_
+        rintro _ ⟨J, hJ, rfl⟩
+        exact J.sup_mem (hx' _ ⟨J, hJ, rfl⟩) (hy' _ ⟨J, hJ, rfl⟩)
+      solid' := fun {x y} hx hy0 hyx => by
+        have hx' := (Submodule.mem_sInf).mp hx
+        refine (Submodule.mem_sInf).mpr ?_
+        rintro _ ⟨J, hJ, rfl⟩
+        exact J.solid (hx' _ ⟨J, hJ, rfl⟩) hy0 hyx }
+
+@[simp] theorem mem_sInf {S : Set (OrderIdeal X)} {x : X} :
+    x ∈ (sInf S : OrderIdeal X) ↔ ∀ J ∈ S, x ∈ J := by
+  change x ∈ sInf ((·.toSubmodule) '' S) ↔ _
+  rw [Submodule.mem_sInf]
+  refine ⟨fun h J hJ => h _ ⟨J, hJ, rfl⟩, ?_⟩
+  rintro h _ ⟨J, hJ, rfl⟩; exact h J hJ
+
+/-- The whole space `X` is an order ideal. -/
+instance : Top (OrderIdeal X) where
+  top :=
+    { toSubmodule := ⊤
+      sup_mem' := fun _ _ => Submodule.mem_top
+      solid' := fun _ _ _ => Submodule.mem_top }
+
+@[simp] theorem mem_top {x : X} : x ∈ (⊤ : OrderIdeal X) := Submodule.mem_top
+
+/-- The trivial ideal `{0}` is an order ideal. -/
+instance : Bot (OrderIdeal X) where
+  bot :=
+    { toSubmodule := ⊥
+      sup_mem' := fun {x y} hx hy => by
+        have hx' : x = 0 := (Submodule.mem_bot ℝ).mp hx
+        have hy' : y = 0 := (Submodule.mem_bot ℝ).mp hy
+        rw [hx', hy', sup_idem]; exact Submodule.zero_mem _
+      solid' := fun {x y} hx hy0 hyx => by
+        have hx' : x = 0 := (Submodule.mem_bot ℝ).mp hx
+        rw [hx'] at hyx
+        exact (Submodule.mem_bot ℝ).mpr (le_antisymm hyx hy0) }
+
+@[simp] theorem mem_bot {x : X} : x ∈ (⊥ : OrderIdeal X) ↔ x = 0 :=
+  Submodule.mem_bot ℝ
+
+/-- Order ideals of `X`, ordered by inclusion, form a **complete lattice**.
+Binary joins are given by the (Minkowski) sum `sum`, binary meets and arbitrary
+infima are given by intersection, the bottom element is the trivial ideal
+`{0}`, and the top element is the whole space. -/
+instance : CompleteLattice (OrderIdeal X) where
+  __ := (inferInstance : PartialOrder (OrderIdeal X))
+  sup := sum
+  inf := OrderIdeal.inf
+  top := ⊤
+  bot := ⊥
+  sInf := sInf
+  sSup S := sInf {K : OrderIdeal X | ∀ I ∈ S, I ≤ K}
+  le_top := fun _ _ _ => Submodule.mem_top
+  bot_le := fun J x hx => by
+    have hx' : x ∈ (⊥ : Submodule ℝ X) := hx
+    have : x = 0 := (Submodule.mem_bot ℝ).mp hx'
+    exact this ▸ J.toSubmodule.zero_mem
+  le_sup_left := fun J₁ J₂ x hx =>
+    Submodule.mem_sup.mpr ⟨x, hx, 0, J₂.toSubmodule.zero_mem, add_zero x⟩
+  le_sup_right := fun J₁ J₂ x hx =>
+    Submodule.mem_sup.mpr ⟨0, J₁.toSubmodule.zero_mem, x, hx, zero_add x⟩
+  sup_le := fun J₁ J₂ K hJ₁ hJ₂ x hx => by
+    obtain ⟨x₁, hx₁, x₂, hx₂, rfl⟩ := Submodule.mem_sup.mp hx
+    exact K.toSubmodule.add_mem (hJ₁ hx₁) (hJ₂ hx₂)
+  inf_le_left := fun _ _ _ hx => hx.1
+  inf_le_right := fun _ _ _ hx => hx.2
+  le_inf := fun _ _ _ h₁ h₂ _ hx => ⟨h₁ hx, h₂ hx⟩
+  sInf_le := fun S J hJ x hx => by
+    rw [mem_sInf] at hx; exact hx J hJ
+  le_sInf := fun S J hJ x hx => by
+    rw [mem_sInf]; intro K hK; exact hJ K hK hx
+  le_sSup := fun S J hJ x hx => by
+    rw [mem_sInf]; intro K hK; exact hK J hJ hx
+  sSup_le := fun S J hJ x hx => by
+    rw [mem_sInf] at hx; exact hx J hJ
+
+@[simp] theorem sup_toSubmodule (J₁ J₂ : OrderIdeal X) :
+    (J₁ ⊔ J₂).toSubmodule = J₁.toSubmodule + J₂.toSubmodule := rfl
+
+@[simp] theorem inf_toSubmodule (J₁ J₂ : OrderIdeal X) :
+    (J₁ ⊓ J₂).toSubmodule = J₁.toSubmodule ⊓ J₂.toSubmodule := rfl
+
+/-! ### Existence of proper non-trivial ideals -/
+
+/-- Two non-negative lattice-disjoint elements cannot sit in a common principal
+ideal: if `0 ≤ p, q` with `p ⊓ q = 0` and `q ∈ principal p`, then `q = 0`. -/
+private lemma eq_zero_of_mem_principal_disjoint {p q : X} (hp : 0 ≤ p)
+    (hq : 0 ≤ q) (hpq : p ⊓ q = 0) (hq_in : q ∈ principal p) : q = 0 := by
+  obtain ⟨c, hc, hle⟩ := hq_in
+  rw [abs_of_nonneg hq, abs_of_nonneg hp] at hle
+  rcases le_or_gt 1 c with h1 | h1
+  · have hq_le_cq : q ≤ c • q := by
+      calc q = (1 : ℝ) • q := (one_smul ℝ q).symm
+        _ ≤ c • q := smul_le_smul_of_nonneg_right h1 hq
+    have hboth : q ≤ c • p ⊓ c • q := le_inf hle hq_le_cq
+    rw [← nonneg_smul_inf p q c (le_trans zero_le_one h1), hpq, smul_zero] at hboth
+    exact le_antisymm hboth hq
+  · have hcp_le_p : c • p ≤ p := by
+      calc c • p ≤ (1 : ℝ) • p := smul_le_smul_of_nonneg_right h1.le hp
+        _ = p := one_smul ℝ p
+    have hq_le_p : q ≤ p := le_trans hle hcp_le_p
+    have : p ⊓ q = q := inf_eq_right.mpr hq_le_p
+    rwa [this] at hpq
+
+/-- If the real dimension of `X` is strictly greater than one, then `X` admits
+an order ideal that is **neither trivial nor the whole space**. -/
+theorem exists_proper_nontrivial [IsVLArchimedean X] (h : 1 < Module.rank ℝ X) :
+    ∃ J : OrderIdeal X, J ≠ ⊥ ∧ J ≠ ⊤ := by
+  obtain ⟨u, v, hu, hv, huv⟩ := exists_pair_ne_zero_isVLDisjoint h
+  have habs_u_nn : 0 ≤ |u| := abs_nonneg u
+  have habs_v_nn : 0 ≤ |v| := abs_nonneg v
+  have habs_u_nz : |u| ≠ 0 := fun h => hu ((abs_eq_zero_iff_zero u).mp h)
+  have habs_v_nz : |v| ≠ 0 := fun h => hv ((abs_eq_zero_iff_zero v).mp h)
+  refine ⟨principal (|u|), ?_, ?_⟩
+  · intro heq
+    have : (|u| : X) ∈ (⊥ : OrderIdeal X) := heq ▸ self_mem_principal |u|
+    exact habs_u_nz (mem_bot.mp this)
+  · intro heq
+    have hv_mem : (|v| : X) ∈ principal (|u|) := heq ▸ mem_top
+    exact habs_v_nz
+      (eq_zero_of_mem_principal_disjoint habs_u_nn habs_v_nn huv hv_mem)
+
+/-! ### Closure of an ideal in a normed vector lattice -/
+
+section Closure
+
+variable {X : Type*} [NormedAddCommGroup X] [Lattice X] [IsOrderedAddMonoid X]
+  [NormedVectorLattice X]
+
+/-- The topological closure of the underlying submodule of an order ideal is
+itself solid: if `x` lies in the closure and `|y| ≤ |x|`, then `y` lies in the
+closure. -/
+theorem topologicalClosure_solid (J : OrderIdeal X) :
+    ∀ x y : X, x ∈ J.toSubmodule.topologicalClosure → |y| ≤ |x| →
+      y ∈ J.toSubmodule.topologicalClosure := by
+  intro x y hx hy_abs
+  have hx' : x ∈ closure (J.toSubmodule : Set X) := by
+    rwa [← Submodule.topologicalClosure_coe]
+  obtain ⟨xn, hxn_mem, hxn_lim⟩ := mem_closure_iff_seq_limit.mp hx'
+  -- Truncated sequence yₙ = (y ⊔ -|xₙ|) ⊓ |xₙ|, which lies in J and converges to y.
+  set yn : ℕ → X := fun n => (y ⊔ (-|xn n|)) ⊓ |xn n| with hyn_def
+  have habs_nn : ∀ n, (0 : X) ≤ |xn n| := fun _ => abs_nonneg _
+  have hyn_mem : ∀ n, yn n ∈ J.toSubmodule := by
+    intro n
+    have habs_mem : |xn n| ∈ J := J.abs_mem (hxn_mem n)
+    have h_le : yn n ≤ |xn n| := inf_le_right
+    have h_neg_le : -|xn n| ≤ |xn n| :=
+      le_trans (neg_nonpos_of_nonneg (habs_nn n)) (habs_nn n)
+    have h_ge : -|xn n| ≤ yn n := le_inf le_sup_right h_neg_le
+    have h_abs_yn : |yn n| ≤ |xn n| := by
+      rw [abs_le']; exact ⟨h_le, by rwa [neg_le]⟩
+    have : |yn n| ∈ J := J.solid habs_mem (abs_nonneg _) h_abs_yn
+    exact J.mem_of_abs_mem this
+  -- Continuity of `|·|`, `⊔`, `⊓` makes `yn → y`.
+  have hcont_abs : Continuous (|·| : X → X) :=
+    NormedVectorLattice.lipschitzWith_abs.continuous
+  have habs_tendsto : Filter.Tendsto (fun n => |xn n|) Filter.atTop (nhds |x|) :=
+    (hcont_abs.tendsto _).comp hxn_lim
+  have hneg_tendsto : Filter.Tendsto (fun n => -|xn n|) Filter.atTop (nhds (-|x|)) :=
+    habs_tendsto.neg
+  have hsup_tendsto :
+      Filter.Tendsto (fun n => y ⊔ (-|xn n|)) Filter.atTop (nhds (y ⊔ (-|x|))) :=
+    (NormedVectorLattice.continuous_sup.tendsto _).comp
+      (tendsto_const_nhds.prodMk_nhds hneg_tendsto)
+  have hyn_tendsto :
+      Filter.Tendsto yn Filter.atTop (nhds ((y ⊔ (-|x|)) ⊓ |x|)) :=
+    (NormedVectorLattice.continuous_inf.tendsto _).comp
+      (hsup_tendsto.prodMk_nhds habs_tendsto)
+  have h_le_abs : y ≤ |x| := le_trans (le_abs_self y) hy_abs
+  have h_neg_le : -|x| ≤ y := by rw [neg_le]; exact le_trans (neg_le_abs y) hy_abs
+  have hy_eq : (y ⊔ (-|x|)) ⊓ |x| = y := by
+    rw [sup_eq_left.mpr h_neg_le, inf_eq_left.mpr h_le_abs]
+  rw [hy_eq] at hyn_tendsto
+  have hy_in_closure : y ∈ closure (J.toSubmodule : Set X) :=
+    mem_closure_of_tendsto hyn_tendsto (Filter.Eventually.of_forall hyn_mem)
+  rwa [← Submodule.topologicalClosure_coe] at hy_in_closure
+
+/-- The **norm closure** of an order ideal `J` in a normed vector lattice is
+again an order ideal, whose underlying submodule is the topological closure of
+`J.toSubmodule`. -/
+def topologicalClosure (J : OrderIdeal X) : OrderIdeal X :=
+  ofSolid J.toSubmodule.topologicalClosure (topologicalClosure_solid J)
+
+@[simp]
+theorem topologicalClosure_toSubmodule (J : OrderIdeal X) :
+    (topologicalClosure J).toSubmodule = J.toSubmodule.topologicalClosure := rfl
+
+end Closure
+
+end OrderIdeal
+
+/-- A **closed order ideal** of a Banach lattice is an order ideal whose
+underlying set is closed in the norm topology. -/
+structure ClosedOrderIdeal (X : Type*) [NormedAddCommGroup X]
+    [Lattice X] [IsOrderedAddMonoid X] [BanachLattice X]
+    extends OrderIdeal X where
+  isClosed' : IsClosed (toOrderIdeal : Set X)
+
+namespace ClosedOrderIdeal
 
 variable {X : Type*} [NormedAddCommGroup X] [Lattice X] [IsOrderedAddMonoid X]
   [BanachLattice X]
+
+instance : SetLike (ClosedOrderIdeal X) X where
+  coe J := J.toOrderIdeal
+  coe_injective' p q h := by
+    cases p; cases q; congr
+    exact SetLike.coe_injective h
+
+/-- A closed order ideal is closed as a subset of `X`. -/
+theorem isClosed (J : ClosedOrderIdeal X) : IsClosed (J : Set X) :=
+  J.isClosed'
+
+/-- Closed order ideals form a partial order under inclusion. -/
+instance : PartialOrder (ClosedOrderIdeal X) :=
+  .ofSetLike (ClosedOrderIdeal X) X
+
+/-- The intersection of two closed order ideals is a closed order ideal. -/
+def inf (J₁ J₂ : ClosedOrderIdeal X) : ClosedOrderIdeal X where
+  toOrderIdeal := J₁.toOrderIdeal ⊓ J₂.toOrderIdeal
+  isClosed' := J₁.isClosed.inter J₂.isClosed
 
 /-- **Norm-bounded decomposition** in the sum of two ideals of a normed vector
 lattice: every element of `J₁ + J₂` splits as `z = a + b` with `a ∈ J₁`,
@@ -574,15 +816,15 @@ lattice: every element of `J₁ + J₂` splits as `z = a + b` with `a ∈ J₁`,
 private theorem exists_sum_decomp_norm (J₁ J₂ : OrderIdeal X) {z : X}
     (hz : z ∈ J₁.toSubmodule + J₂.toSubmodule) :
     ∃ a b : X, a ∈ J₁ ∧ b ∈ J₂ ∧ a + b = z ∧ ‖a‖ ≤ ‖z‖ ∧ ‖b‖ ≤ ‖z‖ := by
-  obtain ⟨a, b, ha, hb, hsum, habs_a, habs_b⟩ := exists_sum_decomp J₁ J₂ hz
+  obtain ⟨a, b, ha, hb, hsum, habs_a, habs_b⟩ := OrderIdeal.exists_sum_decomp J₁ J₂ hz
   refine ⟨a, b, ha, hb, hsum, ?_, ?_⟩
   · rw [← norm_abs_eq_norm z]; exact norm_le_norm_of_abs_le_abs (by rwa [abs_abs])
   · rw [← norm_abs_eq_norm z]; exact norm_le_norm_of_abs_le_abs (by rwa [abs_abs])
 
 /-- The sum of two closed order ideals in a Banach lattice is again closed. -/
-theorem isClosed_sum {J₁ J₂ : OrderIdeal X}
+private theorem isClosed_sum {J₁ J₂ : OrderIdeal X}
     (h₁ : IsClosed (J₁ : Set X)) (h₂ : IsClosed (J₂ : Set X)) :
-    IsClosed ((sum J₁ J₂ : OrderIdeal X) : Set X) := by
+    IsClosed ((OrderIdeal.sum J₁ J₂ : OrderIdeal X) : Set X) := by
   rw [← isSeqClosed_iff_isClosed]
   intro z_seq z hz_mem hz_lim
   -- Extract a subsequence whose consecutive distances are summable.
@@ -646,6 +888,66 @@ theorem isClosed_sum {J₁ J₂ : OrderIdeal X}
     (hz_mem (φ 0))
     (Submodule.mem_sup.mpr ⟨A, hA_mem, B, hB_mem, rfl⟩)
 
-end ClosedSum
+/-- The sum of two closed order ideals of a Banach lattice is again a closed
+order ideal. -/
+def sup (J₁ J₂ : ClosedOrderIdeal X) : ClosedOrderIdeal X where
+  toOrderIdeal := OrderIdeal.sum J₁.toOrderIdeal J₂.toOrderIdeal
+  isClosed' := isClosed_sum J₁.isClosed J₂.isClosed
 
-end OrderIdeal
+/-- The arbitrary intersection of a family of closed order ideals is a closed
+order ideal. -/
+def sInf (S : Set (ClosedOrderIdeal X)) : ClosedOrderIdeal X where
+  toOrderIdeal := InfSet.sInf ((·.toOrderIdeal) '' S)
+  isClosed' := by
+    have h : ((InfSet.sInf ((·.toOrderIdeal) '' S) : OrderIdeal X) : Set X) =
+        ⋂ J ∈ S, (J : Set X) := by
+      ext x
+      rw [Set.mem_iInter₂]
+      exact OrderIdeal.mem_sInf.trans
+        ⟨fun h J hJ => h _ ⟨J, hJ, rfl⟩, by rintro h _ ⟨J, hJ, rfl⟩; exact h J hJ⟩
+    rw [show ((InfSet.sInf ((·.toOrderIdeal) '' S) : OrderIdeal X) : Set X) =
+        ⋂ J ∈ S, (J : Set X) from h]
+    exact isClosed_biInter fun J _ => J.isClosed
+
+/-- Closed order ideals of a Banach lattice form a **lattice** under inclusion,
+with binary meets given by intersection and binary joins by the sum. -/
+instance : Lattice (ClosedOrderIdeal X) where
+  sup := sup
+  inf := inf
+  le_sup_left := fun J₁ J₂ x hx => by
+    change x ∈ OrderIdeal.sum J₁.toOrderIdeal J₂.toOrderIdeal
+    exact Submodule.mem_sup.mpr ⟨x, hx, 0, J₂.toSubmodule.zero_mem, add_zero x⟩
+  le_sup_right := fun J₁ J₂ x hx => by
+    change x ∈ OrderIdeal.sum J₁.toOrderIdeal J₂.toOrderIdeal
+    exact Submodule.mem_sup.mpr ⟨0, J₁.toSubmodule.zero_mem, x, hx, zero_add x⟩
+  sup_le := fun J₁ J₂ K hJ₁ hJ₂ x hx => by
+    obtain ⟨x₁, hx₁, x₂, hx₂, rfl⟩ := Submodule.mem_sup.mp hx
+    exact K.toSubmodule.add_mem (hJ₁ hx₁) (hJ₂ hx₂)
+  inf_le_left := fun _ _ _ hx => hx.1
+  inf_le_right := fun _ _ _ hx => hx.2
+  le_inf := fun _ _ _ h₁ h₂ _ hx => ⟨h₁ hx, h₂ hx⟩
+
+/-- Closed order ideals of a Banach lattice admit **arbitrary intersections**:
+they form a complete semilattice for the `⊓` operation. -/
+instance : InfSet (ClosedOrderIdeal X) where
+  sInf := sInf
+
+/-- Membership in an arbitrary intersection of closed order ideals. -/
+@[simp] theorem mem_sInf {S : Set (ClosedOrderIdeal X)} {x : X} :
+    x ∈ (InfSet.sInf S : ClosedOrderIdeal X) ↔ ∀ J ∈ S, x ∈ J := by
+  change x ∈ (InfSet.sInf ((·.toOrderIdeal) '' S) : OrderIdeal X) ↔ _
+  rw [OrderIdeal.mem_sInf]
+  refine ⟨fun h J hJ => h _ ⟨J, hJ, rfl⟩, ?_⟩
+  rintro h _ ⟨J, hJ, rfl⟩; exact h J hJ
+
+/-- The underlying submodule of a binary meet is the intersection of the
+underlying submodules. -/
+@[simp] theorem inf_toSubmodule (J₁ J₂ : ClosedOrderIdeal X) :
+    (J₁ ⊓ J₂).toSubmodule = J₁.toSubmodule ⊓ J₂.toSubmodule := rfl
+
+/-- The underlying submodule of a binary join is the sum of the underlying
+submodules. -/
+@[simp] theorem sup_toSubmodule (J₁ J₂ : ClosedOrderIdeal X) :
+    (J₁ ⊔ J₂).toSubmodule = J₁.toSubmodule + J₂.toSubmodule := rfl
+
+end ClosedOrderIdeal
