@@ -14,6 +14,7 @@ The Banach lattices library in Lean.
   For these: Let X be a Banach sequence space. Closed sublattices of X are
     exactly the closed spans of (finite or infinite) disjoint positive sequences.
 - [ ] Add all the necessary results to the files in examples.
+- [ ] Decomposition lemma for order continuous Banach lattices
 
 ## Blueprinted
 
@@ -26,28 +27,25 @@ Progress tracker for adding files to the blueprint:
 - [x] `BanLat/Disjoint.lean`
 
 ### Substructures
-- [x] `BanLat/Sublattice.lean`
-- [ ] `BanLat/OrderDense.lean`
-- [x] `BanLat/Ideal.lean`
-- [ ] `BanLat/Band.lean`
-- [ ] `BanLat/Atom.lean`
-- [ ] `BanLat/Quotient.lean`
+- [x] `BanLat/Substructures/Sublattice.lean`
+- [x] `BanLat/OrderDense.lean`
+- [x] `BanLat/Substructures/Ideal.lean`
+- [x] `BanLat/Atom.lean`
+- [x] `BanLat/Quotient.lean`
 
 ### Operators
-- [ ] `BanLat/Operators/Hom.lean`
-- [ ] `BanLat/Operators/Positive.lean`
-- [ ] `BanLat/Operators/OrderBounded.lean`
-- [ ] `BanLat/Operators/RieszKantorovich.lean`
-- [ ] `BanLat/Operators/Regular.lean`
-- [ ] `BanLat/Operators/IntervalPreserving.lean`
-- [ ] `BanLat/Operators/Extension.lean`
+- [x] `BanLat/Operators/Hom.lean`
+- [x] `BanLat/Operators/Positive.lean`
+- [x] `BanLat/Operators/OrderBounded.lean`
+- [x] `BanLat/Operators/RieszKantorovich.lean`
+- [x] `BanLat/Operators/Regular.lean`
 
 ### Normed and Banach lattices
 - [x] `BanLat/Normed.lean`
 - [ ] `BanLat/OrderContinuous.lean`
-- [ ] `BanLat/Dual.lean`
-- [ ] `BanLat/Bidual.lean`
-- [ ] `BanLat/Pi.lean`
+- [x] `BanLat/Dual.lean`
+- [x] `BanLat/Bidual.lean`
+- [x] `BanLat/Pi.lean`
 
 ### Special classes and representation
 - [ ] `BanLat/AMSpace.lean`
@@ -88,12 +86,12 @@ This is very likely outdated; I only update it once in a while.
 
 ### Substructures
 
-- **`BanLat/Sublattice.lean`** — Vector sublattices: linear subspaces closed
+- **`BanLat/Substructures/Sublattice.lean`** — Vector sublattices: linear subspaces closed
   under the lattice operations, characterised by closure under `|·|`.
 - **`BanLat/OrderDense.lean`** — Order dense subsets of a vector lattice:
   a subset is order dense when every strictly positive element dominates a
   strictly positive element of the subset. Order dense vector sublattices.
-- **`BanLat/Ideal.lean`** — Order ideals as solid sublattices, with the basic
+- **`BanLat/Substructures/Ideal.lean`** — Order ideals as solid sublattices, with the basic
   characterisations. Principal ideals and the gauge norm.
 - **`BanLat/Band.lean`** — Bands (order-closed ideals), disjoint complements,
   band generation, principal bands, and projection bands. The projection

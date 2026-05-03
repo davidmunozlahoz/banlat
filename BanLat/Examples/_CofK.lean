@@ -1,66 +1,23 @@
+import BanLat.Examples.CofK.Basic
 import BanLat.AMSpace
 import BanLat.Dual
 import BanLat.Preliminaries.Regularity
 import BanLat.Examples.SignedMeasure
-import Mathlib.Topology.ContinuousMap.Compact
-import Mathlib.Topology.ContinuousMap.Lattice
 import Mathlib.MeasureTheory.Integral.Bochner.Basic
 import Mathlib.MeasureTheory.Integral.RieszMarkovKakutani.Real
 import Mathlib.MeasureTheory.Constructions.BorelSpace.Basic
 import Mathlib.MeasureTheory.Measure.RegularityCompacts
 
 /-!
-# Spaces of continuous functions as Banach lattices and AM-spaces
+# Spaces of continuous functions as AM-spaces
 
-For a compact topological space `K`, the space `C(K, ℝ)` of continuous
-real-valued functions equipped with the supremum norm and the pointwise order
-is a Banach lattice. Its norm is an AM-norm, so `C(K, ℝ)` is an AM-space.
-When `K` is nonempty the constant function `1` is a strong unit and the sup
-norm agrees with the gauge norm, making `C(K, ℝ)` an AM-space with unit.
+For a compact topological space `K`, the Banach lattice `C(K, ℝ)` (defined in
+`BanLat.Examples.CofK.Basic`) has an AM-norm, so it is an AM-space. When `K`
+is nonempty the constant function `1` is a strong unit and the sup norm agrees
+with the gauge norm, making `C(K, ℝ)` an AM-space with unit.
 -/
 
 variable {K : Type*} [TopologicalSpace K] [CompactSpace K]
-
-/-! ### Lattice and order structure
-
-Mathlib provides `Lattice C(K, ℝ)` (pointwise, via
-`ContinuousMap.instLatticeOfTopologicalLattice`) and `IsOrderedAddMonoid C(K, ℝ)`
-(via `ContinuousMap.instIsOrderedAddMonoid`). The norm comes from
-`ContinuousMap.instNormedAddCommGroup`.
--/
-
-/-! ### Vector lattice -/
-
-/-- `C(K, ℝ)` is a vector lattice: a real module whose positive cone is closed
-under scalar multiplication by non-negative reals. -/
-noncomputable instance instVectorLatticeCofK : VectorLattice C(K, ℝ) where
-  smul_le_smul_of_nonneg_left {a} ha {b₁ b₂} hb := by
-    rw [ContinuousMap.le_def] at hb ⊢
-    intro x; simp only [ContinuousMap.smul_apply]
-    exact smul_le_smul_of_nonneg_left (hb x) ha
-
-/-! ### Normed vector lattice -/
-
-/-- The sup norm on `C(K, ℝ)` is solid: `|f| ≤ |g|` pointwise implies
-`‖f‖ ≤ ‖g‖`. -/
-instance instHasSolidNormCofK : HasSolidNorm C(K, ℝ) where
-  solid {f g} h := by
-    simp only [ContinuousMap.norm_eq_iSup_norm]
-    apply ciSup_mono ⟨‖g‖, Set.forall_mem_range.mpr
-      (fun x => ContinuousMap.norm_coe_le_norm g x)⟩
-    intro x
-    have := ContinuousMap.le_def.mp h x
-    rw [ContinuousMap.abs_apply, ContinuousMap.abs_apply] at this
-    exact HasSolidNorm.solid this
-
-/-- `C(K, ℝ)` is a normed vector lattice. -/
-noncomputable instance instNormedVectorLatticeCofK :
-    NormedVectorLattice C(K, ℝ) where
-
-/-! ### Banach lattice -/
-
-/-- `C(K, ℝ)` is a Banach lattice: a complete normed vector lattice. -/
-noncomputable instance instBanachLatticeCofK : BanachLattice C(K, ℝ) where
 
 /-! ### AM-space -/
 

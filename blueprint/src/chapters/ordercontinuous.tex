@@ -1,0 +1,257 @@
+\chapter{Order continuity}
+
+This chapter studies normed vector lattices whose norm is compatible
+with order convergence. A norm is \emph{$\sigma$-order continuous}
+when every antitone sequence of positive elements with infimum $0$
+converges to $0$ in norm, and \emph{order continuous} when the
+analogous condition holds for nets. After recording the basic
+sequential consequences of $\sigma$-order continuity and the fact
+that order continuity forces Dedekind completeness in the Banach
+lattice setting, we prove three landmark equivalent
+characterisations of order continuity for a Banach lattice:
+Nakano's theorem (in terms of monotone bounded sequences),
+Meyer--Nieberg's theorem (in terms of order bounded disjoint
+sequences), and Ando's theorem (in terms of norm-closed ideals).
+We close with the decomposition lemma: in an order continuous
+Banach lattice, the principal band projections along a maximal
+disjoint family form an unconditional decomposition of every
+element.
+
+\section{Order continuous norms}
+
+This section introduces the two classes of order continuous norms,
+records that the order continuous version is stronger, and
+establishes the equivalent sequential characterisations of
+$\sigma$-order continuity. We then show that an order continuous
+Banach lattice is automatically Dedekind complete.
+
+\begin{definition}
+\label{def:isSigmaOrderContinuousNorm}
+\lean{IsSigmaOrderContinuousNorm}
+\leanok
+\uses{def:normed-vector-lattice}
+Let $X$ be a normed vector lattice. The norm of $X$ is
+\emph{$\sigma$-order continuous} if, for every antitone sequence
+$(u_n)_{n \in \mathbb{N}}$ in $X$ with $0 \le u_n$ for all $n$ and
+greatest lower bound $0$, the sequence $u_n$ converges to $0$ in
+norm.
+\end{definition}
+
+\begin{definition}
+\label{def:isOrderContinuousNorm}
+\lean{IsOrderContinuousNorm}
+\leanok
+\uses{def:normed-vector-lattice}
+Let $X$ be a normed vector lattice. The norm of $X$ is
+\emph{order continuous} if, for every nonempty upward-directed
+preorder $\iota$ and every antitone net $(u_i)_{i \in \iota}$ in
+$X$ with $0 \le u_i$ for all $i$ and greatest lower bound $0$, the
+net $u_i$ converges to $0$ in norm.
+\end{definition}
+
+\begin{lemma}
+\label{lem:isOrderContinuousNorm-toIsSigmaOrderContinuousNorm}
+\lean{IsOrderContinuousNorm.toIsSigmaOrderContinuousNorm}
+\leanok
+\uses{def:isSigmaOrderContinuousNorm, def:isOrderContinuousNorm}
+Let $X$ be a normed vector lattice with order continuous norm.
+Then the norm of $X$ is $\sigma$-order continuous.
+\end{lemma}
+
+\begin{lemma}
+\label{lem:isSigmaOrderContinuousNorm-tendsto-of-monotone-isLUB}
+\lean{IsSigmaOrderContinuousNorm.tendsto_of_monotone_isLUB}
+\leanok
+\uses{def:isSigmaOrderContinuousNorm}
+Let $X$ be a normed vector lattice with $\sigma$-order continuous
+norm. If $(u_n)_{n \in \mathbb{N}}$ is a monotone sequence in $X$
+with least upper bound $x \in X$, then $u_n$ converges to $x$ in
+norm.
+\end{lemma}
+
+\begin{lemma}
+\label{lem:isSigmaOrderContinuousNorm-tendsto-of-antitone-isGLB}
+\lean{IsSigmaOrderContinuousNorm.tendsto_of_antitone_isGLB}
+\leanok
+\uses{def:isSigmaOrderContinuousNorm}
+Let $X$ be a normed vector lattice with $\sigma$-order continuous
+norm. If $(u_n)_{n \in \mathbb{N}}$ is an antitone sequence in $X$
+with greatest lower bound $x \in X$, then $u_n$ converges to $x$
+in norm.
+\end{lemma}
+
+\begin{lemma}
+\label{lem:isSigmaOrderContinuousNorm-tendsto-of-abs-sub-le-antitone}
+\lean{IsSigmaOrderContinuousNorm.tendsto_of_abs_sub_le_antitone}
+\leanok
+\uses{def:isSigmaOrderContinuousNorm}
+Let $X$ be a normed vector lattice with $\sigma$-order continuous
+norm, let $x \in X$, and let $(u_n)_{n \in \mathbb{N}}$,
+$(v_n)_{n \in \mathbb{N}}$ be sequences in $X$ such that $v$ is
+antitone with $0 \le v_n$ for all $n$ and greatest lower bound
+$0$, and $\lvert u_n - x \rvert \le v_n$ for all $n$. Then $u_n$
+converges to $x$ in norm.
+\end{lemma}
+
+\begin{lemma}
+\label{lem:isSigmaOrderContinuousNorm-tendsto-norm-of-monotone-isLUB}
+\lean{IsSigmaOrderContinuousNorm.tendsto_norm_of_monotone_isLUB}
+\leanok
+\uses{lem:isSigmaOrderContinuousNorm-tendsto-of-monotone-isLUB}
+Let $X$ be a normed vector lattice with $\sigma$-order continuous
+norm. If $(u_n)_{n \in \mathbb{N}}$ is a monotone sequence in $X$
+with least upper bound $x \in X$, then $\lVert u_n \rVert$
+converges to $\lVert x \rVert$ in $\mathbb{R}$.
+\end{lemma}
+
+\begin{theorem}
+\label{thm:conditionallyCompleteLatticeOf-isOrderContinuousNorm}
+\lean{BanachLattice.conditionallyCompleteLatticeOf_isOrderContinuousNorm}
+\leanok
+\uses{def:isOrderContinuousNorm, def:banach-lattice,
+  thm:conditionallyCompleteLatticeOfPosSet}
+Every Banach lattice with order continuous norm is Dedekind
+complete: every nonempty bounded above subset admits a least
+upper bound.
+\end{theorem}
+
+\section{Nakano's theorem}
+
+Nakano's theorem characterises order continuity of the norm of a
+Banach lattice in terms of monotone bounded sequences: it is
+equivalent to $\sigma$-conditional completeness paired with
+$\sigma$-order continuity, and equivalent to norm convergence of
+every monotone bounded above sequence to its supremum.
+
+\begin{theorem}
+\label{thm:isOrderContinuousNorm-tfae}
+\lean{BanachLattice.tendsto_of_monotone_bddAbove,
+  BanachLattice.sigmaConditionallyCompleteLattice_of_mono_bddAbove_tendsto,
+  BanachLattice.isSigmaOrderContinuousNorm_of_mono_bddAbove_tendsto,
+  BanachLattice.isOrderContinuousNorm_of_isSigmaConditionallyCompleteLattice}
+\leanok
+\uses{def:isSigmaOrderContinuousNorm, def:isOrderContinuousNorm,
+  def:banach-lattice, def:vector-lattice,
+  def:sigmaConditionallyCompleteLattice,
+  thm:conditionallyCompleteLatticeOf-isOrderContinuousNorm,
+  thm:sigmaConditionallyCompleteLatticeOfPosSeq,
+  lem:isSigmaOrderContinuousNorm-tendsto-of-monotone-isLUB,
+  lem:isSigmaOrderContinuousNorm-tendsto-of-antitone-isGLB,
+  lem:isOrderContinuousNorm-toIsSigmaOrderContinuousNorm,
+  thm:isGLB-of-antitone-tendsto}
+Let $X$ be a Banach lattice. The following are equivalent:
+\begin{enumerate}
+  \item the norm of $X$ is order continuous;
+  \item $X$ is $\sigma$-conditionally complete and the norm of $X$
+    is $\sigma$-order continuous;
+  \item every monotone bounded above sequence in $X$ has a least
+    upper bound towards which it converges in norm.
+\end{enumerate}
+\end{theorem}
+
+\section{Meyer--Nieberg's theorem}
+
+Meyer--Nieberg's theorem characterises order continuity of the
+norm of a Banach lattice in terms of order bounded pairwise
+disjoint sequences. As a consequence, an order bounded pairwise
+disjoint set of nonzero elements in such a Banach lattice is at
+most countable.
+
+\begin{theorem}
+\label{thm:disjoint-bddAbove-tendsto-zero}
+\lean{BanachLattice.disjoint_bddAbove_tendsto_zero}
+\leanok
+\uses{def:isOrderContinuousNorm, def:banach-lattice,
+  def:isVLDisjoint, thm:isOrderContinuousNorm-tfae}
+Let $X$ be a Banach lattice with order continuous norm and let
+$(u_n)_{n \in \mathbb{N}}$ be a sequence in $X$ such that $u_i$
+and $u_j$ are disjoint whenever $i \ne j$ and $\{ \lvert u_n
+\rvert : n \in \mathbb{N} \}$ is bounded above. Then $u_n$
+converges to $0$ in norm.
+\end{theorem}
+
+\begin{theorem}
+\label{thm:countable-of-pairwise-disjoint-bddAbove}
+\lean{BanachLattice.countable_of_pairwise_disjoint_bddAbove}
+\leanok
+\uses{def:isOrderContinuousNorm, def:banach-lattice,
+  def:isVLDisjoint, thm:disjoint-bddAbove-tendsto-zero}
+Let $X$ be a Banach lattice with order continuous norm and let $S
+\subseteq X$ be a set of pairwise disjoint nonzero elements such
+that $\{ \lvert x \rvert : x \in S \}$ is bounded above. Then $S$
+is at most countable.
+\end{theorem}
+
+\section{Ando's theorem}
+
+Ando's theorem characterises order continuity of the norm of a
+Banach lattice in terms of norm-closed order ideals: the norm is
+order continuous if and only if every norm-closed order ideal is
+a band, in which case every such ideal is in fact a projection
+band.
+
+\begin{theorem}
+\label{thm:band-of-isClosed-orderIdeal}
+\lean{BanachLattice.band_of_isClosed_orderIdeal}
+\leanok
+\uses{def:isOrderContinuousNorm, def:banach-lattice,
+  def:order-ideal, def:band, lem:band-ofPosDirectedSSupMem}
+Let $X$ be a Banach lattice with order continuous norm. Every
+norm-closed order ideal of $X$ is a band.
+\end{theorem}
+
+\begin{theorem}
+\label{thm:projectionBand-of-isClosed-orderIdeal}
+\lean{BanachLattice.projectionBand_of_isClosed_orderIdeal}
+\leanok
+\uses{def:isOrderContinuousNorm, def:banach-lattice,
+  def:order-ideal, def:projectionBand,
+  thm:band-of-isClosed-orderIdeal,
+  lem:closedOrderIdeal-sup, lem:isClosed-disjointComplement,
+  lem:band-disjointComplement,
+  thm:band-eq-disjointComplement-disjointComplement,
+  lem:disjointComplement-anti,
+  lem:disjointComplement-inter-eq-zero,
+  thm:projectionBand-iff-add-disjointComplement,
+  lem:orderIdeal-sum}
+Let $X$ be a Banach lattice with order continuous norm. Every
+norm-closed order ideal of $X$ is a projection band.
+\end{theorem}
+
+\section{The decomposition lemma}
+
+Order continuity of the norm forces the principal projection
+property: the principal band generated by any element is a
+projection band, so the principal band projection $P_a$ along
+$a \in X$ is well defined. The decomposition lemma then says
+that the principal band projections along a maximal disjoint
+family of strictly positive elements decompose every vector
+unconditionally.
+
+\begin{lemma}
+\label{lem:hasPrincipalProjectionProperty-of-isOrderContinuousNorm}
+\lean{BanachLattice.hasPrincipalProjectionProperty_of_isOrderContinuousNorm}
+\leanok
+\uses{def:isOrderContinuousNorm, def:banach-lattice,
+  def:hasPrincipalProjectionProperty,
+  thm:conditionallyCompleteLatticeOf-isOrderContinuousNorm,
+  thm:hasPrincipalProjectionProperty-of-isSigmaOrderComplete}
+Every Banach lattice with order continuous norm has the
+principal projection property.
+\end{lemma}
+
+\begin{theorem}
+\label{thm:hasSum-principalBandProjection}
+\lean{BanachLattice.hasSum_principalBandProjection}
+\leanok
+\uses{def:isOrderContinuousNorm, def:banach-lattice,
+  def:isMaximalDisjoint,
+  def:band-principalBandProjection,
+  lem:hasPrincipalProjectionProperty-of-isOrderContinuousNorm,
+  thm:isLUB-principalBandProjection-of-isMaximalDisjoint}
+Let $X$ be a Banach lattice with order continuous norm, let
+$\Lambda \subseteq X$ be a maximal disjoint set whose elements
+are strictly positive, and let $x \in X$. Then the family of
+principal band projections $\bigl( P_a x \bigr)_{a \in \Lambda}$
+is unconditionally summable with sum $x$.
+\end{theorem}

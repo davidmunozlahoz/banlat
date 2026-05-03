@@ -148,8 +148,16 @@ private def toLinearMap_injective :
       OrderBoundedHom X Y → X →ₗ[ℝ] Y) := fun _ _ h =>
   ext fun x => congrFun (congrArg DFunLike.coe h) x
 
+/-- Bundle a positive linear operator as an `OrderBoundedHom`. -/
+def ofPositive (f : X →ₗ[ℝ] Y) (hf : Positive f) : OrderBoundedHom X Y :=
+  ⟨f, hf.isOrderBounded⟩
+
+@[simp]
+theorem ofPositive_apply (f : X →ₗ[ℝ] Y) (hf : Positive f) (x : X) :
+    ofPositive f hf x = f x := rfl
+
 instance instZero : Zero (OrderBoundedHom X Y) :=
-  ⟨⟨0, Positive.isOrderBounded fun _ _ => by simp⟩⟩
+  ⟨ofPositive 0 fun _ _ => by simp⟩
 
 instance instAdd : Add (OrderBoundedHom X Y) :=
   ⟨fun f g => ⟨f.toLinearMap + g.toLinearMap,
@@ -191,34 +199,23 @@ noncomputable instance :
   zero_smul f := ext fun x => zero_smul ℝ (f x)
 
 noncomputable instance :
-    PartialOrder (OrderBoundedHom X Y) where
-  le f g := ∀ x : X, 0 ≤ x → f x ≤ g x
-  le_refl _ _ _ := le_refl _
-  le_trans _ _ _ hfg hgh x hx := le_trans (hfg x hx) (hgh x hx)
-  le_antisymm f g hfg hgf := ext fun x => by
-    have h1 := le_antisymm (hfg _ (posPart_nonneg x))
-      (hgf _ (posPart_nonneg x))
-    have h2 := le_antisymm (hfg _ (negPart_nonneg x))
-      (hgf _ (negPart_nonneg x))
-    have key : ∀ T : OrderBoundedHom X Y,
-        T x = T x⁺ - T x⁻ := fun T => by
-      change T.toLinearMap x = T.toLinearMap x⁺ - T.toLinearMap x⁻
-      rw [← map_sub, posPart_sub_negPart]
-    rw [key f, key g, h1, h2]
+    PartialOrder (OrderBoundedHom X Y) :=
+  PartialOrder.lift OrderBoundedHom.toLinearMap toLinearMap_injective
 
 /-- The operator ordering: `f ≤ g` iff for every `x ≥ 0` we have
 `f x ≤ g x`. -/
 theorem le_iff {f g : OrderBoundedHom X Y} :
-    f ≤ g ↔ ∀ x : X, 0 ≤ x → f x ≤ g x := Iff.rfl
+    f ≤ g ↔ ∀ x : X, 0 ≤ x → f x ≤ g x :=
+  Positive.le_iff
 
 instance :
     IsOrderedAddMonoid (OrderBoundedHom X Y) where
-  add_le_add_left _ _ hab c x hx :=
-    add_le_add_left (hab x hx) (c x)
+  add_le_add_left _ _ hab c := le_iff.mpr fun x hx =>
+    add_le_add_left (le_iff.mp hab x hx) (c x)
 
 instance :
     PosSMulMono ℝ (OrderBoundedHom X Y) where
-  smul_le_smul_of_nonneg_left _ hr _ _ hfg x hx :=
-    smul_le_smul_of_nonneg_left (hfg x hx) hr
+  smul_le_smul_of_nonneg_left _ hr _ _ hfg := le_iff.mpr fun x hx =>
+    smul_le_smul_of_nonneg_left (le_iff.mp hfg x hx) hr
 
 end OrderBoundedHom

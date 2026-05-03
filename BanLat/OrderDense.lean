@@ -1,16 +1,10 @@
-import BanLat.Sublattice
+import BanLat.Substructures.Sublattice
 
 /-!
 # Order dense subsets of a vector lattice
 
 A subset `s` of a vector lattice `X` is **order dense** when every strictly
-positive element of `X` dominates a strictly positive element of `s`. Order
-dense sublattices play a central role in the embedding theorems of
-`BanLat/Pi.lean`: under PPP, the image of the principal-band-projection map
-into the product `Λ → X` is order dense, and every Archimedean vector lattice
-embeds as an order dense sublattice in a product of order complete vector
-lattices with weak units.
--/
+positive element of `X` dominates a strictly positive element of `s`.-/
 
 /-- A subset `s` of a preordered type with a `0` is **order dense** if every
 strictly positive element dominates some strictly positive element of `s`. -/

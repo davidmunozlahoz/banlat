@@ -1,7 +1,7 @@
 import BanLat.Examples.CofK
 import BanLat.Examples.SignedMeasure
 import BanLat.Preliminaries.Baire
-import BanLat.Sublattice
+import BanLat.Substructures.Sublattice
 
 /-!
 # The Banach lattice `M(K)` of regular signed Borel measures

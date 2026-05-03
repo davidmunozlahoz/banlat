@@ -431,6 +431,129 @@ theorem linearIndependent_of_pairwise_isVLDisjoint {n : ℕ} {x : Fin n → X}
     rwa [smul_smul, inv_mul_cancel₀ habs_ne, one_smul, smul_zero] at h2
   exact hne i ((abs_eq_zero_iff_zero (x i)).mp hxi)
 
+/-! ### Pairwise disjoint families and maximality
+
+A subset of a vector lattice is **pairwise disjoint** when distinct members
+are vector-lattice disjoint, and **maximal** when it is not properly
+contained in any strictly larger pairwise disjoint subset. Every vector
+lattice admits a maximal disjoint family consisting of strictly positive
+vectors, by Zorn's lemma. -/
+
+/-- A subset of `X` is **pairwise disjoint** when it does not contain `0`
+and distinct members are vector-lattice disjoint. -/
+def IsDisjointSet (Λ : Set X) : Prop :=
+  0 ∉ Λ ∧ ∀ ⦃a⦄, a ∈ Λ → ∀ ⦃b⦄, b ∈ Λ → a ≠ b → IsVLDisjoint a b
+
+/-- A **maximal disjoint family** in `X` is a pairwise disjoint set that is
+not properly contained in any strictly larger pairwise disjoint subset of
+`X`. The order is by inclusion (not refinement). -/
+def IsMaximalDisjoint (Λ : Set X) : Prop :=
+  Maximal IsDisjointSet Λ
+
+omit [VectorLattice X] in
+/-- A pairwise disjoint family of strictly positive elements is maximal iff
+the only element disjoint from every member of the family is `0`. -/
+theorem isMaximalDisjoint_iff_forall_eq_zero {Λ : Set X}
+    (_hpos : ∀ x ∈ Λ, 0 < x) (hdis : IsDisjointSet Λ) :
+    IsMaximalDisjoint Λ ↔ ∀ x : X, (∀ a ∈ Λ, IsVLDisjoint x a) → x = 0 := by
+  refine ⟨?_, ?_⟩
+  · intro hmax x hx
+    by_contra hxne
+    have habs_ne : |x| ≠ 0 := fun h => hxne ((abs_eq_zero_iff_zero x).mp h)
+    have habs_pos : 0 < |x| := lt_of_le_of_ne (abs_nonneg x) (Ne.symm habs_ne)
+    have habs_disj : ∀ a ∈ Λ, IsVLDisjoint |x| a := fun a ha =>
+      (hx a ha).mono_left (abs_of_nonneg (abs_nonneg x)).le
+    set Λ' : Set X := insert |x| Λ with hΛ'_def
+    have hΛ'_dis : IsDisjointSet Λ' := by
+      refine ⟨?_, ?_⟩
+      · rintro (h0 | h0)
+        · exact habs_ne h0.symm
+        · exact hdis.1 h0
+      · intro a ha b hb hab
+        rcases ha with rfl | ha
+        · rcases hb with rfl | hb
+          · exact (hab rfl).elim
+          · exact habs_disj b hb
+        · rcases hb with rfl | hb
+          · exact isVLDisjoint_comm.mp (habs_disj a ha)
+          · exact hdis.2 ha hb hab
+    have hsub : Λ ⊆ Λ' := Set.subset_insert _ _
+    have hsub' : Λ' ⊆ Λ := hmax.2 hΛ'_dis hsub
+    have hxinΛ : |x| ∈ Λ := hsub' (Set.mem_insert _ _)
+    have hself : |x| ⊓ |(|x|)| = 0 := hx |x| hxinΛ
+    rw [abs_of_nonneg (abs_nonneg x), inf_idem] at hself
+    exact habs_ne hself
+  · intro hyp
+    refine ⟨hdis, ?_⟩
+    intro Λ' hΛ' hsub y hy
+    by_contra hyΛ
+    have hyΛ : y ∉ Λ := hyΛ
+    have hy_disj : ∀ a ∈ Λ, IsVLDisjoint y a := by
+      intro a ha
+      have hane : y ≠ a := fun h => hyΛ (h.symm ▸ ha)
+      exact hΛ'.2 hy (hsub ha) hane
+    have hy0 : y = 0 := hyp y hy_disj
+    exact hΛ'.1 (hy0 ▸ hy)
+
+/-- **Existence of a maximal disjoint family of positive vectors.** Every
+vector lattice admits a maximal disjoint family whose elements are all
+strictly positive. -/
+theorem exists_isMaximalDisjoint_pos (X : Type*) [AddCommGroup X] [Lattice X]
+    [IsOrderedAddMonoid X] [VectorLattice X] :
+    ∃ Λ : Set X, IsMaximalDisjoint Λ ∧ ∀ x ∈ Λ, 0 < x := by
+  let 𝒞 : Set (Set X) := {S | IsDisjointSet S ∧ ∀ x ∈ S, 0 < x}
+  have hZorn : ∀ c ⊆ 𝒞, IsChain (· ⊆ ·) c → ∃ ub ∈ 𝒞, ∀ s ∈ c, s ⊆ ub := by
+    intro c hc hchain
+    refine ⟨⋃₀ c, ⟨⟨?_, ?_⟩, ?_⟩, fun s hs => Set.subset_sUnion_of_mem hs⟩
+    · rintro ⟨S, hS, h0⟩
+      exact (hc hS).1.1 h0
+    · intro a ha b hb hab
+      obtain ⟨Sa, hSa, haSa⟩ := ha
+      obtain ⟨Sb, hSb, hbSb⟩ := hb
+      rcases hchain.total hSa hSb with hSab | hSab
+      · exact (hc hSb).1.2 (hSab haSa) hbSb hab
+      · exact (hc hSa).1.2 haSa (hSab hbSb) hab
+    · rintro x ⟨S, hS, hxS⟩
+      exact (hc hS).2 x hxS
+  obtain ⟨Λ, hΛ⟩ := zorn_subset 𝒞 hZorn
+  refine ⟨Λ, ⟨hΛ.prop.1, ?_⟩, hΛ.prop.2⟩
+  intro Λ' hΛ' hsub y hy
+  by_contra hyΛ
+  have hyΛ : y ∉ Λ := hyΛ
+  have hy_ne : y ≠ 0 := fun h => hΛ'.1 (h ▸ hy)
+  have habsy_ne : |y| ≠ 0 := fun h => hy_ne ((abs_eq_zero_iff_zero y).mp h)
+  have habsy_pos : 0 < |y| := lt_of_le_of_ne (abs_nonneg y) (Ne.symm habsy_ne)
+  have hy_disj : ∀ a ∈ Λ, IsVLDisjoint y a := by
+    intro a ha
+    have hane : y ≠ a := fun h => hyΛ (h.symm ▸ ha)
+    exact hΛ'.2 hy (hsub ha) hane
+  set Λ'' : Set X := insert |y| Λ
+  have hΛ''_in : Λ'' ∈ 𝒞 := by
+    refine ⟨⟨?_, ?_⟩, ?_⟩
+    · rintro (h0 | h0)
+      · exact habsy_ne h0.symm
+      · exact hΛ.prop.1.1 h0
+    · intro a ha b hb hab
+      rcases ha with rfl | ha
+      · rcases hb with rfl | hb
+        · exact (hab rfl).elim
+        · exact (hy_disj b hb).mono_left (abs_of_nonneg (abs_nonneg y)).le
+      · rcases hb with rfl | hb
+        · exact isVLDisjoint_comm.mp
+            ((hy_disj a ha).mono_left (abs_of_nonneg (abs_nonneg y)).le)
+        · exact hΛ.prop.1.2 ha hb hab
+    · rintro x (rfl | hx)
+      · exact habsy_pos
+      · exact hΛ.prop.2 x hx
+  have hsub'' : Λ ⊆ Λ'' := Set.subset_insert _ _
+  have hsub''' : Λ'' ⊆ Λ := hΛ.2 hΛ''_in hsub''
+  have habs_in : |y| ∈ Λ := hsub''' (Set.mem_insert _ _)
+  by_cases hyabs : y = |y|
+  · exact hyΛ (hyabs ▸ habs_in)
+  · have hd : |y| ⊓ |(|y|)| = 0 := hΛ'.2 hy (hsub habs_in) hyabs
+    rw [abs_of_nonneg (abs_nonneg y), inf_idem] at hd
+    exact habsy_ne hd
+
 end VectorLattice
 
 /-! ### Disjoint sequences in normed vector lattices -/

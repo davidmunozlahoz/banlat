@@ -42,6 +42,45 @@ theorem abs_le_map_abs {f : X →ₗ[ℝ] Y} (hf : Positive f) (x : X) : |f x| �
   · have h : f (-x) ≤ f |x| := (monotone_iff.mpr hf) (by rw [abs]; exact le_sup_right)
     rwa [map_neg] at h
 
+/-! ## Order on linear operators
+
+The space `X →ₗ[ℝ] Y` of linear operators between vector lattices is partially
+ordered by `T ≤ S ↔ Positive (S - T)`, equivalently `T x ≤ S x` for every
+`0 ≤ x`. Under this order, `0 ≤ T` is the same as `Positive T`. -/
+
+instance : LE (X →ₗ[ℝ] Y) where
+  le T S := Positive (S - T)
+
+theorem le_def {T S : X →ₗ[ℝ] Y} : T ≤ S ↔ Positive (S - T) := Iff.rfl
+
+theorem le_iff {T S : X →ₗ[ℝ] Y} : T ≤ S ↔ ∀ x, 0 ≤ x → T x ≤ S x := by
+  refine ⟨fun h x hx => ?_, fun h x hx => ?_⟩
+  · have hxs := h x hx; rwa [LinearMap.sub_apply, sub_nonneg] at hxs
+  · rw [LinearMap.sub_apply, sub_nonneg]; exact h x hx
+
+@[simp] theorem zero_le_iff {T : X →ₗ[ℝ] Y} : 0 ≤ T ↔ Positive T := by
+  change Positive (T - 0) ↔ _; rw [sub_zero]
+
+instance : PartialOrder (X →ₗ[ℝ] Y) where
+  le_refl T := by
+    change Positive (T - T); rw [sub_self]; intro _ _; exact le_refl 0
+  le_trans T S R hTS hSR := by
+    intro x hx
+    have heq : (R - T) x = (R - S) x + (S - T) x := by
+      simp [LinearMap.sub_apply]
+    rw [heq]
+    exact add_nonneg (hSR x hx) (hTS x hx)
+  le_antisymm T S hTS hST := by
+    ext x
+    have hp : T x⁺ = S x⁺ :=
+      le_antisymm ((le_iff.mp hTS) _ (posPart_nonneg x))
+        ((le_iff.mp hST) _ (posPart_nonneg x))
+    have hn : T x⁻ = S x⁻ :=
+      le_antisymm ((le_iff.mp hTS) _ (negPart_nonneg x))
+        ((le_iff.mp hST) _ (negPart_nonneg x))
+    rw [show x = x⁺ - x⁻ from (posPart_sub_negPart x).symm,
+      map_sub, map_sub, hp, hn]
+
 /-! ## Extension from the positive cone -/
 
 section ExtensionLemma

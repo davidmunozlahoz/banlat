@@ -2,25 +2,18 @@ import BanLat.Operators.Regular
 import BanLat.Operators.RieszKantorovich
 
 /-!
-# The order dual and norm dual of a vector or Banach lattice
+# The order dual and strong dual of a vector or Banach lattice
 
 The **order dual** `OrderDualSpace X` of a vector lattice `X` is the space of order
 bounded real-valued linear functionals on `X`. Since `ℝ` is order complete, the
 Riesz–Kantorovich machinery equips it with a canonical order complete vector
-lattice structure. The **norm dual** `NormDualSpace X` of a normed vector lattice `X`
-is the space `X →L[ℝ] ℝ` of continuous linear functionals. For a Banach lattice
-the two duals coincide as sets — every continuous functional is order bounded
-and every order bounded functional is automatically continuous — and the norm
-dual inherits the structure of a Banach lattice.
+lattice structure. The **strong dual** `StrongDual ℝ X` of a normed vector lattice
+`X` is the mathlib abbreviation for the space `X →L[ℝ] ℝ` of continuous linear
+functionals. For a Banach lattice the two duals coincide as sets — every
+continuous functional is order bounded and every order bounded functional is
+automatically continuous — and the strong dual inherits the structure of a
+Banach lattice.
 -/
-
-/-! ### `ℝ` as a (Banach) vector lattice -/
-
-noncomputable instance : VectorLattice ℝ where
-
-noncomputable instance : NormedVectorLattice ℝ where
-
-noncomputable instance : BanachLattice ℝ where
 
 /-! ### The order dual -/
 
@@ -76,10 +69,6 @@ theorem isGLB_inf_apply {φ ψ : OrderDualSpace X} {x : X} (hx : 0 ≤ x) :
       ((φ ⊓ ψ) x) :=
   OrderBoundedHom.isGLB_inf_apply hx
 
-/-- The order dual is order complete: every non-empty order bounded family of
-functionals admits a least upper bound. -/
-example : IsOrderComplete (OrderDualSpace X) := inferInstance
-
 /-- Every order dual element is regular: it can be written as a difference of
 two positive functionals. -/
 theorem isRegularOp (φ : OrderDualSpace X) :
@@ -92,17 +81,36 @@ some order bounded functional. -/
 def SeparatesPoints : Prop :=
   ∀ x : X, (∀ φ : OrderDualSpace X, φ x = 0) → x = 0
 
+/-- Suprema in the order dual are supplied by the Riesz-Kantorovich
+order-completeness theorem for order bounded operators. -/
+noncomputable instance instSupSet : SupSet (OrderDualSpace X) where
+  sSup S := by
+    classical
+    exact if h : S.Nonempty ∧ BddAbove S then
+      (OrderBoundedHom.exists_isLUB h.1 h.2).choose
+    else 0
+
+/-- The chosen supremum in the order dual is the least upper bound of every
+non-empty bounded-above set. -/
+theorem isLUB_sSup (S : Set (OrderDualSpace X)) (hbdd : BddAbove S)
+    (hne : S.Nonempty) : IsLUB S (sSup S) := by
+  classical
+  change IsLUB S (if h : S.Nonempty ∧ BddAbove S then
+      (OrderBoundedHom.exists_isLUB h.1 h.2).choose
+    else 0)
+  rw [dif_pos ⟨hne, hbdd⟩]
+  exact (OrderBoundedHom.exists_isLUB hne hbdd).choose_spec
+
+/-- The order dual is conditionally complete. -/
+noncomputable instance instConditionallyCompleteLattice :
+    ConditionallyCompleteLattice (OrderDualSpace X) :=
+  conditionallyCompleteLatticeOfLatticeOfsSup _ isLUB_sSup
+
 end OrderDualSpace
 
-/-! ### The norm dual -/
+/-! ### The strong dual -/
 
-/-- The **norm dual** of a normed vector lattice: continuous real-valued
-linear functionals. -/
-abbrev NormDualSpace (X : Type*) [NormedAddCommGroup X] [Lattice X]
-    [IsOrderedAddMonoid X] [NormedVectorLattice X] : Type _ :=
-  X →L[ℝ] ℝ
-
-namespace NormDualSpace
+namespace StrongDual
 
 section NormedVectorLattice
 
@@ -111,7 +119,7 @@ variable {X : Type*} [NormedAddCommGroup X] [Lattice X]
 
 /-- Every continuous linear functional on a normed vector lattice is order
 bounded. -/
-theorem isOrderBounded (φ : NormDualSpace X) :
+theorem isOrderBounded (φ : StrongDual ℝ X) :
     IsOrderBounded φ.toLinearMap := by
   intro x hx
   refine ⟨‖φ‖ * ‖x‖, mul_nonneg (norm_nonneg _) (norm_nonneg _), fun z hz => ?_⟩
@@ -122,16 +130,16 @@ theorem isOrderBounded (φ : NormDualSpace X) :
   exact (φ.le_opNorm z).trans (by gcongr)
 
 /-- The order bounded functional underlying a continuous linear functional. -/
-def toOrderDualSpace (φ : NormDualSpace X) : OrderDualSpace X where
+def toOrderDualSpace (φ : StrongDual ℝ X) : OrderDualSpace X where
   toLinearMap := φ.toLinearMap
   isOrderBounded' := isOrderBounded φ
 
 @[simp]
-theorem toOrderDualSpace_apply (φ : NormDualSpace X) (x : X) :
+theorem toOrderDualSpace_apply (φ : StrongDual ℝ X) (x : X) :
     toOrderDualSpace φ x = φ x := rfl
 
 /-- Bundling `toOrderDualSpace` as a real-linear map. -/
-def toOrderDualSpaceLinear : NormDualSpace X →ₗ[ℝ] OrderDualSpace X where
+def toOrderDualSpaceLinear : StrongDual ℝ X →ₗ[ℝ] OrderDualSpace X where
   toFun := toOrderDualSpace
   map_add' _ _ := by ext; rfl
   map_smul' _ _ := by ext; rfl
@@ -144,16 +152,16 @@ variable {X : Type*} [NormedAddCommGroup X] [Lattice X]
   [IsOrderedAddMonoid X] [BanachLattice X]
 
 /-- For a Banach lattice, every order bounded functional is continuous. -/
-noncomputable def ofOrderDualSpace (f : OrderDualSpace X) : NormDualSpace X :=
+noncomputable def ofOrderDualSpace (f : OrderDualSpace X) : StrongDual ℝ X :=
   ⟨f.toLinearMap, IsOrderBounded.continuous f.isOrderBounded'⟩
 
 @[simp]
 theorem ofOrderDualSpace_apply (f : OrderDualSpace X) (x : X) :
     ofOrderDualSpace f x = f x := rfl
 
-/-- For a Banach lattice, the order dual and the norm dual are linearly
+/-- For a Banach lattice, the order dual and the strong dual are linearly
 equivalent: continuous functionals are exactly the order bounded ones. -/
-noncomputable def equivOrderDualSpace : NormDualSpace X ≃ₗ[ℝ] OrderDualSpace X where
+noncomputable def equivOrderDualSpace : StrongDual ℝ X ≃ₗ[ℝ] OrderDualSpace X where
   toFun := toOrderDualSpace
   invFun := ofOrderDualSpace
   left_inv _ := by ext; rfl
@@ -168,82 +176,119 @@ private theorem toOrderDualSpace_injective :
   have := congrArg (fun (ψ : OrderDualSpace X) => ψ x) h
   simpa using this
 
-instance instLE : LE (NormDualSpace X) where
+instance instLE : LE (StrongDual ℝ X) where
   le f g := toOrderDualSpace f ≤ toOrderDualSpace g
 
-instance instLT : LT (NormDualSpace X) where
+instance instLT : LT (StrongDual ℝ X) where
   lt f g := toOrderDualSpace f < toOrderDualSpace g
 
-noncomputable instance instMax : Max (NormDualSpace X) where
+noncomputable instance instMax : Max (StrongDual ℝ X) where
   max f g := ofOrderDualSpace (toOrderDualSpace f ⊔ toOrderDualSpace g)
 
-noncomputable instance instMin : Min (NormDualSpace X) where
+noncomputable instance instMin : Min (StrongDual ℝ X) where
   min f g := ofOrderDualSpace (toOrderDualSpace f ⊓ toOrderDualSpace g)
 
-private theorem toOrderDualSpace_le {f g : NormDualSpace X} :
+private theorem toOrderDualSpace_le {f g : StrongDual ℝ X} :
     toOrderDualSpace f ≤ toOrderDualSpace g ↔ f ≤ g := Iff.rfl
 
-private theorem toOrderDualSpace_lt {f g : NormDualSpace X} :
+private theorem toOrderDualSpace_lt {f g : StrongDual ℝ X} :
     toOrderDualSpace f < toOrderDualSpace g ↔ f < g := Iff.rfl
 
-private theorem toOrderDualSpace_sup (f g : NormDualSpace X) :
+private theorem toOrderDualSpace_sup (f g : StrongDual ℝ X) :
     toOrderDualSpace (f ⊔ g) = toOrderDualSpace f ⊔ toOrderDualSpace g := by
   ext x; rfl
 
-private theorem toOrderDualSpace_inf (f g : NormDualSpace X) :
+private theorem toOrderDualSpace_inf (f g : StrongDual ℝ X) :
     toOrderDualSpace (f ⊓ g) = toOrderDualSpace f ⊓ toOrderDualSpace g := by
   ext x; rfl
 
-/-- The induced lattice structure on the norm dual: `φ ≤ ψ` iff `φ x ≤ ψ x`
+/-- The induced lattice structure on the strong dual: `φ ≤ ψ` iff `φ x ≤ ψ x`
 for all positive `x`, with sup/inf transported from the order dual. -/
-noncomputable instance instLattice : Lattice (NormDualSpace X) :=
+noncomputable instance instLattice : Lattice (StrongDual ℝ X) :=
   toOrderDualSpace_injective.lattice _ toOrderDualSpace_le
     toOrderDualSpace_lt toOrderDualSpace_sup toOrderDualSpace_inf
 
-private theorem toOrderDualSpace_add (f g : NormDualSpace X) :
+/-- Suprema in the strong dual are transported from the order dual. -/
+noncomputable instance instSupSet : SupSet (StrongDual ℝ X) where
+  sSup S := ofOrderDualSpace (sSup (toOrderDualSpace '' S : Set (OrderDualSpace X)))
+
+/-- The chosen supremum in the strong dual is the least upper bound of every
+non-empty bounded-above set. -/
+theorem isLUB_sSup (S : Set (StrongDual ℝ X)) (hbdd : BddAbove S)
+    (hne : S.Nonempty) : IsLUB S (sSup S) := by
+  change IsLUB S (ofOrderDualSpace
+    (sSup (toOrderDualSpace '' S : Set (OrderDualSpace X))))
+  have hne' : (toOrderDualSpace '' S : Set (OrderDualSpace X)).Nonempty :=
+    hne.image _
+  have hbdd' : BddAbove (toOrderDualSpace '' S : Set (OrderDualSpace X)) := by
+    obtain ⟨u, hu⟩ := hbdd
+    exact ⟨toOrderDualSpace u, by
+      rintro _ ⟨v, hv, rfl⟩
+      exact hu hv⟩
+  have hLUB' := OrderDualSpace.isLUB_sSup
+    (toOrderDualSpace '' S : Set (OrderDualSpace X)) hbdd' hne'
+  constructor
+  · intro a ha
+    change toOrderDualSpace a ≤ toOrderDualSpace
+      (ofOrderDualSpace (sSup (toOrderDualSpace '' S : Set (OrderDualSpace X))))
+    simpa using hLUB'.1 ⟨a, ha, rfl⟩
+  · intro u hu
+    change toOrderDualSpace
+      (ofOrderDualSpace (sSup (toOrderDualSpace '' S : Set (OrderDualSpace X)))) ≤
+        toOrderDualSpace u
+    exact hLUB'.2 (by
+      rintro _ ⟨a, ha, rfl⟩
+      exact hu ha)
+
+/-- The strong dual is conditionally complete. -/
+noncomputable instance instConditionallyCompleteLattice :
+    ConditionallyCompleteLattice (StrongDual ℝ X) :=
+  conditionallyCompleteLatticeOfLatticeOfsSup _ isLUB_sSup
+
+private theorem toOrderDualSpace_add (f g : StrongDual ℝ X) :
     toOrderDualSpace (f + g) = toOrderDualSpace f + toOrderDualSpace g := by
   ext; rfl
 
-private theorem toOrderDualSpace_smul (r : ℝ) (f : NormDualSpace X) :
+private theorem toOrderDualSpace_smul (r : ℝ) (f : StrongDual ℝ X) :
     toOrderDualSpace (r • f) = r • toOrderDualSpace f := by
   ext; rfl
 
-/-- The norm dual of a Banach lattice is an ordered additive group. -/
-instance instIsOrderedAddMonoid : IsOrderedAddMonoid (NormDualSpace X) where
+/-- The strong dual of a Banach lattice is an ordered additive group. -/
+instance instIsOrderedAddMonoid : IsOrderedAddMonoid (StrongDual ℝ X) where
   add_le_add_left f g hfg c := by
     change toOrderDualSpace f ≤ toOrderDualSpace g at hfg
     change toOrderDualSpace (f + c) ≤ toOrderDualSpace (g + c)
     rw [toOrderDualSpace_add, toOrderDualSpace_add]
     exact IsOrderedAddMonoid.add_le_add_left _ _ hfg c.toOrderDualSpace
 
-instance instPosSMulMono : PosSMulMono ℝ (NormDualSpace X) where
+instance instPosSMulMono : PosSMulMono ℝ (StrongDual ℝ X) where
   smul_le_smul_of_nonneg_left {r} hr {f g} hfg := by
     change toOrderDualSpace f ≤ toOrderDualSpace g at hfg
     change toOrderDualSpace (r • f) ≤ toOrderDualSpace (r • g)
     rw [toOrderDualSpace_smul, toOrderDualSpace_smul]
     exact smul_le_smul_of_nonneg_left hfg hr
 
-/-- The norm dual of a Banach lattice is a vector lattice. -/
-noncomputable instance instVectorLattice : VectorLattice (NormDualSpace X) where
+/-- The strong dual of a Banach lattice is a vector lattice. -/
+noncomputable instance instVectorLattice : VectorLattice (StrongDual ℝ X) where
 
-private theorem coe_abs_apply (φ : NormDualSpace X) (x : X) :
-    (|φ| : NormDualSpace X) x = |toOrderDualSpace φ| x := rfl
+private theorem coe_abs_apply (φ : StrongDual ℝ X) (x : X) :
+    (|φ| : StrongDual ℝ X) x = |toOrderDualSpace φ| x := rfl
 
-private theorem abs_apply_le_abs_apply_abs (φ : NormDualSpace X) (x : X) :
-    |φ x| ≤ (|φ| : NormDualSpace X) (|x|) := by
+private theorem abs_apply_le_abs_apply_abs (φ : StrongDual ℝ X) (x : X) :
+    |φ x| ≤ (|φ| : StrongDual ℝ X) (|x|) := by
   rw [coe_abs_apply]
   exact (OrderBoundedHom.isLUB_abs_apply (f := toOrderDualSpace φ)
     (abs_nonneg x)).1 ⟨x, le_refl _, rfl⟩
 
-private theorem abs_apply_nonneg (φ : NormDualSpace X) {x : X} (hx : 0 ≤ x) :
-    0 ≤ (|φ| : NormDualSpace X) x := by
+private theorem abs_apply_nonneg (φ : StrongDual ℝ X) {x : X} (hx : 0 ≤ x) :
+    0 ≤ (|φ| : StrongDual ℝ X) x := by
   rw [coe_abs_apply]
   exact (OrderBoundedHom.isLUB_abs_apply (f := toOrderDualSpace φ) hx).1
     ⟨0, by simp [hx], by simp⟩
 
 /-- For a positive `x`, `|φ| x` is bounded by `‖φ‖ * ‖x‖`. -/
-private theorem abs_apply_le_norm_mul (φ : NormDualSpace X) {x : X} (hx : 0 ≤ x) :
-    (|φ| : NormDualSpace X) x ≤ ‖φ‖ * ‖x‖ := by
+private theorem abs_apply_le_norm_mul (φ : StrongDual ℝ X) {x : X} (hx : 0 ≤ x) :
+    (|φ| : StrongDual ℝ X) x ≤ ‖φ‖ * ‖x‖ := by
   rw [coe_abs_apply]
   refine (OrderBoundedHom.isLUB_abs_apply (f := toOrderDualSpace φ) hx).2 ?_
   rintro _ ⟨y, hyx, rfl⟩
@@ -253,47 +298,47 @@ private theorem abs_apply_le_norm_mul (φ : NormDualSpace X) {x : X} (hx : 0 ≤
     _ ≤ ‖φ‖ * ‖y‖ := φ.le_opNorm y
     _ ≤ ‖φ‖ * ‖x‖ := by gcongr
 
-/-- The norm dual carries a solid lattice norm: `|φ| ≤ |ψ|` implies
+/-- The strong dual carries a solid lattice norm: `|φ| ≤ |ψ|` implies
 `‖φ‖ ≤ ‖ψ‖`. -/
-instance instHasSolidNorm : HasSolidNorm (NormDualSpace X) where
+instance instHasSolidNorm : HasSolidNorm (StrongDual ℝ X) where
   solid {φ ψ} hφψ := by
     refine ContinuousLinearMap.opNorm_le_bound _ (norm_nonneg _) fun x => ?_
-    have h1 : |φ x| ≤ (|φ| : NormDualSpace X) (|x|) :=
+    have h1 : |φ x| ≤ (|φ| : StrongDual ℝ X) (|x|) :=
       abs_apply_le_abs_apply_abs φ x
-    have hOD : (|φ| : NormDualSpace X) (|x|) ≤ (|ψ| : NormDualSpace X) (|x|) := by
+    have hOD : (|φ| : StrongDual ℝ X) (|x|) ≤ (|ψ| : StrongDual ℝ X) (|x|) := by
       change toOrderDualSpace |φ| ≤ toOrderDualSpace |ψ| at hφψ
-      exact hφψ _ (abs_nonneg x)
-    have h2 : (|ψ| : NormDualSpace X) (|x|) ≤ ‖ψ‖ * ‖x‖ := by
+      exact OrderBoundedHom.le_iff.mp hφψ _ (abs_nonneg x)
+    have h2 : (|ψ| : StrongDual ℝ X) (|x|) ≤ ‖ψ‖ * ‖x‖ := by
       have := abs_apply_le_norm_mul ψ (abs_nonneg x)
       rwa [norm_abs_eq_norm] at this
     calc ‖φ x‖ = |φ x| := Real.norm_eq_abs _
-      _ ≤ (|ψ| : NormDualSpace X) (|x|) := h1.trans hOD
+      _ ≤ (|ψ| : StrongDual ℝ X) (|x|) := h1.trans hOD
       _ ≤ ‖ψ‖ * ‖x‖ := h2
 
-/-- The norm dual of a Banach lattice is itself a normed vector lattice. -/
+/-- The strong dual of a Banach lattice is itself a normed vector lattice. -/
 noncomputable instance instNormedVectorLattice :
-    NormedVectorLattice (NormDualSpace X) where
+    NormedVectorLattice (StrongDual ℝ X) where
   norm_smul := norm_smul
 
-/-- The norm dual of a Banach lattice is a Banach lattice. -/
-noncomputable instance instBanachLattice : BanachLattice (NormDualSpace X) where
+/-- The strong dual of a Banach lattice is a Banach lattice. -/
+noncomputable instance instBanachLattice : BanachLattice (StrongDual ℝ X) where
 
 /-- The dual norm of the modulus equals the dual norm: `‖|φ|‖ = ‖φ‖`. -/
-theorem norm_abs (φ : NormDualSpace X) : ‖|φ|‖ = ‖φ‖ :=
+theorem norm_abs (φ : StrongDual ℝ X) : ‖|φ|‖ = ‖φ‖ :=
   le_antisymm
     (HasSolidNorm.solid (by rw [abs_abs]))
     (HasSolidNorm.solid (by rw [abs_abs]))
 
 /-- For a positive functional, the dual norm is the supremum of `φ x` over the
 intersection of the unit ball with the positive cone. -/
-theorem norm_of_nonneg {φ : NormDualSpace X} (hφ : 0 ≤ φ) :
+theorem norm_of_nonneg {φ : StrongDual ℝ X} (hφ : 0 ≤ φ) :
     ‖φ‖ = sSup ((φ : X → ℝ) '' ({x | ‖x‖ ≤ 1} ∩ {x | 0 ≤ x})) := by
   set S := (φ : X → ℝ) '' ({x | ‖x‖ ≤ 1} ∩ {x | 0 ≤ x})
   have hpos : ∀ {x : X}, 0 ≤ x → 0 ≤ φ x := by
     change toOrderDualSpace 0 ≤ toOrderDualSpace φ at hφ
     intro x hx
     have := hφ x hx; simpa using this
-  have habs_eq : (|φ| : NormDualSpace X) = φ := abs_of_nonneg hφ
+  have habs_eq : (|φ| : StrongDual ℝ X) = φ := abs_of_nonneg hφ
   have hub : ∀ s ∈ S, s ≤ ‖φ‖ := by
     rintro _ ⟨x, ⟨hx1, hx0⟩, rfl⟩
     have h1 : ‖φ x‖ ≤ ‖φ‖ * ‖x‖ := φ.le_opNorm x
@@ -338,9 +383,11 @@ theorem norm_of_nonneg {φ : NormDualSpace X} (hφ : 0 ≤ φ) :
 
 /-- For a Banach lattice, the order dual separates points. -/
 theorem orderDual_separatesPoints :
-    OrderDualSpace.SeparatesPoints X :=
-  sorry
+    OrderDualSpace.SeparatesPoints X := by
+  intro x hx
+  refine NormedSpace.eq_zero_of_forall_dual_eq_zero ℝ fun f => ?_
+  simpa using hx (toOrderDualSpace f)
 
 end BanachLattice
 
-end NormDualSpace
+end StrongDual

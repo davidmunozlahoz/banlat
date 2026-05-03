@@ -130,7 +130,7 @@ def IsRegular (s : SignedMeasure K) : Prop :=
 private theorem IsRegular.of_jordan_parts {s : SignedMeasure K}
     [s.toJordanDecomposition.posPart.Regular]
     [s.toJordanDecomposition.negPart.Regular] : s.IsRegular := by
-  show (s.toJordanDecomposition.posPart + s.toJordanDecomposition.negPart).Regular
+  change (s.toJordanDecomposition.posPart + s.toJordanDecomposition.negPart).Regular
   infer_instance
 
 /-- The positive Jordan part of a regular signed measure is a regular
@@ -152,13 +152,13 @@ namespace IsRegular
 omit [T2Space K] [CompactSpace K] [BorelSpace K] in
 /-- The zero signed measure is regular. -/
 theorem zero : (0 : SignedMeasure K).IsRegular := by
-  show (0 : SignedMeasure K).totalVariation.Regular
+  change (0 : SignedMeasure K).totalVariation.Regular
   rw [totalVariation_zero]; infer_instance
 
 omit [T2Space K] [CompactSpace K] [BorelSpace K] in
 /-- The negative of a regular signed measure is regular. -/
 theorem neg {s : SignedMeasure K} (hs : s.IsRegular) : (-s).IsRegular := by
-  show (-s).totalVariation.Regular
+  change (-s).totalVariation.Regular
   rw [SignedMeasure.totalVariation_neg]; exact hs
 
 /-- The sum of two regular signed measures is regular. -/
@@ -177,7 +177,7 @@ theorem add {s t : SignedMeasure K} (hs : s.IsRegular) (ht : t.IsRegular) :
     have ht_eq : t = t.toJordanDecomposition.posPart.toSignedMeasure -
         t.toJordanDecomposition.negPart.toSignedMeasure :=
       t.toSignedMeasure_toJordanDecomposition.symm
-    show _ = (s.toJordanDecomposition.posPart + t.toJordanDecomposition.posPart).toSignedMeasure -
+    change _ = (s.toJordanDecomposition.posPart + t.toJordanDecomposition.posPart).toSignedMeasure -
         (s.toJordanDecomposition.negPart + t.toJordanDecomposition.negPart).toSignedMeasure
     rw [Measure.toSignedMeasure_add, Measure.toSignedMeasure_add]
     conv_lhs => rw [hs_eq, ht_eq]

@@ -1,5 +1,5 @@
 import BanLat.Normed
-import BanLat.Ideal
+import BanLat.Substructures.Ideal
 import Mathlib.Order.Zorn
 
 /-!
@@ -52,18 +52,6 @@ namespace AMSpace
 
 variable {X : Type*} [NormedAddCommGroup X] [Lattice X] [IsOrderedAddMonoid X]
   [AMSpace X]
-
-/-! #### Disjointness characterization -/
-
-/-- For positive disjoint elements, the additive form of the AM-axiom holds:
-`‖x + y‖ = max ‖x‖ ‖y‖` when `x ⊓ y = 0` and `x, y ≥ 0`. -/
-theorem norm_add_eq_max_of_disjoint_nonneg {x y : X}
-    (hx : 0 ≤ x) (hy : 0 ≤ y) (h : x ⊓ y = 0) :
-    ‖x + y‖ = max ‖x‖ ‖y‖ := by
-  have hsup : x ⊔ y = x + y := by
-    have := inf_add_sup x y; rw [h, zero_add] at this; exact this
-  rw [← hsup]
-  exact norm_sup_eq_max_of_nonneg hx hy
 
 /-! #### Closed sublattices -/
 

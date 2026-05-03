@@ -1,7 +1,7 @@
 # Fdb version 4
-["pdflatex"] 1777025623.11662 "print.tex" "/home/david/phd/lean/banlat/blueprint/print/print.pdf" "print" 1777025625.05241 0
-  "/home/david/phd/lean/banlat/blueprint/print/print.aux" 1777025624.85042 14115 a9e86625f50ad1404113297c017f706d "pdflatex"
-  "/home/david/phd/lean/banlat/blueprint/print/print.out" 1777025624.85242 3954 eeabab0a2533124342ac2c8ab1a00cc7 "pdflatex"
+["pdflatex"] 1777716278.66841 "print.tex" "/home/david/phd/lean/banlat/blueprint/print/print.pdf" "print" 1777716282.22533 0
+  "/home/david/phd/lean/banlat/blueprint/print/print.aux" 1777716281.95273 36859 bc4dec3fb2661492809384847f649959 "pdflatex"
+  "/home/david/phd/lean/banlat/blueprint/print/print.out" 1777716281.95573 11876 6d83bb2f6893ab01310370685a4ae310 "pdflatex"
   "/usr/share/texmf-dist/fonts/map/fontname/texfonts.map" 1775415801 3524 cb3e574dea2d1052e39280babc910dc8 ""
   "/usr/share/texmf-dist/fonts/tfm/adobe/zapfding/pzdr.tfm" 1775415801 1528 f853c4d1b4e0550255e02831fdc8496f ""
   "/usr/share/texmf-dist/fonts/tfm/public/amsfonts/symbols/msam10.tfm" 1775415801 916 f87d7c45f9c908e672703b83b72241a3 ""
@@ -78,9 +78,12 @@
   "/usr/share/texmf-dist/tex/latex/url/url.sty" 1775415801 12796 8edb7d69a20b857904dd0ea757c14ec9 ""
   "/usr/share/texmf-dist/web2c/texmf.cnf" 1775415801 43569 fd570f2fa160877d211e859f687312ba ""
   "/var/lib/texmf/web2c/xetex/xelatex.fmt" 1775978422 5580294 7650c2500fdd8ef44df4a97a306bf0e3 ""
-  "chapters/basic.tex" 1776947124.2421 32767 89adaf0e64018f5d6c85ea2cfc8921d4 ""
-  "chapters/substructures.tex" 1776946995.06095 25863 66b2266660411810cc2bc1b4e1939944 ""
-  "content.tex" 1776869464.95534 419 66f3f0a7dc6ebcc8899ed686ad6087d5 ""
+  "chapters/atoms.tex" 1777654604.39394 12135 3faff42236aa885175bd972538d293f8 ""
+  "chapters/basic.tex" 1777710600.16847 38597 e50af40f226e6ea491a0d18ba263443d ""
+  "chapters/operators.tex" 1777711263.05152 32944 e7b16bd5dfc9391fb95193c39bc8d384 ""
+  "chapters/ordercontinuous.tex" 1777716193.19069 9455 4b5c062548aaaa6cb653bee7878dd10b ""
+  "chapters/substructures.tex" 1777710600.16847 65065 55a0bd8cc6f5c34f9f176266a9bcd0f9 ""
+  "content.tex" 1777716202.1208 502 304afae42cfd75fb204aeef58d308ade ""
   "macros/common.tex" 1776763197.8802 830 01105ff464e8ed56760325798aeea9ed ""
   "macros/print.tex" 1776708603.64596 1101 87627b2ec24fef68edc71c13f43f7bab ""
   "print.tex" 1776708603.65796 1144 f24ead034d8744c2cf49c92842ad00ca ""

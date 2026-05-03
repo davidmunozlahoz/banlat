@@ -5,8 +5,8 @@ import Mathlib.Analysis.Convex.Cone.Dual
 /-!
 # The bidual of a Banach lattice
 
-The **bidual** `BidualSpace X` of a Banach lattice `X` is the norm dual of its
-norm dual. Iterating the construction from `BanLat.Dual` shows that `X**` is
+The **bidual** `BidualSpace X` of a Banach lattice `X` is the strong dual of its
+strong dual. Iterating the construction from `BanLat.Dual` shows that `X**` is
 itself a Banach lattice. The canonical evaluation map `X → X**`, which embeds
 every normed space into its bidual, is in the lattice setting an isometric
 vector lattice homomorphism: it preserves not only the norm but also the
@@ -16,10 +16,10 @@ sits inside its bidual as a vector sublattice.
 
 noncomputable section
 
-/-- The **bidual** of a Banach lattice: the norm dual of its norm dual. -/
+/-- The **bidual** of a Banach lattice: the strong dual of its strong dual. -/
 abbrev BidualSpace (X : Type*) [NormedAddCommGroup X] [Lattice X]
     [IsOrderedAddMonoid X] [BanachLattice X] : Type _ :=
-  NormDualSpace (NormDualSpace X)
+  StrongDual ℝ (StrongDual ℝ X)
 
 namespace BidualSpace
 
@@ -37,7 +37,7 @@ def inclusion : X →L[ℝ] BidualSpace X :=
   NormedSpace.inclusionInDoubleDual ℝ X
 
 @[simp]
-theorem inclusion_apply (x : X) (φ : NormDualSpace X) :
+theorem inclusion_apply (x : X) (φ : StrongDual ℝ X) :
     inclusion x φ = φ x := rfl
 
 /-- The canonical embedding into the bidual is a linear isometry. -/
@@ -45,7 +45,7 @@ def inclusionLi : X →ₗᵢ[ℝ] BidualSpace X :=
   NormedSpace.inclusionInDoubleDualLi ℝ
 
 @[simp]
-theorem inclusionLi_apply (x : X) (φ : NormDualSpace X) :
+theorem inclusionLi_apply (x : X) (φ : StrongDual ℝ X) :
     inclusionLi x φ = φ x := rfl
 
 /-- The canonical embedding into the bidual preserves the norm. -/
@@ -57,9 +57,9 @@ theorem norm_inclusion (x : X) : ‖(inclusion (X := X)) x‖ = ‖x‖ :=
 /-- The canonical embedding into the bidual is positive: it sends positive
 elements of `X` to positive elements of `X**`. -/
 theorem inclusion_nonneg {x : X} (hx : 0 ≤ x) : 0 ≤ inclusion x := by
-  change NormDualSpace.toOrderDualSpace 0 ≤ NormDualSpace.toOrderDualSpace (inclusion x)
+  change StrongDual.toOrderDualSpace 0 ≤ StrongDual.toOrderDualSpace (inclusion x)
   intro φ hφ
-  change NormDualSpace.toOrderDualSpace 0 ≤ NormDualSpace.toOrderDualSpace φ at hφ
+  change StrongDual.toOrderDualSpace 0 ≤ StrongDual.toOrderDualSpace φ at hφ
   have := hφ x hx
   simpa using this
 
@@ -68,12 +68,12 @@ This is the Hahn–Banach separation: the closed positive cone of a normed
 vector lattice equals the set of points sent to `[0, ∞)` by every positive
 continuous functional. -/
 private theorem nonneg_of_forall_dual_nonneg {x : X}
-    (h : ∀ φ : NormDualSpace X, 0 ≤ φ → 0 ≤ φ x) : 0 ≤ x := by
+    (h : ∀ φ : StrongDual ℝ X, 0 ≤ φ → 0 ≤ φ x) : 0 ≤ x := by
   by_contra hx
   obtain ⟨f, hf_pos, hf_neg⟩ :=
     (ProperCone.positive ℝ X).hyperplane_separation_point hx
-  have hfp : (0 : NormDualSpace X) ≤ f := by
-    change NormDualSpace.toOrderDualSpace 0 ≤ NormDualSpace.toOrderDualSpace f
+  have hfp : (0 : StrongDual ℝ X) ≤ f := by
+    change StrongDual.toOrderDualSpace 0 ≤ StrongDual.toOrderDualSpace f
     intro y hy
     have := hf_pos y hy
     simpa using this
@@ -87,14 +87,20 @@ theorem inclusion_le_inclusion_iff {x y : X} :
   · rw [← sub_nonneg]
     refine nonneg_of_forall_dual_nonneg fun φ hφ => ?_
     have hxy : φ x ≤ φ y := by
-      change NormDualSpace.toOrderDualSpace (inclusion x) ≤
-        NormDualSpace.toOrderDualSpace (inclusion y) at h
+      change StrongDual.toOrderDualSpace (inclusion x) ≤
+        StrongDual.toOrderDualSpace (inclusion y) at h
       have := h φ hφ
       simpa using this
     rw [φ.map_sub]; linarith
-  · rw [← sub_nonneg] at h ⊢
-    have h1 := inclusion_nonneg h
-    rwa [(inclusion (X := X)).map_sub] at h1
+  · change StrongDual.toOrderDualSpace (inclusion x) ≤
+      StrongDual.toOrderDualSpace (inclusion y)
+    intro φ hφ
+    change StrongDual.toOrderDualSpace 0 ≤ StrongDual.toOrderDualSpace φ at hφ
+    have hdiff : 0 ≤ φ (y - x) := by
+      simpa using hφ (y - x) (sub_nonneg.mpr h)
+    rw [map_sub] at hdiff
+    change 0 ≤ φ y - φ x
+    linarith
 
 /-- The canonical embedding into the bidual is injective. -/
 theorem inclusion_injective : Function.Injective (inclusion (X := X)) :=
@@ -109,28 +115,31 @@ homomorphism: it relies on the dual Riesz–Kantorovich formula
 private theorem inclusion_posPart (z : X) :
     inclusion z⁺ = (inclusion z)⁺ := by
   refine le_antisymm ?_ ?_
-  · -- (≤) inclusion z⁺ ≤ (inclusion z)⁺: test against positive ψ ∈ NormDualSpace X
-    change NormDualSpace.toOrderDualSpace (inclusion z⁺) ≤
-      NormDualSpace.toOrderDualSpace ((inclusion z)⁺)
+  · -- (≤) inclusion z⁺ ≤ (inclusion z)⁺: test against positive ψ ∈ StrongDual ℝ X
+    change StrongDual.toOrderDualSpace (inclusion z⁺) ≤
+      StrongDual.toOrderDualSpace ((inclusion z)⁺)
     intro ψ hψ
-    change NormDualSpace.toOrderDualSpace 0 ≤ NormDualSpace.toOrderDualSpace ψ at hψ
+    change StrongDual.toOrderDualSpace 0 ≤ StrongDual.toOrderDualSpace ψ at hψ
     -- Dual Riesz–Kantorovich: ψ z⁺ = sup {g z : 0 ≤ g ≤ ψ in OrderDualSpace X}
-    have hψOD : (0 : OrderDualSpace X) ≤ NormDualSpace.toOrderDualSpace ψ := hψ
+    have hψOD : (0 : OrderDualSpace X) ≤ StrongDual.toOrderDualSpace ψ := hψ
     have hdual := OrderBoundedHom.isLUB_apply_posPart hψOD z
-    -- Primal Riesz–Kantorovich applied at OrderBoundedHom (NormDualSpace X) ℝ:
-    -- (toOrderDualSpace (inclusion z))⁺ ψ = sup {ψ' z : 0 ≤ ψ' ≤ ψ in NormDualSpace X}
+    -- Primal Riesz–Kantorovich applied at OrderBoundedHom (StrongDual ℝ X) ℝ:
+    -- (toOrderDualSpace (inclusion z))⁺ ψ = sup {ψ' z : 0 ≤ ψ' ≤ ψ in StrongDual ℝ X}
     have hprimal := OrderBoundedHom.isLUB_posPart_apply
-      (f := NormDualSpace.toOrderDualSpace (inclusion z)) (x := ψ) hψ
-    refine hdual.2 ?_
-    rintro _ ⟨g, hg_nn, hg_le, rfl⟩
-    -- For each g in OrderDualSpace X with 0 ≤ g ≤ ψ, lift to ψ' := ofOrderDualSpace g
-    refine hprimal.1 ⟨NormDualSpace.ofOrderDualSpace g, ?_, ?_, rfl⟩
-    · change NormDualSpace.toOrderDualSpace 0 ≤
-        NormDualSpace.toOrderDualSpace (NormDualSpace.ofOrderDualSpace g)
-      exact hg_nn
-    · change NormDualSpace.toOrderDualSpace (NormDualSpace.ofOrderDualSpace g) ≤
-        NormDualSpace.toOrderDualSpace ψ
-      exact hg_le
+      (f := StrongDual.toOrderDualSpace (inclusion z)) (x := ψ) hψ
+    have hle : ψ z⁺ ≤ ((inclusion z)⁺) ψ := by
+      refine hdual.2 ?_
+      rintro _ ⟨g, hg_nn, hg_le, rfl⟩
+      -- For each g in OrderDualSpace X with `0 ≤ g ≤ ψ`, lift it to the strong dual.
+      refine hprimal.1 ⟨StrongDual.ofOrderDualSpace g, ?_, ?_, rfl⟩
+      · change StrongDual.toOrderDualSpace 0 ≤
+          StrongDual.toOrderDualSpace (StrongDual.ofOrderDualSpace g)
+        exact hg_nn
+      · change StrongDual.toOrderDualSpace (StrongDual.ofOrderDualSpace g) ≤
+          StrongDual.toOrderDualSpace ψ
+        exact hg_le
+    change 0 ≤ ((inclusion z)⁺) ψ - (inclusion z⁺) ψ
+    exact sub_nonneg.mpr hle
   · -- (≥) (inclusion z)⁺ ≤ inclusion z⁺: from positivity of `inclusion`
     rw [posPart_def]
     exact sup_le (inclusion_le_inclusion_iff.mpr le_sup_left)
@@ -169,7 +178,7 @@ def inclusionVecLatHom : VecLatHom X (BidualSpace X) where
   map_inf' := inclusion_inf
 
 @[simp]
-theorem inclusionVecLatHom_apply (x : X) (φ : NormDualSpace X) :
+theorem inclusionVecLatHom_apply (x : X) (φ : StrongDual ℝ X) :
     inclusionVecLatHom x φ = φ x := rfl
 
 end BidualSpace

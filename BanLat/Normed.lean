@@ -145,3 +145,10 @@ end NormedVectorLattice
 /-- A Banach lattice is a normed vector lattice with a complete norm. -/
 class BanachLattice (X : Type*) [NormedAddCommGroup X] [Lattice X]
     [IsOrderedAddMonoid X] extends NormedVectorLattice X, CompleteSpace X
+
+/-- `ℝ` as a Banach lattice -/
+noncomputable instance : VectorLattice ℝ where
+
+noncomputable instance : NormedVectorLattice ℝ where
+
+noncomputable instance : BanachLattice ℝ where

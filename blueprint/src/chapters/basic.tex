@@ -541,9 +541,81 @@ bounded below and bounded above in the order. Then $s$ is norm-bounded.
 \lean{BanachLattice}
 \leanok
 \uses{def:normed-vector-lattice}
-A \emph{Banach lattice} is a normed vector lattice whose underlying
-normed space is complete.
+A \emph{Banach lattice} is a normed vector lattice that is complete
+as a normed space.
 \end{definition}
+
+\begin{lemma}
+\label{lem:real-banachLattice}
+\lean{instVectorLatticeReal, instNormedVectorLatticeReal,
+  instBanachLatticeReal}
+\leanok
+\uses{def:banach-lattice}
+The real line $\mathbb{R}$, equipped with the usual order and absolute
+value, is a Banach lattice.
+\end{lemma}
+
+\section{Products}
+
+This section records the lattice structure on products of vector,
+normed and Banach lattices. The pointwise product of an arbitrary
+family of vector lattices is again a vector lattice. For a finite
+index set and $1 \le p \le \infty$, the $\ell^p$ product of normed
+vector lattices, equipped with the pointwise order and the $\ell^p$
+norm, is a normed vector lattice; if every factor is a Banach
+lattice then so is the $\ell^p$ product.
+
+\begin{lemma}
+\label{lem:pi-vectorLattice}
+\lean{Pi.instVectorLattice}
+\leanok
+\uses{def:vector-lattice}
+Let $(X_i)_{i \in I}$ be a family of vector lattices. The pointwise
+product $\prod_{i \in I} X_i$, equipped with the pointwise vector
+space and lattice structure, is a vector lattice.
+\end{lemma}
+
+\begin{lemma}
+\label{lem:piLp-vectorLattice}
+\lean{PiLp.instVectorLattice}
+\leanok
+\uses{def:vector-lattice}
+Let $I$ be a finite index set, let $1 \le p \le \infty$, and let
+$(X_i)_{i \in I}$ be a family of normed vector lattices. The
+$\ell^p$ product $\ell^p(I; (X_i))$, equipped with the pointwise
+vector space and lattice structure, is a vector lattice.
+\end{lemma}
+
+\begin{lemma}
+\label{lem:piLp-hasSolidNorm}
+\lean{PiLp.instHasSolidNorm}
+\leanok
+Let $I$ be a finite index set, let $1 \le p \le \infty$, and let
+$(X_i)_{i \in I}$ be a family of normed vector lattices. The
+$\ell^p$ norm on $\ell^p(I; (X_i))$ is solid: for all
+$x, y \in \ell^p(I; (X_i))$, $\lvert x \rvert \le \lvert y \rvert$
+implies $\lVert x \rVert \le \lVert y \rVert$.
+\end{lemma}
+
+\begin{theorem}
+\label{thm:piLp-normedVectorLattice}
+\lean{PiLp.instNormedVectorLattice}
+\leanok
+\uses{def:normed-vector-lattice, lem:piLp-vectorLattice, lem:piLp-hasSolidNorm}
+Let $I$ be a finite index set, let $1 \le p \le \infty$, and let
+$(X_i)_{i \in I}$ be a family of normed vector lattices. Then
+$\ell^p(I; (X_i))$ is a normed vector lattice.
+\end{theorem}
+
+\begin{theorem}
+\label{thm:piLp-banachLattice}
+\lean{PiLp.instBanachLattice}
+\leanok
+\uses{def:banach-lattice, thm:piLp-normedVectorLattice}
+Let $I$ be a finite index set, let $1 \le p \le \infty$, and let
+$(X_i)_{i \in I}$ be a family of Banach lattices. Then
+$\ell^p(I; (X_i))$ is a Banach lattice.
+\end{theorem}
 
 \section{Disjointness}
 
@@ -558,8 +630,11 @@ deduces the finite-family identity
 $\lvert \sum_i \alpha_i x_i \rvert = \sum_i \lvert \alpha_i \rvert
 \lvert x_i \rvert$ for pairwise-disjoint families, from which any
 pairwise-disjoint family of non-zero vectors is linearly independent over
-$\mathbb{R}$. The section closes with a normed-lattice statement: a norm
-limit of a pairwise-disjoint sequence must be zero.
+$\mathbb{R}$. A normed-lattice statement of the same flavour shows that
+a norm limit of a pairwise-disjoint sequence must be zero. The section
+closes with the notion of a pairwise-disjoint subset and its maximality;
+by Zorn's lemma every vector lattice admits a maximal disjoint family of
+strictly positive vectors.
 
 \begin{definition}
 \label{def:isVLDisjoint}
@@ -844,6 +919,159 @@ elements. Then $x$ is linearly independent over $\mathbb{R}$.
 Let $Y$ be a normed vector lattice, let $u : \mathbb{N} \to Y$ be a
 pairwise-disjoint sequence, and let $x \in Y$. If $u_n \to x$ in norm,
 then $x = 0$.
+\end{theorem}
+
+\subsection{Maximal disjoint families}
+
+A pairwise-disjoint subset of a vector lattice is one that does not
+contain $0$ and consists of mutually disjoint vectors. Such a set is
+\emph{maximal} when it cannot be enlarged within this class. Maximality
+admits a clean characterisation in terms of disjointness, and Zorn's
+lemma produces a maximal disjoint family of strictly positive elements
+in any vector lattice.
+
+\begin{definition}
+\label{def:isDisjointSet}
+\lean{IsDisjointSet}
+\leanok
+\uses{def:isVLDisjoint}
+Let $X$ be a vector lattice. A subset $\Lambda \subseteq X$ is
+\emph{pairwise disjoint} when $0 \notin \Lambda$ and for all
+$a, b \in \Lambda$ with $a \ne b$, $a$ and $b$ are disjoint.
+\end{definition}
+
+\begin{definition}
+\label{def:isMaximalDisjoint}
+\lean{IsMaximalDisjoint}
+\leanok
+\uses{def:isDisjointSet}
+A pairwise-disjoint subset $\Lambda \subseteq X$ is a \emph{maximal
+disjoint family} when it is not properly contained in any strictly
+larger pairwise-disjoint subset of $X$.
+\end{definition}
+
+\begin{theorem}
+\label{thm:isMaximalDisjoint-iff-forall-eq-zero}
+\lean{isMaximalDisjoint_iff_forall_eq_zero}
+\leanok
+\uses{def:isMaximalDisjoint, lem:abs-eq-zero-iff-zero}
+Let $X$ be a vector lattice and let $\Lambda \subseteq X$ be a
+pairwise-disjoint subset of strictly positive elements. Then $\Lambda$
+is a maximal disjoint family if and only if the only $x \in X$ that is
+disjoint from every member of $\Lambda$ is $x = 0$.
+\end{theorem}
+
+\begin{theorem}
+\label{thm:exists-isMaximalDisjoint-pos}
+\lean{exists_isMaximalDisjoint_pos}
+\leanok
+\uses{def:isMaximalDisjoint}
+Every vector lattice $X$ admits a maximal disjoint family $\Lambda
+\subseteq X$ all of whose elements are strictly positive.
+\end{theorem}
+
+\section{Order units}
+
+A non-negative vector $e$ of a vector lattice $X$ is an \emph{order unit} of
+some flavour according to the strength with which it controls the rest of the
+space. A \emph{weak order unit} is required only to share a non-zero
+component with every non-zero vector — equivalently, no non-zero element is
+disjoint from $e$. A \emph{strong order unit} is much more demanding: every
+vector of $X$ must, in absolute value, be dominated by a real multiple of $e$.
+The two notions sit in a one-way relationship: every strong order unit is a
+weak order unit.
+
+\begin{definition}
+\label{def:weakOrderUnit}
+\lean{WeakOrderUnit}
+\leanok
+\uses{def:vector-lattice, def:isVLDisjoint}
+Let $X$ be a vector lattice. An element $e \in X$ is a \emph{weak order
+unit} of $X$ if $0 \le e$ and the only $x \in X$ disjoint from $e$ is
+$x = 0$.
+\end{definition}
+
+\begin{definition}
+\label{def:strongOrderUnit}
+\lean{StrongOrderUnit}
+\leanok
+\uses{def:vector-lattice}
+Let $X$ be a vector lattice. An element $e \in X$ is a \emph{strong order
+unit} of $X$ if $0 \le e$ and for every $x \in X$ there exists
+$c \in \mathbb{R}$ with $0 \le c$ and $\lvert x \rvert \le c\,e$.
+\end{definition}
+
+\begin{theorem}
+\label{thm:weakOrderUnit-of-strongOrderUnit}
+\lean{WeakOrderUnit.of_strongOrderUnit}
+\leanok
+\uses{def:weakOrderUnit, def:strongOrderUnit}
+Let $X$ be a vector lattice. Every strong order unit of $X$ is a weak
+order unit of $X$.
+\end{theorem}
+
+\section{Quasi-interior points}
+
+A non-negative element $e$ of a normed vector lattice $X$ is a
+\emph{quasi-interior point} (or \emph{topological order unit}) if the
+principal ideal it generates is norm-dense in $X$. The notion sits
+strictly between strong and weak order units: a strong order unit has
+principal ideal equal to the whole space, while a weak order unit only
+generates the whole space as a band. Quasi-interior points are the
+right substitute for strong order units in many settings — for example,
+every separable Banach lattice admits one — and they coincide with weak
+order units precisely when the norm is order continuous.
+
+\begin{definition}
+\label{def:quasiInteriorPoint}
+\lean{QuasiInteriorPoint}
+\leanok
+\uses{def:normed-vector-lattice, def:orderIdeal-principal}
+Let $X$ be a normed vector lattice. An element $e \in X$ is a
+\emph{quasi-interior point} of $X$ if $0 \le e$ and the principal ideal
+generated by $e$ is dense in $X$.
+\end{definition}
+
+\begin{theorem}
+\label{thm:mem-closure-principal-iff-tendsto-inf}
+\lean{mem_closure_principal_iff_tendsto_inf}
+\leanok
+\uses{def:banach-lattice, def:orderIdeal-principal}
+Let $X$ be a Banach lattice and let $e, x \in X$ with $0 \le e$ and
+$0 \le x$. Then $x$ belongs to the closure of the principal ideal
+generated by $e$ if and only if $x \wedge n e \to x$ in norm as
+$n \to \infty$.
+\end{theorem}
+
+\begin{theorem}
+\label{thm:quasiInteriorPoint-iff-tendsto-inf}
+\lean{quasiInteriorPoint_iff_tendsto_inf}
+\leanok
+\uses{def:quasiInteriorPoint, def:banach-lattice,
+  thm:mem-closure-principal-iff-tendsto-inf}
+Let $X$ be a Banach lattice and let $e \in X$. Then $e$ is a
+quasi-interior point of $X$ if and only if $0 \le e$ and
+$x \wedge n e \to x$ in norm as $n \to \infty$ for every $x \in X$
+with $0 \le x$.
+\end{theorem}
+
+\begin{theorem}
+\label{thm:exists-quasiInteriorPoint-of-separable}
+\lean{exists_quasiInteriorPoint_of_separable}
+\leanok
+\uses{def:quasiInteriorPoint, def:banach-lattice}
+Every separable Banach lattice admits a quasi-interior point.
+\end{theorem}
+
+\begin{theorem}
+\label{thm:quasiInteriorPoint-iff-weakOrderUnit}
+\lean{quasiInteriorPoint_iff_weakOrderUnit}
+\leanok
+\uses{def:quasiInteriorPoint, def:weakOrderUnit, def:banach-lattice,
+  def:isOrderContinuousNorm}
+Let $X$ be a Banach lattice with order continuous norm and let
+$e \in X$. Then $e$ is a quasi-interior point of $X$ if and only if
+$e$ is a weak order unit of $X$.
 \end{theorem}
 
 \section{Order completeness}

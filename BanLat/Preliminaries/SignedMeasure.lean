@@ -179,9 +179,7 @@ theorem abs_apply_le_totalVariation_univ (s : SignedMeasure α) {A : Set α}
 /-! ### Completeness in total variation
 
 A sequence of signed measures that is Cauchy in the total-variation distance
-admits a signed-measure limit, with convergence in total variation. This is
-the measure-theoretic content underlying the `CompleteSpace` instance on the
-Banach lattice `M(K)` of finite signed measures (see `BanLat.Examples.MofK`).
+admits a signed-measure limit, with convergence in total variation.
 
 **Strategy.** We reduce TV completeness to L¹ completeness via the
 Radon–Nikodym theorem:

@@ -1,5 +1,5 @@
 import BanLat.Dual
-import BanLat.Sublattice
+import BanLat.Substructures.Sublattice
 
 /-!
 # Formal lattice-linear expressions

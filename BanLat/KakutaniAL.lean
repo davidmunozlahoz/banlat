@@ -1,6 +1,6 @@
 import BanLat.ALSpace
 import BanLat.Bidual
-import BanLat.Examples.Lp
+import BanLat.Examples.Lp.Sublattice
 import BanLat.Examples.MofK
 import BanLat.Examples.SignedMeasure
 import BanLat.KakutaniAM

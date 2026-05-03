@@ -1,6 +1,8 @@
 import BanLat.Operators.OrderBounded
+import BanLat.Operators.Regular
 import BanLat.OrderComplete
 import BanLat.RieszDec
+import BanLat.Substructures.Band.PPP
 
 /-!
 # The Riesz-Kantorovich theorem
@@ -13,21 +15,21 @@ formulas for the lattice operations (the **Riesz-Kantorovich formulas**).
 namespace OrderBoundedHom
 
 variable {X Y : Type*} [AddCommGroup X] [AddCommGroup Y]
-  [Lattice X] [Lattice Y] [IsOrderedAddMonoid X]
+  [Lattice X] [ConditionallyCompleteLattice Y] [IsOrderedAddMonoid X]
   [IsOrderedAddMonoid Y] [VectorLattice X]
-  [VectorLattice Y] [IsOrderComplete Y]
+  [VectorLattice Y]
 
 /-! ### Positive part construction for the Riesz-Kantorovich theorem -/
 
 private def ppSet (f : OrderBoundedHom X Y) (x : X) : Set Y :=
   { w | ∃ y, 0 ≤ y ∧ y ≤ x ∧ w = f y }
 
-omit [IsOrderComplete Y] in
+
 private lemma ppSet_nonempty (f : OrderBoundedHom X Y) {x : X}
     (hx : 0 ≤ x) : (ppSet f x).Nonempty :=
   ⟨0, 0, le_rfl, hx, (map_zero f.toLinearMap).symm⟩
 
-omit [IsOrderComplete Y] in
+
 private lemma ppSet_bddAbove (f : OrderBoundedHom X Y) {x : X}
     (hx : 0 ≤ x) : BddAbove (ppSet f x) := by
   obtain ⟨u, _, hbound⟩ := f.isOrderBounded' x hx
@@ -38,16 +40,12 @@ private lemma ppSet_bddAbove (f : OrderBoundedHom X Y) {x : X}
 private noncomputable def ppFun (f : OrderBoundedHom X Y)
     (x : X) : Y := by
   classical
-  exact if hx : 0 ≤ x then
-    (IsOrderComplete.isLUB_of_bddAbove (ppSet_bddAbove f hx)
-      (ppSet_nonempty f hx)).choose
-  else 0
+  exact if 0 ≤ x then sSup (ppSet f x) else 0
 
 private lemma ppFun_isLUB (f : OrderBoundedHom X Y) {x : X}
     (hx : 0 ≤ x) : IsLUB (ppSet f x) (ppFun f x) := by
-  simp only [ppFun, dif_pos hx]
-  exact (IsOrderComplete.isLUB_of_bddAbove (ppSet_bddAbove f hx)
-    (ppSet_nonempty f hx)).choose_spec
+  simp only [ppFun, if_pos hx]
+  exact isLUB_csSup (ppSet_nonempty f hx) (ppSet_bddAbove f hx)
 
 private lemma ppFun_nonneg (f : OrderBoundedHom X Y) {x : X}
     (hx : 0 ≤ x) : 0 ≤ ppFun f x :=
@@ -105,19 +103,19 @@ private lemma ppFun_add (f : OrderBoundedHom X Y) {x y : X}
 
 private noncomputable def ppOp (f : OrderBoundedHom X Y) :
     X →ₗ[ℝ] Y := by
-  haveI : IsVLArchimedean Y := IsVLArchimedean_of_isSigmaOrderComplete
+  haveI : IsVLArchimedean Y := IsVLArchimedean_of_sigmaConditionallyCompleteLattice
   exact Positive.extension (fun x hx => ppFun_nonneg f hx)
     (fun _ _ hx hy => ppFun_add f hx hy)
 
 private lemma ppOp_apply_nonneg (f : OrderBoundedHom X Y)
     {x : X} (hx : 0 ≤ x) : ppOp f x = ppFun f x := by
-  haveI : IsVLArchimedean Y := IsVLArchimedean_of_isSigmaOrderComplete
+  haveI : IsVLArchimedean Y := IsVLArchimedean_of_sigmaConditionallyCompleteLattice
   exact Positive.extension_nonneg (fun x hx => ppFun_nonneg f hx)
     (fun _ _ hx hy => ppFun_add f hx hy) hx
 
 private lemma ppOp_positive (f : OrderBoundedHom X Y) :
     Positive (ppOp f) := by
-  haveI : IsVLArchimedean Y := IsVLArchimedean_of_isSigmaOrderComplete
+  haveI : IsVLArchimedean Y := IsVLArchimedean_of_sigmaConditionallyCompleteLattice
   exact Positive.extension_positive
     (fun x hx => ppFun_nonneg f hx)
     (fun _ _ hx hy => ppFun_add f hx hy)
@@ -250,19 +248,19 @@ noncomputable instance instVectorLattice :
 
 /-! ### Riesz-Kantorovich formulas -/
 
-omit [IsOrderComplete Y] in
+
 private lemma sub_apply (f g : OrderBoundedHom X Y) (y : X) :
     (f - g : OrderBoundedHom X Y) y = f y - g y :=
   show (f.toLinearMap - g.toLinearMap) y = _ from
   LinearMap.sub_apply _ _ _
 
-omit [IsOrderComplete Y] in
+
 private lemma add_apply' (f g : OrderBoundedHom X Y) (y : X) :
     (f + g : OrderBoundedHom X Y) y = f y + g y :=
   show (f.toLinearMap + g.toLinearMap) y = _ from
   LinearMap.add_apply _ _ _
 
-omit [IsOrderComplete Y] in
+
 private lemma map_sub_val (f : OrderBoundedHom X Y) (a b : X) :
     f (a - b) = f a - f b :=
   show f.toLinearMap (a - b) = _ from map_sub f.toLinearMap a b
@@ -325,12 +323,12 @@ theorem isLUB_sup_apply
     rw [le_sub_iff_add_le, hv, add_comm, ← hbridge]
     exact hu ⟨y, x - y, hy, sub_nonneg.mpr hyx, by abel, rfl⟩
 
-omit [IsOrderComplete Y] in
+
 private lemma map_add_val (f : OrderBoundedHom X Y) (a b : X) :
     f (a + b) = f a + f b :=
   show f.toLinearMap _ = _ from map_add f.toLinearMap a b
 
-omit [IsOrderComplete Y] in
+
 private lemma neg_apply' (f : OrderBoundedHom X Y) (y : X) :
     (-f : OrderBoundedHom X Y) y = -(f y) :=
   show (-f.toLinearMap) y = _ from LinearMap.neg_apply _ _
@@ -359,6 +357,201 @@ theorem isGLB_inf_apply
   exact ⟨fun _ hw => sub_le_comm.mp (hLUB.1 (hsym _ hw)),
     fun _ hb => le_sub_comm.mpr
       (hLUB.2 fun _ hw => le_sub_comm.mp (hb (hsym _ hw)))⟩
+
+omit [VectorLattice X] in
+private lemma nonneg_of_disjoint_add_eq {y z x : X}
+    (hx : 0 ≤ x) (hdisj : IsVLDisjoint y z) (hsum : y + z = x) :
+    0 ≤ y ∧ 0 ≤ z := by
+  have habs : |y| + |z| = x := by
+    calc
+      |y| + |z| = |y + z| := (abs_add_of_isVLDisjoint hdisj).symm
+      _ = x := by rw [hsum, abs_of_nonneg hx]
+  rw [← hsum] at habs
+  have hsub : (|y| - y) + (|z| - z) = 0 := by
+    calc
+      (|y| - y) + (|z| - z) = (|y| + |z|) - (y + z) := by abel
+      _ = 0 := by rw [habs, sub_self]
+  have hy' : 0 ≤ |y| - y := sub_nonneg.mpr (le_abs_self y)
+  have hz' : 0 ≤ |z| - z := sub_nonneg.mpr (le_abs_self z)
+  have hy0 : |y| - y = 0 := by
+    apply le_antisymm
+    · calc
+        |y| - y ≤ (|y| - y) + (|z| - z) := le_add_of_nonneg_right hz'
+        _ = 0 := hsub
+    · exact hy'
+  have hz0 : |z| - z = 0 := by
+    rw [hy0, zero_add] at hsub
+    exact hsub
+  constructor
+  · rw [(sub_eq_zero.mp hy0).symm]
+    exact abs_nonneg y
+  · rw [(sub_eq_zero.mp hz0).symm]
+    exact abs_nonneg z
+
+private lemma isGLB_inf_apply_disjoint_zero
+    [HasPrincipalProjectionProperty X]
+    {f g : OrderBoundedHom X Y} {x : X} (hx : 0 ≤ x)
+    (hfg0 : f ⊓ g = 0) :
+    IsGLB
+      {w | ∃ y z, IsVLDisjoint y z ∧ y + z = x
+        ∧ w = f y + g z}
+      0 := by
+  let S : Set Y := {w | ∃ y z, 0 ≤ y ∧ 0 ≤ z ∧ y + z = x ∧ w = f y + g z}
+  let D : Set Y := {w | ∃ y z, IsVLDisjoint y z ∧ y + z = x ∧ w = f y + g z}
+  have hf0 : (0 : OrderBoundedHom X Y) ≤ f := by
+    simpa [hfg0] using (inf_le_left : f ⊓ g ≤ f)
+  have hg0 : (0 : OrderBoundedHom X Y) ≤ g := by
+    simpa [hfg0] using (inf_le_right : f ⊓ g ≤ g)
+  have hS : IsGLB S 0 := by
+    simpa [S, hfg0] using (isGLB_inf_apply (f := f) (g := g) hx)
+  refine ⟨?_, ?_⟩
+  · intro w hw
+    rcases hw with ⟨y, z, hdisj, hyz, rfl⟩
+    obtain ⟨hy, hz⟩ := nonneg_of_disjoint_add_eq hx hdisj hyz
+    exact add_nonneg (le_iff.mp hf0 y hy) (le_iff.mp hg0 z hz)
+  · intro b hb
+    have hhalf_lb : (1 / 2 : ℝ) • b ∈ lowerBounds S := by
+      intro w hw
+      rcases hw with ⟨y, z, hy, hz, hyz, rfl⟩
+      obtain ⟨u, v, huv, hu, hv, hu_le, hv_le, huvsum⟩ :=
+        exists_disjoint_add_eq_add_of_hasPrincipalProjectionProperty hy hz
+      have hbuv : b ≤ f u + g v :=
+        hb ⟨u, v, huv, huvsum.trans hyz, rfl⟩
+      have hfu : f u ≤ (2 : ℕ) • f y := by
+        have hmono : Monotone f.toLinearMap :=
+          Positive.monotone_iff.mpr (show Positive f.toLinearMap from le_iff.mp hf0)
+        calc
+          f u ≤ f ((2 : ℕ) • y) := hmono hu_le
+          _ = (2 : ℕ) • f y := by
+            change f.toLinearMap ((2 : ℕ) • y) = (2 : ℕ) • f.toLinearMap y
+            rw [map_nsmul]
+      have hgv : g v ≤ (2 : ℕ) • g z := by
+        have hmono : Monotone g.toLinearMap :=
+          Positive.monotone_iff.mpr (show Positive g.toLinearMap from le_iff.mp hg0)
+        calc
+          g v ≤ g ((2 : ℕ) • z) := hmono hv_le
+          _ = (2 : ℕ) • g z := by
+            change g.toLinearMap ((2 : ℕ) • z) = (2 : ℕ) • g.toLinearMap z
+            rw [map_nsmul]
+      calc
+        (1 / 2 : ℝ) • b ≤ (1 / 2 : ℝ) • (f u + g v) :=
+          smul_le_smul_of_nonneg_left hbuv (by positivity)
+        _ ≤ (1 / 2 : ℝ) • ((2 : ℕ) • f y + (2 : ℕ) • g z) :=
+          smul_le_smul_of_nonneg_left (add_le_add hfu hgv) (by positivity)
+        _ = ((1 / 2 : ℝ) + (1 / 2 : ℝ)) • f y +
+            (((1 / 2 : ℝ) + (1 / 2 : ℝ)) : ℝ) • g z := by
+          rw [two_nsmul, two_nsmul, smul_add, smul_add, smul_add, ← add_smul, ← add_smul]
+        _ = (1 : ℝ) • f y + (1 : ℝ) • g z := by
+          rw [show ((1 / 2 : ℝ) + (1 / 2 : ℝ)) = 1 by norm_num]
+        _ = f y + g z := by simp
+    have hhalf_le : (1 / 2 : ℝ) • b ≤ 0 := hS.2 hhalf_lb
+    have htwo :
+        (2 : ℝ) • ((1 / 2 : ℝ) • b) ≤ (2 : ℝ) • (0 : Y) :=
+      smul_le_smul_of_nonneg_left hhalf_le (show (0 : ℝ) ≤ 2 by positivity)
+    simpa using htwo
+
+private lemma isGLB_inf_apply_disjoint_aux
+    [HasPrincipalProjectionProperty X]
+    {f g : OrderBoundedHom X Y} {x : X} (hx : 0 ≤ x) :
+    IsGLB
+      {w | ∃ y z, IsVLDisjoint y z ∧ y + z = x
+        ∧ w = f y + g z}
+      ((f ⊓ g) x) := by
+  let h : OrderBoundedHom X Y := f ⊓ g
+  let f' : OrderBoundedHom X Y := f - h
+  let g' : OrderBoundedHom X Y := g - h
+  let D' : Set Y := {w | ∃ y z, IsVLDisjoint y z ∧ y + z = x ∧ w = f' y + g' z}
+  have hf'0 : (0 : OrderBoundedHom X Y) ≤ f' := by
+    refine le_iff.mpr ?_
+    intro y hy
+    dsimp [f', h]
+    rw [sub_apply]
+    exact sub_nonneg.mpr (le_iff.mp inf_le_left y hy)
+  have hg'0 : (0 : OrderBoundedHom X Y) ≤ g' := by
+    refine le_iff.mpr ?_
+    intro y hy
+    dsimp [g', h]
+    rw [sub_apply]
+    exact sub_nonneg.mpr (le_iff.mp inf_le_right y hy)
+  have hdisj' : IsVLDisjoint f' g' := by
+    dsimp [f', g', h]
+    exact isVLDisjoint_sub_inf f g
+  have hfg'0 : f' ⊓ g' = 0 :=
+    inf_eq_zero_of_isVLDisjoint hf'0 hg'0 hdisj'
+  have hD' : IsGLB D' 0 :=
+    isGLB_inf_apply_disjoint_zero (f := f') (g := g') hx hfg'0
+  have hset :
+      ((fun w => h x + w) '' D') =
+        {w | ∃ y z, IsVLDisjoint y z ∧ y + z = x
+          ∧ w = f y + g z} := by
+    ext w
+    constructor
+    · rintro ⟨w', ⟨y, z, hdisj, hyz, hw'⟩, rfl⟩
+      refine ⟨y, z, hdisj, hyz, ?_⟩
+      rw [hw']
+      dsimp [f', g', h]
+      rw [sub_apply, sub_apply, ← hyz, map_add_val (f ⊓ g) y z]
+      abel
+    · rintro ⟨y, z, hdisj, hyz, rfl⟩
+      refine ⟨f' y + g' z, ⟨y, z, hdisj, hyz, rfl⟩, ?_⟩
+      dsimp [f', g', h]
+      rw [sub_apply, sub_apply, ← hyz, map_add_val (f ⊓ g) y z]
+      abel
+  rw [← hset]
+  simpa [h] using isGLB_const_add (h x) hD'
+
+/-- **Disjoint Riesz-Kantorovich formula for the supremum.** If `X` has the
+Principal Projection Property, then for `x ≥ 0` the value `(f ⊔ g) x` is the
+supremum of `f y + g z` over all disjoint decompositions `x = y + z`. -/
+theorem isLUB_sup_apply_disjoint [HasPrincipalProjectionProperty X]
+    {f g : OrderBoundedHom X Y} {x : X} (hx : 0 ≤ x) :
+    IsLUB
+      {w | ∃ y z, IsVLDisjoint y z ∧ y + z = x
+        ∧ w = f y + g z}
+      ((f ⊔ g) x) := by
+  have hneg :
+      IsGLB
+        {w | ∃ y z, IsVLDisjoint y z ∧ y + z = x
+          ∧ w = (-f) y + (-g) z}
+        (((-f) ⊓ (-g)) x) :=
+    isGLB_inf_apply_disjoint_aux (f := -f) (g := -g) hx
+  have hval : (((-f) ⊓ (-g)) x) = -((f ⊔ g) x) := by
+    rw [show ((-f) ⊓ (-g) : OrderBoundedHom X Y) = -(f ⊔ g) by rw [neg_sup], neg_apply']
+  refine ⟨?_, ?_⟩
+  · rintro w ⟨y, z, hdisj, hyz, rfl⟩
+    have hw :
+        - (f y + g z) ∈
+          {w | ∃ y z, IsVLDisjoint y z ∧ y + z = x
+            ∧ w = (-f) y + (-g) z} := by
+      refine ⟨y, z, hdisj, hyz, ?_⟩
+      rw [neg_apply', neg_apply']
+      abel
+    have hle := hneg.1 hw
+    rw [hval] at hle
+    exact neg_le_neg_iff.mp hle
+  · intro u hu
+    have hulb :
+        -u ∈ lowerBounds
+          {w | ∃ y z, IsVLDisjoint y z ∧ y + z = x
+            ∧ w = (-f) y + (-g) z} := by
+      rintro _ ⟨y, z, hdisj, hyz, rfl⟩
+      have hle : f y + g z ≤ u := hu ⟨y, z, hdisj, hyz, rfl⟩
+      simpa [neg_apply', neg_add, add_comm, add_left_comm, add_assoc]
+        using (neg_le_neg hle)
+    have hle := hneg.2 hulb
+    rw [hval] at hle
+    exact neg_le_neg_iff.mp hle
+
+/-- **Disjoint Riesz-Kantorovich formula for the infimum.** If `X` has the
+Principal Projection Property, then for `x ≥ 0` the value `(f ⊓ g) x` is the
+infimum of `f y + g z` over all disjoint decompositions `x = y + z`. -/
+theorem isGLB_inf_apply_disjoint [HasPrincipalProjectionProperty X]
+    {f g : OrderBoundedHom X Y} {x : X} (hx : 0 ≤ x) :
+    IsGLB
+      {w | ∃ y z, IsVLDisjoint y z ∧ y + z = x
+        ∧ w = f y + g z}
+      ((f ⊓ g) x) := by
+  exact isGLB_inf_apply_disjoint_aux hx
 
 /-- The modulus at a positive element. -/
 theorem isLUB_abs_apply
@@ -425,13 +618,13 @@ For a positive operator `f` and a positive element `x₀`, we build an operator
 elements disjoint from `x₀`. Concretely we set
 `wit f x₀ y = sup_n f (y ⊓ n • x₀)` on the positive cone and extend linearly. -/
 
-omit [IsOrderComplete Y] in
+
 private lemma f_mono_of_nonneg {f : OrderBoundedHom X Y}
     (hf : (0 : OrderBoundedHom X Y) ≤ f) : Monotone f.toLinearMap :=
   Positive.monotone_iff.mpr fun y hy => by
     have := le_iff.mp hf y hy; simpa using this
 
-omit [IsOrderComplete Y] in
+
 private lemma f_apply_nonneg {f : OrderBoundedHom X Y}
     (hf : (0 : OrderBoundedHom X Y) ≤ f) {y : X} (hy : 0 ≤ y) : 0 ≤ f y := by
   have := le_iff.mp hf y hy; simpa using this
@@ -439,20 +632,16 @@ private lemma f_apply_nonneg {f : OrderBoundedHom X Y}
 /-- The value of the witness operator on the positive cone:
 `witFun f x₀ y = sup_n f (y ⊓ n • x₀)`. Defaults to `0` outside the regime where
 the supremum exists. -/
-private noncomputable def witFun (f : OrderBoundedHom X Y) (x₀ y : X) : Y := by
-  classical
-  exact if h : ∃ s : Y, IsLUB
-      (Set.range fun n : ℕ => f (y ⊓ n • x₀)) s then h.choose else 0
+private noncomputable def witFun (f : OrderBoundedHom X Y) (x₀ y : X) : Y :=
+  sSup (Set.range fun n : ℕ => f (y ⊓ n • x₀))
 
 private lemma witFun_isLUB {f : OrderBoundedHom X Y}
     (hf : (0 : OrderBoundedHom X Y) ≤ f) {x₀ y : X}
     (_hx₀ : 0 ≤ x₀) (_hy : 0 ≤ y) :
     IsLUB (Set.range fun n : ℕ => f (y ⊓ n • x₀)) (witFun f x₀ y) := by
-  have hex : ∃ s : Y, IsLUB (Set.range fun n : ℕ => f (y ⊓ n • x₀)) s := by
-    refine IsOrderComplete.isLUB_of_bddAbove ⟨f y, ?_⟩ ⟨_, 0, rfl⟩
-    rintro _ ⟨n, rfl⟩
-    exact f_mono_of_nonneg hf inf_le_left
-  simp only [witFun]; rw [dif_pos hex]; exact hex.choose_spec
+  refine isLUB_csSup ⟨_, 0, rfl⟩ ⟨f y, ?_⟩
+  rintro _ ⟨n, rfl⟩
+  exact f_mono_of_nonneg hf inf_le_left
 
 private lemma witFun_le_f {f : OrderBoundedHom X Y}
     (hf : (0 : OrderBoundedHom X Y) ≤ f) {x₀ y : X}
@@ -558,7 +747,7 @@ private lemma witFun_add {f : OrderBoundedHom X Y}
 private noncomputable def witLin {f : OrderBoundedHom X Y}
     (hf : (0 : OrderBoundedHom X Y) ≤ f) {x₀ : X} (hx₀ : 0 ≤ x₀) :
     X →ₗ[ℝ] Y := by
-  haveI : IsVLArchimedean Y := IsVLArchimedean_of_isSigmaOrderComplete
+  haveI : IsVLArchimedean Y := IsVLArchimedean_of_sigmaConditionallyCompleteLattice
   exact Positive.extension
     (fun y hy => witFun_nonneg hf hx₀ hy)
     (fun y₁ y₂ hy₁ hy₂ => witFun_add hf hx₀ hy₁ hy₂)
@@ -566,13 +755,13 @@ private noncomputable def witLin {f : OrderBoundedHom X Y}
 private lemma witLin_apply_nonneg {f : OrderBoundedHom X Y}
     (hf : (0 : OrderBoundedHom X Y) ≤ f) {x₀ y : X}
     (hx₀ : 0 ≤ x₀) (hy : 0 ≤ y) : witLin hf hx₀ y = witFun f x₀ y := by
-  haveI : IsVLArchimedean Y := IsVLArchimedean_of_isSigmaOrderComplete
+  haveI : IsVLArchimedean Y := IsVLArchimedean_of_sigmaConditionallyCompleteLattice
   exact Positive.extension_nonneg _ _ hy
 
 private lemma witLin_positive {f : OrderBoundedHom X Y}
     (hf : (0 : OrderBoundedHom X Y) ≤ f) {x₀ : X} (hx₀ : 0 ≤ x₀) :
     Positive (witLin hf hx₀) := by
-  haveI : IsVLArchimedean Y := IsVLArchimedean_of_isSigmaOrderComplete
+  haveI : IsVLArchimedean Y := IsVLArchimedean_of_sigmaConditionallyCompleteLattice
   exact Positive.extension_positive _ _
 
 /-- The witness operator as an `OrderBoundedHom`. -/
@@ -804,16 +993,15 @@ theorem isLUB_of_directedOn
       ∀ {x : X}, 0 ≤ x →
         IsLUB ((fun g : OrderBoundedHom X Y => g x) '' S) (f x) := by
   classical
-  haveI : IsVLArchimedean Y := IsVLArchimedean_of_isSigmaOrderComplete
+  haveI : IsVLArchimedean Y := IsVLArchimedean_of_sigmaConditionallyCompleteLattice
   obtain ⟨g₀, hg₀⟩ := hne
   obtain ⟨h, hh⟩ := hbdd
   have aux : ∀ {x : X}, 0 ≤ x →
       ∃ s : Y, IsLUB ((fun g : OrderBoundedHom X Y => g x - g₀ x) '' S) s := by
     intro x hx
-    refine IsOrderComplete.isLUB_of_bddAbove
-      ⟨h x - g₀ x, ?_⟩ ⟨0, g₀, hg₀, sub_self _⟩
+    refine ⟨_, isLUB_csSup ⟨0, g₀, hg₀, sub_self _⟩ ⟨h x - g₀ x, ?_⟩⟩
     rintro _ ⟨g, hg, rfl⟩
-    exact sub_le_sub_right (hh hg x hx) _
+    exact sub_le_sub_right (le_iff.mp (hh hg) x hx) _
   let σ : X → Y := fun x => if hx : 0 ≤ x then (aux hx).choose else 0
   have σ_isLUB : ∀ {x : X} (hx : 0 ≤ x),
       IsLUB ((fun g : OrderBoundedHom X Y => g x - g₀ x) '' S) (σ x) := by
@@ -841,9 +1029,9 @@ theorem isLUB_of_directedOn
         rintro _ ⟨g₁, hg₁, rfl⟩ _ ⟨g₂, hg₂, rfl⟩
         obtain ⟨g, hg, hg₁g, hg₂g⟩ := hdir g₁ hg₁ g₂ hg₂
         have h1 : g₁ x - g₀ x ≤ g x - g₀ x :=
-          sub_le_sub_right (hg₁g x hx) _
+          sub_le_sub_right (le_iff.mp hg₁g x hx) _
         have h2 : g₂ y - g₀ y ≤ g y - g₀ y :=
-          sub_le_sub_right (hg₂g y hy) _
+          sub_le_sub_right (le_iff.mp hg₂g y hy) _
         have h3 : (g x - g₀ x) + (g y - g₀ y) = g (x + y) - g₀ (x + y) := by
           rw [map_add_val g, map_add_val g₀]; abel
         calc g₁ x - g₀ x + (g₂ y - g₀ y)
@@ -872,7 +1060,8 @@ theorem isLUB_of_directedOn
     fun {x} hx => Positive.extension_nonneg σ_nn σ_add hx
   let Tob : OrderBoundedHom X Y := ⟨T, hT_pos.isOrderBounded⟩
   refine ⟨Tob + g₀, ?_, ?_⟩
-  · refine ⟨fun g hg x hx => ?_, fun k hk x hx => ?_⟩
+  · refine ⟨fun g hg => le_iff.mpr fun x hx => ?_,
+      fun k hk => le_iff.mpr fun x hx => ?_⟩
     · rw [add_apply']
       change g x ≤ T x + g₀ x
       rw [hT_apply hx]
@@ -884,7 +1073,7 @@ theorem isLUB_of_directedOn
       have hub : k x - g₀ x ∈ upperBounds
           ((fun g : OrderBoundedHom X Y => g x - g₀ x) '' S) := by
         rintro _ ⟨g, hg, rfl⟩
-        exact sub_le_sub_right (hk hg x hx) _
+        exact sub_le_sub_right (le_iff.mp (hk hg) x hx) _
       have h1 := (σ_isLUB hx).2 hub
       exact le_sub_iff_add_le.mp h1
   · intro x hx
@@ -906,11 +1095,11 @@ theorem isLUB_of_directedOn
       have h1 := (σ_isLUB hx).2 hub
       exact le_sub_iff_add_le.mp h1
 
-/-- When the codomain is order complete, the space of order bounded
-operators is order complete. -/
-instance instIsOrderComplete :
-    IsOrderComplete (OrderBoundedHom X Y) := by
-  refine ⟨fun {S} hbdd hne => ?_⟩
+/-- When the codomain is order complete, every non-empty bounded above set
+of order bounded operators admits a least upper bound. -/
+theorem exists_isLUB
+    {S : Set (OrderBoundedHom X Y)} (hne : S.Nonempty) (hbdd : BddAbove S) :
+    ∃ f : OrderBoundedHom X Y, IsLUB S f := by
   classical
   let S' : Set (OrderBoundedHom X Y) :=
     {f | ∃ F : Finset (OrderBoundedHom X Y), ∃ hF : F.Nonempty,
@@ -948,3 +1137,20 @@ instance instIsOrderComplete :
     exact Finset.sup'_le hF id (fun g hgF => hk (hFS hgF))
 
 end OrderBoundedHom
+
+/-- When the codomain is order complete, every order bounded operator
+is regular. -/
+theorem IsOrderBounded.isRegularOp
+    {X Y : Type*} [AddCommGroup X] [AddCommGroup Y]
+    [Lattice X] [ConditionallyCompleteLattice Y]
+    [IsOrderedAddMonoid X] [IsOrderedAddMonoid Y]
+    [VectorLattice X] [VectorLattice Y]
+    {f : X →ₗ[ℝ] Y} (hf : IsOrderBounded f) :
+    IsRegularOp f := by
+  let F : OrderBoundedHom X Y := ⟨f, hf⟩
+  refine ⟨F⁺.toLinearMap, F⁻.toLinearMap, ?_, ?_, ?_⟩
+  · intro x hx
+    convert OrderBoundedHom.le_iff.mp (posPart_nonneg F) x hx using 1
+  · intro x hx
+    convert OrderBoundedHom.le_iff.mp (negPart_nonneg F) x hx using 1
+  · exact (congrArg OrderBoundedHom.toLinearMap (posPart_sub_negPart F)).symm

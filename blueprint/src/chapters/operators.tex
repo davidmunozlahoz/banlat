@@ -1,0 +1,949 @@
+\chapter{Operators}
+
+This chapter develops the theory of linear operators between vector
+lattices and Banach lattices. We begin with positive operators —
+those linear maps which preserve the positive cone — establishing
+their equivalence with monotonicity, the absolute-value estimate
+$\lvert T x \rvert \le T \lvert x \rvert$, the natural partial
+order on the space of linear operators, the extension of additive
+maps from the positive cone into any Archimedean vector lattice,
+and the automatic continuity of positive operators on Banach
+lattices.
+
+\section{Positive operators}
+
+This section introduces positive operators between vector lattices
+and records their first properties: the equivalence of positivity
+and monotonicity, the absolute-value estimate $\lvert T x \rvert
+\le T \lvert x \rvert$, and the natural partial order on the space
+of linear operators. We then prove the extension lemma — every
+additive map on the positive cone extends uniquely to a positive
+operator into an Archimedean vector lattice — and we close with the
+automatic continuity of positive operators on Banach lattices.
+
+\begin{definition}
+\label{def:positive-operator}
+\lean{Positive}
+\leanok
+\uses{def:vector-lattice}
+Let $X$ and $Y$ be vector lattices. A linear map $f \colon X \to Y$
+is called \emph{positive} when $f x \ge 0$ for every $x \in X$
+with $x \ge 0$.
+\end{definition}
+
+\begin{theorem}
+\label{thm:positive-monotone-iff}
+\lean{Positive.monotone_iff}
+\leanok
+\uses{def:positive-operator, def:vector-lattice}
+Let $X$ and $Y$ be vector lattices and let $f \colon X \to Y$ be a
+linear map. Then $f$ is monotone if and only if $f$ is positive.
+\end{theorem}
+
+\begin{theorem}
+\label{thm:positive-abs-le-map-abs}
+\lean{Positive.abs_le_map_abs}
+\leanok
+\uses{def:positive-operator, def:vector-lattice,
+  thm:positive-monotone-iff}
+Let $X$ and $Y$ be vector lattices and let $f \colon X \to Y$ be a
+positive linear map. Then $\lvert f x \rvert \le f \lvert x \rvert$
+for every $x \in X$.
+\end{theorem}
+
+\begin{lemma}
+\label{lem:positive-le-iff}
+\lean{Positive.le_iff}
+\leanok
+\uses{def:positive-operator, def:vector-lattice}
+Let $X$ and $Y$ be vector lattices. The space of linear maps
+$X \to Y$ is partially ordered by declaring $T \le S$ when $S - T$
+is positive; equivalently, $T \le S$ holds if and only if $T x \le
+S x$ for every $x \in X$ with $x \ge 0$.
+\end{lemma}
+
+\begin{lemma}
+\label{lem:positive-zero-le-iff}
+\lean{Positive.zero_le_iff}
+\leanok
+\uses{def:positive-operator, lem:positive-le-iff}
+Let $X$ and $Y$ be vector lattices and let $T \colon X \to Y$ be a
+linear map. Then $0 \le T$ in the operator order if and only if
+$T$ is positive.
+\end{lemma}
+
+\begin{theorem}
+\label{thm:positive-extension}
+\lean{Positive.extension}
+\leanok
+\uses{def:positive-operator, def:vector-lattice,
+  def:is-vl-archimedean}
+Let $X$ be a vector lattice, let $Y$ be an Archimedean vector
+lattice, and let $\tau \colon X \to Y$ be a map satisfying $\tau x
+\ge 0$ for every $x \ge 0$ in $X$ and $\tau (x + y) = \tau x +
+\tau y$ for every $x, y \ge 0$ in $X$. Then there exists a linear
+map $T \colon X \to Y$ given by $T x = \tau x^{+} - \tau x^{-}$.
+\end{theorem}
+
+\begin{lemma}
+\label{lem:positive-extension-nonneg}
+\lean{Positive.extension_nonneg}
+\leanok
+\uses{thm:positive-extension}
+Let $X$ be a vector lattice, let $Y$ be an Archimedean vector
+lattice, and let $\tau \colon X \to Y$ satisfy the hypotheses of
+the extension theorem. Then $T x = \tau x$ for every $x \in X$
+with $x \ge 0$, where $T$ denotes the linear extension of $\tau$.
+\end{lemma}
+
+\begin{theorem}
+\label{thm:positive-extension-positive}
+\lean{Positive.extension_positive}
+\leanok
+\uses{def:positive-operator, thm:positive-extension,
+  lem:positive-extension-nonneg}
+Let $X$ be a vector lattice, let $Y$ be an Archimedean vector
+lattice, and let $\tau \colon X \to Y$ satisfy the hypotheses of
+the extension theorem. Then the linear extension $T$ of $\tau$ is
+a positive operator.
+\end{theorem}
+
+\begin{theorem}
+\label{thm:positive-extension-unique}
+\lean{Positive.extension_unique}
+\leanok
+\uses{def:positive-operator, thm:positive-extension,
+  lem:positive-extension-nonneg}
+Let $X$ be a vector lattice, let $Y$ be an Archimedean vector
+lattice, and let $\tau \colon X \to Y$ satisfy the hypotheses of
+the extension theorem. If $f \colon X \to Y$ is any positive
+linear map with $f x = \tau x$ for every $x \ge 0$ in $X$, then
+$f$ coincides with the linear extension $T$ of $\tau$.
+\end{theorem}
+
+\begin{theorem}
+\label{thm:positive-continuous}
+\lean{Positive.continuous}
+\leanok
+\uses{def:positive-operator, def:banach-lattice,
+  def:normed-vector-lattice, thm:positive-abs-le-map-abs,
+  thm:positive-monotone-iff}
+Let $X$ be a Banach lattice and let $Y$ be a normed vector
+lattice. Every positive linear operator $f \colon X \to Y$ is
+continuous.
+\end{theorem}
+
+\section{Order bounded operators}
+
+A linear map between vector lattices is \emph{order bounded} if it
+sends order bounded sets to order bounded sets — equivalently, for
+every positive $x$ there is a positive $y$ dominating $\lvert T z
+\rvert$ for every $z$ with $\lvert z \rvert \le x$. Every positive
+operator is order bounded; the order bounded operators form a
+partially ordered real vector space; and every order bounded
+operator from a Banach lattice into a normed vector lattice is
+automatically continuous.
+
+\begin{definition}
+\label{def:isOrderBounded}
+\lean{IsOrderBounded}
+\leanok
+\uses{def:vector-lattice}
+Let $X$ and $Y$ be vector lattices. A linear map $f \colon X \to
+Y$ is called \emph{order bounded} if, for every $x \in X$ with $0
+\le x$, there exists $y \in Y$ with $0 \le y$ such that $\lvert f
+z \rvert \le y$ for every $z \in X$ with $\lvert z \rvert \le x$.
+\end{definition}
+
+\begin{theorem}
+\label{thm:positive-isOrderBounded}
+\lean{Positive.isOrderBounded}
+\leanok
+\uses{def:isOrderBounded, def:positive-operator,
+  thm:positive-abs-le-map-abs, thm:positive-monotone-iff}
+Let $X$ and $Y$ be vector lattices. Every positive linear operator
+$f \colon X \to Y$ is order bounded.
+\end{theorem}
+
+\begin{lemma}
+\label{lem:isOrderBounded-add}
+\lean{IsOrderBounded.add}
+\leanok
+\uses{def:isOrderBounded}
+Let $X$ and $Y$ be vector lattices and let $f, g \colon X \to Y$
+be order bounded linear maps. Then $f + g$ is order bounded.
+\end{lemma}
+
+\begin{lemma}
+\label{lem:isOrderBounded-neg}
+\lean{IsOrderBounded.neg}
+\leanok
+\uses{def:isOrderBounded}
+Let $X$ and $Y$ be vector lattices and let $f \colon X \to Y$ be
+an order bounded linear map. Then $-f$ is order bounded.
+\end{lemma}
+
+\begin{lemma}
+\label{lem:isOrderBounded-sub}
+\lean{IsOrderBounded.sub}
+\leanok
+\uses{def:isOrderBounded, lem:isOrderBounded-add,
+  lem:isOrderBounded-neg}
+Let $X$ and $Y$ be vector lattices and let $f, g \colon X \to Y$
+be order bounded linear maps. Then $f - g$ is order bounded.
+\end{lemma}
+
+\begin{lemma}
+\label{lem:isOrderBounded-smul}
+\lean{IsOrderBounded.smul}
+\leanok
+\uses{def:isOrderBounded}
+Let $X$ and $Y$ be vector lattices, let $f \colon X \to Y$ be an
+order bounded linear map, and let $r \in \mathbb{R}$. Then $r f$
+is order bounded.
+\end{lemma}
+
+\begin{theorem}
+\label{thm:isOrderBounded-continuous}
+\lean{IsOrderBounded.continuous}
+\leanok
+\uses{def:isOrderBounded, def:banach-lattice,
+  def:normed-vector-lattice}
+Let $X$ be a Banach lattice and let $Y$ be a normed vector
+lattice. Every order bounded linear operator $f \colon X \to Y$
+is continuous.
+\end{theorem}
+
+\begin{definition}
+\label{def:orderBoundedHom}
+\lean{OrderBoundedHom}
+\leanok
+\uses{def:isOrderBounded}
+Let $X$ and $Y$ be vector lattices. The space $\mathcal{L}_b(X,
+Y)$ of \emph{order bounded operators} from $X$ to $Y$ is the set
+of order bounded real-linear maps $X \to Y$. It carries the
+pointwise real vector space structure, and the partial order
+$f \le g$ defined by $f x \le g x$ for every $x \in X$ with $0
+\le x$, under which $\mathcal{L}_b(X, Y)$ is a partially ordered
+real vector space.
+\end{definition}
+
+\section{Regular operators}
+
+A linear map between vector lattices is \emph{regular} if it can
+be written as the difference of two positive operators. Every
+regular operator is order bounded.
+
+\begin{definition}
+\label{def:isRegularOp}
+\lean{IsRegularOp}
+\leanok
+\uses{def:positive-operator, def:vector-lattice}
+Let $X$ and $Y$ be vector lattices. A linear map $f \colon X \to
+Y$ is called \emph{regular} if there exist positive linear maps
+$g, h \colon X \to Y$ such that $f = g - h$.
+\end{definition}
+
+\begin{theorem}
+\label{thm:isRegularOp-isOrderBounded}
+\lean{IsRegularOp.isOrderBounded}
+\leanok
+\uses{def:isRegularOp, def:isOrderBounded,
+  thm:positive-isOrderBounded, lem:isOrderBounded-sub}
+Let $X$ and $Y$ be vector lattices. Every regular linear operator
+$f \colon X \to Y$ is order bounded.
+\end{theorem}
+
+\section{Vector lattice homomorphisms and isomorphisms}
+
+A \emph{vector lattice homomorphism} between two vector lattices is
+a real-linear map that preserves the lattice operations $\vee$ and
+$\wedge$. Such maps are automatically monotone, preserve absolute
+values, positive and negative parts, and disjointness; they admit
+two convenient characterisations among linear maps — preservation
+of the absolute value, and (in the positive case) preservation of
+disjointness. We then introduce \emph{vector lattice isomorphisms}
+— bijective vector lattice homomorphisms with vector lattice
+inverse — and show that any additive bijection between positive
+cones extends to a vector lattice isomorphism into an Archimedean
+codomain. In the Banach lattice setting, every vector lattice
+isomorphism is automatically a continuous linear equivalence. We
+close with the more rigid notion of \emph{Banach lattice
+isometry}: a real linear isometric equivalence which preserves
+$\vee$ and $\wedge$.
+
+\subsection{Vector lattice homomorphisms}
+
+\begin{definition}
+\label{def:vecLatHom}
+\lean{VecLatHom}
+\leanok
+\uses{def:vector-lattice}
+Let $X$ and $Y$ be vector lattices. A \emph{vector lattice
+homomorphism} from $X$ to $Y$ is a real-linear map $f \colon X
+\to Y$ such that $f(x \vee y) = f x \vee f y$ and $f(x \wedge y) =
+f x \wedge f y$ for all $x, y \in X$.
+\end{definition}
+
+\begin{lemma}
+\label{lem:vecLatHom-map-abs}
+\lean{VecLatHom.map_abs}
+\leanok
+\uses{def:vecLatHom}
+Let $X$ and $Y$ be vector lattices and let $f \colon X \to Y$ be a
+vector lattice homomorphism. Then $f \lvert x \rvert = \lvert f x
+\rvert$ for every $x \in X$.
+\end{lemma}
+
+\begin{lemma}
+\label{lem:vecLatHom-monotone}
+\lean{VecLatHom.monotone}
+\leanok
+\uses{def:vecLatHom}
+Let $X$ and $Y$ be vector lattices. Every vector lattice
+homomorphism $f \colon X \to Y$ is monotone.
+\end{lemma}
+
+\begin{lemma}
+\label{lem:vecLatHom-map-nonneg}
+\lean{VecLatHom.map_nonneg}
+\leanok
+\uses{def:vecLatHom, lem:vecLatHom-monotone}
+Let $X$ and $Y$ be vector lattices, let $f \colon X \to Y$ be a
+vector lattice homomorphism, and let $x \in X$ with $0 \le x$.
+Then $0 \le f x$.
+\end{lemma}
+
+\begin{lemma}
+\label{lem:vecLatHom-map-posPart}
+\lean{VecLatHom.map_posPart}
+\leanok
+\uses{def:vecLatHom}
+Let $X$ and $Y$ be vector lattices and let $f \colon X \to Y$ be a
+vector lattice homomorphism. Then $f x^{+} = (f x)^{+}$ for every
+$x \in X$.
+\end{lemma}
+
+\begin{lemma}
+\label{lem:vecLatHom-map-negPart}
+\lean{VecLatHom.map_negPart}
+\leanok
+\uses{def:vecLatHom}
+Let $X$ and $Y$ be vector lattices and let $f \colon X \to Y$ be a
+vector lattice homomorphism. Then $f x^{-} = (f x)^{-}$ for every
+$x \in X$.
+\end{lemma}
+
+\begin{lemma}
+\label{lem:vecLatHom-map-disjoint}
+\lean{VecLatHom.map_disjoint}
+\leanok
+\uses{def:vecLatHom, def:isVLDisjoint}
+Let $X$ and $Y$ be vector lattices and let $f \colon X \to Y$ be a
+vector lattice homomorphism. If $x, y \in X$ are disjoint, then
+$f x$ and $f y$ are disjoint.
+\end{lemma}
+
+\begin{theorem}
+\label{thm:vecLatHom-of-abs}
+\lean{VecLatHom.of_abs, IsVecLatHom.of_abs}
+\leanok
+\uses{def:vecLatHom}
+Let $X$ and $Y$ be vector lattices and let $f \colon X \to Y$ be a
+real-linear map satisfying $f \lvert x \rvert = \lvert f x \rvert$
+for every $x \in X$. Then $f$ is a vector lattice homomorphism.
+\end{theorem}
+
+\begin{theorem}
+\label{thm:vecLatHom-of-disjoint}
+\lean{IsVecLatHom.of_disjoint}
+\leanok
+\uses{def:vecLatHom, def:positive-operator, def:isVLDisjoint,
+  lem:uniqueness-posPart}
+Let $X$ and $Y$ be vector lattices and let $f \colon X \to Y$ be a
+positive real-linear map. If $f$ preserves disjointness — that
+is, $x \wedge y = 0$ implies $f x \wedge f y = 0$ for all $x, y
+\in X$ — then $f$ is a vector lattice homomorphism.
+\end{theorem}
+
+\begin{lemma}
+\label{lem:vecLatHom-symm}
+\lean{VecLatHom.symm}
+\leanok
+\uses{def:vecLatHom}
+Let $X$ and $Y$ be vector lattices and let $f \colon X \to Y$ be a
+bijective vector lattice homomorphism. Then $f^{-1} \colon Y \to
+X$ is also a vector lattice homomorphism.
+\end{lemma}
+
+\subsection{Vector lattice isomorphisms}
+
+\begin{definition}
+\label{def:vecLatEquiv}
+\lean{VecLatEquiv}
+\leanok
+\uses{def:vecLatHom}
+Let $X$ and $Y$ be vector lattices. A \emph{vector lattice
+isomorphism} from $X$ to $Y$ is a real-linear bijection $e \colon
+X \to Y$ that preserves the lattice operations $\vee$ and
+$\wedge$.
+\end{definition}
+
+\begin{theorem}
+\label{thm:positive-extensionEquiv}
+\lean{Positive.extensionEquiv}
+\leanok
+\uses{def:vecLatEquiv, def:vector-lattice, def:is-vl-archimedean,
+  thm:positive-extension, lem:positive-extension-nonneg,
+  thm:positive-extension-positive, thm:positive-monotone-iff}
+Let $X$ be a vector lattice, let $Y$ be an Archimedean vector
+lattice, and let $\tau \colon X \to Y$ be a map satisfying $\tau x
+\ge 0$ for every $x \ge 0$ in $X$ and $\tau (x + y) = \tau x +
+\tau y$ for every $x, y \ge 0$ in $X$. If, in addition, $\tau$ is
+injective and surjective on positive cones — that is, $\tau x =
+\tau y$ implies $x = y$ for all $x, y \ge 0$ in $X$, and for every
+$y \ge 0$ in $Y$ there exists $x \ge 0$ in $X$ with $\tau x = y$ —
+then the linear extension $T x = \tau x^{+} - \tau x^{-}$ is a
+vector lattice isomorphism $X \to Y$.
+\end{theorem}
+
+\begin{theorem}
+\label{thm:vecLatEquiv-toContinuousLinearEquiv}
+\lean{VecLatEquiv.toContinuousLinearEquiv}
+\leanok
+\uses{def:vecLatEquiv, def:banach-lattice,
+  thm:positive-continuous, thm:positive-monotone-iff,
+  lem:vecLatHom-monotone}
+Let $X$ and $Y$ be Banach lattices. Every vector lattice
+isomorphism $e \colon X \to Y$ is a continuous linear equivalence
+$X \to Y$ — that is, both $e$ and $e^{-1}$ are continuous.
+\end{theorem}
+
+\subsection{Banach lattice isometries}
+
+\begin{definition}
+\label{def:banachLatEquiv}
+\lean{BanachLatEquiv}
+\leanok
+\uses{def:vecLatEquiv, def:banach-lattice}
+Let $X$ and $Y$ be Banach lattices. A \emph{Banach lattice
+isometry} from $X$ to $Y$ is a real linear isometric equivalence
+$e \colon X \to Y$ that preserves the lattice operations $\vee$
+and $\wedge$.
+\end{definition}
+
+\section{The Riesz--Kantorovich theorem}
+
+When the codomain $Y$ is a Dedekind complete vector lattice, the
+space $\mathcal{L}_b(X, Y)$ of order bounded operators is itself a
+Dedekind complete vector lattice. The lattice operations admit
+explicit pointwise descriptions on the positive cone of $X$ — the
+\emph{Riesz--Kantorovich formulas} — and there are companion
+\emph{dual} formulas describing $f$ applied to a lattice expression
+in $X$ as a supremum or infimum taken over operators dominated by a
+fixed positive $f$. Finally, every order bounded operator from $X$
+into a Dedekind complete vector lattice $Y$ is regular.
+
+\subsection{The lattice structure on $\mathcal{L}_b(X, Y)$}
+
+\begin{theorem}
+\label{thm:orderBoundedHom-instLattice}
+\lean{OrderBoundedHom.instLattice}
+\leanok
+\uses{def:orderBoundedHom, def:vector-lattice}
+Let $X$ be a vector lattice and let $Y$ be a Dedekind complete
+vector lattice. The space $\mathcal{L}_b(X, Y)$ of order bounded
+operators is a lattice under the operator order.
+\end{theorem}
+
+\begin{theorem}
+\label{thm:orderBoundedHom-instVectorLattice}
+\lean{OrderBoundedHom.instVectorLattice}
+\leanok
+\uses{def:vector-lattice, def:orderBoundedHom,
+  thm:orderBoundedHom-instLattice}
+Let $X$ be a vector lattice and let $Y$ be a Dedekind complete
+vector lattice. The space $\mathcal{L}_b(X, Y)$ of order bounded
+operators is a vector lattice.
+\end{theorem}
+
+\subsection{Riesz--Kantorovich formulas}
+
+\begin{theorem}
+\label{thm:isLUB-posPart-apply}
+\lean{OrderBoundedHom.isLUB_posPart_apply}
+\leanok
+\uses{def:orderBoundedHom, thm:orderBoundedHom-instVectorLattice,
+  thm:riesz-decomposition}
+Let $X$ be a vector lattice, let $Y$ be a Dedekind complete vector
+lattice, let $f \in \mathcal{L}_b(X, Y)$, and let $x \in X$ with
+$0 \le x$. Then $f^{+} x$ is the least upper bound of the set
+$\{ f y : y \in X, \; 0 \le y \le x \}$.
+\end{theorem}
+
+\begin{theorem}
+\label{thm:isLUB-negPart-apply}
+\lean{OrderBoundedHom.isLUB_negPart_apply}
+\leanok
+\uses{def:orderBoundedHom, thm:orderBoundedHom-instVectorLattice,
+  thm:isLUB-posPart-apply}
+Let $X$ be a vector lattice, let $Y$ be a Dedekind complete vector
+lattice, let $f \in \mathcal{L}_b(X, Y)$, and let $x \in X$ with
+$0 \le x$. Then $f^{-} x$ is the least upper bound of the set
+$\{ -f y : y \in X, \; 0 \le y \le x \}$.
+\end{theorem}
+
+\begin{theorem}
+\label{thm:isLUB-sup-apply}
+\lean{OrderBoundedHom.isLUB_sup_apply}
+\leanok
+\uses{def:orderBoundedHom, thm:orderBoundedHom-instVectorLattice,
+  thm:isLUB-posPart-apply, lem:sup-eq-add-posPart}
+Let $X$ be a vector lattice, let $Y$ be a Dedekind complete vector
+lattice, let $f, g \in \mathcal{L}_b(X, Y)$, and let $x \in X$ with
+$0 \le x$. Then $(f \vee g) x$ is the least upper bound of the set
+$\{ f y + g z : y, z \in X, \; 0 \le y, \; 0 \le z, \; y + z = x \}$.
+\end{theorem}
+
+\begin{theorem}
+\label{thm:isGLB-inf-apply}
+\lean{OrderBoundedHom.isGLB_inf_apply}
+\leanok
+\uses{def:orderBoundedHom, thm:orderBoundedHom-instVectorLattice,
+  thm:isLUB-sup-apply}
+Let $X$ be a vector lattice, let $Y$ be a Dedekind complete vector
+lattice, let $f, g \in \mathcal{L}_b(X, Y)$, and let $x \in X$ with
+$0 \le x$. Then $(f \wedge g) x$ is the greatest lower bound of the
+set $\{ f y + g z : y, z \in X, \; 0 \le y, \; 0 \le z, \; y + z =
+x \}$.
+\end{theorem}
+
+\begin{theorem}
+\label{thm:isLUB-abs-apply}
+\lean{OrderBoundedHom.isLUB_abs_apply}
+\leanok
+\uses{def:orderBoundedHom, thm:orderBoundedHom-instVectorLattice,
+  thm:isLUB-posPart-apply, thm:isLUB-negPart-apply,
+  thm:isLUB-sup-apply}
+Let $X$ be a vector lattice, let $Y$ be a Dedekind complete vector
+lattice, let $f \in \mathcal{L}_b(X, Y)$, and let $x \in X$ with
+$0 \le x$. Then $\lvert f \rvert x$ is the least upper bound of the
+set $\{ \lvert f y \rvert : y \in X, \; \lvert y \rvert \le x \}$.
+\end{theorem}
+
+\subsection{Dual Riesz--Kantorovich formulas}
+
+The dual formulas fix a positive operator $f \in \mathcal{L}_b(X,
+Y)$ and describe $f$ applied to a lattice expression in $X$ as a
+supremum or infimum taken over the order interval $[0, f]$ in
+$\mathcal{L}_b(X, Y)$.
+
+\begin{theorem}
+\label{thm:isLUB-apply-posPart}
+\lean{OrderBoundedHom.isLUB_apply_posPart}
+\leanok
+\uses{def:orderBoundedHom, thm:orderBoundedHom-instVectorLattice,
+  thm:riesz-decomposition}
+Let $X$ be a vector lattice, let $Y$ be a Dedekind complete vector
+lattice, let $f \in \mathcal{L}_b(X, Y)$ with $0 \le f$, and let
+$x \in X$. Then $f x^{+}$ is the least upper bound of the set
+$\{ g x : g \in \mathcal{L}_b(X, Y), \; 0 \le g \le f \}$.
+\end{theorem}
+
+\begin{theorem}
+\label{thm:isLUB-apply-negPart}
+\lean{OrderBoundedHom.isLUB_apply_negPart}
+\leanok
+\uses{def:orderBoundedHom, thm:orderBoundedHom-instVectorLattice,
+  thm:isLUB-apply-posPart}
+Let $X$ be a vector lattice, let $Y$ be a Dedekind complete vector
+lattice, let $f \in \mathcal{L}_b(X, Y)$ with $0 \le f$, and let
+$x \in X$. Then $f x^{-}$ is the least upper bound of the set
+$\{ -g x : g \in \mathcal{L}_b(X, Y), \; 0 \le g \le f \}$.
+\end{theorem}
+
+\begin{theorem}
+\label{thm:isLUB-apply-sup}
+\lean{OrderBoundedHom.isLUB_apply_sup}
+\leanok
+\uses{def:orderBoundedHom, thm:orderBoundedHom-instVectorLattice,
+  thm:isLUB-apply-posPart}
+Let $X$ be a vector lattice, let $Y$ be a Dedekind complete vector
+lattice, let $f \in \mathcal{L}_b(X, Y)$ with $0 \le f$, and let
+$x, y \in X$. Then $f (x \vee y)$ is the least upper bound of the
+set $\{ g x + (f - g) y : g \in \mathcal{L}_b(X, Y), \; 0 \le g \le
+f \}$.
+\end{theorem}
+
+\begin{theorem}
+\label{thm:isGLB-apply-inf}
+\lean{OrderBoundedHom.isGLB_apply_inf}
+\leanok
+\uses{def:orderBoundedHom, thm:orderBoundedHom-instVectorLattice,
+  thm:isLUB-apply-sup}
+Let $X$ be a vector lattice, let $Y$ be a Dedekind complete vector
+lattice, let $f \in \mathcal{L}_b(X, Y)$ with $0 \le f$, and let
+$x, y \in X$. Then $f (x \wedge y)$ is the greatest lower bound of
+the set $\{ g x + (f - g) y : g \in \mathcal{L}_b(X, Y), \; 0 \le
+g \le f \}$.
+\end{theorem}
+
+\begin{theorem}
+\label{thm:isLUB-apply-abs}
+\lean{OrderBoundedHom.isLUB_apply_abs}
+\leanok
+\uses{def:orderBoundedHom, thm:orderBoundedHom-instVectorLattice,
+  thm:isLUB-apply-posPart}
+Let $X$ be a vector lattice, let $Y$ be a Dedekind complete vector
+lattice, let $f \in \mathcal{L}_b(X, Y)$ with $0 \le f$, and let
+$x \in X$. Then $f \lvert x \rvert$ is the least upper bound of the
+set $\{ g x - (f - g) x : g \in \mathcal{L}_b(X, Y), \; 0 \le g \le
+f \}$.
+\end{theorem}
+
+\subsection{Dedekind completeness of $\mathcal{L}_b(X, Y)$}
+
+\begin{theorem}
+\label{thm:orderBoundedHom-isLUB-of-directedOn}
+\lean{OrderBoundedHom.isLUB_of_directedOn}
+\leanok
+\uses{def:orderBoundedHom, thm:orderBoundedHom-instVectorLattice,
+  thm:positive-extension, thm:positive-extension-positive,
+  thm:positive-isOrderBounded}
+Let $X$ be a vector lattice and let $Y$ be a Dedekind complete
+vector lattice. Let $S \subseteq \mathcal{L}_b(X, Y)$ be a non-empty
+upward-directed set which is bounded above. Then $S$ admits a least
+upper bound $f \in \mathcal{L}_b(X, Y)$, and for every $x \in X$
+with $0 \le x$ the value $f x$ is the least upper bound of the set
+$\{ g x : g \in S \}$.
+\end{theorem}
+
+\begin{theorem}
+\label{thm:orderBoundedHom-exists-isLUB}
+\lean{OrderBoundedHom.exists_isLUB}
+\leanok
+\uses{def:orderBoundedHom, thm:orderBoundedHom-instVectorLattice,
+  thm:orderBoundedHom-isLUB-of-directedOn}
+Let $X$ be a vector lattice and let $Y$ be a Dedekind complete
+vector lattice. Every non-empty bounded above subset of
+$\mathcal{L}_b(X, Y)$ admits a least upper bound; that is,
+$\mathcal{L}_b(X, Y)$ is Dedekind complete.
+\end{theorem}
+
+\subsection{Order bounded operators are regular}
+
+\begin{theorem}
+\label{thm:isOrderBounded-isRegularOp}
+\lean{IsOrderBounded.isRegularOp}
+\leanok
+\uses{def:isOrderBounded, def:isRegularOp,
+  thm:orderBoundedHom-instVectorLattice}
+Let $X$ be a vector lattice and let $Y$ be a Dedekind complete
+vector lattice. Every order bounded linear operator $f \colon X
+\to Y$ is regular.
+\end{theorem}
+
+\section{The order dual and the strong dual}
+
+This section specialises the operator theory of the previous
+sections to scalar-valued functionals. The \emph{order dual} of a
+vector lattice $X$ is the space $X^{\sim} = \mathcal{L}_b(X,
+\mathbb{R})$ of order bounded real-valued linear functionals on
+$X$. Since $\mathbb{R}$ is Dedekind complete, the
+Riesz--Kantorovich machinery equips $X^{\sim}$ with a canonical
+Dedekind complete vector lattice structure, and every element of
+$X^{\sim}$ is regular. The \emph{strong dual} $X^{*}$ of a normed
+vector lattice $X$ is the space of continuous real-valued linear
+functionals. Every continuous functional is order bounded; on a
+Banach lattice the converse also holds, so $X^{*}$ and $X^{\sim}$
+coincide as sets, and the strong dual inherits the structure of a
+Banach lattice with a solid lattice norm.
+
+\subsection{The order dual}
+
+\begin{definition}
+\label{def:orderDualSpace}
+\lean{OrderDualSpace}
+\leanok
+\uses{def:vector-lattice, def:orderBoundedHom}
+Let $X$ be a vector lattice. The \emph{order dual} of $X$ is the
+space $X^{\sim} = \mathcal{L}_b(X, \mathbb{R})$ of order bounded
+real-valued linear functionals on $X$.
+\end{definition}
+
+\begin{lemma}
+\label{lem:orderDualSpace-isRegularOp}
+\lean{OrderDualSpace.isRegularOp}
+\leanok
+\uses{def:orderDualSpace, def:isRegularOp,
+  thm:isOrderBounded-isRegularOp}
+Let $X$ be a vector lattice. Every $\varphi \in X^{\sim}$ is
+regular: there exist positive linear functionals $\varphi_1,
+\varphi_2 \colon X \to \mathbb{R}$ such that $\varphi =
+\varphi_1 - \varphi_2$.
+\end{lemma}
+
+\begin{definition}
+\label{def:orderDualSpace-separatesPoints}
+\lean{OrderDualSpace.SeparatesPoints}
+\leanok
+\uses{def:orderDualSpace}
+The order dual $X^{\sim}$ \emph{separates points} of the vector
+lattice $X$ if, for every $x \in X$, the condition $\varphi x = 0$
+for all $\varphi \in X^{\sim}$ implies $x = 0$.
+\end{definition}
+
+\subsection{The strong dual of a normed vector lattice}
+
+\begin{theorem}
+\label{thm:strongDual-isOrderBounded}
+\lean{StrongDual.isOrderBounded}
+\leanok
+\uses{def:isOrderBounded, def:normed-vector-lattice}
+Let $X$ be a normed vector lattice. Every continuous real-linear
+functional $\varphi \colon X \to \mathbb{R}$ is order bounded.
+\end{theorem}
+
+\begin{definition}
+\label{def:strongDual-toOrderDualSpace}
+\lean{StrongDual.toOrderDualSpace}
+\leanok
+\uses{def:orderDualSpace, def:normed-vector-lattice,
+  thm:strongDual-isOrderBounded}
+Let $X$ be a normed vector lattice. The map $X^{*} \to X^{\sim}$
+sending a continuous functional $\varphi$ to itself, regarded as
+an order bounded functional, is well defined.
+\end{definition}
+
+\subsection{The strong dual of a Banach lattice}
+
+\begin{theorem}
+\label{thm:strongDual-ofOrderDualSpace}
+\lean{StrongDual.ofOrderDualSpace}
+\leanok
+\uses{def:orderDualSpace, def:banach-lattice,
+  thm:isOrderBounded-continuous}
+Let $X$ be a Banach lattice. Every order bounded real-linear
+functional $\varphi \colon X \to \mathbb{R}$ is continuous.
+\end{theorem}
+
+\begin{theorem}
+\label{thm:strongDual-equivOrderDualSpace}
+\lean{StrongDual.equivOrderDualSpace}
+\leanok
+\uses{def:orderDualSpace, def:banach-lattice,
+  thm:strongDual-isOrderBounded, thm:strongDual-ofOrderDualSpace}
+Let $X$ be a Banach lattice. The strong dual $X^{*}$ and the order
+dual $X^{\sim}$ coincide as real vector spaces: the inclusion
+$X^{*} \to X^{\sim}$ is a real-linear bijection.
+\end{theorem}
+
+\begin{theorem}
+\label{thm:strongDual-instLattice}
+\lean{StrongDual.instLattice}
+\leanok
+\uses{def:banach-lattice, thm:strongDual-equivOrderDualSpace,
+  thm:orderBoundedHom-instLattice}
+Let $X$ be a Banach lattice. The strong dual $X^{*}$ is a lattice
+under the partial order $\varphi \le \psi$ defined by $\varphi x
+\le \psi x$ for every $x \in X$ with $0 \le x$, with lattice
+operations transported from those of the order dual $X^{\sim}$
+via the bijection $X^{*} \cong X^{\sim}$.
+\end{theorem}
+
+\begin{theorem}
+\label{thm:strongDual-instVectorLattice}
+\lean{StrongDual.instVectorLattice}
+\leanok
+\uses{def:vector-lattice, def:banach-lattice,
+  thm:strongDual-instLattice,
+  thm:orderBoundedHom-instVectorLattice}
+Let $X$ be a Banach lattice. The strong dual $X^{*}$ is a vector
+lattice.
+\end{theorem}
+
+\begin{theorem}
+\label{thm:strongDual-instHasSolidNorm}
+\lean{StrongDual.instHasSolidNorm}
+\leanok
+\uses{def:banach-lattice, thm:strongDual-instVectorLattice,
+  thm:isLUB-abs-apply}
+Let $X$ be a Banach lattice. The dual norm on $X^{*}$ is a solid
+lattice norm: if $\lvert \varphi \rvert \le \lvert \psi \rvert$
+in $X^{*}$, then $\lVert \varphi \rVert \le \lVert \psi \rVert$.
+\end{theorem}
+
+\begin{theorem}
+\label{thm:strongDual-instNormedVectorLattice}
+\lean{StrongDual.instNormedVectorLattice}
+\leanok
+\uses{def:normed-vector-lattice, def:banach-lattice,
+  thm:strongDual-instVectorLattice,
+  thm:strongDual-instHasSolidNorm}
+Let $X$ be a Banach lattice. The strong dual $X^{*}$ is a normed
+vector lattice under its dual norm.
+\end{theorem}
+
+\begin{theorem}
+\label{thm:strongDual-instBanachLattice}
+\lean{StrongDual.instBanachLattice}
+\leanok
+\uses{def:banach-lattice, thm:strongDual-instNormedVectorLattice}
+Let $X$ be a Banach lattice. The strong dual $X^{*}$ is itself a
+Banach lattice.
+\end{theorem}
+
+\begin{theorem}
+\label{thm:strongDual-norm-abs}
+\lean{StrongDual.norm_abs}
+\leanok
+\uses{def:banach-lattice, thm:strongDual-instHasSolidNorm}
+Let $X$ be a Banach lattice. For every $\varphi \in X^{*}$,
+$\lVert \, \lvert \varphi \rvert \, \rVert = \lVert \varphi
+\rVert$.
+\end{theorem}
+
+\begin{theorem}
+\label{thm:strongDual-norm-of-nonneg}
+\lean{StrongDual.norm_of_nonneg}
+\leanok
+\uses{def:banach-lattice, thm:strongDual-instBanachLattice}
+Let $X$ be a Banach lattice and let $\varphi \in X^{*}$ with
+$0 \le \varphi$. Then
+\[
+  \lVert \varphi \rVert
+  = \sup \{ \varphi x : x \in X, \; \lVert x \rVert \le 1, \;
+    0 \le x \}.
+\]
+\end{theorem}
+
+\begin{theorem}
+\label{thm:strongDual-orderDual-separatesPoints}
+\lean{StrongDual.orderDual_separatesPoints}
+\leanok
+\uses{def:orderDualSpace-separatesPoints, def:banach-lattice,
+  thm:strongDual-equivOrderDualSpace}
+Let $X$ be a Banach lattice. The order dual $X^{\sim}$ separates
+points of $X$: for every $x \in X$, if $\varphi x = 0$ for all
+$\varphi \in X^{\sim}$, then $x = 0$.
+\end{theorem}
+
+\section{The bidual of a Banach lattice}
+
+The \emph{bidual} of a Banach lattice $X$ is the strong dual of
+its strong dual, $X^{**} = (X^{*})^{*}$. Iterating the
+construction of the previous section shows that $X^{**}$ is itself
+a Banach lattice. The canonical evaluation map $X \to X^{**}$,
+which embeds every normed space into its bidual as a linear
+isometry, is in the lattice setting an isometric vector lattice
+homomorphism: it preserves not only the norm but also the lattice
+operations $\vee$, $\wedge$, and $\lvert \cdot \rvert$. In
+particular, every Banach lattice sits inside its bidual as a
+vector sublattice.
+
+\begin{definition}
+\label{def:bidualSpace}
+\lean{BidualSpace}
+\leanok
+\uses{def:banach-lattice, thm:strongDual-instBanachLattice}
+Let $X$ be a Banach lattice. The \emph{bidual} of $X$ is the
+Banach lattice $X^{**} = (X^{*})^{*}$, the strong dual of the
+strong dual of $X$.
+\end{definition}
+
+\begin{definition}
+\label{def:bidualSpace-inclusion}
+\lean{BidualSpace.inclusion}
+\leanok
+\uses{def:bidualSpace}
+Let $X$ be a Banach lattice. The \emph{canonical embedding} of
+$X$ into its bidual is the continuous real-linear map $X \to
+X^{**}$ sending $x \in X$ to the evaluation functional $\varphi
+\mapsto \varphi x$.
+\end{definition}
+
+\begin{theorem}
+\label{thm:bidualSpace-norm-inclusion}
+\lean{BidualSpace.norm_inclusion}
+\leanok
+\uses{def:bidualSpace-inclusion}
+Let $X$ be a Banach lattice. The canonical embedding $X \to
+X^{**}$ is a linear isometry: $\lVert \iota x \rVert = \lVert x
+\rVert$ for every $x \in X$.
+\end{theorem}
+
+\begin{theorem}
+\label{thm:bidualSpace-inclusion-nonneg}
+\lean{BidualSpace.inclusion_nonneg}
+\leanok
+\uses{def:bidualSpace-inclusion, def:positive-operator}
+Let $X$ be a Banach lattice. The canonical embedding $X \to
+X^{**}$ is positive: if $0 \le x$ in $X$, then $0 \le \iota x$
+in $X^{**}$.
+\end{theorem}
+
+\begin{theorem}
+\label{thm:bidualSpace-inclusion-le-inclusion-iff}
+\lean{BidualSpace.inclusion_le_inclusion_iff}
+\leanok
+\uses{def:bidualSpace-inclusion,
+  thm:bidualSpace-inclusion-nonneg,
+  thm:strongDual-orderDual-separatesPoints}
+Let $X$ be a Banach lattice. For all $x, y \in X$, $\iota x \le
+\iota y$ in $X^{**}$ if and only if $x \le y$.
+\end{theorem}
+
+\begin{theorem}
+\label{thm:bidualSpace-inclusion-injective}
+\lean{BidualSpace.inclusion_injective}
+\leanok
+\uses{def:bidualSpace-inclusion,
+  thm:bidualSpace-norm-inclusion}
+Let $X$ be a Banach lattice. The canonical embedding $X \to
+X^{**}$ is injective.
+\end{theorem}
+
+\begin{theorem}
+\label{thm:bidualSpace-inclusion-abs}
+\lean{BidualSpace.inclusion_abs}
+\leanok
+\uses{def:bidualSpace-inclusion,
+  thm:bidualSpace-inclusion-le-inclusion-iff,
+  thm:isLUB-apply-posPart, thm:isLUB-posPart-apply}
+Let $X$ be a Banach lattice. The canonical embedding $X \to
+X^{**}$ preserves the modulus: $\iota \lvert x \rvert = \lvert
+\iota x \rvert$ for every $x \in X$.
+\end{theorem}
+
+\begin{theorem}
+\label{thm:bidualSpace-inclusion-sup}
+\lean{BidualSpace.inclusion_sup}
+\leanok
+\uses{def:bidualSpace-inclusion,
+  thm:bidualSpace-inclusion-abs, lem:sup-eq-add-posPart}
+Let $X$ be a Banach lattice. The canonical embedding $X \to
+X^{**}$ preserves binary suprema: $\iota (x \vee y) = \iota x
+\vee \iota y$ for all $x, y \in X$.
+\end{theorem}
+
+\begin{theorem}
+\label{thm:bidualSpace-inclusion-inf}
+\lean{BidualSpace.inclusion_inf}
+\leanok
+\uses{def:bidualSpace-inclusion,
+  thm:bidualSpace-inclusion-abs, lem:inf-eq-sub-posPart}
+Let $X$ be a Banach lattice. The canonical embedding $X \to
+X^{**}$ preserves binary infima: $\iota (x \wedge y) = \iota x
+\wedge \iota y$ for all $x, y \in X$.
+\end{theorem}
+
+\begin{theorem}
+\label{thm:bidualSpace-inclusionVecLatHom}
+\lean{BidualSpace.inclusionVecLatHom}
+\leanok
+\uses{def:bidualSpace-inclusion, def:vecLatHom,
+  thm:bidualSpace-inclusion-sup,
+  thm:bidualSpace-inclusion-inf}
+Let $X$ be a Banach lattice. The canonical embedding $X \to
+X^{**}$ is a vector lattice homomorphism.
+\end{theorem}

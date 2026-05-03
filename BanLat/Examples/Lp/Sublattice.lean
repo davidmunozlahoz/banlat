@@ -1,64 +1,22 @@
-import BanLat.ALSpace
+import BanLat.Examples.Lp.Basic
+import BanLat.Operators.Hom
+import BanLat.Substructures.Sublattice
 import Mathlib.MeasureTheory.Function.ConditionalExpectation.AEMeasurable
-import Mathlib.MeasureTheory.Function.LpOrder
-import Mathlib.MeasureTheory.Function.LpSpace.Complete
 import Mathlib.MeasureTheory.Function.LpSpace.Indicator
 import Mathlib.Order.Sublattice
 
 /-!
-# Lp spaces as Banach lattices
-
-For a measure space `(α, μ)` and `1 ≤ p`, the space `Lp ℝ p μ` of real-valued
-Lp functions is a Banach lattice under the pointwise order and the Lp norm.
-When `p = 1` the norm is additive on the positive cone, making `L₁(μ)` an
-AL-space. For `1 ≤ p < ∞` the space has no strong units.
--/
-
-open MeasureTheory Filter
-
-open scoped Topology
-
-variable {α : Type*} [MeasurableSpace α] {μ : MeasureTheory.Measure α}
-  {p : ENNReal} [Fact (1 ≤ p)]
-
-/-! ### Lattice and order structure
-
-Mathlib provides `Lattice (Lp ℝ p μ)`, `IsOrderedAddMonoid (Lp ℝ p μ)`,
-`HasSolidNorm (Lp ℝ p μ)`, `NormedAddCommGroup (Lp ℝ p μ)`, and
-`CompleteSpace (Lp ℝ p μ)` via `MeasureTheory.Lp.instLattice`,
-`MeasureTheory.Lp.instHasSolidNorm`, and
-`MeasureTheory.Lp.instCompleteSpace`.
--/
-
-/-! ### Vector lattice -/
-
-/-- `Lp ℝ p μ` is a vector lattice: a real module whose positive cone is
-closed under scalar multiplication by non-negative reals. -/
-noncomputable instance instVectorLatticeLp : VectorLattice (Lp ℝ p μ) where
-  smul_le_smul_of_nonneg_left a ha x y hxy := by
-    rw [← Lp.coeFn_le] at hxy ⊢
-    filter_upwards [Lp.coeFn_smul a x, Lp.coeFn_smul a y, hxy] with i h1 h2 h3
-    rw [h1, h2]
-    exact smul_le_smul_of_nonneg_left h3 ha
-
-/-! ### Normed vector lattice -/
-
-/-- `Lp ℝ p μ` is a normed vector lattice. -/
-noncomputable instance instNormedVectorLatticeLp :
-    NormedVectorLattice (Lp ℝ p μ) where
-
-/-! ### Banach lattice -/
-
-/-- `Lp ℝ p μ` is a Banach lattice: a complete normed vector lattice. -/
-noncomputable instance instBanachLatticeLp : BanachLattice (Lp ℝ p μ) where
-
-/-! ### Closed sublattices of Lp
+# Closed sublattices of `Lp`
 
 For `1 ≤ p < ∞` and a finite measure `μ`, the norm-closed sublattices of
 `Lp ℝ p μ` that contain the constant function `𝟙` are exactly the subspaces
 `lpMeas ℝ ℝ m p μ` of functions measurable with respect to a sub-σ-algebra
 `m ≤ m₀`.
 -/
+
+open MeasureTheory Filter
+
+open scoped Topology
 
 section ClosedSublattices
 
@@ -190,15 +148,13 @@ private lemma iUnion_mem_indicatorFamily [IsFiniteMeasure μ]
       Filter.atTop (nhds (indicatorConstLp p hUm (measure_ne_top μ _) (1:ℝ))) := by
     refine tendsto_indicatorConstLp_set (ht := hAm)
       (hμt := fun n => measure_ne_top μ (A n)) hp_ne_top ?_
-    -- μ (symmDiff (A n) (⋃ i, f i)) → 0
     have hAsub : ∀ n, A n ⊆ ⋃ i, f i := fun n =>
-      (Set.accumulate_subset_iUnion n)
+      Set.accumulate_subset_iUnion n
     have hsymm : ∀ n, symmDiff (A n) (⋃ i, f i) = (⋃ i, f i) \ A n := by
       intro n
       rw [symmDiff_def]
       simp [Set.diff_eq_empty.mpr (hAsub n)]
     simp_rw [hsymm]
-    -- μ((⋃ i, f i) \ A n) = μ(⋃ i, f i) - μ(A n) → 0
     have hmtendsto : Filter.Tendsto (fun n => μ (A n)) Filter.atTop
         (nhds (μ (⋃ i, f i))) := by
       have := tendsto_measure_iUnion_atTop (μ := μ) hAmono
@@ -302,17 +258,14 @@ private lemma indicatorConstLp_superlevel_mem_sublattice
   have hp_ne_zero : p ≠ 0 := by
     intro h; rw [h] at hp_one; norm_num at hp_one
   have hp_real_pos : 0 < p.toReal := ENNReal.toReal_pos hp_ne_zero hp_ne_top
-  -- F n := ((n+1) • g⁺) ⊓ const 1
   set F : ℕ → Lp ℝ p μ := fun n =>
     (((n + 1 : ℕ) : ℝ) • g⁺) ⊓ Lp.const p μ (1 : ℝ) with hF_def
   have hFL : ∀ n, F n ∈ L.toSubmodule := fun n =>
     L.inf_mem (L.toSubmodule.smul_mem _ (L.posPart_mem hgL)) hone
-  -- B n := {ω : lam < ⇑f ω < lam + 1/(n+1)}
   set B : ℕ → Set Ω := fun n =>
     ⇑f ⁻¹' Set.Ioo lam (lam + (((n + 1 : ℕ) : ℝ))⁻¹) with hB_def
   have hBm : ∀ n, MeasurableSet (B n) := fun n =>
     (Lp.stronglyMeasurable f).measurable measurableSet_Ioo
-  -- B is antitone: 1/(n+1) is decreasing in n
   have hBmono : Antitone B := by
     intro n m hnm ω hω
     refine ⟨hω.1, lt_of_lt_of_le hω.2 ?_⟩
@@ -320,33 +273,27 @@ private lemma indicatorConstLp_superlevel_mem_sublattice
     have h1 : ((m + 1 : ℕ) : ℝ)⁻¹ ≤ ((n + 1 : ℕ) : ℝ)⁻¹ :=
       inv_anti₀ hpos (by exact_mod_cast Nat.succ_le_succ hnm)
     linarith
-  -- ⋂_n B n = ∅ : if ⇑f ω ∈ Ioo lam (lam + 1/(n+1)) for all n, contradicts
-  -- archimedean
   have hBempty : ⋂ n, B n = ∅ := by
     ext ω
     simp only [Set.mem_iInter, Set.mem_empty_iff_false, iff_false, not_forall]
-    -- If ω is in all B n, then ⇑f ω - lam > 0 and ⇑f ω - lam < 1/(n+1) for all n
     by_cases h_bound : ⇑f ω - lam ≤ 0
     · exact ⟨0, fun ⟨h1, _⟩ => absurd (sub_pos.mpr h1) (not_lt.mpr h_bound)⟩
     push_neg at h_bound
-    -- Find n such that 1/(n+1) ≤ ⇑f ω - lam
     obtain ⟨n, hn⟩ := exists_nat_one_div_lt h_bound
     refine ⟨n, fun ⟨_, hlt⟩ => ?_⟩
     have : ((n + 1 : ℕ) : ℝ)⁻¹ < ⇑f ω - lam := by
       have : (1 : ℝ) / ((n : ℕ) + 1) < ⇑f ω - lam := hn
       simp only [one_div] at this
       convert this using 2
-      push_cast; ring
+      push_cast
+      ring
     linarith
-  -- μ B n is finite (at n=0, μ B 0 ≤ μ univ < ∞)
   have hμB_ne_top : ∀ n, μ (B n) ≠ ⊤ := fun n => measure_ne_top μ (B n)
-  -- μ (B n) → 0
   have hμB_tendsto : Filter.Tendsto (fun n => μ (B n)) Filter.atTop (𝓝 0) := by
     have h := tendsto_measure_iInter_atTop (μ := μ)
       (s := B) (fun n => (hBm n).nullMeasurableSet) hBmono ⟨0, hμB_ne_top 0⟩
     rw [hBempty, measure_empty] at h
     exact h
-  -- (μ B n)^(1/p.toReal) → 0
   have hμB_pow_tendsto :
       Filter.Tendsto (fun n => μ (B n) ^ (1 / p.toReal))
         Filter.atTop (𝓝 0) := by
@@ -357,7 +304,6 @@ private lemma indicatorConstLp_superlevel_mem_sublattice
     have := hcont.tendsto (0 : ENNReal)
     rw [hzero] at this
     exact this.comp hμB_tendsto
-  -- Bound on |⇑(F n) - ⇑Igw| (a.e.)
   have h_diff_bound : ∀ n, ∀ᵐ ω ∂μ,
       ‖(⇑(F n) - ⇑Igw) ω‖ ≤ (B n).indicator (fun _ => (1 : ℝ)) ω := by
     intro n
@@ -372,11 +318,9 @@ private lemma indicatorConstLp_superlevel_mem_sublattice
       indicatorConstLp_coeFn (hs := hA) (hμs := measure_ne_top μ A)
         (c := (1 : ℝ))]
       with ω h_inf h_smul h_sup h_zero h_sub h_smul' h_const h_ind
-    -- ⇑(g⁺) ω = max (⇑g ω) 0  (since g⁺ = g ⊔ 0 by `instPosPart`)
     have h_pos : ⇑(g⁺ : Lp ℝ p μ) ω = max (⇑g ω) 0 := by
       change ⇑(g ⊔ (0 : Lp ℝ p μ)) ω = _
       rw [h_sup, Pi.sup_apply, h_zero, Pi.zero_apply]
-    -- Compute ⇑(F n) ω
     have h_Fn : ⇑(F n) ω
         = min (((n + 1 : ℕ) : ℝ) * max (⇑f ω - lam) 0) 1 := by
       change ⇑((((n + 1 : ℕ) : ℝ) • (g⁺ : Lp ℝ p μ)) ⊓ Lp.const p μ (1 : ℝ))
@@ -385,10 +329,8 @@ private lemma indicatorConstLp_superlevel_mem_sublattice
         Pi.sub_apply, h_smul', Pi.smul_apply, h_const]
       simp only [smul_eq_mul, Function.const_apply, mul_one]
     have h_Igw : ⇑Igw ω = A.indicator (fun _ => (1 : ℝ)) ω := h_ind
-    -- Compute the difference
     rw [Pi.sub_apply, h_Fn, h_Igw]
     have hpos : (0 : ℝ) < ((n + 1 : ℕ) : ℝ) := by exact_mod_cast Nat.succ_pos n
-    -- Case split on ⇑f ω vs lam
     by_cases hf_le : ⇑f ω ≤ lam
     · have h_max : max (⇑f ω - lam) 0 = 0 := max_eq_right (by linarith)
       have hω_notin_A : ω ∉ A := by
@@ -422,7 +364,6 @@ private lemma indicatorConstLp_superlevel_mem_sublattice
     have h_pos_prod : 0 < ((n + 1 : ℕ) : ℝ) * (⇑f ω - lam) :=
       mul_pos hpos (by linarith)
     linarith
-  -- eLpNorm convergence
   have h_one : ‖(1 : ℝ)‖ₑ = 1 := by simp
   have h_eLpNorm_le : ∀ n,
       eLpNorm (⇑(F n) - ⇑Igw) p μ ≤ μ (B n) ^ (1 / p.toReal) := by
@@ -440,11 +381,9 @@ private lemma indicatorConstLp_superlevel_mem_sublattice
     refine tendsto_of_tendsto_of_tendsto_of_le_of_le
       tendsto_const_nhds hμB_pow_tendsto
       (fun _ => bot_le) h_eLpNorm_le
-  -- F n → Igw in Lp
   have h_tendsto : Filter.Tendsto F Filter.atTop (𝓝 Igw) := by
     rw [Lp.tendsto_Lp_iff_tendsto_eLpNorm']
     exact h_eLpNorm_tendsto
-  -- L is closed, hence Igw ∈ L
   exact hclosed.isSeqClosed (fun n => hFL n) h_tendsto
 
 /-- For `f ∈ L`, the function `f` is `m`-strongly measurable with respect to
@@ -455,13 +394,9 @@ private lemma aeStronglyMeasurable_of_mem_sublattice [IsFiniteMeasure μ]
     (hone : Lp.const p μ (1 : ℝ) ∈ L) {f : Lp ℝ p μ}
     (hf : f ∈ L.toSubmodule) :
     AEStronglyMeasurable[sigmaAlgebra hp_ne_top L hclosed hone] f μ := by
-  -- Show ⇑f is m-strongly-measurable; use ⇑f as the representative.
   refine ⟨⇑f, ?_, Filter.EventuallyEq.rfl⟩
-  -- m-strongly-measurable from m-measurable
   refine Measurable.stronglyMeasurable ?_
-  -- m-measurable from preimages of Ioi
   refine measurable_of_Ioi (fun lam => ?_)
-  -- {⇑f > lam} ∈ m via indicatorFamily
   exact ⟨(Lp.stronglyMeasurable f).measurable measurableSet_Ioi,
     indicatorConstLp_superlevel_mem_sublattice hp_ne_top L hclosed hone hf lam⟩
 
@@ -495,7 +430,8 @@ private instance [IsFiniteMeasure μ] {hp_ne_top : p ≠ ⊤}
     {hclosed : IsClosed (L : Set (Lp ℝ p μ))}
     {hone : Lp.const p μ (1 : ℝ) ∈ L} :
     IsFiniteMeasure (trimmedMeasure hp_ne_top L hclosed hone) := by
-  unfold trimmedMeasure; infer_instance
+  unfold trimmedMeasure
+  infer_instance
 
 /-- A linear isometric equivalence between two subtypes induced by submodule
 equality. -/
@@ -619,43 +555,3 @@ theorem exists_Lp_banachLatEquiv_of_closed_sublattice_containing_one
     ⟨exists_Lp_banachLatEquiv_aux.banachLatEquiv hp_ne_top L hclosed hone⟩⟩
 
 end ClosedSublattices
-
-/-! ### AL-space structure of L₁
-
-The `L₁` norm is additive on the positive cone:
-`‖f + g‖ = ‖f‖ + ‖g‖` for `f, g ≥ 0`. This makes `L₁(μ)` an AL-space.
--/
-
-/-- The `L₁` norm is additive on the positive cone: `‖f + g‖₁ = ‖f‖₁ + ‖g‖₁`
-whenever `0 ≤ f` and `0 ≤ g`. -/
-theorem Lp.norm_add_of_nonneg {f g : Lp ℝ 1 μ}
-    (hf : 0 ≤ f) (hg : 0 ≤ g) :
-    ‖f + g‖ = ‖f‖ + ‖g‖ := by
-  have hfae : 0 ≤ᵐ[μ] ⇑f := (Lp.coeFn_nonneg f).mpr hf
-  have hgae : 0 ≤ᵐ[μ] ⇑g := (Lp.coeFn_nonneg g).mpr hg
-  have hf_int : ∫⁻ x, ‖f x‖ₑ ∂μ = ENNReal.ofReal ‖f‖ := by
-    rw [Lp.norm_def, ← eLpNorm_one_eq_lintegral_enorm,
-      ENNReal.ofReal_toReal (Lp.eLpNorm_ne_top f)]
-  have hg_int : ∫⁻ x, ‖g x‖ₑ ∂μ = ENNReal.ofReal ‖g‖ := by
-    rw [Lp.norm_def, ← eLpNorm_one_eq_lintegral_enorm,
-      ENNReal.ofReal_toReal (Lp.eLpNorm_ne_top g)]
-  have hfg_int : ∫⁻ x, ‖(f + g) x‖ₑ ∂μ = ENNReal.ofReal ‖f + g‖ := by
-    rw [Lp.norm_def, ← eLpNorm_one_eq_lintegral_enorm,
-      ENNReal.ofReal_toReal (Lp.eLpNorm_ne_top (f + g))]
-  have hfm : AEMeasurable (fun x => ‖f x‖ₑ) μ := (Lp.aestronglyMeasurable f).enorm
-  have hsum : ∫⁻ x, ‖(f + g) x‖ₑ ∂μ
-      = (∫⁻ x, ‖f x‖ₑ ∂μ) + ∫⁻ x, ‖g x‖ₑ ∂μ := by
-    rw [← lintegral_add_left' hfm]
-    refine lintegral_congr_ae ?_
-    filter_upwards [Lp.coeFn_add f g, hfae, hgae] with x hx hxf hxg
-    rw [hx, Pi.add_apply, Real.enorm_of_nonneg hxf, Real.enorm_of_nonneg hxg,
-      Real.enorm_of_nonneg (add_nonneg hxf hxg), ENNReal.ofReal_add hxf hxg]
-  rw [hfg_int, hf_int, hg_int, ← ENNReal.ofReal_add (norm_nonneg _) (norm_nonneg _)] at hsum
-  exact (ENNReal.ofReal_eq_ofReal_iff (norm_nonneg _)
-    (add_nonneg (norm_nonneg _) (norm_nonneg _))).mp hsum
-
-/-- `L₁(μ)` is an AL-space: the norm satisfies `‖f + g‖ = ‖f‖ + ‖g‖`
-for all non-negative `f` and `g`. -/
-noncomputable instance instALSpaceLp1 : ALSpace (Lp ℝ 1 μ) where
-  norm_add_eq_of_nonneg hf hg := Lp.norm_add_of_nonneg hf hg
-

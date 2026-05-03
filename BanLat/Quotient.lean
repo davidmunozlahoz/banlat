@@ -1,4 +1,4 @@
-import BanLat.Ideal
+import BanLat.Substructures.Ideal
 import BanLat.Operators.Hom
 import Mathlib.LinearAlgebra.Quotient.Defs
 import Mathlib.LinearAlgebra.Quotient.Basic
@@ -24,23 +24,23 @@ namespace OrderIdeal
 /-- The kernel of a vector lattice homomorphism is an order ideal. -/
 noncomputable def ofKerVecLatHom {Y : Type*} [AddCommGroup Y]
     [Lattice Y] [IsOrderedAddMonoid Y] [VectorLattice Y]
-    (f : VecLatHom X Y) : OrderIdeal X :=
-  OrderIdeal.ofSolid (LinearMap.ker f.toLinearMap) fun x y hx hle => by
+    (T : VecLatHom X Y) : OrderIdeal X :=
+  OrderIdeal.ofSolid (LinearMap.ker T.toLinearMap) fun x y hx hle => by
     rw [LinearMap.mem_ker] at hx ⊢
-    have hfx : (f : X → Y) x = 0 := hx
-    have hab : |f y| ≤ |f x| := by
+    have hTx : (T : X → Y) x = 0 := hx
+    have hab : |T y| ≤ |T x| := by
       rw [← VecLatHom.map_abs, ← VecLatHom.map_abs]
-      exact f.monotone hle
-    rw [hfx, abs_zero] at hab
-    have := (abs_eq_zero_iff_zero (f y)).mp (le_antisymm hab (abs_nonneg _))
+      exact T.monotone hle
+    rw [hTx, abs_zero] at hab
+    have := (abs_eq_zero_iff_zero (T y)).mp (le_antisymm hab (abs_nonneg _))
     exact this
 
-/-- The underlying submodule of `ofKerVecLatHom f` is `ker f`. -/
+/-- The underlying submodule of `ofKerVecLatHom T` is `ker T`. -/
 theorem ofKerVecLatHom_toSubmodule {Y : Type*}
     [AddCommGroup Y] [Lattice Y] [IsOrderedAddMonoid Y]
-    [VectorLattice Y] (f : VecLatHom X Y) :
-    (ofKerVecLatHom f).toSubmodule =
-      LinearMap.ker f.toLinearMap := rfl
+    [VectorLattice Y] (T : VecLatHom X Y) :
+    (ofKerVecLatHom T).toSubmodule =
+      LinearMap.ker T.toLinearMap := rfl
 
 variable (J : OrderIdeal X)
 
@@ -310,13 +310,13 @@ theorem lift_increasing_seq
 
 /-- A positive operator whose kernel contains `J` factors through
 the quotient as a positive operator. -/
-theorem liftQ_nonneg {Y : Type*} [AddCommGroup Y]
+theorem liftQ_positive {Y : Type*} [AddCommGroup Y]
     [Lattice Y] [IsOrderedAddMonoid Y] [VectorLattice Y]
     (T : X →ₗ[ℝ] Y)
     (hker : J.toSubmodule ≤ LinearMap.ker T)
-    (hpos : ∀ x : X, 0 ≤ x → 0 ≤ T x)
-    {φ : X ⧸ J.toSubmodule} (hφ : 0 ≤ φ) :
-    0 ≤ Submodule.liftQ J.toSubmodule T hker φ := by
+    (hpos : Positive T) :
+    Positive (Submodule.liftQ J.toSubmodule T hker) := by
+  intro φ hφ
   obtain ⟨x, hx_nn, hx_eq⟩ := J.lift_pos hφ
   rw [← hx_eq]
   change 0 ≤ T x
@@ -326,34 +326,34 @@ theorem liftQ_nonneg {Y : Type*} [AddCommGroup Y]
 through the quotient as a vector lattice homomorphism. -/
 noncomputable def liftQVecLatHom {Y : Type*}
     [AddCommGroup Y] [Lattice Y] [IsOrderedAddMonoid Y]
-    [VectorLattice Y] (f : VecLatHom X Y)
-    (hker : J.toSubmodule ≤ LinearMap.ker f.toLinearMap) :
+    [VectorLattice Y] (T : VecLatHom X Y)
+    (hker : J.toSubmodule ≤ LinearMap.ker T.toLinearMap) :
     VecLatHom (X ⧸ J.toSubmodule) Y :=
-  { Submodule.liftQ J.toSubmodule f.toLinearMap hker with
+  { Submodule.liftQ J.toSubmodule T.toLinearMap hker with
     map_sup' := fun a b => by
       induction a, b using Quotient.inductionOn₂'
-      change Submodule.liftQ J.toSubmodule f.toLinearMap hker
+      change Submodule.liftQ J.toSubmodule T.toLinearMap hker
         (J.mkQ (_ ⊔ _)) = _
       rw [J.mkQ_sup]
-      change f (_ ⊔ _) = f _ ⊔ f _
-      exact f.map_sup' _ _
+      change T (_ ⊔ _) = T _ ⊔ T _
+      exact T.map_sup' _ _
     map_inf' := fun a b => by
       induction a, b using Quotient.inductionOn₂'
-      change Submodule.liftQ J.toSubmodule f.toLinearMap hker
+      change Submodule.liftQ J.toSubmodule T.toLinearMap hker
         (J.mkQ (_ ⊓ _)) = _
       rw [J.mkQ_inf]
-      change f (_ ⊓ _) = f _ ⊓ f _
-      exact f.map_inf' _ _ }
+      change T (_ ⊓ _) = T _ ⊓ T _
+      exact T.map_inf' _ _ }
 
 /-- The factored lattice hom agrees with the original on
 representatives. -/
 @[simp]
 theorem liftQVecLatHom_apply {Y : Type*}
     [AddCommGroup Y] [Lattice Y] [IsOrderedAddMonoid Y]
-    [VectorLattice Y] (f : VecLatHom X Y)
-    (hker : J.toSubmodule ≤ LinearMap.ker f.toLinearMap)
+    [VectorLattice Y] (T : VecLatHom X Y)
+    (hker : J.toSubmodule ≤ LinearMap.ker T.toLinearMap)
     (x : X) :
-    J.liftQVecLatHom f hker (J.mkQ x) = f x := rfl
+    J.liftQVecLatHom T hker (J.mkQ x) = T x := rfl
 
 /-! ### Uniformly closed ideals and the Archimedean property -/
 

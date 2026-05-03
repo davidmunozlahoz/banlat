@@ -1,4 +1,7 @@
-import BanLat.Band
+import BanLat.Substructures.Band.Projection
+import BanLat.OrderDense
+import BanLat.Pi
+import Mathlib.LinearAlgebra.FiniteDimensional.Defs
 
 /-!
 # Atoms and atomic vector lattices
@@ -302,12 +305,12 @@ private lemma exists_nonneg_smul_of_le_smul_atom {a : X} (ha : IsVLAtom a)
 /-- For an atom `a`, a non-negative element in the principal band is a
 non-negative multiple of `a`. -/
 private lemma exists_nonneg_smul_of_nonneg_in_principalBand [IsVLArchimedean X]
-    {a : X} (h : IsVLAtom a) {x : X} (hx0 : 0 ≤ x) (hxin : x ∈ Band.principalBand a) :
+    {a : X} (h : IsVLAtom a) {x : X} (hx0 : 0 ≤ x) (hxin : x ∈ Band.generated ({a} : Set X)) :
     ∃ c : ℝ, 0 ≤ c ∧ x = c • a := by
   have ha_pos := h.1
   have ha_nn : 0 ≤ a := ha_pos.le
   have ha_ne : a ≠ 0 := ha_pos.ne'
-  rw [Band.mem_principalBand_iff_isLUB ha_nn hx0] at hxin
+  rw [Band.mem_generated_singleton_iff_isLUB_inf_nsmul ha_nn hx0] at hxin
   -- Choose c_n ≥ 0 with x ⊓ n•a = c_n • a
   have hcn : ∀ n : ℕ, ∃ c : ℝ, 0 ≤ c ∧ x ⊓ (n • a) = c • a := fun n => by
     have hbound : x ⊓ (n • a) ≤ (n : ℝ) • a := by
@@ -390,17 +393,18 @@ private lemma exists_nonneg_smul_of_nonneg_in_principalBand [IsVLArchimedean X]
 
 theorem principalBand_eq_smul_of_isVLAtom [IsVLArchimedean X]
     {a : X} (h : IsVLAtom a) :
-    (Band.principalBand a : Set X) = {x | ∃ c : ℝ, x = c • a} := by
+    (Band.generated ({a} : Set X) : Set X) = {x | ∃ c : ℝ, x = c • a} := by
   apply Set.Subset.antisymm
   · -- principalBand a ⊆ ℝ • a
     intro x hx
-    have hxp_in : x⁺ ∈ Band.principalBand a := (Band.principalBand a).toOrderIdeal.sup_mem
-      hx (Band.principalBand a).toOrderIdeal.toSubmodule.zero_mem
-    have hxn_in : x⁻ ∈ Band.principalBand a := by
-      have hneg : -x ∈ Band.principalBand a :=
-        (Band.principalBand a).toOrderIdeal.toSubmodule.neg_mem hx
-      exact (Band.principalBand a).toOrderIdeal.sup_mem hneg
-        (Band.principalBand a).toOrderIdeal.toSubmodule.zero_mem
+    have hxp_in : x⁺ ∈ Band.generated ({a} : Set X) :=
+      (Band.generated ({a} : Set X)).toOrderIdeal.sup_mem
+        hx (Band.generated ({a} : Set X)).toOrderIdeal.toSubmodule.zero_mem
+    have hxn_in : x⁻ ∈ Band.generated ({a} : Set X) := by
+      have hneg : -x ∈ Band.generated ({a} : Set X) :=
+        (Band.generated ({a} : Set X)).toOrderIdeal.toSubmodule.neg_mem hx
+      exact (Band.generated ({a} : Set X)).toOrderIdeal.sup_mem hneg
+        (Band.generated ({a} : Set X)).toOrderIdeal.toSubmodule.zero_mem
     obtain ⟨α, _, hα⟩ := exists_nonneg_smul_of_nonneg_in_principalBand h
       (posPart_nonneg x) hxp_in
     obtain ⟨β, _, hβ⟩ := exists_nonneg_smul_of_nonneg_in_principalBand h
@@ -411,9 +415,9 @@ theorem principalBand_eq_smul_of_isVLAtom [IsVLArchimedean X]
       _ = (α - β) • a := (sub_smul α β a).symm
   · -- ℝ • a ⊆ principalBand a
     rintro x ⟨c, rfl⟩
-    have ha_in : a ∈ Band.principalBand a :=
-      Band.subset_bandGenerated {a} (Set.mem_singleton a)
-    exact (Band.principalBand a).toOrderIdeal.toSubmodule.smul_mem c ha_in
+    have ha_in : a ∈ Band.generated ({a} : Set X) :=
+      Band.subset_generated {a} (Set.mem_singleton a)
+    exact (Band.generated ({a} : Set X)).toOrderIdeal.toSubmodule.smul_mem c ha_in
 
 /-- For an atom `a`, scalar comparison is reflected by smul. -/
 private lemma smul_le_smul_iff_atom {a : X} (h : IsVLAtom a) {c d : ℝ} :
@@ -565,22 +569,22 @@ private lemma decomp_of_atom_nonneg [IsVLArchimedean X]
 
 theorem exists_projectionBand_principalBand_of_isVLAtom [IsVLArchimedean X]
     {a : X} (h : IsVLAtom a) :
-    ∃ P : ProjectionBand X, (P : Set X) = (Band.principalBand a : Set X) := by
+    ∃ P : ProjectionBand X, (P : Set X) = (Band.generated ({a} : Set X) : Set X) := by
   have ha_nn : 0 ≤ a := h.1.le
   have hpb_eq := principalBand_eq_smul_of_isVLAtom h
   -- Reformulate via projectionBand_iff_add_disjointComplement.
   have hdec : ∀ x : X, ∃ y z : X,
-      y ∈ ((Band.principalBand a).toOrderIdeal : Set X)
-      ∧ z ∈ disjointComplement ((Band.principalBand a).toOrderIdeal : Set X)
+      y ∈ ((Band.generated ({a} : Set X)).toOrderIdeal : Set X)
+      ∧ z ∈ disjointComplement ((Band.generated ({a} : Set X)).toOrderIdeal : Set X)
       ∧ x = y + z := by
     intro x
     obtain ⟨c₁, _, _, hc₁_disj⟩ := decomp_of_atom_nonneg h (posPart_nonneg x)
     obtain ⟨c₂, _, _, hc₂_disj⟩ := decomp_of_atom_nonneg h (negPart_nonneg x)
     refine ⟨(c₁ - c₂) • a, x - (c₁ - c₂) • a, ?_, ?_, by abel⟩
     · -- (c₁ - c₂) • a ∈ principalBand a
-      have ha_in : a ∈ Band.principalBand a :=
-        Band.subset_bandGenerated {a} (Set.mem_singleton a)
-      exact (Band.principalBand a).toOrderIdeal.toSubmodule.smul_mem (c₁ - c₂) ha_in
+      have ha_in : a ∈ Band.generated ({a} : Set X) :=
+        Band.subset_generated {a} (Set.mem_singleton a)
+      exact (Band.generated ({a} : Set X)).toOrderIdeal.toSubmodule.smul_mem (c₁ - c₂) ha_in
     · -- x - (c₁ - c₂) • a is disjoint from every k • a, hence from principalBand a.
       have hdisj_a : IsVLDisjoint (x - (c₁ - c₂) • a) a := by
         have hsplit : x - (c₁ - c₂) • a = (x⁺ - c₁ • a) - (x⁻ - c₂ • a) := by
@@ -592,16 +596,16 @@ theorem exists_projectionBand_principalBand_of_isVLAtom [IsVLArchimedean X]
         have hd2 : (x⁻ - c₂ • a) ∈ (({a} : Set X))ᵈ := fun a' ha' => by
           rw [Set.mem_singleton_iff.mp ha']; exact hc₂_disj
         have hsubmem : (x⁺ - c₁ • a) - (x⁻ - c₂ • a) ∈ (({a} : Set X))ᵈ :=
-          (Band.disjointComplementOrderIdeal {a}).toSubmodule.sub_mem hd1 hd2
+          (Band.disjointComplement ({a} : Set X)).toOrderIdeal.toSubmodule.sub_mem hd1 hd2
         rw [hsplit]
         exact hsubmem a (Set.mem_singleton a)
       intro y hy
-      have hy_set : y ∈ (Band.principalBand a : Set X) := hy
+      have hy_set : y ∈ (Band.generated ({a} : Set X) : Set X) := hy
       rw [hpb_eq] at hy_set
       obtain ⟨k, rfl⟩ := hy_set
       exact hdisj_a.smul_right k
   obtain ⟨P, hP⟩ := (ProjectionBand.projectionBand_iff_add_disjointComplement
-    (Band.principalBand a).toOrderIdeal).mpr hdec
+    (Band.generated ({a} : Set X)).toOrderIdeal).mpr hdec
   exact ⟨P, hP⟩
 
 /-! ### Atomic and continuous parts -/
@@ -615,12 +619,12 @@ theorem mem_vlAtoms {a : X} : a ∈ vlAtoms X ↔ IsVLAtom a := Iff.rfl
 
 variable (X) in
 /-- The **atomic part** of `X` is the band generated by the set of all atoms. -/
-def atomicPart : Band X := Band.bandGenerated (vlAtoms X)
+def atomicPart : Band X := Band.generated (vlAtoms X)
 
 variable (X) in
 /-- The **continuous part** of `X` is the disjoint complement of the set of
 atoms — the band of vectors disjoint from every atom. -/
-def continuousPart : Band X := Band.disjointComplementBand (vlAtoms X)
+def continuousPart : Band X := Band.disjointComplement (vlAtoms X)
 
 /-- An element belongs to the continuous part iff it is disjoint from every
 atom. -/
@@ -631,14 +635,14 @@ theorem mem_continuousPart_iff {x : X} :
 /-- Every atom belongs to the atomic part. -/
 theorem isVLAtom.mem_atomicPart {a : X} (h : IsVLAtom a) :
     a ∈ atomicPart X :=
-  Band.subset_bandGenerated (vlAtoms X) h
+  Band.subset_generated (vlAtoms X) h
 
 /-- In an Archimedean vector lattice, the continuous part is the disjoint
 complement of the atomic part. -/
 theorem continuousPart_eq_disjointComplement_atomicPart [IsVLArchimedean X] :
     (continuousPart X : Set X) = (atomicPart X : Set X)ᵈ := by
-  change ((vlAtoms X)ᵈ : Set X) = ((Band.bandGenerated (vlAtoms X) : Set X))ᵈ
-  rw [← Band.disjointComplement_disjointComplement_eq_bandGenerated,
+  change ((vlAtoms X)ᵈ : Set X) = ((Band.generated (vlAtoms X) : Set X))ᵈ
+  rw [← Band.disjointComplement_disjointComplement_eq_generated,
     disjointComplement_disjointComplement_disjointComplement]
 
 /-- The atomic and continuous parts intersect only at zero. -/
@@ -735,3 +739,520 @@ theorem isAtomicVectorLattice_iff_continuousPart_trivial
     exact (continuousPart X).toOrderIdeal.toSubmodule.zero_mem
   · have : x ∈ ({0} : Set X) := h ▸ hx
     simpa using this
+
+/-! ### Yudin's theorem: finite-dimensional vector lattices -/
+
+/-- If a positive element `u` is not above any atom, then `[0, u]` admits a
+disjoint pair of non-zero elements. -/
+private lemma exists_disjoint_pair_of_no_atom_below [IsVLArchimedean X]
+    {y : X} (hy_pos : 0 < y)
+    (hy_no_atom : ∀ a : X, IsVLAtom a → ¬ a ≤ y) :
+    ∃ a b : X, 0 < a ∧ a ≤ y ∧ 0 < b ∧ b ≤ y ∧ IsVLDisjoint a b := by
+  have hy_not_atom : ¬ IsVLAtom y := fun h_atom => hy_no_atom y h_atom le_rfl
+  rw [isVLAtom_iff_no_disjoint_in_interval hy_pos] at hy_not_atom
+  push_neg at hy_not_atom
+  obtain ⟨a, b, ha_nn, ha_le, hb_nn, hb_le, hdisj, ha_ne, hb_ne⟩ := hy_not_atom
+  exact ⟨a, b, lt_of_le_of_ne ha_nn (Ne.symm ha_ne), ha_le,
+    lt_of_le_of_ne hb_nn (Ne.symm hb_ne), hb_le, hdisj⟩
+
+/-- In a vector lattice with a positive element `u` not above any atom, there
+exists an infinite sequence of pairwise disjoint, positive elements all
+bounded by `u`. -/
+private lemma exists_disjoint_seq_of_no_atom_below [IsVLArchimedean X]
+    {u : X} (hu_pos : 0 < u)
+    (hu_no_atom : ∀ a : X, IsVLAtom a → ¬ a ≤ u) :
+    ∃ x : ℕ → X, (∀ n, 0 < x n) ∧
+      Pairwise (fun i j => IsVLDisjoint (x i) (x j)) := by
+  -- Existence of a disjoint split for any positive element ≤ u.
+  have split_ex : ∀ s : {y : X // 0 < y ∧ y ≤ u},
+      ∃ p : X × {y : X // 0 < y ∧ y ≤ u},
+      0 < p.1 ∧ p.1 ≤ s.1 ∧ p.2.1 ≤ s.1 ∧ IsVLDisjoint p.1 p.2.1 := by
+    intro s
+    obtain ⟨y, hy_pos, hy_le⟩ := s
+    have hy_no_atom' : ∀ a : X, IsVLAtom a → ¬ a ≤ y :=
+      fun a ha hay => hu_no_atom a ha (hay.trans hy_le)
+    obtain ⟨a, b, ha_pos, ha_le, hb_pos, hb_le, hdisj⟩ :=
+      exists_disjoint_pair_of_no_atom_below hy_pos hy_no_atom'
+    refine ⟨(a, ⟨b, hb_pos, hb_le.trans hy_le⟩), ha_pos, ha_le, hb_le, hdisj⟩
+  choose pair pair_pos pair_le1 pair_le2 pair_disj using split_ex
+  let s_init : {y : X // 0 < y ∧ y ≤ u} := ⟨u, hu_pos, le_refl u⟩
+  let step : {y : X // 0 < y ∧ y ≤ u} → {y : X // 0 < y ∧ y ≤ u} :=
+    fun s => (pair s).2
+  let states : ℕ → {y : X // 0 < y ∧ y ≤ u} := fun n => step^[n] s_init
+  let xs : ℕ → X := fun n => (pair (states n)).1
+  -- Properties of states/xs
+  have states_succ : ∀ n, states (n + 1) = step (states n) := fun n =>
+    Function.iterate_succ_apply' step n s_init
+  have h_states_anti : ∀ k l, k ≤ l → (states l).1 ≤ (states k).1 := by
+    intro k l hkl
+    induction l, hkl using Nat.le_induction with
+    | base => exact le_refl _
+    | succ m hkm IH =>
+      have hstep : (states (m + 1)).1 ≤ (states m).1 := by
+        rw [states_succ]; exact pair_le2 (states m)
+      exact hstep.trans IH
+  have hxs_le : ∀ n, xs n ≤ (states n).1 := fun n => pair_le1 (states n)
+  have hxs_pos : ∀ n, 0 < xs n := fun n => pair_pos (states n)
+  have h_disj_succ : ∀ n, IsVLDisjoint (xs n) (states (n + 1)).1 := fun n => by
+    rw [states_succ]
+    exact pair_disj (states n)
+  have h_states_nn : ∀ n, 0 ≤ (states n).1 := fun n => (states n).2.1.le
+  -- Key: xs i ⊥ xs j for i < j
+  have h_lt_disj : ∀ i j, i < j → IsVLDisjoint (xs i) (xs j) := by
+    intro i j hij
+    have hxs_j_nn : 0 ≤ xs j := (hxs_pos j).le
+    have h_le : xs j ≤ (states (i + 1)).1 :=
+      (hxs_le j).trans (h_states_anti (i + 1) j hij)
+    refine (h_disj_succ i).mono_right ?_
+    rw [abs_of_nonneg hxs_j_nn, abs_of_nonneg (h_states_nn (i + 1))]
+    exact h_le
+  refine ⟨xs, hxs_pos, fun i j hij => ?_⟩
+  rcases Nat.lt_or_gt_of_ne hij with hlt | hgt
+  · exact h_lt_disj i j hlt
+  · exact isVLDisjoint_comm.mp (h_lt_disj j i hgt)
+
+/-- The band projection of an element in the disjoint complement is zero. -/
+private lemma bandProjection_eq_zero_of_mem_disjointComplement
+    (B : ProjectionBand X) {z : X} (hz : z ∈ (Band.disjointComplement (B : Set X))) :
+    B.bandProjection z = 0 := by
+  have h0_mem : (0 : X) ∈ B := B.toBand.toOrderIdeal.toSubmodule.zero_mem
+  have hdec1 : z = 0 + z := (zero_add z).symm
+  have hdec2 : z = B.bandProjection z + (z - B.bandProjection z) := by abel
+  exact (B.decomposition_unique (B.bandProjection_mem z)
+    (B.id_sub_bandProjection_mem z) h0_mem hz hdec2 hdec1).1
+
+/-- In an atomic Archimedean vector lattice, if no atom can be added disjointly
+to a finite disjoint family of atoms, then the whole space coincides with the
+linear span of that family. -/
+private lemma top_eq_span_of_max_disjoint_atom_family [IsVLArchimedean X]
+    [hAtomic : IsAtomicVectorLattice X] {n : ℕ} (a : Fin n → X)
+    (ha_atom : ∀ i, IsVLAtom (a i))
+    (ha_disj : Pairwise (fun i j : Fin n => IsVLDisjoint (a i) (a j)))
+    (ha_max : ∀ b : X, IsVLAtom b → ∃ i, ¬ IsVLDisjoint (a i) b) :
+    (⊤ : Submodule ℝ X) = Submodule.span ℝ (Set.range a) := by
+  -- Pick a projection band realizing each principal band of `a i`.
+  choose P hP using fun i => exists_projectionBand_principalBand_of_isVLAtom (ha_atom i)
+  -- The underlying set of `P i` is `ℝ • a i`.
+  have hP_smul : ∀ i, ((P i : Set X)) = {x | ∃ c : ℝ, x = c • a i} := fun i => by
+    rw [hP i]; exact principalBand_eq_smul_of_isVLAtom (ha_atom i)
+  -- For `i ≠ j`, the band `P i` is contained in the disjoint complement of `P j`.
+  have hP_sub_disj : ∀ i j : Fin n, i ≠ j → (P i : Set X) ⊆ ((P j : Set X))ᵈ := by
+    intro i j hij z hz
+    rw [hP_smul i] at hz
+    obtain ⟨c, rfl⟩ := hz
+    intro y hy
+    rw [hP_smul j] at hy
+    obtain ⟨d, rfl⟩ := hy
+    exact ((ha_disj hij).smul_left c).smul_right d
+  -- The band projection onto `P j` of any element of `P i` (with `i ≠ j`) is zero.
+  have hπ_cross_zero : ∀ i j : Fin n, i ≠ j → ∀ z, z ∈ (P i : Set X) →
+      (P j).bandProjection z = 0 := fun i j hij z hz =>
+    bandProjection_eq_zero_of_mem_disjointComplement (P j) (hP_sub_disj i j hij hz)
+  -- The band projection onto `P i` of any `y` is a scalar multiple of `a i`.
+  have hπ_smul : ∀ i (y : X), ∃ c : ℝ, (P i).bandProjection y = c • a i := fun i y => by
+    have h : (P i).bandProjection y ∈ {x | ∃ c : ℝ, x = c • a i} := by
+      rw [← hP_smul i]; exact (P i).bandProjection_mem y
+    exact h
+  -- For each `j`, `(P j).bandProjection (y - ∑ i, (P i).bandProjection y) = 0`.
+  have hπ_f_zero : ∀ (y : X) (j : Fin n),
+      (P j).bandProjection (y - ∑ i, (P i).bandProjection y) = 0 := by
+    intro y j
+    rw [map_sub, map_sum]
+    have h_sum_eq : ∑ i : Fin n, (P j).bandProjection ((P i).bandProjection y)
+        = (P j).bandProjection y := by
+      rw [Finset.sum_eq_single j]
+      · exact LinearMap.congr_fun (P j).bandProjection_sq y
+      · intro i _ hij
+        exact hπ_cross_zero i j hij _ ((P i).bandProjection_mem y)
+      · intro h; exact absurd (Finset.mem_univ j) h
+    rw [h_sum_eq, sub_self]
+  -- Hence `y - ∑ i, (P i).bandProjection y ∈ (P j : Set X)ᵈ`.
+  have hf_compl : ∀ (y : X) (j : Fin n),
+      y - ∑ i, (P i).bandProjection y ∈ ((P j : Set X))ᵈ := by
+    intro y j
+    have h := (P j).id_sub_bandProjection_mem (y - ∑ i, (P i).bandProjection y)
+    rw [hπ_f_zero y j, sub_zero] at h
+    exact h
+  -- `f y` is disjoint from each `a j`.
+  have hf_disj_aj : ∀ (y : X) (j : Fin n),
+      IsVLDisjoint (y - ∑ i, (P i).bandProjection y) (a j) := by
+    intro y j
+    have ha_in_Pj : a j ∈ (P j : Set X) := by
+      rw [hP_smul j]; exact ⟨1, (one_smul ℝ _).symm⟩
+    exact hf_compl y j _ ha_in_Pj
+  -- For each y, `y - ∑ i, (P i).bandProjection y = 0`.
+  have hf_zero_all : ∀ (y : X), y - ∑ i, (P i).bandProjection y = 0 := by
+    intro y
+    by_contra hne
+    have habs_pos : 0 < |y - ∑ i, (P i).bandProjection y| :=
+      lt_of_le_of_ne (abs_nonneg _)
+        (fun h => hne ((abs_eq_zero_iff_zero _).mp h.symm))
+    obtain ⟨b, hb_atom, hb_le⟩ :=
+      (isAtomicVectorLattice_iff_forall_pos_dominates_atom.mp hAtomic)
+        (|y - ∑ i, (P i).bandProjection y|) habs_pos
+    obtain ⟨i, hi⟩ := ha_max b hb_atom
+    apply hi
+    have h_disj_y : IsVLDisjoint (a i) (y - ∑ i, (P i).bandProjection y) :=
+      isVLDisjoint_comm.mp (hf_disj_aj y i)
+    refine h_disj_y.mono_right ?_
+    rw [abs_of_nonneg hb_atom.1.le]
+    exact hb_le
+  -- Hence every y is in the span of `Set.range a`.
+  have hX_in_span : ∀ y : X, y ∈ Submodule.span ℝ (Set.range a) := by
+    intro y
+    have heq : y = ∑ i, (P i).bandProjection y := sub_eq_zero.mp (hf_zero_all y)
+    rw [heq]
+    refine Submodule.sum_mem _ fun i _ => ?_
+    obtain ⟨c, hc⟩ := hπ_smul i y
+    rw [hc]
+    exact Submodule.smul_mem _ _ (Submodule.subset_span ⟨i, rfl⟩)
+  exact le_antisymm (fun y _ => hX_in_span y) le_top
+
+/-- For an atomic Archimedean vector lattice that is not finite-dimensional,
+any pairwise disjoint family of atoms admits an extension by an atom disjoint
+from all of them. -/
+private lemma exists_atom_disjoint_of_disjoint_atom_family [IsVLArchimedean X]
+    [IsAtomicVectorLattice X] (h_not_fd : ¬ FiniteDimensional ℝ X)
+    {n : ℕ} (a : Fin n → X)
+    (ha_atom : ∀ i, IsVLAtom (a i))
+    (ha_disj : Pairwise (fun i j : Fin n => IsVLDisjoint (a i) (a j))) :
+    ∃ b : X, IsVLAtom b ∧ ∀ i, IsVLDisjoint (a i) b := by
+  by_contra hno
+  push_neg at hno
+  have h_top_eq := top_eq_span_of_max_disjoint_atom_family a ha_atom ha_disj hno
+  apply h_not_fd
+  have hFG : (⊤ : Submodule ℝ X).FG := h_top_eq ▸
+    ⟨(Set.finite_range a).toFinset, by rw [Set.Finite.coe_toFinset]⟩
+  exact ⟨hFG⟩
+
+/-- If a disjoint family of atoms can always be extended by another atom
+disjoint from each of its members, then there is an infinite pairwise disjoint
+sequence of atoms. -/
+private lemma exists_disjoint_atom_seq_of_extendable
+    (step : ∀ n (a : Fin n → X), (∀ i, IsVLAtom (a i)) →
+        Pairwise (fun i j : Fin n => IsVLDisjoint (a i) (a j)) →
+        ∃ b : X, IsVLAtom b ∧ ∀ i, IsVLDisjoint (a i) b) :
+    ∃ a : ℕ → X, (∀ n, IsVLAtom (a n)) ∧
+      Pairwise (fun i j => IsVLDisjoint (a i) (a j)) := by
+  let State : ℕ → Type _ := fun n =>
+    { a : Fin n → X // (∀ i, IsVLAtom (a i)) ∧
+      Pairwise (fun i j : Fin n => IsVLDisjoint (a i) (a j)) }
+  have init : State 0 :=
+    ⟨Fin.elim0, fun i => i.elim0, fun i _ _ => i.elim0⟩
+  let stepFn : ∀ n, State n → State (n + 1) := fun n s =>
+    ⟨Fin.snoc s.1 (step n s.1 s.2.1 s.2.2).choose,
+      by
+        intro i
+        induction i using Fin.lastCases with
+        | last => rw [Fin.snoc_last]
+                  exact (step n s.1 s.2.1 s.2.2).choose_spec.1
+        | cast i => rw [Fin.snoc_castSucc]; exact s.2.1 i,
+      by
+        intro i j hij
+        induction i using Fin.lastCases with
+        | last =>
+          induction j using Fin.lastCases with
+          | last => exact absurd rfl hij
+          | cast j =>
+            rw [Fin.snoc_last, Fin.snoc_castSucc]
+            exact isVLDisjoint_comm.mp ((step n s.1 s.2.1 s.2.2).choose_spec.2 j)
+        | cast i =>
+          induction j using Fin.lastCases with
+          | last =>
+            rw [Fin.snoc_castSucc, Fin.snoc_last]
+            exact (step n s.1 s.2.1 s.2.2).choose_spec.2 i
+          | cast j =>
+            rw [Fin.snoc_castSucc, Fin.snoc_castSucc]
+            exact s.2.2 (fun heq => hij (by rw [heq]))⟩
+  let states : (n : ℕ) → State n := fun n =>
+    Nat.rec (motive := State) init stepFn n
+  let xs : ℕ → X := fun n => (states (n + 1)).1 (Fin.last n)
+  have hxs_atom : ∀ n, IsVLAtom (xs n) := fun n =>
+    (states (n + 1)).2.1 (Fin.last n)
+  have h_states_succ_val : ∀ k, (states (k + 1)).1 =
+      Fin.snoc (states k).1
+        (step k (states k).1 (states k).2.1 (states k).2.2).choose :=
+    fun _ => rfl
+  have h_xs_eq : ∀ k m (h : m < k), (states k).1 ⟨m, h⟩ = xs m := by
+    intro k
+    induction k with
+    | zero => intro m h; exact absurd h (Nat.not_lt_zero m)
+    | succ k IH =>
+      intro m h
+      rcases lt_or_eq_of_le (Nat.lt_succ_iff.mp h) with h' | h'
+      · rw [h_states_succ_val k,
+            show (⟨m, h⟩ : Fin (k + 1)) = (⟨m, h'⟩ : Fin k).castSucc from rfl,
+            Fin.snoc_castSucc]
+        exact IH m h'
+      · subst h'; rfl
+  have hxs_disj : Pairwise (fun i j => IsVLDisjoint (xs i) (xs j)) := by
+    have h_lt_disj : ∀ p q : ℕ, p < q → IsVLDisjoint (xs p) (xs q) := by
+      intro p q hpq
+      have h_xs_q_eq : xs q =
+          (step q (states q).1 (states q).2.1 (states q).2.2).choose := by
+        change (states (q + 1)).1 (Fin.last q) = _
+        rw [h_states_succ_val q, Fin.snoc_last]
+      rw [h_xs_q_eq]
+      have h_disj :=
+        (step q (states q).1 (states q).2.1 (states q).2.2).choose_spec.2
+        ⟨p, hpq⟩
+      rw [h_xs_eq q p hpq] at h_disj
+      exact h_disj
+    intro i j hij
+    rcases Nat.lt_or_gt_of_ne hij with hlt | hgt
+    · exact h_lt_disj i j hlt
+    · exact isVLDisjoint_comm.mp (h_lt_disj j i hgt)
+  exact ⟨xs, hxs_atom, hxs_disj⟩
+
+/-- Every infinite-dimensional Archimedean vector lattice contains a sequence of
+pairwise disjoint non-zero vectors. -/
+theorem exists_disjoint_seq_of_not_finiteDimensional [IsVLArchimedean X]
+    (h : ¬ FiniteDimensional ℝ X) :
+    ∃ x : ℕ → X, (∀ n, x n ≠ 0) ∧
+      Pairwise (fun i j => IsVLDisjoint (x i) (x j)) := by
+  by_cases hat : IsAtomicVectorLattice X
+  · obtain ⟨xs, hxs_atom, hxs_disj⟩ := exists_disjoint_atom_seq_of_extendable
+      (fun n a ha hd => exists_atom_disjoint_of_disjoint_atom_family h a ha hd)
+    exact ⟨xs, fun n => (hxs_atom n).ne_zero, hxs_disj⟩
+  · -- Non-atomic case: there exists `u > 0` with no atom ≤ u; iterate splits.
+    rw [isAtomicVectorLattice_iff_forall_pos_dominates_atom] at hat
+    push_neg at hat
+    obtain ⟨u, hu_pos, hu_no_atom⟩ := hat
+    obtain ⟨xs, hxs_pos, hxs_disj⟩ :=
+      exists_disjoint_seq_of_no_atom_below hu_pos hu_no_atom
+    exact ⟨xs, fun n => (hxs_pos n).ne', hxs_disj⟩
+
+/-- A finite-dimensional Archimedean vector lattice is atomic. -/
+private lemma isAtomicVectorLattice_of_finiteDimensional [IsVLArchimedean X]
+    [FiniteDimensional ℝ X] : IsAtomicVectorLattice X := by
+  by_contra hat
+  rw [isAtomicVectorLattice_iff_forall_pos_dominates_atom] at hat
+  push_neg at hat
+  obtain ⟨u, hu_pos, hu_no_atom⟩ := hat
+  obtain ⟨xs, hxs_pos, hxs_disj⟩ :=
+    exists_disjoint_seq_of_no_atom_below hu_pos hu_no_atom
+  let N := Module.finrank ℝ X
+  let f : Fin (N + 1) → X := fun i => xs i.val
+  have hf_ne : ∀ i, f i ≠ 0 := fun i => (hxs_pos i.val).ne'
+  have hf_disj : Pairwise (fun i j : Fin (N + 1) => IsVLDisjoint (f i) (f j)) :=
+    fun i j hij => hxs_disj (fun hval => hij (Fin.ext hval))
+  have hf_lin : LinearIndependent ℝ f :=
+    linearIndependent_of_pairwise_isVLDisjoint hf_ne hf_disj
+  have h_le := hf_lin.fintype_card_le_finrank
+  simp only [Fintype.card_fin] at h_le
+  exact absurd h_le (Nat.not_succ_le_self N)
+
+/-- A finite-dimensional atomic Archimedean vector lattice admits a finite
+maximal pairwise disjoint family of atoms. -/
+private lemma exists_max_disjoint_atom_family_of_finiteDimensional
+    [IsVLArchimedean X] [IsAtomicVectorLattice X] [FiniteDimensional ℝ X] :
+    ∃ n : ℕ, ∃ a : Fin n → X, (∀ i, IsVLAtom (a i)) ∧
+      Pairwise (fun i j : Fin n => IsVLDisjoint (a i) (a j)) ∧
+      ∀ b : X, IsVLAtom b → ∃ i, ¬ IsVLDisjoint (a i) b := by
+  by_contra h_no_max
+  push_neg at h_no_max
+  obtain ⟨xs, hxs_atom, hxs_disj⟩ :=
+    exists_disjoint_atom_seq_of_extendable h_no_max
+  let N := Module.finrank ℝ X
+  let f : Fin (N + 1) → X := fun i => xs i.val
+  have hf_ne : ∀ i, f i ≠ 0 := fun i => (hxs_atom i.val).ne_zero
+  have hf_disj : Pairwise (fun i j : Fin (N + 1) => IsVLDisjoint (f i) (f j)) :=
+    fun i j hij => hxs_disj (fun hval => hij (Fin.ext hval))
+  have hf_lin : LinearIndependent ℝ f :=
+    linearIndependent_of_pairwise_isVLDisjoint hf_ne hf_disj
+  have h_le := hf_lin.fintype_card_le_finrank
+  simp only [Fintype.card_fin] at h_le
+  exact absurd h_le (Nat.not_succ_le_self N)
+
+/-- **Yudin's theorem.** An Archimedean vector lattice is finite-dimensional iff
+it is lattice isomorphic to `Fin n → ℝ` for some `n`. Equivalently, the absence
+of an infinite disjoint sequence of non-zero vectors characterises
+finite-dimensionality. -/
+theorem finiteDimensional_iff_latticeIso_pi [IsVLArchimedean X] :
+    FiniteDimensional ℝ X ↔
+      ∃ n : ℕ, Nonempty (VecLatEquiv X (Fin n → ℝ)) := by
+  refine ⟨fun hFD => ?_, ?_⟩
+  · -- (⇒): X FD ⟹ exists iso to Fin n → ℝ.
+    haveI : IsAtomicVectorLattice X := isAtomicVectorLattice_of_finiteDimensional
+    -- Get a finite max disjoint atom family.
+    obtain ⟨n, a, ha_atom, ha_disj, ha_max⟩ :=
+      exists_max_disjoint_atom_family_of_finiteDimensional (X := X)
+    -- top = span(a)
+    have h_top_eq := top_eq_span_of_max_disjoint_atom_family a ha_atom ha_disj ha_max
+    -- Linear independence of `a`
+    have ha_lin : LinearIndependent ℝ a :=
+      linearIndependent_of_pairwise_isVLDisjoint
+        (fun i => (ha_atom i).ne_zero) ha_disj
+    -- Define τ : (Fin n → ℝ) → X by τ c = ∑ cᵢ aᵢ.
+    let τ : (Fin n → ℝ) → X := fun c => ∑ i, c i • a i
+    -- τ preserves nonneg.
+    have hτ_nn : ∀ c, 0 ≤ c → 0 ≤ τ c := fun c hc =>
+      Finset.sum_nonneg fun i _ => smul_nonneg (hc i) (ha_atom i).1.le
+    -- τ is additive.
+    have hτ_add : ∀ c c' : Fin n → ℝ, 0 ≤ c → 0 ≤ c' →
+        τ (c + c') = τ c + τ c' := fun c c' _ _ => by
+      change ∑ i, (c + c') i • a i = ∑ i, c i • a i + ∑ i, c' i • a i
+      simp_rw [Pi.add_apply, add_smul]
+      exact Finset.sum_add_distrib
+    -- τ is injective on the positive cone.
+    have hτ_inj : ∀ c c' : Fin n → ℝ, 0 ≤ c → 0 ≤ c' →
+        τ c = τ c' → c = c' := fun c c' _ _ heq => by
+      have h_diff : ∑ i, (c i - c' i) • a i = 0 := by
+        simp_rw [sub_smul]
+        rw [Finset.sum_sub_distrib (f := fun i => c i • a i)
+              (g := fun i => c' i • a i)]
+        change τ c - τ c' = 0
+        rw [heq, sub_self]
+      have h_zero : ∀ i, c i - c' i = 0 :=
+        Fintype.linearIndependent_iff.mp ha_lin _ h_diff
+      funext i
+      linarith [h_zero i]
+    -- τ is surjective onto the positive cone of X.
+    have hτ_surj : ∀ y : X, 0 ≤ y → ∃ c : Fin n → ℝ, 0 ≤ c ∧ τ c = y := fun y hy => by
+      have hy_in_span : y ∈ Submodule.span ℝ (Set.range a) := by
+        rw [← h_top_eq]; trivial
+      rw [Submodule.mem_span_range_iff_exists_fun] at hy_in_span
+      obtain ⟨c, hc⟩ := hy_in_span
+      -- |y| = ∑ |cᵢ| aᵢ.
+      have hy_abs_eq : |y| = ∑ i, |c i| • a i := by
+        conv_lhs => rw [← hc]
+        rw [abs_sum_of_pairwise_isVLDisjoint ha_disj]
+        refine Finset.sum_congr rfl fun i _ => ?_
+        rw [abs_of_nonneg (ha_atom i).1.le]
+      have habs_y : |y| = y := abs_of_nonneg hy
+      have hsum_eq : ∑ i, c i • a i = ∑ i, |c i| • a i := by
+        rw [hc, ← habs_y, hy_abs_eq]
+      have h_zero_diff : ∀ i, c i - |c i| = 0 := by
+        have h_combined : ∑ i, (c i - |c i|) • a i = 0 := by
+          rw [show (fun i => (c i - |c i|) • a i) =
+                fun i => c i • a i - |c i| • a i from
+              funext fun i => sub_smul _ _ _,
+              Finset.sum_sub_distrib, hsum_eq, sub_self]
+        exact Fintype.linearIndependent_iff.mp ha_lin _ h_combined
+      have hc_nn : 0 ≤ c := fun i => by
+        have h_eq : c i = |c i| := by linarith [h_zero_diff i]
+        rw [h_eq]; exact abs_nonneg _
+      exact ⟨c, hc_nn, hc⟩
+    -- Apply Positive.extensionEquiv.
+    let e : VecLatEquiv (Fin n → ℝ) X :=
+      Positive.extensionEquiv hτ_nn hτ_add hτ_inj hτ_surj
+    exact ⟨n, ⟨e.symm⟩⟩
+  · -- (⇐): iso to Fin n → ℝ ⟹ FD.
+    rintro ⟨n, ⟨e⟩⟩
+    haveI : FiniteDimensional ℝ (Fin n → ℝ) := inferInstance
+    exact e.toLinearEquiv.symm.finiteDimensional
+
+/-! ### Coordinate expansion in discrete vector lattices -/
+
+/-- In a discrete (atomic) Archimedean vector lattice, every positive element is
+the supremum of its scalar multiples along a maximal disjoint collection of
+atoms: there exist scalars `c a` such that `c a • a ≤ x` for each `a ∈ A` and
+`x` is the least upper bound of these multiples. -/
+theorem exists_isLUB_smul_of_isAtomic_maximal_disjoint
+    [IsAtomicVectorLattice X] [IsVLArchimedean X]
+    {A : Set X} (hA : A ⊆ vlAtoms X)
+    (hdis : IsDisjointSet A) (hmax : IsMaximalDisjoint A)
+    {x : X} (hx : 0 ≤ x) :
+    ∃ c : A → ℝ, IsLUB (Set.range fun a : A => c a • (a : X)) x := by
+  -- For each atom `a ∈ A`, get a projection band realizing the principal band.
+  choose P hP using fun a : A =>
+    exists_projectionBand_principalBand_of_isVLAtom (hA a.2)
+  have hP_smul : ∀ a : A, ((P a : Set X)) = {y | ∃ c : ℝ, y = c • (a : X)} :=
+    fun a => by rw [hP a]; exact principalBand_eq_smul_of_isVLAtom (hA a.2)
+  -- For each `a`, `P_a.bandProjection x = c a • a` for some scalar `c a`.
+  have h_proj_form : ∀ a : A, ∃ c : ℝ, (P a).bandProjection x = c • (a : X) :=
+    fun a => by
+      have h : (P a).bandProjection x ∈ {y | ∃ c : ℝ, y = c • (a : X)} := by
+        rw [← hP_smul a]; exact (P a).bandProjection_mem x
+      exact h
+  choose c hc using h_proj_form
+  -- For each `a`, `P_a.bandProjection a = a`.
+  have h_proj_a : ∀ a : A, (P a).bandProjection (a : X) = (a : X) := fun a => by
+    have ha_in : (a : X) ∈ Set.range (P a).bandProjection := by
+      rw [(P a).range_bandProjection, hP_smul a]
+      exact ⟨1, (one_smul ℝ _).symm⟩
+    obtain ⟨y, hy⟩ := ha_in
+    rw [← hy]
+    exact LinearMap.congr_fun (P a).bandProjection_sq y
+  refine ⟨c, ?_, ?_⟩
+  · -- `x` is an upper bound: for each `a`, `c a • a ≤ x`.
+    rintro _ ⟨a, rfl⟩
+    change c a • (a : X) ≤ x
+    rw [← hc a]
+    exact Positive.le_iff.mp (P a).bandProjection_le_id x hx
+  · -- `x` is the least upper bound.
+    intro z hz_ub
+    have hz_each : ∀ a : A, c a • (a : X) ≤ z := fun a => hz_ub ⟨a, rfl⟩
+    by_contra hxz
+    -- `x ⊓ z < x`.
+    have hxiz_le_x : x ⊓ z ≤ x := inf_le_left
+    have hxiz_ne : x ⊓ z ≠ x := fun h => hxz (by rw [← h]; exact inf_le_right)
+    have hxiz_diff_pos : 0 < x - x ⊓ z := by
+      refine lt_of_le_of_ne (sub_nonneg.mpr hxiz_le_x) ?_
+      intro h
+      exact hxiz_ne (sub_eq_zero.mp h.symm).symm
+    -- Atomicity: an atom `b ≤ x - x ⊓ z`.
+    obtain ⟨b, hb_atom, hb_le⟩ :=
+      isAtomicVectorLattice_iff_forall_pos_dominates_atom.mp inferInstance _
+        hxiz_diff_pos
+    -- Maximality: `b` is non-disjoint with some `a' ∈ A`.
+    have hA_pos : ∀ a' ∈ A, 0 < a' := fun a' ha' => (hA ha').1
+    have h_max_eq_zero :=
+      (isMaximalDisjoint_iff_forall_eq_zero hA_pos hdis).mp hmax
+    have hb_non_disj : ∃ a' ∈ A, ¬ IsVLDisjoint b a' := by
+      by_contra hno
+      push_neg at hno
+      exact hb_atom.ne_zero (h_max_eq_zero b hno)
+    obtain ⟨a', ha', hba'⟩ := hb_non_disj
+    have ha'_atom : IsVLAtom a' := hA ha'
+    -- `b = μ • a'` for some `μ > 0` (since `b` is an atom non-disjoint with `a'`).
+    rcases isVLDisjoint_or_smul_of_isVLAtom ha'_atom hb_atom with h_d | ⟨μ, hμ⟩
+    · exact hba' (isVLDisjoint_comm.mp h_d)
+    have hμ_pos : 0 < μ := by
+      by_contra hμ_le
+      push_neg at hμ_le
+      have h1 : μ • a' ≤ 0 :=
+        smul_nonpos_of_nonpos_of_nonneg hμ_le ha'_atom.1.le
+      rw [← hμ] at h1
+      have hpos := IsVLAtom.pos hb_atom
+      exact hb_atom.ne_zero (le_antisymm h1 hpos.le)
+    -- Index in `A` corresponding to `a'`.
+    set ai : A := ⟨a', ha'⟩
+    -- `c ai • a' ≤ x ⊓ z` because both `x` and `z` dominate `c ai • a'`.
+    have hc_le_x : c ai • a' ≤ x := by
+      rw [← hc ai]
+      exact Positive.le_iff.mp (P ai).bandProjection_le_id x hx
+    have hc_le_z : c ai • a' ≤ z := hz_each ai
+    have hc_le_iz : c ai • a' ≤ x ⊓ z := le_inf hc_le_x hc_le_z
+    -- `μ • a' ≤ x - x ⊓ z`, so `x ⊓ z + μ • a' ≤ x`.
+    have hμa_le : μ • a' ≤ x - x ⊓ z := hμ ▸ hb_le
+    have hsum_le : x ⊓ z + μ • a' ≤ x := by
+      have h := add_le_add_right hμa_le (x ⊓ z)
+      rwa [show x ⊓ z + (x - x ⊓ z) = x from by abel] at h
+    -- Apply `(P ai).bandProjection`.
+    have h_pos := Positive.zero_le_iff.mp (P ai).bandProjection_nonneg
+    have h_mono : Monotone (P ai).bandProjection :=
+      Positive.monotone_iff.mpr h_pos
+    have hP_sum_le : (P ai).bandProjection (x ⊓ z + μ • a') ≤
+        (P ai).bandProjection x := h_mono hsum_le
+    -- `(P ai).bandProjection (x ⊓ z + μ • a') = (P ai).bandProjection (x ⊓ z) + μ • a'`.
+    have hP_dec : (P ai).bandProjection (x ⊓ z + μ • a') =
+        (P ai).bandProjection (x ⊓ z) + μ • a' := by
+      rw [map_add, map_smul, h_proj_a ai]
+    -- `c ai • a' ≤ (P ai).bandProjection (x ⊓ z)`.
+    have hP_iz_ge : c ai • a' ≤ (P ai).bandProjection (x ⊓ z) := by
+      have h1 : (P ai).bandProjection (c ai • a') = c ai • a' := by
+        rw [map_smul, h_proj_a ai]
+      rw [← h1]
+      exact h_mono hc_le_iz
+    -- `(P ai).bandProjection x = c ai • a'`.
+    rw [hP_dec, hc ai] at hP_sum_le
+    -- `(P ai).bandProjection (x ⊓ z) + μ • a' ≤ c ai • a'`.
+    -- Combined with `c ai • a' ≤ (P ai).bandProjection (x ⊓ z)`:
+    have h_main : c ai • a' + μ • a' ≤ c ai • a' := by
+      calc c ai • a' + μ • a'
+          ≤ (P ai).bandProjection (x ⊓ z) + μ • a' := by gcongr
+        _ ≤ c ai • a' := hP_sum_le
+    rw [← add_smul] at h_main
+    have hsum_le_c : c ai + μ ≤ c ai := (smul_le_smul_iff_atom ha'_atom).mp h_main
+    linarith only [hμ_pos, hsum_le_c]

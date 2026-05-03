@@ -1,5 +1,4 @@
 import BanLat.Operators.OrderBounded
-import BanLat.Operators.RieszKantorovich
 import BanLat.OrderComplete
 
 /-!
@@ -29,16 +28,3 @@ theorem isOrderBounded {f : X →ₗ[ℝ] Y}
     (Positive.isOrderBounded hg) (Positive.isOrderBounded hh)
 
 end IsRegularOp
-
-/-- When the codomain is order complete, every order bounded operator
-is regular. -/
-theorem IsOrderBounded.isRegularOp [IsOrderComplete Y]
-    {f : X →ₗ[ℝ] Y} (hf : IsOrderBounded f) :
-    IsRegularOp f := by
-  let F : OrderBoundedHom X Y := ⟨f, hf⟩
-  refine ⟨F⁺.toLinearMap, F⁻.toLinearMap, ?_, ?_, ?_⟩
-  · intro x hx
-    convert OrderBoundedHom.le_iff.mp (posPart_nonneg F) x hx using 1
-  · intro x hx
-    convert OrderBoundedHom.le_iff.mp (negPart_nonneg F) x hx using 1
-  · exact (congrArg OrderBoundedHom.toLinearMap (posPart_sub_negPart F)).symm
