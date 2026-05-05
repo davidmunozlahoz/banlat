@@ -2,6 +2,7 @@ import BanLat.Examples.Lp.Basic
 import BanLat.Operators.Hom
 import BanLat.Substructures.Sublattice
 import Mathlib.MeasureTheory.Function.ConditionalExpectation.AEMeasurable
+import Mathlib.MeasureTheory.Function.L1Space.Integrable
 import Mathlib.MeasureTheory.Function.LpSpace.Indicator
 import Mathlib.Order.Sublattice
 
@@ -553,5 +554,342 @@ theorem exists_Lp_banachLatEquiv_of_closed_sublattice_containing_one
     exists_Lp_banachLatEquiv_aux.trimmedMeasure hp_ne_top L hclosed hone,
     inferInstance,
     ⟨exists_Lp_banachLatEquiv_aux.banachLatEquiv hp_ne_top L hclosed hone⟩⟩
+
+private lemma lp_indicatorConstLp_one_eq_zero_iff
+    {α : Type*} [MeasurableSpace α] {ν : Measure α} [IsFiniteMeasure ν]
+    {E : Set α} (hEm : MeasurableSet E) :
+    indicatorConstLp 1 hEm (measure_ne_top ν E) (1 : ℝ) = 0 ↔ ν E = 0 := by
+  refine ⟨fun h => ?_, fun h => ?_⟩
+  · have h1 : (indicatorConstLp 1 hEm (measure_ne_top ν E) (1 : ℝ) : α → ℝ)
+        =ᵐ[ν] 0 := by rw [h]; exact Lp.coeFn_zero ℝ 1 ν
+    have h2 : E.indicator (fun _ => (1 : ℝ)) =ᵐ[ν] 0 :=
+      (indicatorConstLp_coeFn (p := 1) (hs := hEm)
+        (hμs := measure_ne_top ν E) (c := (1 : ℝ))).symm.trans h1
+    have h3 : ν (E ∩ Function.support (fun _ : α => (1 : ℝ))) = 0 :=
+      (Set.indicator_ae_eq_zero (μ := ν)).mp h2
+    have hsupp : Function.support (fun _ : α => (1 : ℝ)) = Set.univ := by
+      ext; simp [Function.support]
+    rw [hsupp, Set.inter_univ] at h3
+    exact h3
+  · apply Lp.ext
+    refine (indicatorConstLp_coeFn (p := 1) (hs := hEm)
+      (hμs := measure_ne_top ν E) (c := (1 : ℝ))).trans ?_
+    exact (indicator_meas_zero h).trans (Lp.coeFn_zero ℝ 1 ν).symm
+
+theorem lp_aePos_of_forall_isVLDisjoint_eq_zero
+    {α : Type*} [MeasurableSpace α] {ν : Measure α} [IsFiniteMeasure ν]
+    {g : Lp ℝ 1 ν} (hg : 0 ≤ g)
+    (hwou : ∀ v : Lp ℝ 1 ν, IsVLDisjoint v g → v = 0) :
+    ∀ᵐ a ∂ν, 0 < (g : α → ℝ) a := by
+  have hg_ae : 0 ≤ᵐ[ν] (g : α → ℝ) := (Lp.coeFn_nonneg g).mpr hg
+  have hg_meas : Measurable (g : α → ℝ) := (Lp.stronglyMeasurable g).measurable
+  set E : Set α := {a | (g : α → ℝ) a ≤ 0}
+  have hEm : MeasurableSet E := hg_meas measurableSet_Iic
+  set χE : Lp ℝ 1 ν := indicatorConstLp 1 hEm (measure_ne_top ν E) (1 : ℝ)
+    with hχE_def
+  have hχE_coe : (χE : α → ℝ) =ᵐ[ν] E.indicator (fun _ => (1 : ℝ)) :=
+    indicatorConstLp_coeFn (p := 1) (hs := hEm)
+      (hμs := measure_ne_top ν E) (c := (1 : ℝ))
+  have hχE_nn : (0 : Lp ℝ 1 ν) ≤ χE := by
+    rw [← Lp.coeFn_le]
+    filter_upwards [Lp.coeFn_zero ℝ 1 ν, hχE_coe] with a h0 hχ
+    rw [h0, hχ]
+    exact Set.indicator_nonneg (fun _ _ => zero_le_one) a
+  have h_inf_zero : χE ⊓ g = 0 := by
+    apply Lp.ext
+    filter_upwards [Lp.coeFn_inf χE g, Lp.coeFn_zero ℝ 1 ν, hχE_coe, hg_ae]
+      with a h1 h0 hχ hgnn
+    rw [h1, h0]
+    change min ((χE : α → ℝ) a) ((g : α → ℝ) a) = (0 : ℝ)
+    rw [hχ]
+    by_cases haE : a ∈ E
+    · have hga_le : (g : α → ℝ) a ≤ 0 := haE
+      have hga_eq : (g : α → ℝ) a = 0 := le_antisymm hga_le hgnn
+      rw [hga_eq, min_comm, min_eq_left]
+      exact Set.indicator_nonneg (fun _ _ => zero_le_one) a
+    · rw [Set.indicator_of_notMem haE]
+      exact min_eq_left hgnn
+  have hχE_disj : IsVLDisjoint χE g := by
+    unfold IsVLDisjoint
+    rw [abs_of_nonneg hχE_nn, abs_of_nonneg hg, h_inf_zero]
+  have hχE_zero : χE = 0 := hwou χE hχE_disj
+  have hEν : ν E = 0 := (lp_indicatorConstLp_one_eq_zero_iff hEm).mp hχE_zero
+  have hae_notE : ∀ᵐ a ∂ν, a ∉ E := ae_iff.mpr (by simpa using hEν)
+  filter_upwards [hae_notE, hg_ae] with a hnotE hnn
+  rcases eq_or_lt_of_le hnn with heq | hlt
+  · exfalso
+    apply hnotE
+    change (g : α → ℝ) a ≤ 0
+    exact le_of_eq heq.symm
+  · exact hlt
+
+private lemma withDensitySMulLI_surjective_of_ae_pos
+    {α : Type*} [MeasurableSpace α] (μ : Measure α)
+    {f_nn : α → NNReal} (hf_nn_meas : Measurable f_nn)
+    (hf_pos : ∀ᵐ ω ∂μ, (0 : ℝ) < f_nn ω) :
+    Function.Surjective (withDensitySMulLI (E := ℝ) μ hf_nn_meas) := by
+  intro g
+  let h : α → ℝ := fun ω => (g ω) / (f_nn ω : ℝ)
+  have hh_meas : Measurable h :=
+    (Lp.stronglyMeasurable g).measurable.div
+      (measurable_coe_nnreal_real.comp hf_nn_meas)
+  have hmul_ae_μ : (fun ω => f_nn ω • h ω) =ᵐ[μ] ⇑g := by
+    filter_upwards [hf_pos] with ω hω
+    change (f_nn ω : ℝ) * (g ω / (f_nn ω : ℝ)) = g ω
+    field_simp
+  have hmul_int : Integrable (fun ω => f_nn ω • h ω) μ :=
+    (memLp_one_iff_integrable.mp (Lp.memLp g)).congr hmul_ae_μ.symm
+  have hh_int_ν :
+      Integrable h (μ.withDensity (fun ω => ((f_nn ω : NNReal) : ENNReal))) := by
+    rw [integrable_withDensity_iff_integrable_smul hf_nn_meas]
+    exact hmul_int
+  have hh_memLp :
+      MemLp h 1 (μ.withDensity (fun ω => ((f_nn ω : NNReal) : ENNReal))) :=
+    memLp_one_iff_integrable.mpr hh_int_ν
+  refine ⟨hh_memLp.toLp h, ?_⟩
+  rw [withDensitySMulLI_apply]
+  apply Lp.ext
+  have hh_toLp_ν :
+      ⇑(hh_memLp.toLp h) =ᵐ[μ.withDensity
+        (fun ω => ((f_nn ω : NNReal) : ENNReal))] h :=
+    hh_memLp.coeFn_toLp
+  have hh_toLp_μ : ∀ᵐ ω ∂μ,
+      (f_nn ω : ENNReal) ≠ 0 → (hh_memLp.toLp h : α → ℝ) ω = h ω :=
+    (ae_withDensity_iff hf_nn_meas.coe_nnreal_ennreal).mp hh_toLp_ν
+  have hae : (fun x => f_nn x • (hh_memLp.toLp h : α → ℝ) x) =ᵐ[μ] ⇑g := by
+    filter_upwards [hmul_ae_μ, hf_pos, hh_toLp_μ] with ω hmul hω hω_eq
+    have hne : (f_nn ω : ENNReal) ≠ 0 := by exact_mod_cast hω.ne'
+    rw [hω_eq hne]
+    exact hmul
+  calc ⇑(MemLp.toLp (fun x => f_nn x • (hh_memLp.toLp h : α → ℝ) x) _)
+      =ᵐ[μ] fun x => f_nn x • (hh_memLp.toLp h : α → ℝ) x := MemLp.coeFn_toLp _
+    _ =ᵐ[μ] ⇑g := hae
+
+private lemma withDensitySMulLI_map_sup
+    {α : Type*} [MeasurableSpace α] (μ : Measure α)
+    {f_nn : α → NNReal} (hf_nn_meas : Measurable f_nn)
+    (v w : Lp ℝ 1 (μ.withDensity (fun ω => ((f_nn ω : NNReal) : ENNReal)))) :
+    withDensitySMulLI (E := ℝ) μ hf_nn_meas (v ⊔ w) =
+      withDensitySMulLI (E := ℝ) μ hf_nn_meas v ⊔
+        withDensitySMulLI (E := ℝ) μ hf_nn_meas w := by
+  apply Lp.ext
+  have hLHS : ⇑(withDensitySMulLI (E := ℝ) μ hf_nn_meas (v ⊔ w)) =ᵐ[μ]
+      fun x => f_nn x • ((v ⊔ w : Lp ℝ 1 _) : α → ℝ) x := by
+    rw [withDensitySMulLI_apply]
+    exact MemLp.coeFn_toLp _
+  have hRv : ⇑(withDensitySMulLI (E := ℝ) μ hf_nn_meas v) =ᵐ[μ]
+      fun x => f_nn x • (v : α → ℝ) x := by
+    rw [withDensitySMulLI_apply]
+    exact MemLp.coeFn_toLp _
+  have hRw : ⇑(withDensitySMulLI (E := ℝ) μ hf_nn_meas w) =ᵐ[μ]
+      fun x => f_nn x • (w : α → ℝ) x := by
+    rw [withDensitySMulLI_apply]
+    exact MemLp.coeFn_toLp _
+  have hsup_coeFn :
+      ⇑(withDensitySMulLI (E := ℝ) μ hf_nn_meas v ⊔
+          withDensitySMulLI (E := ℝ) μ hf_nn_meas w) =ᵐ[μ]
+      (fun x => f_nn x • (v : α → ℝ) x) ⊔ (fun x => f_nn x • (w : α → ℝ) x) := by
+    filter_upwards [Lp.coeFn_sup (withDensitySMulLI (E := ℝ) μ hf_nn_meas v)
+      (withDensitySMulLI (E := ℝ) μ hf_nn_meas w), hRv, hRw] with ω h h1 h2
+    rw [h]
+    exact congr_arg₂ _ h1 h2
+  have hvw_μ : ∀ᵐ ω ∂μ, (f_nn ω : ENNReal) ≠ 0 →
+      ((v ⊔ w : Lp ℝ 1 _) : α → ℝ) ω = max ((v : α → ℝ) ω) ((w : α → ℝ) ω) :=
+    (ae_withDensity_iff hf_nn_meas.coe_nnreal_ennreal).mp (Lp.coeFn_sup v w)
+  filter_upwards [hLHS, hsup_coeFn, hvw_μ] with ω hL hR hvw
+  rw [hL, hR]
+  by_cases hne : (f_nn ω : ENNReal) = 0
+  · have hzero : f_nn ω = 0 := by exact_mod_cast hne
+    simp [hzero]
+  · rw [hvw hne]
+    simp only [Pi.sup_apply]
+    rw [NNReal.smul_def, NNReal.smul_def, NNReal.smul_def,
+      smul_eq_mul, smul_eq_mul, smul_eq_mul]
+    exact mul_max_of_nonneg _ _ (NNReal.coe_nonneg _)
+
+private lemma withDensitySMulLI_map_inf
+    {α : Type*} [MeasurableSpace α] (μ : Measure α)
+    {f_nn : α → NNReal} (hf_nn_meas : Measurable f_nn)
+    (v w : Lp ℝ 1 (μ.withDensity (fun ω => ((f_nn ω : NNReal) : ENNReal)))) :
+    withDensitySMulLI (E := ℝ) μ hf_nn_meas (v ⊓ w) =
+      withDensitySMulLI (E := ℝ) μ hf_nn_meas v ⊓
+        withDensitySMulLI (E := ℝ) μ hf_nn_meas w := by
+  apply Lp.ext
+  have hLHS : ⇑(withDensitySMulLI (E := ℝ) μ hf_nn_meas (v ⊓ w)) =ᵐ[μ]
+      fun x => f_nn x • ((v ⊓ w : Lp ℝ 1 _) : α → ℝ) x := by
+    rw [withDensitySMulLI_apply]
+    exact MemLp.coeFn_toLp _
+  have hRv : ⇑(withDensitySMulLI (E := ℝ) μ hf_nn_meas v) =ᵐ[μ]
+      fun x => f_nn x • (v : α → ℝ) x := by
+    rw [withDensitySMulLI_apply]
+    exact MemLp.coeFn_toLp _
+  have hRw : ⇑(withDensitySMulLI (E := ℝ) μ hf_nn_meas w) =ᵐ[μ]
+      fun x => f_nn x • (w : α → ℝ) x := by
+    rw [withDensitySMulLI_apply]
+    exact MemLp.coeFn_toLp _
+  have hinf_coeFn :
+      ⇑(withDensitySMulLI (E := ℝ) μ hf_nn_meas v ⊓
+          withDensitySMulLI (E := ℝ) μ hf_nn_meas w) =ᵐ[μ]
+      (fun x => f_nn x • (v : α → ℝ) x) ⊓ (fun x => f_nn x • (w : α → ℝ) x) := by
+    filter_upwards [Lp.coeFn_inf (withDensitySMulLI (E := ℝ) μ hf_nn_meas v)
+      (withDensitySMulLI (E := ℝ) μ hf_nn_meas w), hRv, hRw] with ω h h1 h2
+    rw [h]
+    exact congr_arg₂ _ h1 h2
+  have hvw_μ : ∀ᵐ ω ∂μ, (f_nn ω : ENNReal) ≠ 0 →
+      ((v ⊓ w : Lp ℝ 1 _) : α → ℝ) ω = min ((v : α → ℝ) ω) ((w : α → ℝ) ω) :=
+    (ae_withDensity_iff hf_nn_meas.coe_nnreal_ennreal).mp (Lp.coeFn_inf v w)
+  filter_upwards [hLHS, hinf_coeFn, hvw_μ] with ω hL hR hvw
+  rw [hL, hR]
+  by_cases hne : (f_nn ω : ENNReal) = 0
+  · have hzero : f_nn ω = 0 := by exact_mod_cast hne
+    simp [hzero]
+  · rw [hvw hne]
+    simp only [Pi.inf_apply]
+    rw [NNReal.smul_def, NNReal.smul_def, NNReal.smul_def,
+      smul_eq_mul, smul_eq_mul, smul_eq_mul]
+    exact mul_min_of_nonneg _ _ (NNReal.coe_nonneg _)
+
+/-- A Banach lattice that embeds as a closed sublattice of an `L¹` space and
+contains an almost everywhere strictly positive element is Banach-lattice
+isomorphic to an `L¹` space. -/
+theorem exists_L1_banachLatEquiv_of_embeds_in_L1_with_aePositive.{v}
+    {X : Type u} [NormedAddCommGroup X] [Lattice X] [IsOrderedAddMonoid X]
+    [BanachLattice X]
+    {α : Type v} [MeasurableSpace α] (μ : Measure α)
+    (T : X →ₗᵢ[ℝ] Lp ℝ 1 μ)
+    (hsup : ∀ x y : X, T (x ⊔ y) = T x ⊔ T y)
+    (hinf : ∀ x y : X, T (x ⊓ y) = T x ⊓ T y)
+    (_hclosed : IsClosed (Set.range T))
+    (u : X) (_hu_nn : 0 ≤ u)
+    (hu_ae : ∀ᵐ a ∂μ, 0 < (T u : α → ℝ) a) :
+    ∃ (Ω : Type v) (_ : MeasurableSpace Ω) (ν : Measure Ω),
+      Nonempty (BanachLatEquiv X (Lp ℝ 1 ν)) := by
+  set ρ : α → ℝ := ⇑(T u) with hρ_def
+  have hρ_meas : Measurable ρ := (Lp.stronglyMeasurable (T u)).measurable
+  have hρ_memLp : MemLp ρ 1 μ := Lp.memLp (T u)
+  set f_nn : α → NNReal := fun ω => Real.toNNReal (ρ ω) with hf_nn_def
+  have hf_nn_meas : Measurable f_nn := hρ_meas.real_toNNReal
+  have hf_pos : ∀ᵐ ω ∂μ, (0 : ℝ) < f_nn ω := by
+    filter_upwards [hu_ae] with ω hω
+    change (0 : ℝ) < (Real.toNNReal (ρ ω) : ℝ)
+    rw [Real.coe_toNNReal _ hω.le]
+    exact hω
+  have hf_nn_eq_ρ : ∀ᵐ ω ∂μ, (f_nn ω : ℝ) = ρ ω := by
+    filter_upwards [hu_ae] with ω hω
+    exact Real.coe_toNNReal _ hω.le
+  set ν := μ.withDensity (fun ω => ((f_nn ω : NNReal) : ENNReal)) with hν_def
+  have hν_finite : IsFiniteMeasure ν := by
+    refine ⟨?_⟩
+    rw [hν_def, withDensity_apply _ MeasurableSet.univ, Measure.restrict_univ]
+    rw [memLp_one_iff_integrable] at hρ_memLp
+    calc ∫⁻ ω, ((f_nn ω : NNReal) : ENNReal) ∂μ
+        ≤ ∫⁻ ω, ‖ρ ω‖ₑ ∂μ := by
+          apply lintegral_mono
+          intro ω
+          change ((f_nn ω : NNReal) : ENNReal) ≤ ‖ρ ω‖ₑ
+          rw [Real.enorm_eq_ofReal_abs,
+            show ENNReal.ofReal |ρ ω| = (Real.toNNReal |ρ ω| : ENNReal) from rfl]
+          exact_mod_cast Real.toNNReal_le_toNNReal (le_abs_self _)
+      _ < ⊤ := hρ_memLp.2
+  letI : IsFiniteMeasure ν := hν_finite
+  let Φ : Lp ℝ 1 ν →ₗᵢ[ℝ] Lp ℝ 1 μ := withDensitySMulLI μ hf_nn_meas
+  have hΦ_surj : Function.Surjective Φ :=
+    withDensitySMulLI_surjective_of_ae_pos μ hf_nn_meas hf_pos
+  let Φ' : Lp ℝ 1 ν ≃ₗᵢ[ℝ] Lp ℝ 1 μ := LinearIsometryEquiv.ofSurjective Φ hΦ_surj
+  let Ψ : Lp ℝ 1 μ ≃ₗᵢ[ℝ] Lp ℝ 1 ν := Φ'.symm
+  let T' : X →ₗᵢ[ℝ] Lp ℝ 1 ν := Ψ.toLinearIsometry.comp T
+  have hΨ_sup : ∀ a b : Lp ℝ 1 μ, Ψ (a ⊔ b) = Ψ a ⊔ Ψ b := by
+    intro a b
+    apply Φ'.injective
+    rw [Φ'.apply_symm_apply]
+    have h : Φ' (Ψ a ⊔ Ψ b) = Φ' (Ψ a) ⊔ Φ' (Ψ b) :=
+      withDensitySMulLI_map_sup μ hf_nn_meas _ _
+    rw [h]
+    change a ⊔ b = Φ' (Φ'.symm a) ⊔ Φ' (Φ'.symm b)
+    rw [Φ'.apply_symm_apply, Φ'.apply_symm_apply]
+  have hΨ_inf : ∀ a b : Lp ℝ 1 μ, Ψ (a ⊓ b) = Ψ a ⊓ Ψ b := by
+    intro a b
+    apply Φ'.injective
+    rw [Φ'.apply_symm_apply]
+    have h : Φ' (Ψ a ⊓ Ψ b) = Φ' (Ψ a) ⊓ Φ' (Ψ b) :=
+      withDensitySMulLI_map_inf μ hf_nn_meas _ _
+    rw [h]
+    change a ⊓ b = Φ' (Φ'.symm a) ⊓ Φ' (Φ'.symm b)
+    rw [Φ'.apply_symm_apply, Φ'.apply_symm_apply]
+  have hT'_sup : ∀ x y : X, T' (x ⊔ y) = T' x ⊔ T' y := by
+    intro x y
+    change Ψ (T (x ⊔ y)) = Ψ (T x) ⊔ Ψ (T y)
+    rw [hsup]
+    exact hΨ_sup _ _
+  have hT'_inf : ∀ x y : X, T' (x ⊓ y) = T' x ⊓ T' y := by
+    intro x y
+    change Ψ (T (x ⊓ y)) = Ψ (T x) ⊓ Ψ (T y)
+    rw [hinf]
+    exact hΨ_inf _ _
+  have hT'u : T' u = Lp.const 1 ν (1 : ℝ) := by
+    change Ψ (T u) = Lp.const 1 ν (1 : ℝ)
+    apply Φ'.injective
+    rw [Φ'.apply_symm_apply]
+    change T u = withDensitySMulLI μ hf_nn_meas (Lp.const 1 ν (1 : ℝ))
+    symm
+    apply Lp.ext
+    have hΦ_ae : ⇑(withDensitySMulLI μ hf_nn_meas (Lp.const 1 ν (1 : ℝ))) =ᵐ[μ]
+        fun x => f_nn x • (Lp.const 1 ν (1 : ℝ) : α → ℝ) x := by
+      rw [withDensitySMulLI_apply]
+      exact MemLp.coeFn_toLp _
+    have hc_μ : ∀ᵐ ω ∂μ, (f_nn ω : ENNReal) ≠ 0 →
+        (Lp.const 1 ν (1 : ℝ) : α → ℝ) ω = 1 :=
+      (ae_withDensity_iff hf_nn_meas.coe_nnreal_ennreal).mp (Lp.coeFn_const 1 ν 1)
+    filter_upwards [hΦ_ae, hc_μ, hf_nn_eq_ρ, hf_pos] with ω hΦ hc heq hω
+    rw [hΦ]
+    have hne : (f_nn ω : ENNReal) ≠ 0 := by exact_mod_cast hω.ne'
+    rw [hc hne]
+    change (f_nn ω : ℝ) * 1 = ρ ω
+    rw [mul_one]
+    exact heq
+  let L : VectorSublattice (Lp ℝ 1 ν) :=
+    { toSubmodule := LinearMap.range T'.toLinearMap
+      sup_mem' := by
+        rintro _ _ ⟨x, rfl⟩ ⟨y, rfl⟩
+        change T' x ⊔ T' y ∈ _
+        rw [← hT'_sup]
+        exact LinearMap.mem_range_self _ _ }
+  have hL_closed : IsClosed (L : Set (Lp ℝ 1 ν)) := by
+    change IsClosed (Set.range T')
+    exact T'.isometry.isClosedEmbedding.isClosed_range
+  have hL_one : Lp.const 1 ν (1 : ℝ) ∈ L := by
+    rw [← hT'u]
+    exact LinearMap.mem_range_self _ _
+  letI : Lattice ↥L.toSubmodule := L.instLatticeSubtype
+  letI : IsOrderedAddMonoid ↥L.toSubmodule := L.instIsOrderedAddMonoidSubtype
+  letI : BanachLattice ↥L.toSubmodule := L.instBanachLatticeSubtype hL_closed
+  obtain ⟨Ω', mΩ', ν', _hν'_finite, ⟨φ⟩⟩ :=
+    exists_Lp_banachLatEquiv_of_closed_sublattice_containing_one (μ := ν)
+      (by norm_num : (1 : ENNReal) ≠ ⊤) L hL_closed hL_one
+  have hψ_sup : ∀ x y : X,
+      T'.equivRange (x ⊔ y) = T'.equivRange x ⊔ T'.equivRange y := by
+    intro x y
+    apply Subtype.ext
+    change T' (x ⊔ y) = T' x ⊔ T' y
+    exact hT'_sup x y
+  have hψ_inf : ∀ x y : X,
+      T'.equivRange (x ⊓ y) = T'.equivRange x ⊓ T'.equivRange y := by
+    intro x y
+    apply Subtype.ext
+    change T' (x ⊓ y) = T' x ⊓ T' y
+    exact hT'_inf x y
+  refine ⟨Ω', mΩ', ν', ⟨?_⟩⟩
+  refine {
+    toLinearIsometryEquiv := T'.equivRange.trans φ.toLinearIsometryEquiv
+    map_sup' := ?_
+    map_inf' := ?_ }
+  · intro x y
+    change φ (T'.equivRange (x ⊔ y)) = φ (T'.equivRange x) ⊔ φ (T'.equivRange y)
+    rw [hψ_sup]
+    exact φ.map_sup' _ _
+  · intro x y
+    change φ (T'.equivRange (x ⊓ y)) = φ (T'.equivRange x) ⊓ φ (T'.equivRange y)
+    rw [hψ_inf]
+    exact φ.map_inf' _ _
 
 end ClosedSublattices

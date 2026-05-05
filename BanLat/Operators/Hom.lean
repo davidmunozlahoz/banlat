@@ -449,4 +449,10 @@ def toVecLatEquiv (e : BanachLatEquiv X Y) : VecLatEquiv X Y :=
     map_sup' := e.map_sup'
     map_inf' := e.map_inf' }
 
+/-- The inverse of a Banach lattice isometry. -/
+def symm (e : BanachLatEquiv X Y) : BanachLatEquiv Y X where
+  toLinearIsometryEquiv := e.toLinearIsometryEquiv.symm
+  map_sup' := e.toVecLatEquiv.symm.map_sup'
+  map_inf' := e.toVecLatEquiv.symm.map_inf'
+
 end BanachLatEquiv
