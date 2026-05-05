@@ -92,35 +92,6 @@ private theorem isVLAtom_signedDirac [MeasurableSingletonClass K] (x : K) :
   · rw [signedDirac_apply_of_notMem hA hx, mul_zero]
     exact apply_eq_zero_of_notMem_of_le_signedDirac hy0 hyd hA hx
 
-omit [TopologicalSpace K] [T2Space K] [CompactSpace K] [BorelSpace K] in
-private theorem jordan_of_toSignedMeasure (μ : Measure K) [IsFiniteMeasure μ] :
-    μ.toSignedMeasure.toJordanDecomposition =
-      { posPart := μ
-        negPart := 0
-        mutuallySingular := Measure.MutuallySingular.zero_right } := by
-  apply MeasureTheory.SignedMeasure.toJordanDecomposition_eq
-  change μ.toSignedMeasure =
-    μ.toSignedMeasure - (0 : Measure K).toSignedMeasure
-  rw [Measure.toSignedMeasure_zero, sub_zero]
-
-omit [T2Space K] [CompactSpace K] [BorelSpace K] in
-  private theorem measure_toSignedMeasure_isRegular {μ : Measure K}
-    [IsFiniteMeasure μ] (hμ : μ.Regular) :
-    μ.toSignedMeasure.IsRegular := by
-  have hJ := jordan_of_toSignedMeasure μ
-  change μ.toSignedMeasure.totalVariation.Regular
-  rw [MeasureTheory.SignedMeasure.totalVariation, hJ]
-  simpa using hμ
-
-omit [T2Space K] [CompactSpace K] [BorelSpace K] in
-private theorem regular_of_toSignedMeasure_isRegular {μ : Measure K}
-    [IsFiniteMeasure μ] (hμ : μ.toSignedMeasure.IsRegular) :
-    μ.Regular := by
-  have hJ := jordan_of_toSignedMeasure μ
-  change μ.toSignedMeasure.totalVariation.Regular at hμ
-  rw [MeasureTheory.SignedMeasure.totalVariation, hJ] at hμ
-  simpa using hμ
-
 omit [CompactSpace K] in
 private theorem regular_dirac (x : K) : (Measure.dirac x).Regular := by
   refine
@@ -158,7 +129,7 @@ private theorem isVLAtom_subtype_of_isVLAtom {a : SignedMeasure K}
 noncomputable def dirac (x : K) : MofK K :=
   ⟨signedDirac x,
     (MeasureTheory.SignedMeasure.mem_regularSignedMeasureSublattice_iff).2
-      (measure_toSignedMeasure_isRegular (regular_dirac x))⟩
+      (SignedMeasure.measure_toSignedMeasure_isRegular (regular_dirac x))⟩
 
 /-- The Dirac delta is non-negative in `M(K)`. -/
 theorem zero_le_dirac (x : K) : 0 ≤ dirac x := by
@@ -172,7 +143,7 @@ theorem dirac_ne_zero (x : K) : dirac x ≠ 0 := by
 /-- The Dirac delta is an atom of `M(K)`. -/
 theorem isVLAtom_dirac (x : K) : IsVLAtom (dirac x) :=
   isVLAtom_subtype_of_isVLAtom
-    (measure_toSignedMeasure_isRegular (regular_dirac x))
+    (SignedMeasure.measure_toSignedMeasure_isRegular (regular_dirac x))
     (isVLAtom_signedDirac x)
 
 /-- A strictly positive scalar multiple of a Dirac delta is an atom of `M(K)`. -/
@@ -192,7 +163,7 @@ private theorem exists_singleton_of_isVLAtom (s : MofK K) (hs : IsVLAtom s) :
   have hμ_reg : μ.Regular := by
     have hsreg : s.1.IsRegular :=
       (MeasureTheory.SignedMeasure.mem_regularSignedMeasureSublattice_iff).mp s.2
-    apply regular_of_toSignedMeasure_isRegular
+    apply SignedMeasure.regular_of_toSignedMeasure_isRegular
     simpa [hμ_signed] using hsreg
   have hμ_ne_zero : μ ≠ 0 := by
     intro hμ0
@@ -208,7 +179,7 @@ private theorem exists_singleton_of_isVLAtom (s : MofK K) (hs : IsVLAtom s) :
     let t : MofK K :=
       ⟨(μ.restrict A).toSignedMeasure,
         (MeasureTheory.SignedMeasure.mem_regularSignedMeasureSublattice_iff).2
-          (measure_toSignedMeasure_isRegular
+          (SignedMeasure.measure_toSignedMeasure_isRegular
             (Measure.Regular.restrict_of_measure_ne_top (measure_ne_top _ _)))⟩
     have ht0 : (0 : MofK K) ≤ t := by
       exact Measure.zero_le_toSignedMeasure _

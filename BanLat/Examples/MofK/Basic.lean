@@ -72,6 +72,38 @@ noncomputable def regularSignedMeasureSublattice : VectorSublattice (SignedMeasu
 theorem mem_regularSignedMeasureSublattice_iff {s : SignedMeasure K} :
     s ∈ regularSignedMeasureSublattice (K := K) ↔ s.IsRegular := Iff.rfl
 
+omit [TopologicalSpace K] [T2Space K] [CompactSpace K] [BorelSpace K] in
+/-- The Jordan decomposition of a non-negative finite measure viewed as a signed measure. -/
+theorem jordan_of_toSignedMeasure (μ : Measure K) [IsFiniteMeasure μ] :
+    μ.toSignedMeasure.toJordanDecomposition =
+      { posPart := μ
+        negPart := 0
+        mutuallySingular := Measure.MutuallySingular.zero_right } := by
+  apply SignedMeasure.toJordanDecomposition_eq
+  change μ.toSignedMeasure =
+    μ.toSignedMeasure - (0 : Measure K).toSignedMeasure
+  rw [Measure.toSignedMeasure_zero, sub_zero]
+
+omit [T2Space K] [CompactSpace K] [BorelSpace K] in
+/-- A regular finite measure gives a regular signed measure. -/
+theorem measure_toSignedMeasure_isRegular {μ : Measure K}
+    [IsFiniteMeasure μ] (hμ : μ.Regular) :
+    μ.toSignedMeasure.IsRegular := by
+  have hJ := jordan_of_toSignedMeasure μ
+  change μ.toSignedMeasure.totalVariation.Regular
+  rw [SignedMeasure.totalVariation, hJ]
+  simpa using hμ
+
+omit [T2Space K] [CompactSpace K] [BorelSpace K] in
+/-- If a finite measure is regular as a signed measure, then it is regular. -/
+theorem regular_of_toSignedMeasure_isRegular {μ : Measure K}
+    [IsFiniteMeasure μ] (hμ : μ.toSignedMeasure.IsRegular) :
+    μ.Regular := by
+  have hJ := jordan_of_toSignedMeasure μ
+  change μ.toSignedMeasure.totalVariation.Regular at hμ
+  rw [SignedMeasure.totalVariation, hJ] at hμ
+  simpa using hμ
+
 /-! ### Closedness of regularity in the total-variation norm
 
 Closedness uses two ingredients: regularity of a finite measure can be checked

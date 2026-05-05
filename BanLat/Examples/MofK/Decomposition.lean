@@ -204,17 +204,6 @@ theorem mem_continuousPart_iff (μ : MofK K) :
     rw [ha_eq, abs_of_nonneg hcd_nn, inf_comm]
     exact hcd_disj
 
-omit [TopologicalSpace K] [T2Space K] [CompactSpace K] [BorelSpace K] in
-private theorem jordan_of_toSignedMeasure (μ : Measure K) [IsFiniteMeasure μ] :
-    μ.toSignedMeasure.toJordanDecomposition =
-      { posPart := μ
-        negPart := 0
-        mutuallySingular := Measure.MutuallySingular.zero_right } := by
-  apply MeasureTheory.SignedMeasure.toJordanDecomposition_eq
-  change μ.toSignedMeasure =
-    μ.toSignedMeasure - (0 : Measure K).toSignedMeasure
-  rw [Measure.toSignedMeasure_zero, sub_zero]
-
 private theorem dirac_apply_of_mem {x : K} {A : Set K} (hA : MeasurableSet A) (hx : x ∈ A) :
     (((dirac x : MofK K) : SignedMeasure K) A) = 1 := by
   change (Measure.dirac x).toSignedMeasure A = 1
@@ -231,7 +220,7 @@ private theorem dirac_apply_of_notMem {x : K} {A : Set K} (hA : MeasurableSet A)
 theorem norm_dirac (x : K) : ‖dirac x‖ = 1 := by
   change ‖(Measure.dirac x).toSignedMeasure‖ = 1
   rw [MeasureTheory.SignedMeasure.norm_def, MeasureTheory.SignedMeasure.totalVariation,
-    jordan_of_toSignedMeasure (Measure.dirac x)]
+    SignedMeasure.jordan_of_toSignedMeasure (Measure.dirac x)]
   simp
 
 private theorem posPart_le_abs (μ : MofK K) : μ⁺ ≤ |μ| := by
