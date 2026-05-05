@@ -189,7 +189,7 @@ private lemma hasSum_norm_principalBandProjection
 /-- **Locally L¹ implies L¹.** If every principal band of an AL-space is
 Banach-lattice isometric to some `L¹(μ)`, then the whole space is
 Banach-lattice isometric to some `L¹(ν)`. -/
-private theorem exists_L1_banachLatEquiv_of_principalBandModels [ALSpace X]
+theorem exists_L1_banachLatEquiv_of_principalBandModels [ALSpace X]
     (h : ∀ x : X, 0 ≤ x →
       ∃ (Ω : Type u) (_ : MeasurableSpace Ω) (μ : Measure Ω),
         Nonempty (BanachLatEquiv
