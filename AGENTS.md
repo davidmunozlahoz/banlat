@@ -33,6 +33,8 @@ There are three operating modes:
 - Fill every proof body with `sorry`.
 - The file must compile modulo `sorry` (no other errors).
 - Do not write any proof content; the signatures are what will be reviewed.
+- Before editing any file, first show the proposed diff/patch and ask for
+  permission. Do not apply the edit until explicitly approved.
 
 **Prove mode** — activated when asked to prove a result.
 - The file must compile with no `sorry` whatsoever.
@@ -62,6 +64,8 @@ The blueprint lives under `blueprint/src/` and follows the
 [`leanblueprint`](https://github.com/PatrickMassot/leanblueprint) conventions.
 Chapters are separate `.tex` files `\input`'d from `content.tex`; start a new
 chapter only when explicitly instructed.
+- Before editing any file, first show the proposed diff/patch and ask for
+  permission. Do not apply the edit until explicitly approved.
 
 - **Faithfulness to the formal statement (CRITICAL — highest priority).** The
   informal statement in the blueprint must correspond **exactly** to the
