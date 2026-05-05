@@ -237,17 +237,202 @@ theorem exists_disjoint_sum_eq_sup_of_hasPrincipalProjectionProperty
         ∧ (∀ i, 0 ≤ y i)
         ∧ (∀ i, y i ≤ x i)
         ∧ ∑ i, y i = Finset.univ.sup' Finset.univ_nonempty x := sorry
+-/
 
 /-! ### The Archimedean property -/
 
+private lemma ProjectionBand.bandProjection_of_mem (B : ProjectionBand X) {x : X}
+    (hx : x ∈ (B : Set X)) :
+    B.bandProjection x = x := by
+  have h0_mem : (0 : X) ∈ disjointComplement (B : Set X) :=
+    (Band.disjointComplement (B : Set X)).toOrderIdeal.toSubmodule.zero_mem
+  have hdec₁ : x = B.bandProjection x + (x - B.bandProjection x) := by abel
+  have hdec₂ : x = x + 0 := (add_zero x).symm
+  exact (B.decomposition_unique (B.bandProjection_mem x)
+    (B.id_sub_bandProjection_mem x) hx h0_mem hdec₁ hdec₂).1
+
+private def IsPosSupFromIdeal (J : OrderIdeal X) (x : X) : Prop :=
+  ∃ S : Set X, S.Nonempty ∧ S ⊆ (J : Set X) ∧ (∀ s ∈ S, 0 ≤ s) ∧ IsLUB S x
+
+private lemma IsPosSupFromIdeal.zero (J : OrderIdeal X) :
+    IsPosSupFromIdeal J (0 : X) :=
+  ⟨{0}, Set.singleton_nonempty 0, by rintro _ rfl; exact J.toSubmodule.zero_mem,
+    by rintro _ rfl; rfl,
+    isLUB_singleton⟩
+
+private lemma IsPosSupFromIdeal.of_mem {J : OrderIdeal X} {x : X}
+    (hx0 : 0 ≤ x) (hxJ : x ∈ J) : IsPosSupFromIdeal J x :=
+  ⟨{x}, Set.singleton_nonempty x, by rintro _ rfl; exact hxJ, by rintro _ rfl; exact hx0,
+    isLUB_singleton⟩
+
+private lemma IsPosSupFromIdeal.mono {J : OrderIdeal X} {x y : X}
+    (hx : IsPosSupFromIdeal J x) (hy0 : 0 ≤ y) (hyx : y ≤ x) :
+    IsPosSupFromIdeal J y := by
+  obtain ⟨S, hSne, hSJ, hS0, hSx⟩ := hx
+  refine ⟨(fun s => y ⊓ s) '' S, hSne.image _, ?_, ?_, ?_⟩
+  · rintro _ ⟨s, hs, rfl⟩
+    exact J.solid (hSJ hs) (le_inf hy0 (hS0 s hs)) inf_le_right
+  · rintro _ ⟨s, hs, rfl⟩
+    exact le_inf hy0 (hS0 s hs)
+  · simpa [inf_eq_left.mpr hyx] using isLUB_inf_const y hSx
+
+private lemma IsPosSupFromIdeal.add {J : OrderIdeal X} {x y : X}
+    (hx : IsPosSupFromIdeal J x) (hy : IsPosSupFromIdeal J y) :
+    IsPosSupFromIdeal J (x + y) := by
+  obtain ⟨S, hSne, hSJ, hS0, hSx⟩ := hx
+  obtain ⟨T, hTne, hTJ, hT0, hTy⟩ := hy
+  have hLUB : IsLUB ((fun p : X × X => p.1 + p.2) '' (S ×ˢ T)) (x + y) := by
+    refine ⟨?_, ?_⟩
+    · rintro _ ⟨⟨s, t⟩, ⟨hs, ht⟩, rfl⟩
+      exact add_le_add (hSx.1 hs) (hTy.1 ht)
+    · intro u hu
+      have hy_le_sub : ∀ s ∈ S, y ≤ u - s := by
+        intro s hs
+        apply hTy.2
+        intro t ht
+        exact le_sub_iff_add_le.mpr (by
+          rw [add_comm]
+          exact hu ⟨(s, t), ⟨hs, ht⟩, rfl⟩)
+      exact le_sub_iff_add_le.mp <| hSx.2 fun s hs =>
+        le_sub_iff_add_le.mpr <| by
+          rw [add_comm]
+          exact le_sub_iff_add_le.mp (hy_le_sub s hs)
+  refine ⟨(fun p : X × X => p.1 + p.2) '' (S ×ˢ T), hSne.prod hTne |>.image _, ?_, ?_,
+    hLUB⟩
+  · rintro _ ⟨⟨s, t⟩, ⟨hs, ht⟩, rfl⟩
+    exact J.toSubmodule.add_mem (hSJ hs) (hTJ ht)
+  · rintro _ ⟨⟨s, t⟩, ⟨hs, ht⟩, rfl⟩
+    exact add_nonneg (hS0 s hs) (hT0 t ht)
+
+private lemma IsPosSupFromIdeal.smul_nonneg {J : OrderIdeal X} {x : X} {c : ℝ}
+    (hc : 0 ≤ c) (hx : IsPosSupFromIdeal J x) :
+    IsPosSupFromIdeal J (c • x) := by
+  obtain ⟨S, hSne, hSJ, hS0, hSx⟩ := hx
+  refine ⟨(fun s => c • s) '' S, hSne.image _, ?_, ?_, isLUB_smul_of_nonneg hc hSx⟩
+  · rintro _ ⟨s, hs, rfl⟩
+    exact J.toSubmodule.smul_mem c (hSJ hs)
+  · rintro _ ⟨s, hs, rfl⟩
+    exact _root_.smul_nonneg hc (hS0 s hs)
+
+private lemma IsPosSupFromIdeal.sSup {J : OrderIdeal X} {S : Set X} {x : X}
+    (hSne : S.Nonempty) (hS : ∀ s ∈ S, IsPosSupFromIdeal J s) (hSx : IsLUB S x) :
+    IsPosSupFromIdeal J x := by
+  classical
+  refine ⟨{a | ∃ s, ∃ hs : s ∈ S, a ∈ (hS s hs).choose}, ?_, ?_, ?_, ?_⟩
+  · obtain ⟨s, hs⟩ := hSne
+    exact ⟨(hS s hs).choose_spec.1.choose, s, hs, (hS s hs).choose_spec.1.choose_spec⟩
+  · rintro a ⟨s, hs, ha⟩
+    exact (hS s hs).choose_spec.2.1 ha
+  · rintro a ⟨s, hs, ha⟩
+    exact (hS s hs).choose_spec.2.2.1 a ha
+  · refine ⟨?_, ?_⟩
+    · rintro a ⟨s, hs, ha⟩
+      exact (((hS s hs).choose_spec.2.2.2).1 ha).trans (hSx.1 hs)
+    · intro u hu
+      apply hSx.2
+      intro s hs
+      exact ((hS s hs).choose_spec.2.2.2).2 (fun a ha => hu ⟨s, hs, ha⟩)
+
+private lemma isPosSupFromIdeal_of_mem_bandGenerated
+    (J : OrderIdeal X) {x : X} (hx0 : 0 ≤ x)
+    (hxG : x ∈ Band.generated (J : Set X)) :
+    IsPosSupFromIdeal J x := by
+  let M : Submodule ℝ X :=
+    { carrier := {z : X | IsPosSupFromIdeal J |z|}
+      add_mem' := fun {a b} ha hb =>
+        IsPosSupFromIdeal.mono (IsPosSupFromIdeal.add ha hb) (abs_nonneg _)
+          (abs_add_le a b)
+      zero_mem' := by simpa using IsPosSupFromIdeal.zero J
+      smul_mem' := fun c a ha => by
+        change IsPosSupFromIdeal J |c • a|
+        rw [abs_smul']
+        exact IsPosSupFromIdeal.smul_nonneg (abs_nonneg c) ha }
+  let K : OrderIdeal X := OrderIdeal.ofSolid M fun _ b ha hba =>
+    IsPosSupFromIdeal.mono ha (abs_nonneg b) hba
+  let B : Band X := Band.ofPosDirectedSSupMem K (by
+    intro S hSK hS0 _ hSne y hSy
+    change IsPosSupFromIdeal J |y|
+    have hy0 : 0 ≤ y := by
+      obtain ⟨s, hs⟩ := hSne
+      exact (hS0 s hs).trans (hSy.1 hs)
+    rw [abs_of_nonneg hy0]
+    refine IsPosSupFromIdeal.sSup (J := J) hSne ?_ hSy
+    intro s hs
+    have hsK : s ∈ K := hSK hs
+    change IsPosSupFromIdeal J |s| at hsK
+    simpa [abs_of_nonneg (hS0 s hs)] using hsK)
+  have hle : Band.generated (J : Set X) ≤ B := Band.generated_le (B := B) fun z hz => by
+    change IsPosSupFromIdeal J |z|
+    exact IsPosSupFromIdeal.of_mem (abs_nonneg z) (J.abs_mem hz)
+  have hxB : x ∈ B := hle hxG
+  change IsPosSupFromIdeal J |x| at hxB
+  simpa [abs_of_nonneg hx0] using hxB
+
 /-- A vector lattice with the Principal Projection Property is Archimedean. -/
 theorem isVLArchimedean_of_hasPrincipalProjectionProperty
-    [HasPrincipalProjectionProperty X] : IsVLArchimedean X := sorry
+    [HasPrincipalProjectionProperty X] : IsVLArchimedean X := by
+  refine ⟨fun {x y} hx hxy => ?_⟩
+  obtain ⟨P, hP⟩ := HasPrincipalProjectionProperty.exists_projectionBand x
+  have hy0 : 0 ≤ y := by simpa using hxy 0
+  have hxP : x ∈ (P : Set X) := by
+    rw [hP]
+    exact Band.subset_generated _ rfl
+  have hPx : P.bandProjection x = x :=
+    ProjectionBand.bandProjection_of_mem P hxP
+  have hmono : Monotone P.bandProjection :=
+    Positive.monotone_iff.mpr (Positive.zero_le_iff.mp P.bandProjection_nonneg)
+  have hbound : ∀ n : ℕ, n • x ≤ P.bandProjection y := by
+    intro n
+    calc
+      n • x = P.bandProjection (n • x) := by
+        rw [map_nsmul, hPx]
+      _ ≤ P.bandProjection y := hmono (hxy n)
+  have hPy0 : 0 ≤ P.bandProjection y :=
+    Positive.zero_le_iff.mp P.bandProjection_nonneg y hy0
+  let J : OrderIdeal X := OrderIdeal.principal x
+  have hPy_mem_generated_principal :
+      P.bandProjection y ∈ Band.generated (J : Set X) := by
+    have hsub : Band.generated ({x} : Set X) ≤ Band.generated (J : Set X) :=
+      Band.generated_le (B := Band.generated (J : Set X)) (by
+        intro z hz
+        rw [Set.mem_singleton_iff] at hz
+        subst z
+        exact Band.subset_generated _ (show x ∈ (J : Set X) from
+          OrderIdeal.self_mem_principal x))
+    have hPy_gen_x : P.bandProjection y ∈ Band.generated ({x} : Set X) := by
+      change P.bandProjection y ∈ ((Band.generated ({x} : Set X)) : Set X)
+      rw [← hP]
+      exact P.bandProjection_mem y
+    exact hsub hPy_gen_x
+  obtain ⟨S, _hSne, hSJ, _hS0, hLUB⟩ :=
+    isPosSupFromIdeal_of_mem_bandGenerated J hPy0 hPy_mem_generated_principal
+  have hupper : P.bandProjection y - x ∈ upperBounds S := by
+    intro s hs
+    have hsJ : s ∈ OrderIdeal.principal x := hSJ hs
+    obtain ⟨c, hc, hs_abs_le⟩ := OrderIdeal.mem_principal.mp hsJ
+    have hs_le_cx : s ≤ c • x := by
+      calc
+        s ≤ |s| := le_abs_self s
+        _ ≤ c • |x| := hs_abs_le
+        _ = c • x := by rw [abs_of_nonneg hx]
+    obtain ⟨n, hn⟩ := exists_nat_gt (c + 1)
+    refine le_sub_iff_add_le.mpr ?_
+    calc
+      s + x ≤ c • x + x := by simpa [add_comm] using add_le_add_right hs_le_cx x
+      _ = (c + 1) • x := by rw [add_smul, one_smul]
+      _ ≤ (n : ℝ) • x := smul_le_smul_of_nonneg_right (le_of_lt hn) hx
+      _ = n • x := Nat.cast_smul_eq_nsmul ℝ n x
+      _ ≤ P.bandProjection y := hbound n
+  have hPy_le : P.bandProjection y ≤ P.bandProjection y - x := hLUB.2 hupper
+  have hx_nonpos : x ≤ 0 := by
+    have hle : P.bandProjection y + x ≤ P.bandProjection y := le_sub_iff_add_le.mp hPy_le
+    have hle' : P.bandProjection y + x ≤ P.bandProjection y + 0 := by simpa using hle
+    simpa using (add_le_add_iff_left (P.bandProjection y)).mp hle'
+  exact le_antisymm hx_nonpos hx
 
 /-- A vector lattice with the Projection Property is Archimedean. -/
 theorem isVLArchimedean_of_hasProjectionProperty
     [HasProjectionProperty X] : IsVLArchimedean X :=
   isVLArchimedean_of_hasPrincipalProjectionProperty
--/
 
 end Rest
