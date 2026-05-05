@@ -26,7 +26,9 @@ import BanLat.ALSpace.Sublattice
 import BanLat.AMSpace.Basic
 import BanLat.AMSpace.Dual
 import BanLat.AMSpace.Max
+import BanLat.ALSpace.Add
 import BanLat.ALSpace.Dual
+import BanLat.ALSpace.DualALAM
 import BanLat.ALSpace.OrderContinuous
 import BanLat.Preliminaries.Regularity
 import BanLat.Preliminaries.SignedMeasure
