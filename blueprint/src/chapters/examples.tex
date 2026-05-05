@@ -1,0 +1,467 @@
+\chapter{Examples}
+
+This chapter records the main examples developed in the library.
+We start with finite signed measures and their total-variation
+Banach lattice structure. We then treat the standard Banach
+lattices $C(K,\mathbb{R})$ and $L^p(\mu)$, the Banach lattice
+$M(K)$ of regular signed Borel measures on a compact Hausdorff
+space, the Riesz--Markov--Kakutani identification
+$M(K) \cong C(K,\mathbb{R})^{*}$, and the atomic and $L^1$
+structure of $M(K)$.
+
+\section{Signed measures}
+
+Finite signed measures carry the lattice operations coming from
+their Jordan decompositions. The total variation gives a solid norm,
+and with this norm the space of finite signed measures is a Banach
+lattice.
+
+\begin{definition}
+\label{def:signedMeasure-pos-neg}
+\lean{MeasureTheory.SignedMeasure.posPart,
+  MeasureTheory.SignedMeasure.negPart}
+\leanok
+Let $\Omega$ be a measurable space and let $s$ be a finite signed
+measure on $\Omega$. The \emph{positive part} $s^{+}$ and
+\emph{negative part} $s^{-}$ are the positive and negative measures
+in the Jordan decomposition of $s$, regarded again as signed
+measures.
+\end{definition}
+
+\begin{lemma}
+\label{lem:signedMeasure-jordan-parts}
+\lean{MeasureTheory.SignedMeasure.posPart_sub_negPart,
+  MeasureTheory.SignedMeasure.zero_le_posPart,
+  MeasureTheory.SignedMeasure.zero_le_negPart,
+  MeasureTheory.SignedMeasure.nonneg_iff_negPart_eq_zero,
+  MeasureTheory.SignedMeasure.posPart_isLeast}
+\leanok
+\uses{def:signedMeasure-pos-neg}
+Let $s$ be a finite signed measure. Then
+$s = s^{+} - s^{-}$, both $s^{+}$ and $s^{-}$ are non-negative,
+$s$ is non-negative if and only if $s^{-}=0$, and $s^{+}$ is the
+least non-negative signed measure dominating $s$.
+\end{lemma}
+
+\begin{theorem}
+\label{thm:signedMeasure-vectorLattice}
+\lean{MeasureTheory.SignedMeasure.max_def,
+  MeasureTheory.SignedMeasure.min_def,
+  MeasureTheory.SignedMeasure.instLattice,
+  MeasureTheory.SignedMeasure.instVectorLattice}
+\leanok
+\uses{def:vector-lattice, def:signedMeasure-pos-neg}
+The finite signed measures on a measurable space form a vector
+lattice. For signed measures $s,t$,
+\[
+  s \vee t = t + (s-t)^{+}, \qquad
+  s \wedge t = s - (s-t)^{+}.
+\]
+\end{theorem}
+
+\begin{lemma}
+\label{lem:signedMeasure-abs-totalVariation}
+\lean{MeasureTheory.SignedMeasure.abs_eq_posPart_add_negPart,
+  MeasureTheory.SignedMeasure.abs_apply_eq_totalVariation}
+\leanok
+\uses{thm:signedMeasure-vectorLattice}
+For every finite signed measure $s$,
+\[
+  \lvert s\rvert = s^{+}+s^{-}.
+\]
+Moreover, for every measurable set $A$, evaluating $\lvert s\rvert$
+on $A$ gives the total variation of $s$ on $A$.
+\end{lemma}
+
+\begin{theorem}
+\label{thm:signedMeasure-banachLattice}
+\lean{MeasureTheory.SignedMeasure.norm_def,
+  MeasureTheory.SignedMeasure.instNormedVectorLattice,
+  MeasureTheory.SignedMeasure.instBanachLattice,
+  MeasureTheory.SignedMeasure.norm_of_nonneg}
+\leanok
+\uses{def:banach-lattice, lem:signedMeasure-abs-totalVariation}
+The finite signed measures on a measurable space form a Banach
+lattice under the total-variation norm
+\[
+  \lVert s\rVert = |s|(\Omega).
+\]
+If $s$ is non-negative, then $\lVert s\rVert = s(\Omega)$.
+\end{theorem}
+
+\section{Function spaces}
+
+The standard function spaces used later in the representation
+theorems are Banach lattices: continuous functions on a compact
+Hausdorff space with the supremum norm, and real $L^p$ spaces with
+their pointwise lattice structure.
+
+\begin{theorem}
+\label{thm:cofk-banachLattice}
+\lean{instVectorLatticeCofK, instNormedVectorLatticeCofK,
+  instBanachLatticeCofK}
+\leanok
+\uses{def:banach-lattice}
+Let $K$ be a compact Hausdorff space. The space
+$C(K,\mathbb{R})$ of continuous real-valued functions on $K$ is a
+Banach lattice under pointwise lattice operations and the supremum
+norm.
+\end{theorem}
+
+\begin{theorem}
+\label{thm:lp-banachLattice}
+\lean{instVectorLatticeLp, instNormedVectorLatticeLp,
+  instBanachLatticeLp}
+\leanok
+\uses{def:banach-lattice}
+Let $\mu$ be a measure and let $1 \le p$. The real space
+$L^p(\mu)$ is a Banach lattice under the pointwise lattice
+operations.
+\end{theorem}
+
+\begin{theorem}
+\label{thm:lp-closed-sublattice-containing-one}
+\lean{exists_Lp_banachLatEquiv_of_closed_sublattice_containing_one}
+\leanok
+\uses{def:vector-sublattice, def:banachLatEquiv, thm:lp-banachLattice}
+Let $\mu$ be a finite measure and let $1 \le p < \infty$. If
+$L$ is a norm-closed vector sublattice of $L^p(\mu)$ containing
+the constant function $1$, then there exist a measurable space
+$\Omega'$ and a finite measure $\nu$ on $\Omega'$ such that $L$ is
+Banach lattice isometric to $L^p(\nu)$.
+\end{theorem}
+
+\begin{lemma}
+\label{lem:lp-aePos-of-forall-disjoint-eq-zero}
+\lean{lp_aePos_of_forall_isVLDisjoint_eq_zero}
+\leanok
+\uses{def:isVLDisjoint, thm:lp-banachLattice}
+Let $\nu$ be a finite measure and let $g \in L^1(\nu)$ with
+$0 \le g$. If the only element of $L^1(\nu)$ disjoint from $g$ is
+$0$, then $g$ is strictly positive almost everywhere.
+\end{lemma}
+
+\begin{theorem}
+\label{thm:exists-L1-banachLatEquiv-of-embeds-in-L1-with-aePositive}
+\lean{exists_L1_banachLatEquiv_of_embeds_in_L1_with_aePositive}
+\leanok
+\uses{def:banach-lattice, def:banachLatEquiv,
+  lem:lp-aePos-of-forall-disjoint-eq-zero}
+Let $X$ be a Banach lattice. Suppose $X$ embeds linearly and
+isometrically into an $L^1(\mu)$ space as a norm-closed vector
+sublattice, and suppose some non-negative element of $X$ is sent to
+a strictly positive function almost everywhere. Then $X$ is Banach
+lattice isometric to $L^1(\nu)$ for some measure $\nu$.
+\end{theorem}
+
+\section{Regular measures}
+
+For a compact Hausdorff space $K$, the regular finite signed Borel
+measures form a norm-closed vector sublattice of all finite signed
+measures. This Banach lattice is denoted $M(K)$; it is an AL-space
+and hence has order continuous norm.
+
+\begin{lemma}
+\label{lem:signedMeasure-regular-abs}
+\lean{MeasureTheory.SignedMeasure.IsRegular.abs}
+\leanok
+\uses{lem:signedMeasure-abs-totalVariation}
+Let $K$ be a compact Hausdorff space. If a finite signed Borel
+measure on $K$ is regular, then its modulus is regular.
+\end{lemma}
+
+\begin{definition}
+\label{def:regularSignedMeasureSublattice}
+\lean{MeasureTheory.SignedMeasure.regularSignedMeasureSublattice,
+  MeasureTheory.SignedMeasure.mem_regularSignedMeasureSublattice_iff}
+\leanok
+\uses{def:vector-sublattice, lem:signedMeasure-regular-abs}
+The regular finite signed Borel measures on a compact Hausdorff
+space $K$ form a vector sublattice of the vector lattice of all
+finite signed Borel measures on $K$.
+\end{definition}
+
+\begin{lemma}
+\label{lem:signedMeasure-regular-closed}
+\lean{MeasureTheory.SignedMeasure.isClosed_isRegular,
+  MeasureTheory.SignedMeasure.isClosed_regularSignedMeasureSublattice}
+\leanok
+\uses{def:regularSignedMeasureSublattice,
+  thm:signedMeasure-banachLattice}
+The regular finite signed Borel measures on a compact Hausdorff
+space form a norm-closed vector sublattice of all finite signed
+Borel measures.
+\end{lemma}
+
+\begin{definition}
+\label{def:mofK}
+\lean{MofK}
+\leanok
+\uses{def:regularSignedMeasureSublattice}
+Let $K$ be a compact Hausdorff space with its Borel measurable
+space structure. The Banach lattice $M(K)$ is the space of regular
+finite signed Borel measures on $K$.
+\end{definition}
+
+\begin{theorem}
+\label{thm:mofK-banachLattice}
+\lean{MofK.instBanachLattice}
+\leanok
+\uses{def:mofK, thm:signedMeasure-banachLattice,
+  lem:signedMeasure-regular-closed}
+For every compact Hausdorff space $K$, $M(K)$ is a Banach lattice.
+\end{theorem}
+
+\begin{theorem}
+\label{thm:mofK-alSpace}
+\lean{MofK.instALSpace, MofK.instIsOrderContinuousNorm,
+  MofK.instConditionallyCompleteLattice}
+\leanok
+\uses{def:mofK, def:al-space, thm:mofK-banachLattice,
+  thm:alSpace-isOrderContinuousNorm,
+  thm:alSpace-conditionallyCompleteLattice}
+For every compact Hausdorff space $K$, $M(K)$ is an AL-space. In
+particular, its norm is order continuous and $M(K)$ is Dedekind
+complete.
+\end{theorem}
+
+\section{The dual of \(C(K,\mathbb{R})\)}
+
+The Riesz--Markov--Kakutani theorem identifies the strong dual of
+$C(K,\mathbb{R})$ with $M(K)$. The construction sends a regular
+signed measure to integration against that measure, and sends a
+continuous functional to the regular signed measure obtained from
+the representing measures of its positive and negative parts.
+
+\begin{definition}
+\label{def:signedMeasureIntegral}
+\lean{signedMeasureIntegral}
+\leanok
+\uses{thm:signedMeasure-banachLattice, thm:cofk-banachLattice}
+Let $K$ be a compact Hausdorff space, let $\mu$ be a finite signed
+Borel measure on $K$, and let $f \in C(K,\mathbb{R})$. The integral
+of $f$ against $\mu$ is defined by integrating against the positive
+and negative parts of the Jordan decomposition and subtracting:
+\[
+  \int f\,d\mu :=
+  \int f\,d\mu^{+} - \int f\,d\mu^{-}.
+\]
+\end{definition}
+
+\begin{definition}
+\label{def:signedMeasureFunctional}
+\lean{signedMeasureFunctional,
+  signedMeasureFunctional_apply}
+\leanok
+\uses{def:signedMeasureIntegral, def:strongDual-toOrderDualSpace}
+Every finite signed Borel measure $\mu$ on a compact Hausdorff
+space defines a continuous functional on $C(K,\mathbb{R})$ by
+$f \mapsto \int f\,d\mu$.
+\end{definition}
+
+\begin{definition}
+\label{def:mofK-toDual}
+\lean{MofK.toDual, MofK.toDual_apply}
+\leanok
+\uses{def:mofK, def:signedMeasureFunctional}
+The map $M(K) \to C(K,\mathbb{R})^{*}$ sends a regular signed
+Borel measure to its integration functional.
+\end{definition}
+
+\begin{definition}
+\label{def:strongDual-measureOfNonneg}
+\lean{StrongDual.measureOfNonneg,
+  StrongDual.integral_measureOfNonneg}
+\leanok
+\uses{thm:cofk-banachLattice}
+Every non-negative continuous functional on $C(K,\mathbb{R})$ is
+represented by a regular finite Borel measure, and integration
+against that measure recovers the functional.
+\end{definition}
+
+\begin{definition}
+\label{def:strongDual-toMofK}
+\lean{StrongDual.toSignedMeasure,
+  StrongDual.isRegular_toSignedMeasure,
+  StrongDual.toMofK,
+  StrongDual.toMofK_coe,
+  StrongDual.toSignedMeasure_apply}
+\leanok
+\uses{def:mofK, def:strongDual-measureOfNonneg}
+Every continuous functional on $C(K,\mathbb{R})$ determines a
+regular finite signed Borel measure, by subtracting the representing
+measures of the positive and negative parts of the functional.
+\end{definition}
+
+\begin{theorem}
+\label{thm:mofK-dualEquiv}
+\lean{StrongDual.toDual_toMofK,
+  MofK.toMofK_toDual,
+  MofK.dualEquiv,
+  MofK.dualEquiv_apply}
+\leanok
+\uses{def:mofK-toDual, def:strongDual-toMofK, def:banachLatEquiv}
+Let $K$ be a compact Hausdorff space. Integration gives a Banach
+lattice isometry
+\[
+  M(K) \cong C(K,\mathbb{R})^{*}.
+\]
+\end{theorem}
+
+\section{Atoms and bands in \(M(K)\)}
+
+The atoms of $M(K)$ are precisely the strictly positive scalar
+multiples of Dirac measures. The continuous part of $M(K)$ consists
+of the measures whose total variation has no atoms, and principal
+bands are described by absolute continuity.
+
+\begin{definition}
+\label{def:mofK-dirac}
+\lean{MofK.dirac}
+\leanok
+\uses{def:mofK}
+For $x \in K$, the Dirac measure at $x$ is regarded as an element
+of $M(K)$ and denoted $\delta_x$.
+\end{definition}
+
+\begin{lemma}
+\label{lem:mofK-dirac-basic}
+\lean{MofK.zero_le_dirac, MofK.dirac_ne_zero,
+  MofK.norm_dirac}
+\leanok
+\uses{def:mofK-dirac}
+For every $x \in K$, the Dirac measure $\delta_x$ is non-negative,
+nonzero, and has norm $1$ in $M(K)$.
+\end{lemma}
+
+\begin{theorem}
+\label{thm:mofK-isVLAtom-dirac}
+\lean{MofK.isVLAtom_dirac, MofK.isVLAtom_smul_dirac,
+  MofK.isVLAtom_iff_exists_smul_dirac}
+\leanok
+\uses{def:mofK-dirac, def:isVLAtom}
+Let $K$ be a compact Hausdorff space. The atoms of $M(K)$ are
+exactly the strictly positive scalar multiples of Dirac measures:
+for $\mu \in M(K)$, $\mu$ is an atom if and only if
+\[
+  \mu = c\,\delta_x
+\]
+for some $x \in K$ and some real number $c>0$.
+\end{theorem}
+
+\begin{definition}
+\label{def:signedMeasure-noAtoms}
+\lean{MeasureTheory.SignedMeasure.NoAtoms}
+\leanok
+\uses{lem:signedMeasure-abs-totalVariation}
+A finite signed measure has \emph{no atoms} if its total variation
+measure has no atoms.
+\end{definition}
+
+\begin{theorem}
+\label{thm:mofK-mem-continuousPart-iff}
+\lean{MofK.mem_continuousPart_iff}
+\leanok
+\uses{def:continuousPart, def:signedMeasure-noAtoms,
+  thm:mofK-isVLAtom-dirac}
+Let $\mu \in M(K)$. Then $\mu$ belongs to the continuous part of
+$M(K)$ if and only if $\mu$ has no atoms as a signed measure.
+\end{theorem}
+
+\begin{theorem}
+\label{thm:mofK-band-generated-singleton-eq-absolutelyContinuous}
+\lean{MofK.band_generated_singleton_eq_absolutelyContinuous}
+\leanok
+\uses{def:mofK, def:band-generated}
+Let $0 \le \mu$ in $M(K)$. The principal band generated by $\mu$
+is precisely the set of regular signed Borel measures in $M(K)$
+that are absolutely continuous with respect to $\mu$.
+\end{theorem}
+
+\begin{theorem}
+\label{thm:mofK-exists-principalBand-banachLatEquivL1}
+\lean{MofK.exists_principalBand_banachLatEquivL1}
+\leanok
+\uses{def:mofK, def:banachLatEquiv, def:band-generated,
+  thm:mofK-band-generated-singleton-eq-absolutelyContinuous,
+  thm:lp-banachLattice}
+For every $\mu \in M(K)$, the principal band generated by $\mu$ is
+Banach lattice isometric to $L^1(\nu)$ for some finite measure
+$\nu$.
+\end{theorem}
+
+\section{Atomic decompositions and \(L^1\) representation}
+
+The atomic part of $M(K)$ is spanned, in the summable sense, by
+Dirac measures. Every regular signed measure decomposes as a
+countable sum of Dirac measures plus a non-atomic regular signed
+measure. Finally, the local $L^1$ descriptions of principal bands
+assemble into a global $L^1$ representation of $M(K)$.
+
+\begin{theorem}
+\label{thm:mofK-exists-nonneg-sum-dirac-of-mem-atomicPart}
+\lean{MofK.exists_nonneg_sum_dirac_of_mem_atomicPart}
+\leanok
+\uses{def:atomicPart, def:mofK-dirac,
+  thm:mofK-isVLAtom-dirac}
+Let $\mu \in M(K)$ be non-negative and belong to the atomic part of
+$M(K)$. Then there are a countable type $\iota$, non-negative
+coefficients $c_i$, and points $x_i \in K$ such that
+\[
+  \mu = \sum_{i \in \iota} c_i\,\delta_{x_i},
+\]
+with the family on the right summable in $M(K)$.
+\end{theorem}
+
+\begin{theorem}
+\label{thm:mofK-exists-sum-dirac-of-mem-atomicPart}
+\lean{MofK.exists_sum_dirac_of_mem_atomicPart}
+\leanok
+\uses{def:atomicPart, def:mofK-dirac,
+  thm:mofK-exists-nonneg-sum-dirac-of-mem-atomicPart}
+Let $\mu \in M(K)$ belong to the atomic part of $M(K)$. Then there
+are a countable type $\iota$, real coefficients $c_i$, and points
+$x_i \in K$ such that
+\[
+  \mu = \sum_{i \in \iota} c_i\,\delta_{x_i},
+\]
+with the family on the right summable in $M(K)$.
+\end{theorem}
+
+\begin{theorem}
+\label{thm:mofK-exists-sum-dirac-add-noAtoms}
+\lean{MofK.exists_sum_dirac_add_noAtoms}
+\leanok
+\uses{def:mofK-dirac, def:signedMeasure-noAtoms,
+  thm:mofK-exists-sum-dirac-of-mem-atomicPart}
+For every $\mu \in M(K)$, there are a countable type $\iota$,
+real coefficients $c_i$, points $x_i \in K$, and
+$\nu \in M(K)$ with no atoms such that
+\[
+  \mu = \left(\sum_{i \in \iota} c_i\,\delta_{x_i}\right)+\nu,
+\]
+with the family in the sum summable in $M(K)$.
+\end{theorem}
+
+\begin{theorem}
+\label{thm:exists-L1-banachLatEquiv-of-principalBandModels}
+\lean{MofK.exists_L1_banachLatEquiv_of_principalBandModels}
+\leanok
+\uses{def:al-space, def:banachLatEquiv,
+  thm:hasSum-principalBandProjection}
+Let $X$ be an AL-space. Suppose every principal band of $X$ is
+Banach lattice isometric to some $L^1$ space. Then $X$ is Banach
+lattice isometric to $L^1(\nu)$ for some measure $\nu$.
+\end{theorem}
+
+\begin{theorem}
+\label{thm:mofK-exists-L1-banachLatEquiv}
+\lean{MofK.exists_L1_banachLatEquiv}
+\leanok
+\uses{def:mofK, thm:mofK-alSpace,
+  thm:mofK-exists-principalBand-banachLatEquivL1,
+  thm:exists-L1-banachLatEquiv-of-principalBandModels}
+Let $K$ be a compact Hausdorff space. Then there exist a measurable
+space $\Omega$ and a measure $\nu$ on $\Omega$ such that $M(K)$ is
+Banach lattice isometric to $L^1(\nu)$.
+\end{theorem}

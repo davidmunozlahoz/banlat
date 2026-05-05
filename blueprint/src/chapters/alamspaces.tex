@@ -1,0 +1,554 @@
+\chapter{AL- and AM-spaces}
+
+This chapter studies the two standard norm identities for Banach
+lattices. In an AM-space the norm of the supremum of two positive
+vectors is the maximum of their norms; in an AL-space the norm is
+additive on the positive cone. We record their first consequences,
+their duality, the character space of an AM-space with unit, and
+the Kakutani representation theorems.
+
+\section{Norm identities}
+
+This section introduces AM-spaces, AM-spaces with unit, and
+AL-spaces. We keep the statements in the form used later in the
+chapter: AM-spaces are governed by maximum formulae for suprema,
+while AL-spaces are governed by additivity on positive sums.
+
+\begin{definition}
+\label{def:am-space}
+\lean{AMSpace}
+\leanok
+\uses{def:banach-lattice}
+A Banach lattice $X$ is an \emph{AM-space} if, for all $x, y \in X$
+with $x \wedge y = 0$,
+\[
+  \lVert x + y\rVert = \max\{\lVert x\rVert,\lVert y\rVert\}.
+\]
+\end{definition}
+
+\begin{lemma}
+\label{lem:amSpace-norm-sup-eq-max-of-inf-eq-zero}
+\lean{AMSpace.norm_sup_eq_max_of_inf_eq_zero}
+\leanok
+\uses{def:am-space}
+Let $X$ be an AM-space. If $x, y \in X$ satisfy $x \wedge y = 0$,
+then
+\[
+  \lVert x \vee y\rVert = \max\{\lVert x\rVert,\lVert y\rVert\}.
+\]
+\end{lemma}
+
+\begin{definition}
+\label{def:am-space-with-unit}
+\lean{AMSpaceWithUnit}
+\leanok
+\uses{def:am-space, def:strongOrderUnit, def:orderIdeal-gaugeNorm}
+An \emph{AM-space with unit} is an AM-space $X$ together with an
+element $e \in X$ such that $e$ is a strong order unit of $X$ and
+\[
+  \lVert x\rVert = \lVert x\rVert_e
+\]
+for every $x \in X$.
+\end{definition}
+
+\begin{lemma}
+\label{lem:amSpaceWithUnit-principal-unit-eq-top}
+\lean{AMSpaceWithUnit.principal_unit_eq_top}
+\leanok
+\uses{def:am-space-with-unit,
+  thm:orderIdeal-strongOrderUnit-iff-principal-eq-top}
+Let $X$ be an AM-space with unit $e$. Then $I_e = X$.
+\end{lemma}
+
+\begin{theorem}
+\label{thm:amSpace-norm-sup-eq-max-of-nonneg}
+\lean{AMSpace.norm_sup_eq_max_of_nonneg}
+\leanok
+\uses{def:am-space, lem:amSpace-norm-sup-eq-max-of-inf-eq-zero,
+  thm:strongDual-instBanachLattice, thm:bidualSpace-inclusion-sup,
+  thm:bidualSpace-norm-inclusion}
+Let $X$ be an AM-space. If $0 \le x$ and $0 \le y$, then
+\[
+  \lVert x \vee y\rVert = \max\{\lVert x\rVert,\lVert y\rVert\}.
+\]
+\end{theorem}
+
+\begin{definition}
+\label{def:al-space}
+\lean{ALSpace}
+\leanok
+\uses{def:banach-lattice}
+A Banach lattice $X$ is an \emph{AL-space} if, for all $x, y \in X$
+with $x \wedge y = 0$,
+\[
+  \lVert x + y\rVert = \lVert x\rVert + \lVert y\rVert.
+\]
+\end{definition}
+
+\begin{lemma}
+\label{lem:alSpace-norm-posPart-add-norm-negPart}
+\lean{ALSpace.norm_posPart_add_norm_negPart}
+\leanok
+\uses{def:al-space}
+Let $X$ be an AL-space. For every $x \in X$,
+\[
+  \lVert x^{+}\rVert + \lVert x^{-}\rVert = \lVert x\rVert.
+\]
+\end{lemma}
+
+\begin{theorem}
+\label{thm:alSpace-norm-add-eq-of-nonneg}
+\lean{ALSpace.norm_add_eq_of_nonneg}
+\leanok
+\uses{def:al-space, thm:amSpace-norm-sup-eq-max-of-nonneg}
+Let $X$ be an AL-space. If $0 \le x$ and $0 \le y$, then
+\[
+  \lVert x + y\rVert = \lVert x\rVert + \lVert y\rVert.
+\]
+\end{theorem}
+
+\begin{lemma}
+\label{lem:alSpace-closed-sublattice}
+\lean{ALSpace.instALSpace_closedSublattice}
+\leanok
+\uses{def:al-space, def:vector-sublattice}
+Let $X$ be an AL-space and let $Y$ be a norm-closed vector
+sublattice of $X$. Then $Y$ is an AL-space under the induced
+structures.
+\end{lemma}
+
+\begin{theorem}
+\label{thm:alSpace-isOrderContinuousNorm}
+\lean{ALSpace.instIsOrderContinuousNorm}
+\leanok
+\uses{def:al-space, def:isOrderContinuousNorm,
+  def:sigmaConditionallyCompleteLattice,
+  thm:sigmaConditionallyCompleteLatticeOfPosSeq,
+  thm:isOrderContinuousNorm-tfae}
+Every AL-space has order continuous norm.
+\end{theorem}
+
+\begin{theorem}
+\label{thm:alSpace-conditionallyCompleteLattice}
+\lean{ALSpace.instConditionallyCompleteLattice}
+\leanok
+\uses{def:al-space, def:isOrderContinuousNorm,
+  thm:conditionallyCompleteLatticeOf-isOrderContinuousNorm}
+Let $X$ be an AL-space whose norm is order continuous. Then $X$ is
+Dedekind complete: every nonempty bounded above subset admits a
+least upper bound.
+\end{theorem}
+
+\section{Duality}
+
+AM- and AL-spaces are dual notions. The strong dual $X^{*}$ of an
+AM-space is an AL-space, while the strong dual of an AL-space is an
+AM-space. For a non-trivial AL-space, the canonical functional that
+extends the norm on the positive cone is a strong order unit of
+$X^{*}$, so $X^{*}$ is an AM-space with unit. Conversely, the AM or
+AL identity on $X^{*}$ forces the opposite identity on $X$.
+
+\begin{theorem}
+\label{thm:strongDual-alSpace-of-amSpace}
+\lean{AMSpace.StrongDual.instALSpace_of_amSpace}
+\leanok
+\uses{def:am-space, def:al-space, def:strongDual-toOrderDualSpace}
+Let $X$ be an AM-space. Then $X^{*}$ is an AL-space.
+\end{theorem}
+
+\begin{theorem}
+\label{thm:strongDual-amSpace-of-alSpace}
+\lean{ALSpace.StrongDual.instAMSpace_of_alSpace}
+\leanok
+\uses{def:al-space, def:am-space, def:strongDual-toOrderDualSpace}
+Let $X$ be an AL-space. Then $X^{*}$ is an AM-space.
+\end{theorem}
+
+\begin{definition}
+\label{def:alSpace-dualUnit}
+\lean{ALSpace.dualUnit}
+\leanok
+\uses{def:al-space, thm:positive-extension}
+Let $X$ be an AL-space. The \emph{canonical dual unit} is the
+continuous functional $e' \in X^{*}$ extending the norm on the
+positive cone of $X$.
+\end{definition}
+
+\begin{lemma}
+\label{lem:alSpace-dualUnit-apply}
+\lean{ALSpace.dualUnit_apply}
+\leanok
+\uses{def:alSpace-dualUnit}
+Let $X$ be an AL-space. For every $x \in X$,
+\[
+  e'(x) = \lVert x^{+}\rVert - \lVert x^{-}\rVert.
+\]
+\end{lemma}
+
+\begin{lemma}
+\label{lem:alSpace-dualUnit-apply-of-nonneg}
+\lean{ALSpace.dualUnit_apply_of_nonneg}
+\leanok
+\uses{def:alSpace-dualUnit}
+Let $X$ be an AL-space. If $0 \le x$, then
+$e'(x)=\lVert x\rVert$.
+\end{lemma}
+
+\begin{lemma}
+\label{lem:alSpace-dualUnit-nonneg}
+\lean{ALSpace.dualUnit_nonneg}
+\leanok
+\uses{def:alSpace-dualUnit, lem:alSpace-dualUnit-apply-of-nonneg}
+Let $X$ be an AL-space. Then $0 \le e'$ in $X^{*}$.
+\end{lemma}
+
+\begin{lemma}
+\label{lem:alSpace-abs-le-norm-smul-dualUnit}
+\lean{ALSpace.abs_le_norm_smul_dualUnit}
+\leanok
+\uses{def:alSpace-dualUnit, lem:alSpace-dualUnit-nonneg}
+Let $X$ be an AL-space. For every $\varphi \in X^{*}$,
+\[
+  \lvert \varphi\rvert \le \lVert \varphi\rVert e'.
+\]
+\end{lemma}
+
+\begin{theorem}
+\label{thm:alSpace-norm-eq-gaugeNorm-dualUnit}
+\lean{ALSpace.norm_eq_gaugeNorm_dualUnit}
+\leanok
+\uses{def:alSpace-dualUnit, def:orderIdeal-gaugeNorm,
+  lem:alSpace-abs-le-norm-smul-dualUnit}
+Let $X$ be an AL-space. For every $\varphi \in X^{*}$,
+\[
+  \lVert \varphi\rVert = \lVert \varphi\rVert_{e'}.
+\]
+\end{theorem}
+
+\begin{theorem}
+\label{thm:alSpace-dualUnit-strongOrderUnit}
+\lean{ALSpace.dualUnit_strongOrderUnit}
+\leanok
+\uses{def:alSpace-dualUnit, def:strongOrderUnit,
+  lem:alSpace-abs-le-norm-smul-dualUnit}
+Let $X$ be a non-trivial AL-space. Then $e'$ is a strong order unit
+of $X^{*}$.
+\end{theorem}
+
+\begin{theorem}
+\label{thm:strongDual-amSpaceWithUnit-of-alSpace}
+\lean{ALSpace.StrongDual.instAMSpaceWithUnit_of_alSpace}
+\leanok
+\uses{def:al-space, def:am-space-with-unit,
+  thm:strongDual-amSpace-of-alSpace,
+  thm:alSpace-dualUnit-strongOrderUnit,
+  thm:alSpace-norm-eq-gaugeNorm-dualUnit}
+Let $X$ be a non-trivial AL-space. Then $X^{*}$ is an AM-space with
+unit $e'$.
+\end{theorem}
+
+\begin{theorem}
+\label{thm:strongDual-amSpace-of-dual-alSpace}
+\lean{StrongDual.amSpace_of_dual_alSpace}
+\leanok
+\uses{def:banach-lattice, def:al-space, def:am-space,
+  thm:strongDual-amSpace-of-alSpace, thm:bidualSpace-norm-inclusion}
+Let $X$ be a Banach lattice. If $X^{*}$ is an AL-space, then $X$ is
+an AM-space.
+\end{theorem}
+
+\begin{theorem}
+\label{thm:strongDual-alSpace-of-dual-amSpace}
+\lean{StrongDual.alSpace_of_dual_amSpace}
+\leanok
+\uses{def:banach-lattice, def:am-space, def:al-space,
+  thm:strongDual-alSpace-of-amSpace, thm:bidualSpace-norm-inclusion}
+Let $X$ be a Banach lattice. If $X^{*}$ is an AM-space, then $X$ is
+an AL-space.
+\end{theorem}
+
+\section{Characters}
+
+The representation theorem for AM-spaces with unit is built from
+lattice characters. A character is a real-valued vector lattice
+homomorphism that sends the unit to $1$. The character space is
+compact Hausdorff in the topology inherited from the product
+space $\mathbb{R}^{X}$, and characters attain the norm of each
+element.
+
+\begin{lemma}
+\label{lem:amSpaceWithUnit-top-iff-unit-mem}
+\lean{AMSpaceWithUnit.top_iff_unit_mem}
+\leanok
+\uses{def:am-space-with-unit, def:order-ideal,
+  lem:amSpaceWithUnit-principal-unit-eq-top}
+Let $X$ be an AM-space with unit $e$, and let $I$ be an order ideal
+of $X$. Then $I = X$ if and only if $e \in I$.
+\end{lemma}
+
+\begin{theorem}
+\label{thm:amSpaceWithUnit-exists-le-maximal}
+\lean{AMSpaceWithUnit.exists_le_maximal}
+\leanok
+\uses{def:am-space-with-unit, def:order-ideal,
+  lem:amSpaceWithUnit-top-iff-unit-mem}
+Let $X$ be an AM-space with unit, and let $I$ be a proper order
+ideal of $X$. Then there is a proper order ideal $M$ such that
+$I \subseteq M$, and every proper order ideal containing $M$ is
+equal to $M$.
+\end{theorem}
+
+\begin{definition}
+\label{def:lattice-character}
+\lean{AMSpaceWithUnit.LatticeCharacter}
+\leanok
+\uses{def:am-space-with-unit, def:vecLatHom}
+Let $X$ be an AM-space with unit $e$. A \emph{lattice character} on
+$X$ is a vector lattice homomorphism $\varphi \colon X \to
+\mathbb{R}$ such that $\varphi(e)=1$.
+\end{definition}
+
+\begin{lemma}
+\label{lem:latticeCharacter-map-sup}
+\lean{AMSpaceWithUnit.LatticeCharacter.map_sup}
+\leanok
+\uses{def:lattice-character}
+Let $X$ be an AM-space with unit and let $\varphi$ be a lattice
+character on $X$. Then, for all $x,y \in X$,
+\[
+  \varphi(x \vee y) = \max\{\varphi(x),\varphi(y)\}.
+\]
+\end{lemma}
+
+\begin{lemma}
+\label{lem:latticeCharacter-map-inf}
+\lean{AMSpaceWithUnit.LatticeCharacter.map_inf}
+\leanok
+\uses{def:lattice-character}
+Let $X$ be an AM-space with unit and let $\varphi$ be a lattice
+character on $X$. Then, for all $x,y \in X$,
+\[
+  \varphi(x \wedge y) = \min\{\varphi(x),\varphi(y)\}.
+\]
+\end{lemma}
+
+\begin{lemma}
+\label{lem:latticeCharacter-monotone}
+\lean{AMSpaceWithUnit.LatticeCharacter.monotone}
+\leanok
+\uses{def:lattice-character}
+Every lattice character on an AM-space with unit is monotone.
+\end{lemma}
+
+\begin{lemma}
+\label{lem:latticeCharacter-nonneg-apply}
+\lean{AMSpaceWithUnit.LatticeCharacter.nonneg_apply}
+\leanok
+\uses{def:lattice-character}
+Let $X$ be an AM-space with unit, let $\varphi$ be a lattice
+character on $X$, and let $x \in X$ with $0 \le x$. Then
+$0 \le \varphi(x)$.
+\end{lemma}
+
+\begin{lemma}
+\label{lem:latticeCharacter-abs-apply-le-norm}
+\lean{AMSpaceWithUnit.LatticeCharacter.abs_apply_le_norm}
+\leanok
+\uses{def:lattice-character, def:am-space-with-unit,
+  lem:amSpaceWithUnit-principal-unit-eq-top,
+  thm:orderIdeal-abs-le-gaugeNorm-smul-abs}
+Let $X$ be an AM-space with unit and let $\varphi$ be a lattice
+character on $X$. Then, for every $x \in X$,
+\[
+  \lvert \varphi(x)\rvert \le \lVert x\rVert.
+\]
+\end{lemma}
+
+\begin{theorem}
+\label{thm:latticeCharacter-continuous}
+\lean{AMSpaceWithUnit.LatticeCharacter.continuous}
+\leanok
+\uses{def:lattice-character, lem:latticeCharacter-abs-apply-le-norm}
+Every lattice character on an AM-space with unit is continuous.
+\end{theorem}
+
+\begin{definition}
+\label{def:latticeCharacter-topology}
+\lean{AMSpaceWithUnit.LatticeCharacter.instTopologicalSpace}
+\leanok
+\uses{def:lattice-character}
+The character space of an AM-space with unit $X$ carries the
+topology induced by the inclusion into the product space
+$\mathbb{R}^{X}$.
+\end{definition}
+
+\begin{lemma}
+\label{lem:latticeCharacter-continuous-eval}
+\lean{AMSpaceWithUnit.LatticeCharacter.continuous_eval}
+\leanok
+\uses{def:latticeCharacter-topology}
+Let $X$ be an AM-space with unit. For every $x \in X$, the map
+$\varphi \mapsto \varphi(x)$ on the character space of $X$ is
+continuous.
+\end{lemma}
+
+\begin{theorem}
+\label{thm:latticeCharacter-t2Space}
+\lean{AMSpaceWithUnit.LatticeCharacter.instT2Space}
+\leanok
+\uses{def:latticeCharacter-topology}
+The character space of an AM-space with unit is Hausdorff.
+\end{theorem}
+
+\begin{theorem}
+\label{thm:latticeCharacter-compactSpace}
+\lean{AMSpaceWithUnit.LatticeCharacter.instCompactSpace}
+\leanok
+\uses{def:latticeCharacter-topology,
+  lem:latticeCharacter-abs-apply-le-norm}
+The character space of an AM-space with unit is compact.
+\end{theorem}
+
+\begin{theorem}
+\label{thm:latticeCharacter-ofMaximalIdeal}
+\lean{AMSpaceWithUnit.LatticeCharacter.ofMaximalIdeal}
+\leanok
+\uses{def:lattice-character, thm:amSpaceWithUnit-exists-le-maximal}
+Let $X$ be an AM-space with unit, and let $M$ be a proper order
+ideal of $X$ such that every proper order ideal containing $M$ is
+equal to $M$. Then $M$ determines a lattice character on $X$.
+\end{theorem}
+
+\begin{theorem}
+\label{thm:latticeCharacter-exists-apply-eq-norm-of-nonneg}
+\lean{AMSpaceWithUnit.LatticeCharacter.exists_apply_eq_norm_of_nonneg}
+\leanok
+\uses{def:lattice-character, thm:latticeCharacter-ofMaximalIdeal,
+  thm:amSpaceWithUnit-exists-le-maximal}
+Let $X$ be a non-trivial AM-space with unit. If $0 \le x$, then
+there exists a lattice character $\varphi$ on $X$ such that
+\[
+  \varphi(x) = \lVert x\rVert.
+\]
+\end{theorem}
+
+\begin{theorem}
+\label{thm:latticeCharacter-exists-abs-apply-eq-norm}
+\lean{AMSpaceWithUnit.LatticeCharacter.exists_abs_apply_eq_norm}
+\leanok
+\uses{def:lattice-character,
+  thm:latticeCharacter-exists-apply-eq-norm-of-nonneg}
+Let $X$ be a non-trivial AM-space with unit. For every $x \in X$,
+there exists a lattice character $\varphi$ on $X$ such that
+\[
+  \lvert \varphi(x)\rvert = \lVert x\rVert.
+\]
+\end{theorem}
+
+\section{Kakutani representation}
+
+The Gelfand transform sends an element of an AM-space with unit to
+its evaluation function on the compact character space. For a
+non-trivial AM-space with unit this gives a Banach lattice isometry
+onto the space of continuous real-valued functions on the character
+space. The dual representation then gives the AL-space theorem:
+every AL-space is Banach lattice isometric to an $L^1$ space.
+
+\begin{definition}
+\label{def:amSpaceWithUnit-gelfand}
+\lean{AMSpaceWithUnit.gelfand}
+\leanok
+\uses{def:lattice-character, lem:latticeCharacter-continuous-eval}
+Let $X$ be an AM-space with unit. The \emph{Gelfand transform}
+sends $x \in X$ to the continuous function on the character space
+of $X$ given by $\varphi \mapsto \varphi(x)$.
+\end{definition}
+
+\begin{lemma}
+\label{lem:amSpaceWithUnit-gelfand-unit}
+\lean{AMSpaceWithUnit.gelfand_unit}
+\leanok
+\uses{def:amSpaceWithUnit-gelfand}
+Let $X$ be an AM-space with unit $e$. The Gelfand transform sends
+$e$ to the constant function $1$.
+\end{lemma}
+
+\begin{theorem}
+\label{thm:amSpaceWithUnit-gelfand-isVecLatHom}
+\lean{AMSpaceWithUnit.gelfand_isVecLatHom}
+\leanok
+\uses{def:amSpaceWithUnit-gelfand, def:vecLatHom,
+  lem:latticeCharacter-map-sup, lem:latticeCharacter-map-inf}
+The Gelfand transform of an AM-space with unit is a vector lattice
+homomorphism.
+\end{theorem}
+
+\begin{theorem}
+\label{thm:amSpaceWithUnit-norm-gelfand}
+\lean{AMSpaceWithUnit.norm_gelfand}
+\leanok
+\uses{def:amSpaceWithUnit-gelfand,
+  thm:latticeCharacter-exists-abs-apply-eq-norm,
+  lem:latticeCharacter-abs-apply-le-norm}
+Let $X$ be a non-trivial AM-space with unit. For every $x \in X$,
+\[
+  \lVert \widehat{x}\rVert = \lVert x\rVert,
+\]
+where $\widehat{x}$ is the Gelfand transform of $x$.
+\end{theorem}
+
+\begin{theorem}
+\label{thm:amSpaceWithUnit-gelfand-isometry}
+\lean{AMSpaceWithUnit.gelfand_isometry}
+\leanok
+\uses{def:amSpaceWithUnit-gelfand, thm:amSpaceWithUnit-norm-gelfand}
+Let $X$ be a non-trivial AM-space with unit. The Gelfand transform
+is an isometry.
+\end{theorem}
+
+\begin{theorem}
+\label{thm:amSpaceWithUnit-gelfand-surjective}
+\lean{AMSpaceWithUnit.gelfand_surjective}
+\leanok
+\uses{def:amSpaceWithUnit-gelfand,
+  thm:amSpaceWithUnit-gelfand-isVecLatHom,
+  thm:amSpaceWithUnit-gelfand-isometry,
+  thm:latticeCharacter-compactSpace}
+Let $X$ be a non-trivial AM-space with unit. The Gelfand transform
+maps $X$ onto the Banach lattice of continuous real-valued functions
+on the character space of $X$.
+\end{theorem}
+
+\begin{theorem}
+\label{thm:amSpaceWithUnit-kakutaniEquiv}
+\lean{AMSpaceWithUnit.kakutaniEquiv}
+\leanok
+\uses{def:banachLatEquiv, def:amSpaceWithUnit-gelfand,
+  thm:amSpaceWithUnit-gelfand-isVecLatHom,
+  thm:amSpaceWithUnit-gelfand-isometry,
+  thm:amSpaceWithUnit-gelfand-surjective}
+Let $X$ be a non-trivial AM-space with unit. The Gelfand transform
+is a Banach lattice isometry from $X$ onto the space of continuous
+real-valued functions on the character space of $X$.
+\end{theorem}
+
+\begin{lemma}
+\label{lem:amSpaceWithUnit-kakutaniEquiv-unit}
+\lean{AMSpaceWithUnit.kakutaniEquiv_unit}
+\leanok
+\uses{thm:amSpaceWithUnit-kakutaniEquiv}
+Let $X$ be a non-trivial AM-space with unit $e$. Under the
+Kakutani isometry, $e$ corresponds to the constant function $1$.
+\end{lemma}
+
+\begin{theorem}
+\label{thm:alSpace-exists-L1-banachLatEquiv}
+\lean{ALSpace.exists_L1_banachLatEquiv}
+\leanok
+\uses{def:al-space, def:banachLatEquiv,
+  thm:strongDual-amSpaceWithUnit-of-alSpace,
+  thm:amSpaceWithUnit-kakutaniEquiv}
+Let $X$ be an AL-space. Then there exist a type $\Omega$, a
+measurable space structure on $\Omega$, and a measure $\mu$ on
+$\Omega$ such that $X$ is Banach lattice isometric to $L^1(\mu)$.
+\end{theorem}
