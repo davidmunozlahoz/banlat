@@ -16,6 +16,7 @@ import BanLat.Substructures.Band.Generated
 import BanLat.Substructures.Band.Lattice
 import BanLat.Substructures.Band.Projection
 import BanLat.Substructures.Band.PPP
+import BanLat.Substructures.Band.Decomposition
 import BanLat.Atom
 import BanLat.Dual
 import BanLat.OrderComplete
@@ -24,8 +25,11 @@ import BanLat.OrderContinuous.Nakano
 import BanLat.ALSpace.Basic
 import BanLat.ALSpace.Sublattice
 import BanLat.AMSpace.Basic
+import BanLat.AMSpace.Characters
 import BanLat.AMSpace.Dual
+import BanLat.AMSpace.Kakutani
 import BanLat.AMSpace.Max
+import BanLat.AMSpace.Maximal
 import BanLat.ALSpace.Add
 import BanLat.ALSpace.Dual
 import BanLat.ALSpace.DualALAM
@@ -41,4 +45,7 @@ import BanLat.Examples.SignedMeasure.Basic
 import BanLat.Examples.MofK.Basic
 import BanLat.Examples.MofK.Atom
 import BanLat.Examples.MofK.ALspace
+import BanLat.Examples.MofK.Band
 import BanLat.Examples.MofK.Decomposition
+import BanLat.Examples.MofK.L1space
+import BanLat.ALSpace.Kakutani
