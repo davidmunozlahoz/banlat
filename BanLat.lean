@@ -20,6 +20,7 @@ import BanLat.Substructures.Band.Decomposition
 import BanLat.Atom
 import BanLat.Dual
 import BanLat.OrderComplete
+import BanLat.Convergences.Uniform
 import BanLat.OrderContinuous.Basic
 import BanLat.OrderContinuous.Nakano
 import BanLat.ALSpace.Basic

@@ -1,4 +1,5 @@
 import BanLat.AMSpace.Characters
+import BanLat.Convergences.Uniform
 import BanLat.Examples.CofK.Basic
 import Mathlib.Topology.ContinuousMap.StoneWeierstrass
 
@@ -183,3 +184,35 @@ theorem kakutaniEquiv_unit [Nontrivial X] :
   exact φ.map_unit
 
 end AMSpaceWithUnit
+
+namespace OrderIdeal
+
+variable {X : Type*} [AddCommGroup X] [Lattice X] [IsOrderedAddMonoid X]
+  [VectorLattice X]
+
+/-- In a uniformly complete vector lattice, every nonzero positive principal
+ideal, equipped with its gauge norm and inherited vector lattice structure, is
+lattice isometric to continuous functions on a compact space. -/
+noncomputable def principalKakutaniEquiv
+    [IsUniformlyCompleteVectorLattice X] {e : X} (he : 0 < e) :
+    letI := principalNormedAddCommGroup e (ne_of_gt he)
+    letI := instLatticePrincipal e
+    letI := instIsOrderedAddMonoidPrincipal e
+    letI : AMSpaceWithUnit ↥(principal e) :=
+      principalAMSpaceWithUnit he.le (ne_of_gt he)
+        (IsUniformlyCompleteVectorLattice.complete_principal e he)
+    BanachLatEquiv ↥(principal e)
+      C(AMSpaceWithUnit.LatticeCharacter ↥(principal e), ℝ) := by
+  letI := principalNormedAddCommGroup e (ne_of_gt he)
+  letI := instLatticePrincipal e
+  letI := instIsOrderedAddMonoidPrincipal e
+  letI : AMSpaceWithUnit ↥(principal e) :=
+    principalAMSpaceWithUnit he.le (ne_of_gt he)
+      (IsUniformlyCompleteVectorLattice.complete_principal e he)
+  haveI : Nontrivial ↥(principal e) := by
+    refine ⟨⟨0, ⟨e, self_mem_principal e⟩, ?_⟩⟩
+    intro h
+    exact (ne_of_gt he) (by simpa using (congrArg Subtype.val h).symm)
+  exact AMSpaceWithUnit.kakutaniEquiv ↥(principal e)
+
+end OrderIdeal
