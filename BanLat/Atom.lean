@@ -212,10 +212,6 @@ theorem isVLAtom_iff_no_disjoint_in_interval [IsVLArchimedean X]
   exact le_antisymm hx_le_Ca hCa_le_x
 
 omit [VectorLattice X] in
-private lemma posPart_le_abs (x : X) : x⁺ ≤ |x| := by
-  rw [← posPart_add_negPart x]; exact le_add_of_nonneg_right (negPart_nonneg x)
-
-omit [VectorLattice X] in
 private lemma negPart_le_abs (x : X) : x⁻ ≤ |x| := by
   rw [← posPart_add_negPart x]; exact le_add_of_nonneg_left (posPart_nonneg x)
 
