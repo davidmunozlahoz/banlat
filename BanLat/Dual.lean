@@ -1,5 +1,9 @@
 import BanLat.Operators.Regular
 import BanLat.Operators.RieszKantorovich
+import Mathlib.Analysis.Convex.Cone.Dual
+import Mathlib.Analysis.Normed.Module.WeakDual
+import Mathlib.Topology.Algebra.Module.WeakDual
+import Mathlib.Topology.UniformSpace.Dini
 
 /-!
 # The order dual and strong dual of a vector or Banach lattice
@@ -145,6 +149,241 @@ def toOrderDualSpaceLinear : StrongDual ℝ X →ₗ[ℝ] OrderDualSpace X where
   map_smul' _ _ := by ext; rfl
 
 end NormedVectorLattice
+
+section WeakConvergence
+
+variable {X : Type*} [NormedAddCommGroup X] [Lattice X]
+  [IsOrderedAddMonoid X] [NormedVectorLattice X]
+
+private def positiveDualUnitBall (X : Type*) [NormedAddCommGroup X] [Lattice X]
+    [IsOrderedAddMonoid X] [NormedVectorLattice X] : Set (WeakDual ℝ X) :=
+  {φ | ‖WeakDual.toStrongDual φ‖ ≤ 1 ∧ ∀ x : X, 0 ≤ x → 0 ≤ φ x}
+
+private theorem isClosed_positiveDualUnitBall :
+    IsClosed (positiveDualUnitBall X) := by
+  have hball : IsClosed {φ : WeakDual ℝ X | ‖WeakDual.toStrongDual φ‖ ≤ 1} := by
+    convert (WeakDual.isClosed_closedBall (𝕜 := ℝ) (E := X) (0 : StrongDual ℝ X) 1) using 1
+    ext φ
+    simp [Metric.mem_closedBall, dist_eq_norm]
+  have hpos : IsClosed {φ : WeakDual ℝ X | ∀ x : X, 0 ≤ x → 0 ≤ φ x} := by
+    simp only [Set.setOf_forall]
+    exact isClosed_iInter fun x => isClosed_iInter fun _hx =>
+      isClosed_Ici.preimage (WeakDual.eval_continuous x)
+  simpa [positiveDualUnitBall, Set.setOf_and] using hball.inter hpos
+
+private theorem isCompact_positiveDualUnitBall :
+    IsCompact (positiveDualUnitBall X) := by
+  refine IsCompact.of_isClosed_subset
+    (WeakDual.isCompact_closedBall (𝕜 := ℝ) (E := X) (0 : StrongDual ℝ X) 1)
+    isClosed_positiveDualUnitBall ?_
+  intro φ hφ
+  simpa [positiveDualUnitBall, Metric.mem_closedBall, dist_eq_norm] using hφ.1
+
+private theorem exists_positive_dual_norming {x : X} (hx : 0 ≤ x) :
+    ∃ φ : StrongDual ℝ X, ‖φ‖ ≤ 1 ∧ φ x = ‖x‖ ∧
+      ∀ y : X, 0 ≤ y → 0 ≤ φ y := by
+  by_cases hx0 : x = 0
+  · refine ⟨0, by simp, by simp [hx0], fun _ _ => by simp⟩
+  · let N : X → ℝ := fun y => ‖y⁺‖
+    have hN_hom : ∀ c : ℝ, 0 < c → ∀ y : X, N (c • y) = c * N y := by
+      intro c hc y
+      simp [N, posPart_smul_nonneg hc.le y, norm_smul, Real.norm_of_nonneg hc.le]
+    have hN_add : ∀ y z : X, N (y + z) ≤ N y + N z := by
+      intro y z
+      have hle : |(y + z)⁺| ≤ |y⁺ + z⁺| := by
+        rw [abs_of_nonneg (posPart_nonneg (y + z)),
+          abs_of_nonneg (add_nonneg (posPart_nonneg y) (posPart_nonneg z))]
+        exact posPart_add_le y z
+      exact (norm_le_norm_of_abs_le_abs hle).trans (norm_add_le y⁺ z⁺)
+    let p : Subspace ℝ X := ℝ ∙ x
+    let coord : StrongDual ℝ p := ContinuousLinearEquiv.coord ℝ x hx0
+    let f : p →L[ℝ] ℝ := (‖x‖ : ℝ) • coord
+    have hf_le : ∀ y : (⟨p, f⟩ : X →ₗ.[ℝ] ℝ).domain,
+        (⟨p, f⟩ : X →ₗ.[ℝ] ℝ) y ≤ N y := by
+      intro y
+      let a : ℝ := coord y
+      have hy_eq : (y : X) = a • x := by
+        dsimp [a, coord]
+        exact (congrArg Subtype.val
+          ((ContinuousLinearEquiv.toSpanNonzeroSingleton ℝ x hx0).apply_symm_apply y)).symm
+      by_cases ha : 0 ≤ a
+      · have hpos : ((y : X))⁺ = a • x := by
+          rw [hy_eq, posPart_smul_nonneg ha, posPart_of_nonneg hx]
+        simp [f, a, N, hpos, norm_smul, Real.norm_of_nonneg ha, mul_comm]
+      · have ha' : a ≤ 0 := le_of_not_ge ha
+        have hnonpos : (y : X) ≤ 0 := by
+          rw [hy_eq]
+          exact smul_nonpos_of_nonpos_of_nonneg ha' hx
+        have hpos : ((y : X))⁺ = 0 := posPart_eq_zero.mpr hnonpos
+        have hleft : (⟨p, f⟩ : X →ₗ.[ℝ] ℝ) y = ‖x‖ * a := by
+          simp [f, a]
+        rw [hleft]
+        change ‖x‖ * a ≤ ‖((y : X))⁺‖
+        rw [hpos, norm_zero]
+        exact mul_nonpos_of_nonneg_of_nonpos (norm_nonneg x) ha'
+    obtain ⟨g, hg_eq, hg_le⟩ :=
+      exists_extension_of_le_sublinear (⟨p, f⟩ : X →ₗ.[ℝ] ℝ) N hN_hom hN_add hf_le
+    have hg_abs : ∀ y : X, |g y| ≤ ‖y‖ := by
+      intro y
+      refine abs_le.mpr ⟨?_, ?_⟩
+      · have hneg := hg_le (-y)
+        have hNneg : N (-y) ≤ ‖y‖ := by
+          exact (NormedVectorLattice.norm_posPart_le (-y)).trans (by rw [norm_neg])
+        have : g (-y) ≤ ‖y‖ := hneg.trans hNneg
+        rwa [map_neg, neg_le] at this
+      · exact (hg_le y).trans (NormedVectorLattice.norm_posPart_le y)
+    let φ : StrongDual ℝ X := g.mkContinuous 1 fun y => by
+      simpa [one_mul] using hg_abs y
+    refine ⟨φ, ?_, ?_, ?_⟩
+    · exact g.mkContinuous_norm_le zero_le_one fun y => by
+        simpa [one_mul] using hg_abs y
+    · have hxmem : x ∈ p := Submodule.mem_span_singleton_self x
+      have hval := hg_eq (⟨x, hxmem⟩ : (⟨p, f⟩ : X →ₗ.[ℝ] ℝ).domain)
+      have hcoord : coord (⟨x, hxmem⟩ : p) = 1 := by
+        change (ContinuousLinearEquiv.coord ℝ x hx0) (⟨x, hxmem⟩ : ℝ ∙ x) = 1
+        exact ContinuousLinearEquiv.coord_self (𝕜 := ℝ) x hx0
+      simpa [φ, f, coord, hcoord] using hval
+    · intro y hy
+      have hneg := hg_le (-y)
+      have hNneg : N (-y) = 0 := by
+        simp [N, posPart_eq_zero.mpr (neg_nonpos.mpr hy)]
+      rw [hNneg] at hneg
+      have : 0 ≤ g y := by
+        rw [map_neg] at hneg
+        linarith
+      simpa [φ] using this
+
+private theorem nonneg_of_weak_tendsto_eventually_nonneg {ι : Type*} [Preorder ι]
+    [IsDirected ι (· ≤ ·)] [Nonempty ι] {v : ι → X} {x : X}
+    (hweak : Filter.Tendsto (fun i => (toWeakSpace ℝ X) (v i)) Filter.atTop
+      (nhds ((toWeakSpace ℝ X) x)))
+    (hev : ∀ᶠ i in Filter.atTop, 0 ≤ v i) :
+    0 ≤ x := by
+  by_contra hx
+  obtain ⟨f, hf_pos, hf_neg⟩ :=
+    (ProperCone.positive ℝ X).hyperplane_separation_point (x₀ := x) (by simpa using hx)
+  have hf_tend : Filter.Tendsto (fun i => f (v i)) Filter.atTop (nhds (f x)) := by
+    have h := (WeakBilin.eval_continuous (topDualPairing ℝ X).flip f).tendsto
+      ((toWeakSpace ℝ X) x)
+    simpa using h.comp hweak
+  have hf_eventually : ∀ᶠ i in Filter.atTop, 0 ≤ f (v i) :=
+    hev.mono fun i hi => hf_pos (v i) (by simpa using hi)
+  have hlim : 0 ≤ f x := ge_of_tendsto hf_tend hf_eventually
+  exact (not_le_of_gt hf_neg) hlim
+
+private theorem tendsto_norm_of_antitone_nonneg_weak_tendsto_zero {ι : Type*}
+    [Preorder ι] {v : ι → X}
+    (hanti : Antitone v) (hnn : ∀ i, 0 ≤ v i)
+    (hweak : Filter.Tendsto (fun i => (toWeakSpace ℝ X) (v i)) Filter.atTop
+      (nhds ((toWeakSpace ℝ X) 0))) :
+    Filter.Tendsto (fun i => ‖v i‖) Filter.atTop (nhds 0) := by
+  let K := {φ : WeakDual ℝ X // φ ∈ positiveDualUnitBall X}
+  haveI : CompactSpace K := isCompact_iff_compactSpace.mp
+    (isCompact_positiveDualUnitBall (X := X))
+  let F : ι → K → ℝ := fun i φ => φ.1 (v i)
+  have hF_cont : ∀ i, Continuous (F i) := by
+    intro i
+    exact (WeakDual.eval_continuous (v i)).comp continuous_subtype_val
+  have hF_anti : Antitone F := by
+    intro i j hij φ
+    have hdiff : 0 ≤ v i - v j := sub_nonneg.mpr (hanti hij)
+    have hφdiff : 0 ≤ φ.1 (v i - v j) := φ.2.2 _ hdiff
+    rw [map_sub] at hφdiff
+    linarith
+  have hF_tend : ∀ φ : K, Filter.Tendsto (fun i => F i φ) Filter.atTop (nhds 0) := by
+    intro φ
+    have h := (WeakBilin.eval_continuous (topDualPairing ℝ X).flip
+      (WeakDual.toStrongDual φ.1)).tendsto ((toWeakSpace ℝ X) 0)
+    simpa [F, WeakDual.toStrongDual_apply] using h.comp hweak
+  have hUniform : TendstoUniformly F (fun _ : K => (0 : ℝ)) Filter.atTop :=
+    Antitone.tendstoUniformly_of_forall_tendsto hF_cont hF_anti continuous_const hF_tend
+  rw [Metric.tendsto_nhds]
+  intro ε hε
+  have hε2 : 0 < ε / 2 := by linarith
+  have hEventually := Metric.tendstoUniformly_iff.mp hUniform (ε / 2) hε2
+  filter_upwards [hEventually] with i hi
+  obtain ⟨φ, hφnorm, hφv, hφpos⟩ := exists_positive_dual_norming (hnn i)
+  let ψ : K := ⟨StrongDual.toWeakDual φ, by
+    refine ⟨?_, ?_⟩
+    · simpa using hφnorm
+    · intro y hy
+      simpa using hφpos y hy⟩
+  have hdist := hi ψ
+  have hdist' : ‖v i‖ < ε / 2 := by
+    have hφvi_nonneg : 0 ≤ φ (v i) := hφpos (v i) (hnn i)
+    simpa [F, ψ, hφv, dist_eq_norm, Real.norm_eq_abs,
+      abs_of_nonneg hφvi_nonneg, abs_of_nonneg (norm_nonneg (v i))] using hdist
+  have : dist ‖v i‖ 0 < ε := by
+    rw [dist_zero_right, Real.norm_of_nonneg (norm_nonneg (v i))]
+    linarith
+  exact this
+
+/-- **Dini's theorem**: a monotone net in a normed lattice that converges weakly
+converges in norm. -/
+theorem tendsto_of_monotone_weak_tendsto {ι : Type*} [Preorder ι]
+    [IsDirected ι (· ≤ ·)] [Nonempty ι] {u : ι → X} {x : X}
+    (hmono : Monotone u ∨ Antitone u)
+    (hweak : Filter.Tendsto (fun i => (toWeakSpace ℝ X) (u i)) Filter.atTop
+      (nhds ((toWeakSpace ℝ X) x))) :
+    Filter.Tendsto u Filter.atTop (nhds x) := by
+  rcases hmono with hmono | hanti
+  · let v : ι → X := fun i => x - u i
+    have hle : ∀ i, u i ≤ x := by
+      intro i
+      have htail : ∀ᶠ j in Filter.atTop, 0 ≤ u j - u i := by
+        filter_upwards [Filter.Ici_mem_atTop i] with j hij
+        exact sub_nonneg.mpr (hmono hij)
+      have hweak_tail :
+          Filter.Tendsto (fun j => (toWeakSpace ℝ X) (u j - u i)) Filter.atTop
+            (nhds ((toWeakSpace ℝ X) (x - u i))) := by
+        have h := hweak.sub (tendsto_const_nhds (x := (toWeakSpace ℝ X) (u i)))
+        simpa [sub_eq_add_neg, add_comm] using h
+      exact sub_nonneg.mp (nonneg_of_weak_tendsto_eventually_nonneg hweak_tail htail)
+    have hv_anti : Antitone v := by
+      intro i j hij
+      exact sub_le_sub_left (hmono hij) x
+    have hv_nn : ∀ i, 0 ≤ v i := fun i => sub_nonneg.mpr (hle i)
+    have hweak_v :
+        Filter.Tendsto (fun i => (toWeakSpace ℝ X) (v i)) Filter.atTop
+          (nhds ((toWeakSpace ℝ X) 0)) := by
+      have h := (tendsto_const_nhds (x := (toWeakSpace ℝ X) x)).sub hweak
+      simpa [v] using h
+    have hv_norm :=
+      tendsto_norm_of_antitone_nonneg_weak_tendsto_zero hv_anti hv_nn hweak_v
+    have hv_zero : Filter.Tendsto v Filter.atTop (nhds 0) :=
+      tendsto_zero_iff_norm_tendsto_zero.mpr hv_norm
+    have h := (tendsto_const_nhds (x := x)).sub hv_zero
+    convert h using 1
+    · ext i
+      dsimp [v]
+      abel
+    · simp
+  · let v : ι → X := fun i => u i - x
+    have hle : ∀ i, x ≤ u i := by
+      intro i
+      have htail : ∀ᶠ j in Filter.atTop, 0 ≤ u i - u j := by
+        filter_upwards [Filter.Ici_mem_atTop i] with j hij
+        exact sub_nonneg.mpr (hanti hij)
+      have hweak_tail :
+          Filter.Tendsto (fun j => (toWeakSpace ℝ X) (u i - u j)) Filter.atTop
+            (nhds ((toWeakSpace ℝ X) (u i - x))) := by
+        have h := (tendsto_const_nhds (x := (toWeakSpace ℝ X) (u i))).sub hweak
+        simpa using h
+      exact sub_nonneg.mp (nonneg_of_weak_tendsto_eventually_nonneg hweak_tail htail)
+    have hv_anti : Antitone v := by
+      intro i j hij
+      exact sub_le_sub_right (hanti hij) x
+    have hv_nn : ∀ i, 0 ≤ v i := fun i => sub_nonneg.mpr (hle i)
+    have hweak_v :
+        Filter.Tendsto (fun i => (toWeakSpace ℝ X) (v i)) Filter.atTop
+          (nhds ((toWeakSpace ℝ X) 0)) := by
+      have h := hweak.sub (tendsto_const_nhds (x := (toWeakSpace ℝ X) x))
+      simpa [v] using h
+    have hv_norm :=
+      tendsto_norm_of_antitone_nonneg_weak_tendsto_zero hv_anti hv_nn hweak_v
+    exact tendsto_sub_nhds_zero_iff.mp (tendsto_zero_iff_norm_tendsto_zero.mpr hv_norm)
+
+end WeakConvergence
 
 section BanachLattice
 

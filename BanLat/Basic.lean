@@ -80,6 +80,11 @@ theorem posPart_add_le (y : X) : (x + y)⁺ ≤ x⁺ + y⁺ :=
   sup_le (add_le_add (le_posPart x) (le_posPart y))
     (add_nonneg (posPart_nonneg x) (posPart_nonneg y))
 
+/-- The positive part is bounded by the modulus. -/
+theorem posPart_le_abs : x⁺ ≤ |x| := by
+  rw [posPart_def]
+  exact sup_le (le_abs_self x) (abs_nonneg x)
+
 /-- For non-negative `x`, `a`, `b`: `x ⊓ (a + b) ≤ x ⊓ a + x ⊓ b`. -/
 theorem inf_le_inf_add_inf_of_nonneg (a b : X) (hx : 0 ≤ x) (ha : 0 ≤ a) (hb : 0 ≤ b) :
     x ⊓ (a + b) ≤ x ⊓ a + x ⊓ b := by
@@ -236,6 +241,12 @@ theorem nonneg_smul_sup (a : ℝ) (nonneg : a ≥ 0) :
       have hy : a • y ≤ a • (x ⊔ y) :=
         smul_le_smul_of_nonneg_left le_sup_right nonneg
       exact sup_le hx hy
+
+/-- A non-negative scalar commutes with the positive part. -/
+theorem posPart_smul_nonneg {a : ℝ} (ha : 0 ≤ a) (x : X) :
+    (a • x)⁺ = a • x⁺ := by
+  change (a • x) ⊔ 0 = a • (x ⊔ 0)
+  rw [← smul_zero a, ← nonneg_smul_sup x 0 a ha, smul_zero]
 
 /-- A non-negative scalar distributes over suprema: `λ • sup A = sup (λ • A)`. -/
 theorem isLUB_smul_of_nonneg {A : Set X} {a : X} {lam : ℝ} (hlam : 0 ≤ lam)

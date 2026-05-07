@@ -51,6 +51,12 @@ theorem lipschitzWith_abs : LipschitzWith 1 (|·| : X → X) :=
     simp only [NNReal.coe_one, one_mul, dist_eq_norm]
     exact norm_abs_sub_abs a b
 
+/-- The norm of the positive part is bounded by the norm. -/
+theorem norm_posPart_le (x : X) : ‖x⁺‖ ≤ ‖x‖ := by
+  refine norm_le_norm_of_abs_le_abs ?_
+  rw [abs_of_nonneg (posPart_nonneg x)]
+  exact posPart_le_abs x
+
 /-! ### Archimedean property -/
 
 /-- Every normed vector lattice is Archimedean in the vector-lattice sense: the only
