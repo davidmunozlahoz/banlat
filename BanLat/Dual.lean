@@ -148,6 +148,39 @@ def toOrderDualSpaceLinear : StrongDual ℝ X →ₗ[ℝ] OrderDualSpace X where
   map_add' _ _ := by ext; rfl
   map_smul' _ _ := by ext; rfl
 
+/-- Order on the strong dual, transported through the order dual. -/
+instance instLE : LE (StrongDual ℝ X) where
+  le f g := toOrderDualSpace f ≤ toOrderDualSpace g
+
+instance instLT : LT (StrongDual ℝ X) where
+  lt f g := toOrderDualSpace f < toOrderDualSpace g
+
+/-- Order on the strong dual: `φ ≤ ψ` iff `φ x ≤ ψ x` for all positive `x`. -/
+theorem le_iff {φ ψ : StrongDual ℝ X} :
+    φ ≤ ψ ↔ ∀ x : X, 0 ≤ x → φ x ≤ ψ x := by
+  change toOrderDualSpace φ ≤ toOrderDualSpace ψ ↔ ∀ x : X, 0 ≤ x → φ x ≤ ψ x
+  simpa [toOrderDualSpace_apply] using OrderDualSpace.le_iff (φ := toOrderDualSpace φ)
+    (ψ := toOrderDualSpace ψ)
+
+/-- A continuous linear functional is positive iff it sends positive elements
+of `X` to non-negative reals. -/
+theorem nonneg_iff {φ : StrongDual ℝ X} :
+    0 ≤ φ ↔ ∀ x : X, 0 ≤ x → 0 ≤ φ x := by
+  simpa using (le_iff (φ := 0) (ψ := φ))
+
+private theorem toOrderDualSpace_injective :
+    Function.Injective (toOrderDualSpace (X := X)) := by
+  intro f g h
+  ext x
+  have := congrArg (fun (ψ : OrderDualSpace X) => ψ x) h
+  simpa using this
+
+private theorem toOrderDualSpace_le {f g : StrongDual ℝ X} :
+    toOrderDualSpace f ≤ toOrderDualSpace g ↔ f ≤ g := Iff.rfl
+
+private theorem toOrderDualSpace_lt {f g : StrongDual ℝ X} :
+    toOrderDualSpace f < toOrderDualSpace g ↔ f < g := Iff.rfl
+
 end NormedVectorLattice
 
 section WeakConvergence
@@ -157,7 +190,7 @@ variable {X : Type*} [NormedAddCommGroup X] [Lattice X]
 
 private def positiveDualUnitBall (X : Type*) [NormedAddCommGroup X] [Lattice X]
     [IsOrderedAddMonoid X] [NormedVectorLattice X] : Set (WeakDual ℝ X) :=
-  {φ | ‖WeakDual.toStrongDual φ‖ ≤ 1 ∧ ∀ x : X, 0 ≤ x → 0 ≤ φ x}
+  {φ | ‖WeakDual.toStrongDual φ‖ ≤ 1 ∧ 0 ≤ WeakDual.toStrongDual φ}
 
 private theorem isClosed_positiveDualUnitBall :
     IsClosed (positiveDualUnitBall X) := by
@@ -165,7 +198,11 @@ private theorem isClosed_positiveDualUnitBall :
     convert (WeakDual.isClosed_closedBall (𝕜 := ℝ) (E := X) (0 : StrongDual ℝ X) 1) using 1
     ext φ
     simp [Metric.mem_closedBall, dist_eq_norm]
-  have hpos : IsClosed {φ : WeakDual ℝ X | ∀ x : X, 0 ≤ x → 0 ≤ φ x} := by
+  have hpos : IsClosed {φ : WeakDual ℝ X | 0 ≤ WeakDual.toStrongDual φ} := by
+    rw [show {φ : WeakDual ℝ X | 0 ≤ WeakDual.toStrongDual φ} =
+        {φ : WeakDual ℝ X | ∀ x : X, 0 ≤ x → 0 ≤ φ x} by
+      ext φ
+      exact nonneg_iff]
     simp only [Set.setOf_forall]
     exact isClosed_iInter fun x => isClosed_iInter fun _hx =>
       isClosed_Ici.preimage (WeakDual.eval_continuous x)
@@ -179,11 +216,13 @@ private theorem isCompact_positiveDualUnitBall :
   intro φ hφ
   simpa [positiveDualUnitBall, Metric.mem_closedBall, dist_eq_norm] using hφ.1
 
-private theorem exists_positive_dual_norming {x : X} (hx : 0 ≤ x) :
-    ∃ φ : StrongDual ℝ X, ‖φ‖ ≤ 1 ∧ φ x = ‖x‖ ∧
-      ∀ y : X, 0 ≤ y → 0 ≤ φ y := by
+/-- Every positive element of a normed vector lattice attains its norm at a
+positive continuous linear functional of norm at most one. -/
+theorem exists_positive_dual_norming {x : X} (hx : 0 ≤ x) :
+    ∃ φ : StrongDual ℝ X, 0 ≤ φ ∧ ‖φ‖ ≤ 1 ∧ φ x = ‖x‖ := by
   by_cases hx0 : x = 0
-  · refine ⟨0, by simp, by simp [hx0], fun _ _ => by simp⟩
+  · refine ⟨0, ?_, by simp, by simp [hx0]⟩
+    exact nonneg_iff.mpr fun _ _ => by simp
   · let N : X → ℝ := fun y => ‖y⁺‖
     have hN_hom : ∀ c : ℝ, 0 < c → ∀ y : X, N (c • y) = c * N y := by
       intro c hc y
@@ -235,6 +274,12 @@ private theorem exists_positive_dual_norming {x : X} (hx : 0 ≤ x) :
     let φ : StrongDual ℝ X := g.mkContinuous 1 fun y => by
       simpa [one_mul] using hg_abs y
     refine ⟨φ, ?_, ?_, ?_⟩
+    · exact nonneg_iff.mpr fun y hy => by
+        have hneg := hg_le (-y)
+        have hNneg : N (-y) = 0 := by
+          simp [N, posPart_eq_zero.mpr (neg_nonpos.mpr hy)]
+        rw [hNneg, map_neg] at hneg
+        simpa [φ] using (show 0 ≤ g y by linarith)
     · exact g.mkContinuous_norm_le zero_le_one fun y => by
         simpa [one_mul] using hg_abs y
     · have hxmem : x ∈ p := Submodule.mem_span_singleton_self x
@@ -243,15 +288,6 @@ private theorem exists_positive_dual_norming {x : X} (hx : 0 ≤ x) :
         change (ContinuousLinearEquiv.coord ℝ x hx0) (⟨x, hxmem⟩ : ℝ ∙ x) = 1
         exact ContinuousLinearEquiv.coord_self (𝕜 := ℝ) x hx0
       simpa [φ, f, coord, hcoord] using hval
-    · intro y hy
-      have hneg := hg_le (-y)
-      have hNneg : N (-y) = 0 := by
-        simp [N, posPart_eq_zero.mpr (neg_nonpos.mpr hy)]
-      rw [hNneg] at hneg
-      have : 0 ≤ g y := by
-        rw [map_neg] at hneg
-        linarith
-      simpa [φ] using this
 
 private theorem nonneg_of_weak_tendsto_eventually_nonneg {ι : Type*} [Preorder ι]
     [IsDirected ι (· ≤ ·)] [Nonempty ι] {v : ι → X} {x : X}
@@ -287,7 +323,8 @@ private theorem tendsto_norm_of_antitone_nonneg_weak_tendsto_zero {ι : Type*}
   have hF_anti : Antitone F := by
     intro i j hij φ
     have hdiff : 0 ≤ v i - v j := sub_nonneg.mpr (hanti hij)
-    have hφdiff : 0 ≤ φ.1 (v i - v j) := φ.2.2 _ hdiff
+    have hφdiff : 0 ≤ φ.1 (v i - v j) :=
+      nonneg_iff.mp φ.2.2 _ hdiff
     rw [map_sub] at hφdiff
     linarith
   have hF_tend : ∀ φ : K, Filter.Tendsto (fun i => F i φ) Filter.atTop (nhds 0) := by
@@ -302,15 +339,14 @@ private theorem tendsto_norm_of_antitone_nonneg_weak_tendsto_zero {ι : Type*}
   have hε2 : 0 < ε / 2 := by linarith
   have hEventually := Metric.tendstoUniformly_iff.mp hUniform (ε / 2) hε2
   filter_upwards [hEventually] with i hi
-  obtain ⟨φ, hφnorm, hφv, hφpos⟩ := exists_positive_dual_norming (hnn i)
+  obtain ⟨φ, hφpos, hφnorm, hφv⟩ := exists_positive_dual_norming (hnn i)
   let ψ : K := ⟨StrongDual.toWeakDual φ, by
     refine ⟨?_, ?_⟩
     · simpa using hφnorm
-    · intro y hy
-      simpa using hφpos y hy⟩
+    · simpa using hφpos⟩
   have hdist := hi ψ
   have hdist' : ‖v i‖ < ε / 2 := by
-    have hφvi_nonneg : 0 ≤ φ (v i) := hφpos (v i) (hnn i)
+    have hφvi_nonneg : 0 ≤ φ (v i) := nonneg_iff.mp hφpos (v i) (hnn i)
     simpa [F, ψ, hφv, dist_eq_norm, Real.norm_eq_abs,
       abs_of_nonneg hφvi_nonneg, abs_of_nonneg (norm_nonneg (v i))] using hdist
   have : dist ‖v i‖ 0 < ε := by
@@ -408,30 +444,11 @@ noncomputable def equivOrderDualSpace : StrongDual ℝ X ≃ₗ[ℝ] OrderDualSp
   map_add' _ _ := by ext; rfl
   map_smul' _ _ := by ext; rfl
 
-private theorem toOrderDualSpace_injective :
-    Function.Injective (toOrderDualSpace (X := X)) := by
-  intro f g h
-  ext x
-  have := congrArg (fun (ψ : OrderDualSpace X) => ψ x) h
-  simpa using this
-
-instance instLE : LE (StrongDual ℝ X) where
-  le f g := toOrderDualSpace f ≤ toOrderDualSpace g
-
-instance instLT : LT (StrongDual ℝ X) where
-  lt f g := toOrderDualSpace f < toOrderDualSpace g
-
 noncomputable instance instMax : Max (StrongDual ℝ X) where
   max f g := ofOrderDualSpace (toOrderDualSpace f ⊔ toOrderDualSpace g)
 
 noncomputable instance instMin : Min (StrongDual ℝ X) where
   min f g := ofOrderDualSpace (toOrderDualSpace f ⊓ toOrderDualSpace g)
-
-private theorem toOrderDualSpace_le {f g : StrongDual ℝ X} :
-    toOrderDualSpace f ≤ toOrderDualSpace g ↔ f ≤ g := Iff.rfl
-
-private theorem toOrderDualSpace_lt {f g : StrongDual ℝ X} :
-    toOrderDualSpace f < toOrderDualSpace g ↔ f < g := Iff.rfl
 
 private theorem toOrderDualSpace_sup (f g : StrongDual ℝ X) :
     toOrderDualSpace (f ⊔ g) = toOrderDualSpace f ⊔ toOrderDualSpace g := by
@@ -545,8 +562,7 @@ instance instHasSolidNorm : HasSolidNorm (StrongDual ℝ X) where
     have h1 : |φ x| ≤ (|φ| : StrongDual ℝ X) (|x|) :=
       abs_apply_le_abs_apply_abs φ x
     have hOD : (|φ| : StrongDual ℝ X) (|x|) ≤ (|ψ| : StrongDual ℝ X) (|x|) := by
-      change toOrderDualSpace |φ| ≤ toOrderDualSpace |ψ| at hφψ
-      exact OrderBoundedHom.le_iff.mp hφψ _ (abs_nonneg x)
+      exact le_iff.mp hφψ _ (abs_nonneg x)
     have h2 : (|ψ| : StrongDual ℝ X) (|x|) ≤ ‖ψ‖ * ‖x‖ := by
       have := abs_apply_le_norm_mul ψ (abs_nonneg x)
       rwa [norm_abs_eq_norm] at this
@@ -573,10 +589,8 @@ intersection of the unit ball with the positive cone. -/
 theorem norm_of_nonneg {φ : StrongDual ℝ X} (hφ : 0 ≤ φ) :
     ‖φ‖ = sSup ((φ : X → ℝ) '' ({x | ‖x‖ ≤ 1} ∩ {x | 0 ≤ x})) := by
   set S := (φ : X → ℝ) '' ({x | ‖x‖ ≤ 1} ∩ {x | 0 ≤ x})
-  have hpos : ∀ {x : X}, 0 ≤ x → 0 ≤ φ x := by
-    change toOrderDualSpace 0 ≤ toOrderDualSpace φ at hφ
-    intro x hx
-    have := hφ x hx; simpa using this
+  have hpos : ∀ {x : X}, 0 ≤ x → 0 ≤ φ x := fun {x} hx =>
+    nonneg_iff.mp hφ x hx
   have habs_eq : (|φ| : StrongDual ℝ X) = φ := abs_of_nonneg hφ
   have hub : ∀ s ∈ S, s ≤ ‖φ‖ := by
     rintro _ ⟨x, ⟨hx1, hx0⟩, rfl⟩

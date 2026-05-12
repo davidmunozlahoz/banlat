@@ -49,14 +49,15 @@ def eval {X : Type*} [AddCommGroup X] [Lattice X] [IsOrderedAddMonoid X]
 /-- Rename the variables of an expression along `f`.
 
 This is used when two expressions depending on different finite tuples are
-viewed as expressions in one concatenated tuple. -/
-private def reindex {m n : ℕ} (f : Fin n → Fin m) : LLexpr n → LLexpr m
+viewed as expressions in one concatenated tuple, and when a tuple is compressed
+to the distinct elements in its range. -/
+def reindexExpr {m n : ℕ} (f : Fin n → Fin m) : LLexpr n → LLexpr m
   | .zero => .zero
   | .var i => .var (f i)
-  | .add e₁ e₂ => .add (reindex f e₁) (reindex f e₂)
-  | .smul r e => .smul r (reindex f e)
-  | .sup e₁ e₂ => .sup (reindex f e₁) (reindex f e₂)
-  | .inf e₁ e₂ => .inf (reindex f e₁) (reindex f e₂)
+  | .add e₁ e₂ => .add (reindexExpr f e₁) (reindexExpr f e₂)
+  | .smul r e => .smul r (reindexExpr f e)
+  | .sup e₁ e₂ => .sup (reindexExpr f e₁) (reindexExpr f e₂)
+  | .inf e₁ e₂ => .inf (reindexExpr f e₁) (reindexExpr f e₂)
 
 section Evaluation
 
@@ -80,10 +81,44 @@ variable {X : Type*} [AddCommGroup X] [Lattice X] [IsOrderedAddMonoid X]
 @[simp] theorem eval_inf (x : Fin n → X) (e₁ e₂ : LLexpr n) :
     eval x (.inf e₁ e₂) = eval x e₁ ⊓ eval x e₂ := rfl
 
-@[simp] private theorem eval_reindex {m n : ℕ} (x : Fin m → X)
+@[simp]
+theorem eval_reindexExpr {m n : ℕ} (x : Fin m → X)
     (f : Fin n → Fin m) (e : LLexpr n) :
-    eval x (reindex f e) = eval (x ∘ f) e := by
-  induction e <;> simp [reindex, *]
+    eval x (reindexExpr f e) = eval (fun i => x (f i)) e := by
+  induction e <;> simp [reindexExpr, *]
+
+/-- Any finite family factors through an injective finite family listing its range.
+
+The map `f` records, for each original index, the corresponding index in the
+range listing. This is useful when reducing an arbitrary finite tuple to a
+tuple of distinct entries. -/
+theorem exists_injective_reindex {ι : Type*} {n : ℕ} (a : Fin n → ι) :
+    ∃ (m : ℕ) (b : Fin m → ι) (_ : Function.Injective b) (f : Fin n → Fin m),
+      ∀ i, b (f i) = a i := by
+  classical
+  let s : Set ι := Set.range a
+  have hs : s.Finite := Set.finite_range a
+  letI : Fintype s := hs.fintype
+  let e : s ≃ Fin (Fintype.card s) := Fintype.equivFin s
+  refine ⟨Fintype.card s, fun j => (e.symm j).1, ?_, fun i => e ⟨a i, ⟨i, rfl⟩⟩, ?_⟩
+  · intro i j hij
+    exact e.symm.injective (Subtype.ext hij)
+  · intro i
+    simp
+
+/-- A vector lattice homomorphism commutes with evaluation of lattice-linear expressions. -/
+theorem map_eval {Y Z : Type*}
+    [AddCommGroup Y] [Lattice Y] [IsOrderedAddMonoid Y] [VectorLattice Y]
+    [AddCommGroup Z] [Lattice Z] [IsOrderedAddMonoid Z] [VectorLattice Z]
+    (T : VecLatHom Y Z) (y : Fin n → Y) (e : LLexpr n) :
+    T (eval y e) = eval (fun i => T (y i)) e := by
+  induction e with
+  | zero => simp [eval]
+  | var i => simp [eval]
+  | add e₁ e₂ h₁ h₂ => simp [eval, h₁, h₂]
+  | smul r e h => simp [eval, h]
+  | sup e₁ e₂ h₁ h₂ => simp [eval, h₁, h₂, map_sup]
+  | inf e₁ e₂ h₁ h₂ => simp [eval, h₁, h₂, map_inf]
 
 end Evaluation
 
@@ -156,17 +191,9 @@ theorem generated_eq_iUnion_combinations (s : Set X) :
             simp only [U, Set.mem_iUnion] at hx hy ⊢
             obtain ⟨m, x, e₁, rfl⟩ := hx
             obtain ⟨k, y, e₂, rfl⟩ := hy
-            refine ⟨m + k, Fin.append x y, .add (reindex (Fin.castAdd k) e₁)
-              (reindex (Fin.natAdd m) e₂), ?_⟩
-            have hleft :
-                (Subtype.val ∘ Fin.append x y) ∘ Fin.castAdd k = Subtype.val ∘ x := by
-              funext i
-              simp
-            have hright :
-                (Subtype.val ∘ Fin.append x y) ∘ Fin.natAdd m = Subtype.val ∘ y := by
-              funext i
-              simp
-            simp [hleft, hright]
+            refine ⟨m + k, Fin.append x y, .add (reindexExpr (Fin.castAdd k) e₁)
+              (reindexExpr (Fin.natAdd m) e₂), ?_⟩
+            simp [Function.comp_def]
           smul_mem' := by
             rintro r _ hx
             simp only [U, Set.mem_iUnion] at hx ⊢
@@ -177,17 +204,9 @@ theorem generated_eq_iUnion_combinations (s : Set X) :
         simp only [U, Set.mem_iUnion] at hx hy ⊢
         obtain ⟨m, x, e₁, rfl⟩ := hx
         obtain ⟨k, y, e₂, rfl⟩ := hy
-        refine ⟨m + k, Fin.append x y, .sup (reindex (Fin.castAdd k) e₁)
-          (reindex (Fin.natAdd m) e₂), ?_⟩
-        have hleft :
-            (Subtype.val ∘ Fin.append x y) ∘ Fin.castAdd k = Subtype.val ∘ x := by
-          funext i
-          simp
-        have hright :
-            (Subtype.val ∘ Fin.append x y) ∘ Fin.natAdd m = Subtype.val ∘ y := by
-          funext i
-          simp
-        simp [hleft, hright] }
+        refine ⟨m + k, Fin.append x y, .sup (reindexExpr (Fin.castAdd k) e₁)
+          (reindexExpr (Fin.natAdd m) e₂), ?_⟩
+        simp [Function.comp_def] }
   have hsY : s ⊆ Y := by
     intro a ha
     change a ∈ U

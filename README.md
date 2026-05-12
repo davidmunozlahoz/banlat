@@ -15,6 +15,8 @@ The Banach lattices library in Lean.
     exactly the closed spans of (finite or infinite) disjoint positive sequences.
 - [ ] Add all the necessary results to the files in examples.
 - [ ] Decomposition lemma for order continuous Banach lattices
+- [ ] There is a repeated use of normal forms in lattice linear
+  expressions and in FBL. Probably we should have a common API.
 
 ## Blueprinted
 

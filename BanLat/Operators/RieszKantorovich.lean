@@ -944,6 +944,173 @@ theorem isGLB_apply_inf {f : OrderBoundedHom X Y}
     exact le_sub_comm.mpr (hsup.2 hub)
 
 
+private lemma sum_apply_finset {ι : Type*} (s : Finset ι)
+    (g : ι → OrderBoundedHom X Y) (x : X) :
+    (∑ i ∈ s, g i) x = ∑ i ∈ s, g i x := by
+  induction s using Finset.cons_induction with
+  | empty =>
+      change (0 : X →ₗ[ℝ] Y) x = 0
+      simp
+  | cons a s ha ih =>
+      rw [Finset.sum_cons, Finset.sum_cons, add_apply', ih]
+
+/-- **Dual Riesz-Kantorovich for finite suprema.** For a positive order bounded
+operator `f` and a non-empty finite family `x`, `f` applied to the supremum of
+the family is the supremum of the sums `∑ i ∈ s, g i (x i)`, where the positive
+operators `g i` form a finite decomposition of `f`. -/
+theorem isLUB_apply_finset_sup {ι : Type*} {s : Finset ι} (hs : s.Nonempty)
+    {f : OrderBoundedHom X Y} (hf : (0 : OrderBoundedHom X Y) ≤ f) (x : ι → X) :
+    IsLUB {w | ∃ g : ι → OrderBoundedHom X Y,
+        (∀ i ∈ s, (0 : OrderBoundedHom X Y) ≤ g i) ∧
+          (∑ i ∈ s, g i = f) ∧
+          w = ∑ i ∈ s, g i (x i)}
+      (f (s.sup' hs x)) := by
+  classical
+  revert f x
+  induction hs using Finset.Nonempty.cons_induction with
+  | singleton a =>
+      intro f hf x
+      refine ⟨?_, ?_⟩
+      · rintro _ ⟨g, _hg0, hgsum, rfl⟩
+        exact le_of_eq (by
+          simpa using congrArg (fun h : OrderBoundedHom X Y => h (x a)) hgsum)
+      · intro u hu
+        exact hu ⟨fun _ => f, by simpa using hf, by simp, by simp⟩
+  | cons a t ha ht ih =>
+      intro f hf x
+      refine ⟨?_, ?_⟩
+      · rintro _ ⟨g, hg0, hgsum, rfl⟩
+        let x₀ := (Finset.cons a t ha).sup' (Finset.cons_nonempty ha) x
+        calc
+          (∑ i ∈ Finset.cons a t ha, g i (x i)) ≤
+              ∑ i ∈ Finset.cons a t ha, g i x₀ := by
+            refine Finset.sum_le_sum fun i hi => ?_
+            exact f_mono_of_nonneg (hg0 i hi) (Finset.le_sup' (f := x) hi)
+          _ = f x₀ := by rw [← sum_apply_finset, hgsum]
+      · intro u hu
+        rw [Finset.sup'_cons ht x]
+        have hsup := isLUB_apply_sup hf (x a) (t.sup' ht x)
+        apply hsup.2
+        rintro _ ⟨g, hg0, hgf, rfl⟩
+        have hrest := ih (f := f - g) (sub_nonneg.mpr hgf) x
+        have hle : (f - g) (t.sup' ht x) ≤ u - g (x a) := by
+          apply hrest.2
+          rintro _ ⟨k, hk0, hksum, rfl⟩
+          rw [le_sub_iff_add_le]
+          let G : ι → OrderBoundedHom X Y := fun i => if i = a then g else k i
+          have hG0 : ∀ i ∈ Finset.cons a t ha, (0 : OrderBoundedHom X Y) ≤ G i := by
+            intro i hi
+            rcases Finset.mem_cons.mp hi with rfl | hit
+            · simp [G, hg0]
+            · have hia : i ≠ a := fun h => ha (h ▸ hit)
+              simp [G, hia, hk0 i hit]
+          have hGsum : ∑ i ∈ Finset.cons a t ha, G i = f := by
+            rw [Finset.sum_cons]
+            have hsum_t : ∑ i ∈ t, G i = f - g := by
+              rw [← hksum]
+              refine Finset.sum_congr rfl fun i hit => ?_
+              have hia : i ≠ a := fun h => ha (h ▸ hit)
+              simp [G, hia]
+            rw [hsum_t]
+            rw [show G a = g by simp [G]]
+            abel
+          have hfull : (∑ i ∈ Finset.cons a t ha, G i (x i)) ≤ u :=
+            hu ⟨G, hG0, hGsum, rfl⟩
+          rw [Finset.sum_cons] at hfull
+          have hsum_t : ∑ i ∈ t, G i (x i) = ∑ i ∈ t, k i (x i) := by
+            refine Finset.sum_congr rfl fun i hit => ?_
+            have hia : i ≠ a := fun h => ha (h ▸ hit)
+            simp [G, hia]
+          rw [hsum_t] at hfull
+          simpa [G, add_comm] using hfull
+        have := le_sub_iff_add_le.mp hle
+        rwa [add_comm] at this
+
+/-- **Dual Riesz-Kantorovich for finite infima.** For a positive order bounded
+operator `f` and a non-empty finite family `x`, `f` applied to the infimum of
+the family is the infimum of the sums `∑ i ∈ s, g i (x i)`, where the positive
+operators `g i` form a finite decomposition of `f`. -/
+theorem isGLB_apply_finset_inf {ι : Type*} {s : Finset ι} (hs : s.Nonempty)
+    {f : OrderBoundedHom X Y} (hf : (0 : OrderBoundedHom X Y) ≤ f) (x : ι → X) :
+    IsGLB {w | ∃ g : ι → OrderBoundedHom X Y,
+        (∀ i ∈ s, (0 : OrderBoundedHom X Y) ≤ g i) ∧
+          (∑ i ∈ s, g i = f) ∧
+          w = ∑ i ∈ s, g i (x i)}
+      (f (s.inf' hs x)) := by
+  classical
+  revert f x
+  induction hs using Finset.Nonempty.cons_induction with
+  | singleton a =>
+      intro f hf x
+      refine ⟨?_, ?_⟩
+      · rintro _ ⟨g, _hg0, hgsum, rfl⟩
+        exact ge_of_eq (by
+          simpa using congrArg (fun h : OrderBoundedHom X Y => h (x a)) hgsum)
+      · intro b hb
+        exact hb ⟨fun _ => f, by simpa using hf, by simp, by simp⟩
+  | cons a t ha ht ih =>
+      intro f hf x
+      refine ⟨?_, ?_⟩
+      · rintro _ ⟨g, hg0, hgsum, rfl⟩
+        rw [Finset.inf'_cons ht x]
+        have hrest_nn : 0 ≤ ∑ i ∈ t, g i :=
+          Finset.sum_nonneg fun i hi => hg0 i (Finset.mem_cons.mpr (Or.inr hi))
+        have hgaf : g a ≤ f := by
+          rw [← hgsum, Finset.sum_cons]
+          exact le_add_of_nonneg_right hrest_nn
+        have hrest_sum : ∑ i ∈ t, g i = f - g a := by
+          have hsum := hgsum
+          rw [Finset.sum_cons] at hsum
+          rw [← hsum]
+          abel_nf
+        have hrest := ih (f := f - g a) (sub_nonneg.mpr hgaf) x
+        have hrest_le : (f - g a) (t.inf' ht x) ≤ ∑ i ∈ t, g i (x i) :=
+          hrest.1 ⟨g, fun i hi => hg0 i (Finset.mem_cons.mpr (Or.inr hi)), hrest_sum, rfl⟩
+        have hbin := isGLB_apply_inf hf (x a) (t.inf' ht x)
+        calc
+          f (x a ⊓ t.inf' ht x) ≤ g a (x a) + (f - g a) (t.inf' ht x) :=
+            hbin.1 ⟨g a, hg0 a (Finset.mem_cons_self a t), hgaf, rfl⟩
+          _ ≤ g a (x a) + ∑ i ∈ t, g i (x i) := by
+            gcongr
+          _ = ∑ i ∈ Finset.cons a t ha, g i (x i) := by rw [Finset.sum_cons]
+      · intro b hb
+        rw [Finset.inf'_cons ht x]
+        have hinf := isGLB_apply_inf hf (x a) (t.inf' ht x)
+        apply hinf.2
+        rintro _ ⟨g, hg0, hgf, rfl⟩
+        have hrest := ih (f := f - g) (sub_nonneg.mpr hgf) x
+        have hle : b - g (x a) ≤ (f - g) (t.inf' ht x) := by
+          apply hrest.2
+          rintro _ ⟨k, hk0, hksum, rfl⟩
+          let G : ι → OrderBoundedHom X Y := fun i => if i = a then g else k i
+          have hG0 : ∀ i ∈ Finset.cons a t ha, (0 : OrderBoundedHom X Y) ≤ G i := by
+            intro i hi
+            rcases Finset.mem_cons.mp hi with rfl | hit
+            · simp [G, hg0]
+            · have hia : i ≠ a := fun h => ha (h ▸ hit)
+              simp [G, hia, hk0 i hit]
+          have hGsum : ∑ i ∈ Finset.cons a t ha, G i = f := by
+            rw [Finset.sum_cons]
+            have hsum_t : ∑ i ∈ t, G i = f - g := by
+              rw [← hksum]
+              refine Finset.sum_congr rfl fun i hit => ?_
+              have hia : i ≠ a := fun h => ha (h ▸ hit)
+              simp [G, hia]
+            rw [hsum_t]
+            rw [show G a = g by simp [G]]
+            abel
+          have hfull : b ≤ ∑ i ∈ Finset.cons a t ha, G i (x i) :=
+            hb ⟨G, hG0, hGsum, rfl⟩
+          rw [Finset.sum_cons] at hfull
+          have hsum_t : ∑ i ∈ t, G i (x i) = ∑ i ∈ t, k i (x i) := by
+            refine Finset.sum_congr rfl fun i hit => ?_
+            have hia : i ≠ a := fun h => ha (h ▸ hit)
+            simp [G, hia]
+          rw [hsum_t] at hfull
+          exact sub_le_iff_le_add.mpr (by simpa [G, add_comm] using hfull)
+        have := sub_le_iff_le_add.mp hle
+        rwa [add_comm] at this
+
 /-- **Dual Riesz-Kantorovich for the modulus.** For a positive order bounded
 operator `f` and `x : X`,
 `f |x| = sup {g x - (f - g) x | 0 ≤ g ≤ f}`. -/
