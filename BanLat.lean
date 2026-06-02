@@ -14,6 +14,11 @@ import BanLat.Free.FBL
 import BanLat.Substructures.Sublattice
 import BanLat.OrderDense
 import BanLat.Substructures.Ideal
+import BanLat.LocallySolid.Basic
+import BanLat.LocallySolid.LocallyConvexSolid
+import BanLat.LocallySolid.WithSeminorms
+import BanLat.LocallySolid.Completion
+import BanLat.LocallySolid.Lebesgue
 import BanLat.Substructures.Band.Basic
 import BanLat.Substructures.Band.DisjointComplement
 import BanLat.Substructures.Band.Generated
