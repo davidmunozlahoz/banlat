@@ -1,0 +1,28 @@
+.venv
+/build
+.lake/
+.python-version
+lakefile.olean
+
+## Agents hidden files
+.codex
+.claude
+.agents
+
+## Private library and blueprint
+Library/
+blueprint/
+
+## Core latex/pdflatex auxiliary files:
+*.aux
+*.lof
+*.log
+*.lot
+*.fls
+*.out
+*.toc
+*.fmt
+*.fot
+*.cb
+*.cb2
+.*.lb
