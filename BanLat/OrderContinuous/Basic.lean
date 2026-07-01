@@ -1,3 +1,4 @@
+import BanLat.Convergences.Order
 import BanLat.Normed
 import BanLat.OrderComplete
 
@@ -42,6 +43,36 @@ class IsOrderContinuousNorm.{u} (X : Type u) [NormedAddCommGroup X] [Lattice X]
       {u : ι → X}, Antitone u → (∀ i, 0 ≤ u i) →
       IsGLB (Set.range u) 0 →
       Filter.Tendsto u Filter.atTop (nhds 0)
+
+/-- In a normed vector lattice with order-continuous norm, order convergence of a net implies
+norm convergence. -/
+theorem tendsto_of_orderConvergesTo_of_isOrderContinuousNorm.{u}
+    {X : Type u} [NormedAddCommGroup X] [Lattice X] [IsOrderedAddMonoid X]
+    [NormedVectorLattice X] [IsOrderContinuousNorm X]
+    {ι : Type u} [Preorder ι] [IsDirected ι (· ≤ ·)] [Nonempty ι]
+    {x : ι → X} {a : X} (hx : OrderConvergesTo x a) :
+    Filter.Tendsto x Filter.atTop (nhds a) := by
+  rcases hx with ⟨κ, hκpre, hκdir, hκnon, r, hranti, hrnn, hrglb, hrevent⟩
+  letI : Preorder κ := hκpre
+  letI : IsDirected κ (· ≤ ·) := hκdir
+  letI : Nonempty κ := hκnon
+  have hr_tend : Filter.Tendsto r Filter.atTop (nhds 0) :=
+    IsOrderContinuousNorm.tendsto_of_antitone_isGLB_zero hranti hrnn hrglb
+  rw [Metric.tendsto_nhds]
+  intro ε hε
+  have hr_event := Metric.tendsto_nhds.mp hr_tend ε hε
+  rcases hr_event.exists with ⟨k, hk⟩
+  refine (hrevent k).mono fun i hi => ?_
+  have hnorm_le : ‖x i - a‖ ≤ ‖r k‖ := by
+    rw [← norm_abs_eq_norm (x i - a)]
+    exact norm_le_norm_of_abs_le_abs (by
+      rw [abs_abs, abs_of_nonneg (hrnn k)]
+      exact hi)
+  calc
+    dist (x i) a = ‖x i - a‖ := dist_eq_norm _ _
+    _ ≤ ‖r k‖ := hnorm_le
+    _ = dist (r k) 0 := by rw [dist_eq_norm, sub_zero]
+    _ < ε := hk
 
 /-- An order continuous norm is in particular σ-order continuous. -/
 instance (priority := 100)

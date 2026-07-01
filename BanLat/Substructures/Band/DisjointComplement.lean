@@ -75,6 +75,19 @@ theorem disjointComplement_union (A B : Set X) :
   · exact hA _ hy
   · exact hB _ hy
 
+omit [VectorLattice X] in
+/-- The disjoint complement of a set together with its disjoint complement is
+the singleton `{0}`. -/
+theorem disjointComplement_union_disjointComplement_eq_singleton (A : Set X) :
+    (A ∪ Aᵈ)ᵈ = ({0} : Set X) := by
+  apply Set.Subset.antisymm
+  · intro x hx
+    have hxA : x ∈ Aᵈ := fun a ha => hx a (Or.inl ha)
+    have hxAd : x ∈ Aᵈᵈ := fun a ha => hx a (Or.inr ha)
+    exact disjointComplement_inter_eq_zero Aᵈ ⟨hxA, hxAd⟩
+  · rintro x rfl a _
+    exact isVLDisjoint_zero_left a
+
 namespace Band
 
 /-! ### The disjoint complement is a band -/

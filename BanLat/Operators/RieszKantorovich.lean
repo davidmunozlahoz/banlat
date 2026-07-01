@@ -1303,6 +1303,24 @@ theorem exists_isLUB
     rintro _ ⟨F, hF, hFS, rfl⟩
     exact Finset.sup'_le hF id (fun g hgF => hk (hFS hgF))
 
+/-- The Riesz-Kantorovich conditional completeness structure on order bounded
+operators. This packages `OrderBoundedHom.exists_isLUB`; files can opt into it
+locally as a typeclass instance. -/
+@[reducible]
+noncomputable def conditionallyCompleteLattice :
+    ConditionallyCompleteLattice (OrderBoundedHom X Y) := by
+  classical
+  letI : SupSet (OrderBoundedHom X Y) :=
+    ⟨fun S => if h : S.Nonempty ∧ BddAbove S then (exists_isLUB h.1 h.2).choose else 0⟩
+  have hsSup : ∀ (S : Set (OrderBoundedHom X Y)), BddAbove S → S.Nonempty →
+      IsLUB S (sSup S) := by
+    intro S hbdd hne
+    change IsLUB S
+      (if h : S.Nonempty ∧ BddAbove S then (exists_isLUB h.1 h.2).choose else 0)
+    rw [dif_pos ⟨hne, hbdd⟩]
+    exact (exists_isLUB hne hbdd).choose_spec
+  exact conditionallyCompleteLatticeOfLatticeOfsSup _ hsSup
+
 end OrderBoundedHom
 
 /-- When the codomain is order complete, every order bounded operator

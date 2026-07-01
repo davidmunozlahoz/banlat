@@ -39,11 +39,13 @@ import BanLat.LocallySolid.Lebesgue
 import BanLat.LocallySolid.LocallyConvexSolid
 import BanLat.LocallySolid.WithSeminorms
 import BanLat.Normed
+import BanLat.Operators.Carrier
 import BanLat.Operators.Hom
 import BanLat.Operators.OrderBounded
 import BanLat.Operators.Positive
 import BanLat.Operators.Regular
 import BanLat.Operators.RieszKantorovich
+import BanLat.Operators.StrictlyPositive
 import BanLat.OrderComplete
 import BanLat.OrderContinuous.Ando
 import BanLat.OrderContinuous.Basic
