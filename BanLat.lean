@@ -33,6 +33,8 @@ import BanLat.Free.FBL
 import BanLat.Free.FVL
 import BanLat.Free.FVLv
 import BanLat.L1repr.Basic
+import BanLat.L1repr.HowItSeats
+import BanLat.L1repr.OrderContinuous
 import BanLat.LLexpr
 import BanLat.LocallySolid.Basic
 import BanLat.LocallySolid.Completion

@@ -478,9 +478,10 @@ private lemma exists_L1_banachLatEquiv_principalBand_of_nontrivial_ALSpace
     change φ_eq (Φ_restr (v ⊓ w)) = φ_eq (Φ_restr v) ⊓ φ_eq (Φ_restr w)
     rw [intoMofKPrincipalBandLi_map_inf]
     exact φ_eq.map_inf' _ _
-  exact exists_L1_banachLatEquiv_of_embeds_in_L1_with_aePositive
+  obtain ⟨Ω', mΩ', ν', _, φ, _⟩ := exists_L1_banachLatEquiv_of_embeds_in_L1_with_aePositive
     (X := ↥(Band.principalBand x).toSubmodule) ν T hT_sup hT_inf hT_closed
     x_band hx_band_nn (lp_aePos_of_forall_isVLDisjoint_eq_zero hTx_nn hTx_wou)
+  exact ⟨Ω', mΩ', ν', ⟨φ⟩⟩
 
 private lemma exists_L1_banachLatEquiv_principalBand_of_ALSpace
     [ALSpace X] (x : X) (hx : 0 ≤ x) :
@@ -508,6 +509,78 @@ theorem exists_L1_banachLatEquiv [ALSpace X] :
       Nonempty (BanachLatEquiv X (Lp ℝ 1 μ)) :=
   MofK.exists_L1_banachLatEquiv_of_principalBandModels (X := X)
     fun x hx => exists_L1_banachLatEquiv_principalBand_of_ALSpace x hx
+
+/-- **Kakutani representation with a weak unit.** An AL-space with a weak order unit `e`
+is Banach-lattice isometric to `L¹(μ)` for a finite measure `μ`, in such a way that `e`
+corresponds to the constant function `1`. -/
+theorem exists_L1_banachLatEquiv_isFiniteMeasure_of_weakOrderUnit [ALSpace X] {e : X}
+    (he : WeakOrderUnit e) :
+    ∃ (Ω : Type u) (_ : MeasurableSpace Ω) (μ : Measure Ω) (_ : IsFiniteMeasure μ)
+      (φ : BanachLatEquiv X (Lp ℝ 1 μ)), ∀ᵐ ω ∂μ, (φ e : Ω → ℝ) ω = 1 := by
+  classical
+  rcases subsingleton_or_nontrivial X with hss | hnt
+  · -- In the trivial case the zero measure on a point works.
+    haveI := hss
+    haveI : Subsingleton (Lp ℝ 1 (0 : @Measure PUnit.{u+1} ⊤)) := by
+      refine ⟨fun f g => Lp.ext ?_⟩
+      rw [Filter.EventuallyEq, MeasureTheory.ae_zero]
+      exact Filter.eventually_bot
+    refine ⟨PUnit.{u+1}, (⊤ : MeasurableSpace PUnit.{u+1}), 0, inferInstance,
+      banachLatEquiv_of_subsingleton _ _, ?_⟩
+    rw [MeasureTheory.ae_zero]
+    exact Filter.eventually_bot
+  · -- The weak unit generates the whole space as a band, so the principal band
+    -- model for `intoMofK e` is a model for all of `X`.
+    haveI : Nontrivial X := hnt
+    have hband : Band.principalBand e = ⊤ :=
+      (weakOrderUnit_iff_generated_singleton_eq_top he.1).mp he
+    have hmem_top : ∀ z : X, z ∈ (Band.principalBand e).toSubmodule := fun z => by
+      rw [hband]
+      exact Submodule.mem_top
+    obtain ⟨Ω, mΩ, ν, hν_fin, ⟨φ_eq⟩⟩ :=
+      MofK.exists_principalBand_banachLatEquivL1 (intoMofK (X := X) e)
+    haveI : IsFiniteMeasure ν := hν_fin
+    have hΦe_nn : (0 : MofK (CharacterSpace X)) ≤ intoMofK (X := X) e :=
+      intoMofK_nonneg (X := X) he.1
+    let Φ_X : X →ₗᵢ[ℝ] ↥(Band.principalBand (intoMofK (X := X) e)).toSubmodule :=
+      { toLinearMap :=
+          { toFun := fun z => ⟨intoMofK (X := X) z,
+              intoMofK_mem_principalBand (X := X) he.1 (hmem_top z)⟩
+            map_add' := fun a b => Subtype.ext (intoMofK_add (X := X) a b)
+            map_smul' := fun r a => Subtype.ext (intoMofK_smul (X := X) r a) }
+        norm_map' := fun v => intoMofK_norm (X := X) v }
+    let φ_li : ↥(Band.principalBand (intoMofK (X := X) e)).toSubmodule →ₗᵢ[ℝ] Lp ℝ 1 ν :=
+      φ_eq.toLinearIsometryEquiv.toLinearIsometry
+    let T : X →ₗᵢ[ℝ] Lp ℝ 1 ν := φ_li.comp Φ_X
+    have hT_sup : ∀ v w : X, T (v ⊔ w) = T v ⊔ T w := by
+      intro v w
+      change φ_eq (Φ_X (v ⊔ w)) = φ_eq (Φ_X v) ⊔ φ_eq (Φ_X w)
+      have h1 : Φ_X (v ⊔ w) = Φ_X v ⊔ Φ_X w := Subtype.ext (intoMofK_sup (X := X) v w)
+      rw [h1]
+      exact φ_eq.map_sup' _ _
+    have hT_inf : ∀ v w : X, T (v ⊓ w) = T v ⊓ T w := by
+      intro v w
+      change φ_eq (Φ_X (v ⊓ w)) = φ_eq (Φ_X v) ⊓ φ_eq (Φ_X w)
+      have h1 : Φ_X (v ⊓ w) = Φ_X v ⊓ Φ_X w := Subtype.ext (intoMofK_inf (X := X) v w)
+      rw [h1]
+      exact φ_eq.map_inf' _ _
+    have hT_closed : IsClosed (Set.range T) := T.isometry.isClosedEmbedding.isClosed_range
+    have hTe_eq : T e = φ_eq (Φ_X e) := rfl
+    have hTe_nn : (0 : Lp ℝ 1 ν) ≤ T e := by
+      rw [hTe_eq]
+      exact φ_eq.toVecLatEquiv.toVecLatHom.map_nonneg hΦe_nn
+    have hband_wou : ∀ u : ↥(Band.principalBand (intoMofK (X := X) e)).toSubmodule,
+        IsVLDisjoint u (Φ_X e) → u = 0 := by
+      intro u hudis
+      apply Subtype.ext
+      exact eq_zero_of_mem_principalBand_of_isVLDisjoint u.property
+        (congrArg Subtype.val hudis)
+    have hTe_wou : ∀ w : Lp ℝ 1 ν, IsVLDisjoint w (T e) → w = 0 := by
+      intro w hw
+      rw [hTe_eq] at hw
+      exact banachLatEquiv_forall_isVLDisjoint_eq_zero φ_eq hband_wou w hw
+    exact exists_L1_banachLatEquiv_of_embeds_in_L1_with_aePositive (X := X) ν T hT_sup
+      hT_inf hT_closed e he.1 (lp_aePos_of_forall_isVLDisjoint_eq_zero hTe_nn hTe_wou)
 
 end ALSpace
 

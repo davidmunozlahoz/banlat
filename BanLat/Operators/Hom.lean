@@ -102,6 +102,13 @@ theorem monotone (f : VecLatHom X Y) : Monotone f := by
 theorem map_nonneg (f : VecLatHom X Y) {x : X} (hx : 0 ≤ x) : 0 ≤ f x := by
   have h := f.monotone hx; rwa [map_zero] at h
 
+/-- An injective vector lattice homomorphism reflects the order: if `f a ≤ f b` then
+`a ≤ b`. Together with `monotone`, an injective vector lattice homomorphism is an order
+embedding. -/
+theorem le_of_map_le (f : VecLatHom X Y) (hf : Function.Injective f) {a b : X}
+    (hab : f a ≤ f b) : a ≤ b :=
+  sup_eq_right.mp (hf (by rw [map_sup f a b]; exact sup_eq_right.mpr hab))
+
 /-- A vector lattice homomorphism preserves positive parts: `f x⁺ = (f x)⁺`. -/
 theorem map_posPart (f : VecLatHom X Y) (x : X) : f x⁺ = (f x)⁺ := by
   rw [posPart_def, map_sup, map_zero, posPart_def]

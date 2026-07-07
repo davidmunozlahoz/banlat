@@ -533,14 +533,21 @@ theorem exists_Lp_banachLatEquiv_of_closed_sublattice_containing_one
     (hone : Lp.const p μ (1 : ℝ) ∈ L) :
     letI : BanachLattice ↥L.toSubmodule := L.instBanachLatticeSubtype hclosed
     ∃ (Ω' : Type u) (_ : MeasurableSpace Ω') (ν : MeasureTheory.Measure Ω')
-      (_ : IsFiniteMeasure ν),
-      Nonempty (BanachLatEquiv ↥L.toSubmodule (Lp ℝ p ν)) := by
+      (_ : IsFiniteMeasure ν) (φ : BanachLatEquiv ↥L.toSubmodule (Lp ℝ p ν)),
+      ∀ᵐ a ∂ν, (φ ⟨Lp.const p μ (1 : ℝ), hone⟩ : Ω' → ℝ) a = 1 := by
   letI : BanachLattice ↥L.toSubmodule := L.instBanachLatticeSubtype hclosed
   refine ⟨Ω,
     exists_Lp_banachLatEquiv_aux.sigmaAlgebra hp_ne_top L hclosed hone,
     exists_Lp_banachLatEquiv_aux.trimmedMeasure hp_ne_top L hclosed hone,
     inferInstance,
-    ⟨exists_Lp_banachLatEquiv_aux.banachLatEquiv hp_ne_top L hclosed hone⟩⟩
+    exists_Lp_banachLatEquiv_aux.banachLatEquiv hp_ne_top L hclosed hone, ?_⟩
+  have hae : (exists_Lp_banachLatEquiv_aux.banachLatEquiv hp_ne_top L hclosed hone
+      ⟨Lp.const p μ (1 : ℝ), hone⟩ : Ω → ℝ) =ᵐ[μ] fun _ => 1 :=
+    (exists_Lp_banachLatEquiv_aux.linearIsometryEquiv_coeFn_ae_eq hp_ne_top L hclosed hone
+      ⟨Lp.const p μ (1 : ℝ), hone⟩).trans (Lp.coeFn_const p μ (1 : ℝ))
+  exact (Lp.stronglyMeasurable _).ae_eq_trim_of_stronglyMeasurable
+    (exists_Lp_banachLatEquiv_aux.sigmaAlgebra_le hp_ne_top L hclosed hone)
+    stronglyMeasurable_const hae
 
 private lemma lp_indicatorConstLp_one_eq_zero_iff
     {α : Type*} [MeasurableSpace α] {ν : Measure α} [IsFiniteMeasure ν]
@@ -751,8 +758,8 @@ theorem exists_L1_banachLatEquiv_of_embeds_in_L1_with_aePositive.{v}
     (_hclosed : IsClosed (Set.range T))
     (u : X) (_hu_nn : 0 ≤ u)
     (hu_ae : ∀ᵐ a ∂μ, 0 < (T u : α → ℝ) a) :
-    ∃ (Ω : Type v) (_ : MeasurableSpace Ω) (ν : Measure Ω),
-      Nonempty (BanachLatEquiv X (Lp ℝ 1 ν)) := by
+    ∃ (Ω : Type v) (_ : MeasurableSpace Ω) (ν : Measure Ω) (_ : IsFiniteMeasure ν)
+      (φ : BanachLatEquiv X (Lp ℝ 1 ν)), ∀ᵐ a ∂ν, (φ u : Ω → ℝ) a = 1 := by
   set ρ : α → ℝ := ⇑(T u) with hρ_def
   have hρ_meas : Measurable ρ := (Lp.stronglyMeasurable (T u)).measurable
   have hρ_memLp : MemLp ρ 1 μ := Lp.memLp (T u)
@@ -852,7 +859,7 @@ theorem exists_L1_banachLatEquiv_of_embeds_in_L1_with_aePositive.{v}
   letI : Lattice ↥L.toSubmodule := L.instLatticeSubtype
   letI : IsOrderedAddMonoid ↥L.toSubmodule := L.instIsOrderedAddMonoidSubtype
   letI : BanachLattice ↥L.toSubmodule := L.instBanachLatticeSubtype hL_closed
-  obtain ⟨Ω', mΩ', ν', _hν'_finite, ⟨φ⟩⟩ :=
+  obtain ⟨Ω', mΩ', ν', hν'_finite, φ, hφ_one⟩ :=
     exists_Lp_banachLatEquiv_of_closed_sublattice_containing_one (μ := ν)
       (by norm_num : (1 : ENNReal) ≠ ⊤) L hL_closed hL_one
   have hψ_sup : ∀ x y : X,
@@ -867,11 +874,10 @@ theorem exists_L1_banachLatEquiv_of_embeds_in_L1_with_aePositive.{v}
     apply Subtype.ext
     change T' (x ⊓ y) = T' x ⊓ T' y
     exact hT'_inf x y
-  refine ⟨Ω', mΩ', ν', ⟨?_⟩⟩
-  refine {
-    toLinearIsometryEquiv := T'.equivRange.trans φ.toLinearIsometryEquiv
-    map_sup' := ?_
-    map_inf' := ?_ }
+  refine ⟨Ω', mΩ', ν', hν'_finite,
+    { toLinearIsometryEquiv := T'.equivRange.trans φ.toLinearIsometryEquiv
+      map_sup' := ?_
+      map_inf' := ?_ }, ?_⟩
   · intro x y
     change φ (T'.equivRange (x ⊔ y)) = φ (T'.equivRange x) ⊔ φ (T'.equivRange y)
     rw [hψ_sup]
@@ -880,5 +886,9 @@ theorem exists_L1_banachLatEquiv_of_embeds_in_L1_with_aePositive.{v}
     change φ (T'.equivRange (x ⊓ y)) = φ (T'.equivRange x) ⊓ φ (T'.equivRange y)
     rw [hψ_inf]
     exact φ.map_inf' _ _
+  · have hrange_u : T'.equivRange u = ⟨Lp.const 1 ν (1 : ℝ), hL_one⟩ := Subtype.ext hT'u
+    change ∀ᵐ a ∂ν', (φ (T'.equivRange u) : Ω' → ℝ) a = 1
+    rw [hrange_u]
+    exact hφ_one
 
 end ClosedSublattices
