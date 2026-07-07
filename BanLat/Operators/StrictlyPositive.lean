@@ -31,6 +31,121 @@ theorem positive {f : X →ₗ[ℝ] Y} (hf : StrictlyPositive f) : Positive f :=
   · simp
   · exact (hf x hx_pos).le
 
+/-- The lattice norm associated to a strictly positive functional: `x ↦ φ |x|`. -/
+def associatedNorm (φ : X →ₗ[ℝ] ℝ) (x : X) : ℝ :=
+  φ |x|
+
+@[simp]
+theorem associatedNorm_zero (φ : X →ₗ[ℝ] ℝ) :
+    associatedNorm φ (0 : X) = 0 := by
+  simp [associatedNorm]
+
+/-- The associated norm is non-negative. -/
+theorem associatedNorm_nonneg {φ : X →ₗ[ℝ] ℝ} (hφ : StrictlyPositive φ) (x : X) :
+    0 ≤ associatedNorm φ x :=
+  hφ.positive |x| (abs_nonneg x)
+
+/-- For a strictly positive functional, the associated norm vanishes only at zero. -/
+theorem associatedNorm_eq_zero_iff {φ : X →ₗ[ℝ] ℝ} (hφ : StrictlyPositive φ)
+    {x : X} :
+    associatedNorm φ x = 0 ↔ x = 0 := by
+  constructor
+  · intro hx_norm
+    by_contra hx
+    have hx_abs_ne : |x| ≠ 0 := fun h => hx ((abs_eq_zero_iff_zero x).mp h)
+    have hx_abs_pos : 0 < |x| :=
+      lt_of_le_of_ne (abs_nonneg x) (Ne.symm hx_abs_ne)
+    exact (ne_of_gt (hφ |x| hx_abs_pos)) hx_norm
+  · intro hx
+    subst hx
+    simp [associatedNorm]
+
+/-- The associated norm is additive on disjoint positive pieces. -/
+theorem associatedNorm_add_eq_of_inf_eq_zero {φ : X →ₗ[ℝ] ℝ} (_hφ : StrictlyPositive φ)
+    {x y : X} (hxy : x ⊓ y = 0) :
+    associatedNorm φ (x + y) = associatedNorm φ x + associatedNorm φ y := by
+  have hx : 0 ≤ x := by
+    simpa [hxy] using (inf_le_left : x ⊓ y ≤ x)
+  have hy : 0 ≤ y := by
+    simpa [hxy] using (inf_le_right : x ⊓ y ≤ y)
+  simp [associatedNorm, abs_of_nonneg hx, abs_of_nonneg hy,
+    abs_of_nonneg (add_nonneg hx hy), map_add]
+
+/-- The additive group norm induced by a strictly positive functional. -/
+noncomputable def associatedAddGroupNorm (φ : X →ₗ[ℝ] ℝ)
+    (hφ : StrictlyPositive φ) : AddGroupNorm X where
+  toFun := associatedNorm φ
+  map_zero' := associatedNorm_zero φ
+  add_le' := by
+    intro x y
+    have hle : φ |x + y| ≤ φ (|x| + |y|) :=
+      (Positive.monotone_iff.mpr hφ.positive) (abs_add_le x y)
+    simpa [associatedNorm, map_add] using hle
+  neg' := by
+    intro x
+    simp [associatedNorm]
+  eq_zero_of_map_eq_zero' := by
+    intro x hx
+    exact (associatedNorm_eq_zero_iff hφ).mp hx
+
+/-- The normed additive group structure induced by a strictly positive functional. -/
+@[reducible]
+noncomputable def associatedNormedAddCommGroup (φ : X →ₗ[ℝ] ℝ)
+    (hφ : StrictlyPositive φ) : NormedAddCommGroup X := by
+  exact (associatedAddGroupNorm φ hφ).toNormedAddCommGroup
+
+/-- The norm in `associatedNormedAddCommGroup` is the associated norm `x ↦ φ |x|`. -/
+theorem associatedNormedAddCommGroup_norm (φ : X →ₗ[ℝ] ℝ)
+    (hφ : StrictlyPositive φ) (x : X) :
+    letI : NormedAddCommGroup X := associatedNormedAddCommGroup φ hφ
+    ‖x‖ = associatedNorm φ x := by
+  rfl
+
+/-- The associated norm is solid. -/
+theorem associatedNorm_solid {φ : X →ₗ[ℝ] ℝ} (hφ : StrictlyPositive φ)
+    {x y : X} (hxy : |x| ≤ |y|) :
+    associatedNorm φ x ≤ associatedNorm φ y := by
+  exact (Positive.monotone_iff.mpr hφ.positive) hxy
+
+/-- The associated norm is homogeneous with respect to real scalar multiplication. -/
+theorem associatedNorm_smul (φ : X →ₗ[ℝ] ℝ) (r : ℝ) (x : X) :
+    associatedNorm φ (r • x) = ‖r‖ * associatedNorm φ x := by
+  rw [associatedNorm, abs_smul', map_smul, associatedNorm, Real.norm_eq_abs, smul_eq_mul]
+
+/-- The normed vector lattice structure induced by a strictly positive functional. -/
+@[reducible]
+noncomputable def associatedNormedVectorLattice (φ : X →ₗ[ℝ] ℝ)
+    (hφ : StrictlyPositive φ) :
+    @NormedVectorLattice X
+      (associatedNormedAddCommGroup φ hφ)
+      inferInstance inferInstance := by
+  letI : NormedAddCommGroup X := associatedNormedAddCommGroup φ hφ
+  let solidNorm : HasSolidNorm X := {
+    solid := by
+      intro x y hxy
+      simpa [associatedNormedAddCommGroup_norm] using associatedNorm_solid hφ hxy
+  }
+  let normSmul : NormSMulClass ℝ X := {
+    norm_smul := by
+      intro r x
+      simpa [associatedNormedAddCommGroup_norm] using associatedNorm_smul φ r x
+  }
+  exact @NormedVectorLattice.mk X
+    (associatedNormedAddCommGroup φ hφ)
+    inferInstance
+    inferInstance
+    inferInstance
+    solidNorm
+    normSmul
+
+/-- The norm associated to a strictly positive functional has the AL additivity property. -/
+theorem associatedNorm_add_eq_norm_add_of_inf_eq_zero (φ : X →ₗ[ℝ] ℝ)
+    (hφ : StrictlyPositive φ) {x y : X} (hxy : x ⊓ y = 0) :
+    letI : NormedAddCommGroup X := associatedNormedAddCommGroup φ hφ
+    ‖x + y‖ = ‖x‖ + ‖y‖ := by
+  simpa [associatedNormedAddCommGroup_norm] using
+    associatedNorm_add_eq_of_inf_eq_zero hφ hxy
+
 end StrictlyPositive
 
 /-- If a vector lattice admits a strictly positive functional, then it is Archimedean. -/

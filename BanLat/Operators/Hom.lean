@@ -476,4 +476,108 @@ def symm (e : BanachLatEquiv X Y) : BanachLatEquiv Y X where
   map_sup' := e.toVecLatEquiv.symm.map_sup'
   map_inf' := e.toVecLatEquiv.symm.map_inf'
 
+/-- The identity Banach lattice isometry. -/
+def refl (X : Type*) [NormedAddCommGroup X] [Lattice X] [IsOrderedAddMonoid X]
+    [BanachLattice X] : BanachLatEquiv X X where
+  toLinearIsometryEquiv := LinearIsometryEquiv.refl ℝ X
+  map_sup' := fun _ _ => rfl
+  map_inf' := fun _ _ => rfl
+
+/-- The composition of two Banach lattice isometries. -/
+def trans {Z : Type*} [NormedAddCommGroup Z] [Lattice Z] [IsOrderedAddMonoid Z]
+    [BanachLattice Z] (e₁ : BanachLatEquiv X Y) (e₂ : BanachLatEquiv Y Z) :
+    BanachLatEquiv X Z where
+  toLinearIsometryEquiv := e₁.toLinearIsometryEquiv.trans e₂.toLinearIsometryEquiv
+  map_sup' := (e₁.toVecLatEquiv.trans e₂.toVecLatEquiv).map_sup'
+  map_inf' := (e₁.toVecLatEquiv.trans e₂.toVecLatEquiv).map_inf'
+
 end BanachLatEquiv
+
+/-! ## Inclusion into the completion -/
+
+section Completion
+
+open UniformSpace
+
+variable {X : Type*} [NormedAddCommGroup X] [Lattice X] [IsOrderedAddMonoid X]
+  [NormedVectorLattice X]
+
+/-- The canonical inclusion of a normed vector lattice into its completion, as a vector
+lattice homomorphism. -/
+noncomputable def toCompletionVecLatHom : VecLatHom X (Completion X) where
+  toFun := ((↑) : X → Completion X)
+  map_add' := Completion.coe_add
+  map_smul' := Completion.coe_smul
+  map_sup' := coe_sup_completion
+  map_inf' := coe_inf_completion
+
+@[simp]
+theorem coe_toCompletionVecLatHom :
+    ⇑(toCompletionVecLatHom : VecLatHom X (Completion X)) = ((↑) : X → Completion X) :=
+  rfl
+
+/-- The canonical inclusion of a normed vector lattice into its completion is an isometry;
+together with `toCompletionVecLatHom` this exhibits the inclusion as a lattice isometry. -/
+theorem isometry_toCompletionVecLatHom :
+    Isometry (toCompletionVecLatHom : X → Completion X) := by
+  rw [coe_toCompletionVecLatHom]
+  exact isometry_coe_completion
+
+/-- A norm-preserving vector lattice homomorphism `T : X → Y` with dense range into a Banach
+lattice `Y` extends to a Banach lattice isometry from the completion of `X` onto `Y`. -/
+noncomputable def banachLatEquivCompletionOfDenseIsometry
+    {Y : Type*} [NormedAddCommGroup Y] [Lattice Y] [IsOrderedAddMonoid Y] [BanachLattice Y]
+    (T : VecLatHom X Y) (hT_norm : ∀ x, ‖T x‖ = ‖x‖) (hT_dense : DenseRange ⇑T) :
+    BanachLatEquiv (Completion X) Y := by
+  let Tli : X →ₗᵢ[ℝ] Y := { toLinearMap := T.toLinearMap, norm_map' := hT_norm }
+  have huc : UniformContinuous ⇑Tli := Tli.isometry.uniformContinuous
+  let Tc : Completion X →ₗᵢ[ℝ] Y :=
+    { toFun := Completion.extension Tli
+      map_add' := fun z w => by
+        refine Completion.induction_on₂ z w (isClosed_eq ?_ ?_) (fun x y => ?_)
+        · exact Completion.continuous_extension.comp continuous_add
+        · exact (Completion.continuous_extension.comp continuous_fst).add
+            (Completion.continuous_extension.comp continuous_snd)
+        · rw [← Completion.coe_add, Completion.extension_coe huc, Completion.extension_coe huc,
+            Completion.extension_coe huc, map_add]
+      map_smul' := fun r z => by
+        refine Completion.induction_on z (isClosed_eq ?_ ?_) (fun x => ?_)
+        · exact Completion.continuous_extension.comp (continuous_const_smul r)
+        · exact (continuous_const_smul r).comp Completion.continuous_extension
+        · rw [← Completion.coe_smul, Completion.extension_coe huc, Completion.extension_coe huc,
+            map_smul, RingHom.id_apply]
+      norm_map' := fun z => by
+        refine Completion.induction_on z (isClosed_eq ?_ ?_) (fun x => ?_)
+        · exact continuous_norm.comp Completion.continuous_extension
+        · exact continuous_norm
+        · change ‖Completion.extension (⇑Tli) (x : Completion X)‖ = ‖(x : Completion X)‖
+          rw [Completion.extension_coe huc, Tli.norm_map, Completion.norm_coe] }
+  have hTc_coe : ∀ a : X, Tc (a : Completion X) = T a := fun a =>
+    Completion.extension_coe huc a
+  have hdense : DenseRange ⇑Tc := by
+    refine hT_dense.mono ?_
+    rintro _ ⟨x, rfl⟩
+    exact ⟨(x : Completion X), hTc_coe x⟩
+  have hsurj : Function.Surjective ⇑Tc := by
+    have hclosed : IsClosed (Set.range ⇑Tc) := Tc.isometry.isClosedEmbedding.isClosed_range
+    rw [← Set.range_eq_univ, ← hclosed.closure_eq, hdense.closure_range]
+  refine
+    { toLinearIsometryEquiv := LinearIsometryEquiv.ofSurjective Tc hsurj
+      map_sup' := fun z w => ?_
+      map_inf' := fun z w => ?_ }
+  · change Tc (z ⊔ w) = Tc z ⊔ Tc w
+    refine Completion.induction_on₂ z w (isClosed_eq ?_ ?_) (fun x y => ?_)
+    · exact Tc.continuous.comp ContinuousSup.continuous_sup
+    · exact ContinuousSup.continuous_sup.comp
+        ((Tc.continuous.comp continuous_fst).prodMk (Tc.continuous.comp continuous_snd))
+    · rw [← coe_sup_completion, hTc_coe, hTc_coe, hTc_coe]
+      exact T.map_sup' x y
+  · change Tc (z ⊓ w) = Tc z ⊓ Tc w
+    refine Completion.induction_on₂ z w (isClosed_eq ?_ ?_) (fun x y => ?_)
+    · exact Tc.continuous.comp ContinuousInf.continuous_inf
+    · exact ContinuousInf.continuous_inf.comp
+        ((Tc.continuous.comp continuous_fst).prodMk (Tc.continuous.comp continuous_snd))
+    · rw [← coe_inf_completion, hTc_coe, hTc_coe, hTc_coe]
+      exact T.map_inf' x y
+
+end Completion
