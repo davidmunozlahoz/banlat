@@ -44,8 +44,8 @@ private lemma banachLatEquiv_forall_isVLDisjoint_eq_zero
     have hρ_inf : ρ (|v| ⊓ |a|) = |w| ⊓ |ρ a| := by
       calc ρ (|v| ⊓ |a|)
           = ρ |v| ⊓ ρ |a| := ρ.map_inf' _ _
-        _ = |ρ v| ⊓ |ρ a| := by
-          exact congrArg₂ (· ⊓ ·)
+        _ = |ρ v| ⊓ |ρ a| :=
+          congrArg₂ (· ⊓ ·)
             (ρ.toVecLatEquiv.toVecLatHom.map_abs v)
             (ρ.toVecLatEquiv.toVecLatHom.map_abs a)
         _ = |w| ⊓ |ρ a| := by rw [hρv]
@@ -175,16 +175,15 @@ private lemma banachLatEquiv_precomp_map_sup
   calc (α ⊔ β).comp γ.toLinearIsometryEquiv.toLinearIsometry.toContinuousLinearMap a
       = (α ⊔ β) (γ a) := rfl
     _ = (α ⊔ β) (γ a⁺ - γ a⁻) := by rw [← hγ_sub, ← h_pn]
-    _ = (α ⊔ β) (γ a⁺) - (α ⊔ β) (γ a⁻) := by
-        exact map_sub (α ⊔ β) _ _
+    _ = (α ⊔ β) (γ a⁺) - (α ⊔ β) (γ a⁻) := map_sub (α ⊔ β) _ _
     _ = (α.comp γ.toLinearIsometryEquiv.toLinearIsometry.toContinuousLinearMap ⊔
           β.comp γ.toLinearIsometryEquiv.toLinearIsometry.toContinuousLinearMap) a⁺ -
         (α.comp γ.toLinearIsometryEquiv.toLinearIsometry.toContinuousLinearMap ⊔
           β.comp γ.toLinearIsometryEquiv.toLinearIsometry.toContinuousLinearMap) a⁻ := by
         rw [hposApp a⁺ hap, hposApp a⁻ han]
     _ = (α.comp γ.toLinearIsometryEquiv.toLinearIsometry.toContinuousLinearMap ⊔
-          β.comp γ.toLinearIsometryEquiv.toLinearIsometry.toContinuousLinearMap) (a⁺ - a⁻) := by
-        exact (map_sub _ _ _).symm
+          β.comp γ.toLinearIsometryEquiv.toLinearIsometry.toContinuousLinearMap) (a⁺ - a⁻) :=
+        (map_sub _ _ _).symm
     _ = (α.comp γ.toLinearIsometryEquiv.toLinearIsometry.toContinuousLinearMap ⊔
           β.comp γ.toLinearIsometryEquiv.toLinearIsometry.toContinuousLinearMap) a := by
         rw [← h_pn]
@@ -457,11 +456,9 @@ private lemma exists_L1_banachLatEquiv_principalBand_of_nontrivial_ALSpace
     rw [hT_x]
     exact φ_eq.toVecLatEquiv.toVecLatHom.map_nonneg hΦx_band_nn
   have hΦx_band_wou : ∀ u : ↥(Band.principalBand (Φ x)).toSubmodule,
-      IsVLDisjoint u Φx_band → u = 0 := by
-    intro u hudis
-    apply Subtype.ext
-    exact eq_zero_of_mem_principalBand_of_isVLDisjoint u.property
-      (congrArg Subtype.val hudis)
+      IsVLDisjoint u Φx_band → u = 0 := fun u hudis =>
+    Subtype.ext (eq_zero_of_mem_principalBand_of_isVLDisjoint u.property
+      (congrArg Subtype.val hudis))
   have hTx_wou : ∀ w : Lp ℝ 1 ν, IsVLDisjoint w (T x_band) → w = 0 := by
     intro w hw
     rw [hT_x] at hw
@@ -570,11 +567,9 @@ theorem exists_L1_banachLatEquiv_isFiniteMeasure_of_weakOrderUnit [ALSpace X] {e
       rw [hTe_eq]
       exact φ_eq.toVecLatEquiv.toVecLatHom.map_nonneg hΦe_nn
     have hband_wou : ∀ u : ↥(Band.principalBand (intoMofK (X := X) e)).toSubmodule,
-        IsVLDisjoint u (Φ_X e) → u = 0 := by
-      intro u hudis
-      apply Subtype.ext
-      exact eq_zero_of_mem_principalBand_of_isVLDisjoint u.property
-        (congrArg Subtype.val hudis)
+        IsVLDisjoint u (Φ_X e) → u = 0 := fun u hudis =>
+      Subtype.ext (eq_zero_of_mem_principalBand_of_isVLDisjoint u.property
+        (congrArg Subtype.val hudis))
     have hTe_wou : ∀ w : Lp ℝ 1 ν, IsVLDisjoint w (T e) → w = 0 := by
       intro w hw
       rw [hTe_eq] at hw

@@ -39,8 +39,8 @@ omit [Fact (1 ≤ p)] in
 /-- The empty set belongs to `indicatorFamily` since `1_∅ = 0 ∈ L`. -/
 private lemma empty_mem_indicatorFamily [IsFiniteMeasure μ]
     (L : VectorSublattice (Lp ℝ p μ)) :
-    ∅ ∈ indicatorFamily (μ := μ) (p := p) L := by
-  exact ⟨MeasurableSet.empty, by
+    ∅ ∈ indicatorFamily (μ := μ) (p := p) L :=
+  ⟨MeasurableSet.empty, by
     rw [indicatorConstLp_empty]; exact L.toSubmodule.zero_mem⟩
 
 omit [Fact (1 ≤ p)] in
@@ -613,10 +613,7 @@ theorem lp_aePos_of_forall_isVLDisjoint_eq_zero
   have hae_notE : ∀ᵐ a ∂ν, a ∉ E := ae_iff.mpr (by simpa using hEν)
   filter_upwards [hae_notE, hg_ae] with a hnotE hnn
   rcases eq_or_lt_of_le hnn with heq | hlt
-  · exfalso
-    apply hnotE
-    change (g : α → ℝ) a ≤ 0
-    exact le_of_eq heq.symm
+  · exact absurd (le_of_eq heq.symm) hnotE
   · exact hlt
 
 private lemma withDensitySMulLI_surjective_of_ae_pos
@@ -863,17 +860,11 @@ theorem exists_L1_banachLatEquiv_of_embeds_in_L1_with_aePositive.{v}
     exists_Lp_banachLatEquiv_of_closed_sublattice_containing_one (μ := ν)
       (by norm_num : (1 : ENNReal) ≠ ⊤) L hL_closed hL_one
   have hψ_sup : ∀ x y : X,
-      T'.equivRange (x ⊔ y) = T'.equivRange x ⊔ T'.equivRange y := by
-    intro x y
-    apply Subtype.ext
-    change T' (x ⊔ y) = T' x ⊔ T' y
-    exact hT'_sup x y
+      T'.equivRange (x ⊔ y) = T'.equivRange x ⊔ T'.equivRange y := fun x y =>
+    Subtype.ext (hT'_sup x y)
   have hψ_inf : ∀ x y : X,
-      T'.equivRange (x ⊓ y) = T'.equivRange x ⊓ T'.equivRange y := by
-    intro x y
-    apply Subtype.ext
-    change T' (x ⊓ y) = T' x ⊓ T' y
-    exact hT'_inf x y
+      T'.equivRange (x ⊓ y) = T'.equivRange x ⊓ T'.equivRange y := fun x y =>
+    Subtype.ext (hT'_inf x y)
   refine ⟨Ω', mΩ', ν', hν'_finite,
     { toLinearIsometryEquiv := T'.equivRange.trans φ.toLinearIsometryEquiv
       map_sup' := ?_
