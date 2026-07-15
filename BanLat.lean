@@ -45,6 +45,7 @@ import BanLat.Normed
 import BanLat.Operators.Carrier
 import BanLat.Operators.Hom
 import BanLat.Operators.OrderBounded
+import BanLat.Operators.OrderContinuous
 import BanLat.Operators.Positive
 import BanLat.Operators.Regular
 import BanLat.Operators.RieszKantorovich
