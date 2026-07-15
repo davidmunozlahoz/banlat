@@ -14,3 +14,10 @@ jobs:
     steps:
       - uses: actions/checkout@v4
       - uses: leanprover/lean-action@v1
+        with:
+          build: true
+          build-args: "--wfail"
+          lint: false
+          mk_all-check: true
+          nanoda: true
+          nanoda-allow-sorry: false
