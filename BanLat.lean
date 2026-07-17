@@ -11,6 +11,7 @@ import BanLat.AMSpace.Dual
 import BanLat.AMSpace.Kakutani
 import BanLat.AMSpace.Max
 import BanLat.AMSpace.Maximal
+import BanLat.AToDosXexu
 import BanLat.Atom
 import BanLat.Basic
 import BanLat.Bidual
@@ -22,6 +23,8 @@ import BanLat.Examples.CofK.Basic
 import BanLat.Examples.CofK.Dual
 import BanLat.Examples.Lp.Basic
 import BanLat.Examples.Lp.Sublattice
+import BanLat.Examples.Lp.Subspaces.Gaussian
+import BanLat.Examples.Lp.Subspaces.Stable
 import BanLat.Examples.MofK.ALspace
 import BanLat.Examples.MofK.Atom
 import BanLat.Examples.MofK.Band
@@ -56,6 +59,17 @@ import BanLat.Pi
 import BanLat.Preliminaries.HasNoAtoms
 import BanLat.Preliminaries.Regularity
 import BanLat.Preliminaries.SignedMeasure
+import BanLat.Probability.ConvergenceInMeasure
+import BanLat.Probability.Distributions.FractionalAbsMoments
+import BanLat.Probability.Distributions.Stable.Basic
+import BanLat.Probability.Distributions.Stable.Def
+import BanLat.Probability.Distributions.Stable.GaussianCompatibility
+import BanLat.Probability.Distributions.Stable.HasSymmetricStableLaw.Basic
+import BanLat.Probability.Distributions.Stable.HasSymmetricStableLaw.Def
+import BanLat.Probability.Distributions.Stable.HasSymmetricStableLaw.IndependentFinSums
+import BanLat.Probability.Distributions.Stable.HasSymmetricStableLaw.IndependentInfiniteSums
+import BanLat.Probability.Distributions.Stable.HasSymmetricStableLaw.Moments
+import BanLat.Probability.Distributions.Stable.Moments
 import BanLat.QuasiInteriorPoint
 import BanLat.Quotient
 import BanLat.RieszDec
