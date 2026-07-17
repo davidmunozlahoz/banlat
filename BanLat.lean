@@ -11,7 +11,6 @@ import BanLat.AMSpace.Dual
 import BanLat.AMSpace.Kakutani
 import BanLat.AMSpace.Max
 import BanLat.AMSpace.Maximal
-import BanLat.AToDosXexu
 import BanLat.Atom
 import BanLat.Basic
 import BanLat.Bidual

@@ -77,10 +77,6 @@ lemma exists_tendstoInMeasure_sum_range_mul_of_hasSymmetricStableLaw
   classical
   letI := (hX 0).isProbabilityMeasure
   let S : ℕ → Ω → ℝ := fun N ω ↦ ∑ n ∈ Finset.range N, a n * X n ω
-  have hS : ∀ N, AEStronglyMeasurable (S N) P := by
-    intro N
-    exact (Finset.aemeasurable_fun_sum _ fun i _ ↦
-      (hX i).aemeasurable.const_mul (a i)).aestronglyMeasurable
   let u : ℕ → ℝ≥0 := fun i ↦ ‖a i‖₊ ^ q
   have hu : Summable u := by simpa only [u] using ha
   let R : ℕ → ℝ≥0 := fun N ↦ (∑' i, u i) - ∑ i ∈ Finset.range N, u i
@@ -169,7 +165,7 @@ lemma exists_tendstoInMeasure_sum_range_mul_of_hasSymmetricStableLaw
       exact mul_le_mul_of_nonneg_right hd_le (abs_nonneg _)
     change ε ≤ dist (b N * X 0 ω) 0
     simpa only [Real.dist_eq, sub_zero] using hω.trans habs_le
-  obtain ⟨Y, hY⟩ := exists_tendstoInMeasure_of_cauchySeq hS hcau_dist
+  obtain ⟨Y, hY⟩ := exists_tendstoInMeasure_of_cauchySeq hcau_dist
   refine ⟨Y, by simpa [S] using hY, ?_⟩
   exact h_indep.hasSymmetricStableLaw_of_tendstoInMeasure_sum_range_mul hX a ha
     (by simpa [S] using hY)

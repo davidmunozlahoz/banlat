@@ -225,17 +225,11 @@ private lemma exists_linearMap_standardGaussian {X : ℕ → Ω → ℝ}
   let Y : ℓ²(ℕ, ℝ) → Ω → ℝ := fun a ↦ (hex a).choose
   have hYspec (a : ℓ²(ℕ, ℝ)) := (hex a).choose_spec
   let hYmem (a : ℓ²(ℕ, ℝ)) : MemLp (Y a) p P := (hYspec a).2.2.1
-  have hpartial_meas (a : ℓ²(ℕ, ℝ)) (N : ℕ) :
-      AEStronglyMeasurable (fun ω ↦ ∑ n ∈ Finset.range N, a n * X n ω) P := by
-    exact (Finset.aemeasurable_fun_sum _ fun n _ ↦
-      (hX n).aemeasurable.const_mul (a n)).aestronglyMeasurable
   let G : ℓ²(ℕ, ℝ) →ₗ[ℝ] Lp ℝ p P :=
     { toFun := fun a ↦ (hYmem a).toLp (Y a)
       map_add' := by
         intro a b
-        have hab := tendstoInMeasure_add_real
-          (fun N ↦ hpartial_meas a N) (fun N ↦ hpartial_meas b N)
-          (hYspec a).1 (hYspec b).1
+        have hab := tendstoInMeasure_add_real (hYspec a).1 (hYspec b).1
         have hab' : TendstoInMeasure P
             (fun N ω ↦ ∑ n ∈ Finset.range N, (a + b) n * X n ω)
             Filter.atTop (fun ω ↦ Y a ω + Y b ω) := by
@@ -255,8 +249,7 @@ private lemma exists_linearMap_standardGaussian {X : ℕ → Ω → ℝ}
         rw [hleft, huniqω, hadd, Pi.add_apply, ha, hb]
       map_smul' := by
         intro r a
-        have hra := tendstoInMeasure_const_mul_real
-          (fun N ↦ hpartial_meas a N) (hYspec a).1 r
+        have hra := tendstoInMeasure_const_mul_real (hYspec a).1 r
         have hra' : TendstoInMeasure P
             (fun N ω ↦ ∑ n ∈ Finset.range N, (r • a) n * X n ω)
             Filter.atTop (fun ω ↦ r * Y a ω) := by
