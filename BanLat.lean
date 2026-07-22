@@ -5,7 +5,6 @@ import BanLat.ALSpace.DualALAM
 import BanLat.ALSpace.Kakutani
 import BanLat.ALSpace.OrderContinuous
 import BanLat.ALSpace.Sublattice
-import BanLat.ALpSpace.Basic
 import BanLat.AMSpace.Basic
 import BanLat.AMSpace.Characters
 import BanLat.AMSpace.Dual
@@ -22,9 +21,7 @@ import BanLat.Dual
 import BanLat.Examples.CofK.Basic
 import BanLat.Examples.CofK.Dual
 import BanLat.Examples.Lp.Atoms
-import BanLat.Examples.Lp.Auxiliar
 import BanLat.Examples.Lp.Basic
-import BanLat.Examples.Lp.DiscreteClassification
 import BanLat.Examples.Lp.OrderContinuous
 import BanLat.Examples.Lp.Sublattice
 import BanLat.Examples.MofK.ALspace
