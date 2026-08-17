@@ -4,6 +4,4 @@
  ["unusedArguments", "conditionallyCompleteLatticeOfPosNet"],
  ["unusedArguments", "conditionallyCompleteLatticeOfPosSet"],
  ["unusedArguments", "sigmaConditionallyCompleteLatticeOfPosCountableSet"],
- ["unusedArguments", "sigmaConditionallyCompleteLatticeOfPosSeq"],
- ["unusedArguments", "OrderIdeal.principalNormedAddCommGroup"],
- ["unusedArguments", "LLexpr.Tactic.mkFinExpr"]]
+ ["unusedArguments", "sigmaConditionallyCompleteLatticeOfPosSeq"]]
