@@ -47,7 +47,7 @@ private def bidual_alSpace_of_dual_amSpace (hX' : AMSpace (StrongDual ℝ X)) :
 /-- If the norm dual of a Banach lattice is an AL-space, then the Banach lattice
 is an AM-space. -/
 @[reducible]
-def amSpace_of_dual_alSpace (hX' : ALSpace (StrongDual ℝ X)) : AMSpace X where
+def amSpaceOfDualALSpace (hX' : ALSpace (StrongDual ℝ X)) : AMSpace X where
   norm_add_eq_max_of_inf_eq_zero {x y} hxy := by
     haveI : AMSpace (BidualSpace X) := bidual_amSpace_of_dual_alSpace (X := X) hX'
     have hxy' :
@@ -68,7 +68,7 @@ def amSpace_of_dual_alSpace (hX' : ALSpace (StrongDual ℝ X)) : AMSpace X where
 /-- If the norm dual of a Banach lattice is an AM-space, then the Banach lattice
 is an AL-space. -/
 @[reducible]
-def alSpace_of_dual_amSpace (hX' : AMSpace (StrongDual ℝ X)) : ALSpace X where
+def alSpaceOfDualAMSpace (hX' : AMSpace (StrongDual ℝ X)) : ALSpace X where
   norm_add_eq_of_inf_eq_zero {x y} hxy := by
     haveI : ALSpace (BidualSpace X) := bidual_alSpace_of_dual_amSpace (X := X) hX'
     have hxy' :
