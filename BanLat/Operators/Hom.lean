@@ -9,7 +9,7 @@ This file defines `VecLatHom`, the type of vector lattice homomorphisms — maps
 simultaneously real-linear and lattice homomorphisms — together with the
 proposition-valued predicate `IsVecLatHom` characterising such maps. Key results include
 the characterisation of vector lattice homomorphisms by their behaviour on absolute
-values (`of_abs`) and the fact that every vector lattice homomorphism is monotone.
+values (`VecLatHom.ofAbs`) and the fact that every vector lattice homomorphism is monotone.
 
 The second section develops `VecLatEquiv`, the type of vector lattice isomorphisms. It
 packages `Positive.extensionEquiv`, which extends an additive bijection between positive
@@ -60,7 +60,7 @@ theorem isVecLatHom (f : VecLatHom X Y) : IsVecLatHom f where
   map_inf' := f.toLatticeHom.map_inf'
 
 /-- Construct a `VecLatHom` from a proof that a function satisfies `IsVecLatHom`. -/
-def of_isVecLatHom (f : X → Y) (h : IsVecLatHom f) : VecLatHom X Y where
+def ofIsVecLatHom (f : X → Y) (h : IsVecLatHom f) : VecLatHom X Y where
   toFun := f
   map_add' := h.map_add
   map_smul' := h.map_smul
@@ -129,7 +129,7 @@ def id : VecLatHom X X :=
     map_inf' := fun _ _ => rfl }
 
 /-- Construct a `VecLatHom` from a linear map that preserves absolute values. -/
-def of_abs (f : X →ₗ[ℝ] Y) (abs : ∀ x : X, f |x| = |f x|) : VecLatHom X Y :=
+def ofAbs (f : X →ₗ[ℝ] Y) (abs : ∀ x : X, f |x| = |f x|) : VecLatHom X Y :=
   { f with
     map_sup' := fun a b => by
       change f (a ⊔ b) = f a ⊔ f b
@@ -255,7 +255,7 @@ theorem mk'_apply {f : X → Y} (vlh : IsVecLatHom f) (x : X) :
 /-- A linear map that preserves absolute values satisfies `IsVecLatHom`. -/
 theorem of_abs {f : X → Y} (lin : IsLinearMap ℝ f) (abs : ∀ x : X, f |x|
   = |f x|) : IsVecLatHom f :=
-  VecLatHom.isVecLatHom (VecLatHom.of_abs (IsLinearMap.mk' f lin) abs)
+  VecLatHom.isVecLatHom (VecLatHom.ofAbs (IsLinearMap.mk' f lin) abs)
 
 /-- A positive linear map that preserves disjointness is a vector lattice homomorphism. -/
 theorem of_disjoint {f : X → Y} (lin : IsLinearMap ℝ f)

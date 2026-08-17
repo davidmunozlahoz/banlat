@@ -5,8 +5,6 @@
   "BanachLattice.sigmaConditionallyCompleteLattice_of_mono_bddAbove_tendsto"],
  ["defsWithUnderscore", "StrongDual.alSpace_of_dual_amSpace"],
  ["defsWithUnderscore", "StrongDual.amSpace_of_dual_alSpace"],
- ["defsWithUnderscore", "VecLatHom.of_abs"],
- ["defsWithUnderscore", "VecLatHom.of_isVecLatHom"],
  ["defsWithUnderscore", "ALSpace.StrongDual.instAMSpaceWithUnit_of_alSpace"],
  ["defsWithUnderscore", "ALSpace.StrongDual.instAMSpace_of_alSpace"],
  ["defsWithUnderscore", "AMSpace.StrongDual.instALSpace_of_amSpace"],

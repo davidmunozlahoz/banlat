@@ -1505,7 +1505,7 @@ private theorem liftAux_ofFVLv (T : E →L[ℝ] X) (f : FVLv E) :
 
 /-- The vector lattice homomorphic extension of an operator from `E` to a Banach lattice. -/
 def lift (T : E →L[ℝ] X) : VecLatHom (FBL E) X := by
-  refine VecLatHom.of_isVecLatHom (liftAux T) ?_
+  refine VecLatHom.ofIsVecLatHom (liftAux T) ?_
   refine
     { map_add := fun _ _ => (liftAux T).map_add _ _
       map_smul := fun _ _ => (liftAux T).map_smul _ _
@@ -1631,7 +1631,7 @@ theorem exists_unique_lift (T : E →L[ℝ] X) :
   · exact ⟨(lift T).isVecLatHom, lift_of T, norm_lift T⟩
   · intro S hS
     rcases hS with ⟨hSV, hSo, _hSnorm⟩
-    let SV : VecLatHom (FBL E) X := VecLatHom.of_isVecLatHom (S : FBL E → X) hSV
+    let SV : VecLatHom (FBL E) X := VecLatHom.ofIsVecLatHom (S : FBL E → X) hSV
     have hSVeq : SV = lift T := lift_unique T SV hSo
     ext y
     calc
