@@ -35,14 +35,14 @@ private def bidual_amSpace_of_dual_alSpace (hX' : ALSpace (StrongDual ℝ X)) :
     AMSpace (BidualSpace X) := by
   letI : ALSpace (StrongDual ℝ X) := canonicalALSpace (X := X) hX'
   change AMSpace (StrongDual ℝ (StrongDual ℝ X))
-  exact ALSpace.StrongDual.instAMSpace_of_alSpace (X := StrongDual ℝ X)
+  exact ALSpace.StrongDual.instAMSpaceOfALSpace (X := StrongDual ℝ X)
 
 @[reducible]
 private def bidual_alSpace_of_dual_amSpace (hX' : AMSpace (StrongDual ℝ X)) :
     ALSpace (BidualSpace X) := by
   letI : AMSpace (StrongDual ℝ X) := canonicalAMSpace (X := X) hX'
   change ALSpace (StrongDual ℝ (StrongDual ℝ X))
-  exact AMSpace.StrongDual.instALSpace_of_amSpace (X := StrongDual ℝ X)
+  exact AMSpace.StrongDual.instALSpaceOfAMSpace (X := StrongDual ℝ X)
 
 /-- If the norm dual of a Banach lattice is an AL-space, then the Banach lattice
 is an AM-space. -/

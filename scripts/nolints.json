@@ -1,7 +1,4 @@
 [["defsWithUnderscore", "ALSpace.instALSpace_closedSublattice"],
- ["defsWithUnderscore", "ALSpace.StrongDual.instAMSpaceWithUnit_of_alSpace"],
- ["defsWithUnderscore", "ALSpace.StrongDual.instAMSpace_of_alSpace"],
- ["defsWithUnderscore", "AMSpace.StrongDual.instALSpace_of_amSpace"],
  ["impossibleInstance", "ALSpace.instALSpace_closedSublattice"],
  ["impossibleInstance", "VectorSublattice.instBanachLatticeSubtype"],
  ["unusedArguments", "FBL"],

@@ -72,7 +72,7 @@ theorem norm_sup_eq_max_of_nonneg {x y : X} (hx : 0 ≤ x) (hy : 0 ≤ y) :
     ‖x ⊔ y‖ = max ‖x‖ ‖y‖ := by
   apply le_antisymm
   · haveI : ALSpace (StrongDual ℝ X) :=
-      StrongDual.instALSpace_of_amSpace (X := X)
+      StrongDual.instALSpaceOfAMSpace (X := X)
     haveI : HasPrincipalProjectionProperty (StrongDual ℝ X) := by
       infer_instance
     let x'' : StrongDual ℝ (StrongDual ℝ X) := BidualSpace.inclusion x
