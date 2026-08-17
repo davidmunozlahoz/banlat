@@ -63,8 +63,11 @@ When a symbol appears in a lemma name it is transcribed as follows.
 | `→` | `imp` (or `of` when the conclusion is stated first) |
 | `↔` | `iff` |
 | `¬` | `not` |
-| `∃` | `exists` / `bex` (bounded) |
-| `∀` | `forall` / `ball` (bounded) |
+| `∃` | `exists` |
+| `∀` | `all` / `forall` |
+
+Do not use `ball` or `bex` in new declaration names. These legacy Core names
+are not Mathlib convention.
 
 **Sets**
 
@@ -261,6 +264,5 @@ this). Use a brief comment to separate logical blocks if needed.
 
 ### `sorry`
 
-Do **not** leave stray `sorry`s in committed code (see `AGENTS.md` for the
-*State mode* / *Prove mode* distinction that governs when `sorry` is
-intentional).
+Do **not** leave `sorry` in committed code. Every declaration must have a
+complete proof. CI enforces this by building with warnings treated as errors.
