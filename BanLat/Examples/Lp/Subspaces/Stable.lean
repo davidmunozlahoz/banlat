@@ -285,13 +285,13 @@ theorem nonempty_linearIsometryEquiv_standardQStable_closedSpan
   have hRange := range_linearIsometry_standardQStable hX hp_pos hpq T hT
   exact ⟨T.equivRange.trans (LinearIsometryEquiv.ofEq _ _ hRange)⟩
 
-/-- For `0 < p < 1` and `p < q < 2`, the normalized stable map embeds `ℓ^q(ℕ, ℝ)` linearly
-into `Lᵖ`, preserves the quasi-norm, and sends `eₙ ↦ ‖X₀‖ₚ⁻¹ · Xₙ`. -/
+/-- For `0 < p < q < 2`, the normalized stable map embeds `ℓ^q(ℕ, ℝ)` linearly
+into `Lᵖ`, preserves the (quasi-)norm, and sends `eₙ ↦ ‖X₀‖ₚ⁻¹ · Xₙ`. -/
 theorem exists_linearMap_standardQStable_preserving_quasiNorm
     {X : ℕ → Ω → ℝ} [IsProbabilityMeasure P]
     (hX : ∀ n, HasSymmetricStableLaw (X n) q 1 P)
     (h_indep : iIndepFun X P) (hq_lt_two : q < 2)
-    (hp_pos : 0 < p) (hp_lt_one : p < 1)
+    (hp_pos : 0 < p)
     (hpq : (p : ℝ) < q) :
     ∃ T : lp (fun _ : ℕ ↦ ℝ) (ENNReal.ofReal q) →ₗ[ℝ] Lp ℝ p P,
       Function.Injective T ∧
@@ -299,7 +299,6 @@ theorem exists_linearMap_standardQStable_preserving_quasiNorm
       ∀ n, T (lp.single (ENNReal.ofReal q) n 1) =
         ‖standardQStableToLp (hX 0) hp_pos hpq‖⁻¹ •
           standardQStableToLp (hX n) hp_pos hpq := by
-  have _hp_lt_one := hp_lt_one
   obtain ⟨T, hTnorm, hT⟩ :=
     exists_linearMap_standardQStable_norm_eq hX h_indep hq_lt_two hp_pos hpq
   have hTinj : Function.Injective T := by

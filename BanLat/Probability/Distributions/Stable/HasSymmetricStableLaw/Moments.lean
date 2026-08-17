@@ -28,9 +28,9 @@ variable {Ω : Type*} [MeasurableSpace Ω] {P : Measure Ω}
 namespace HasSymmetricStableLaw
 
 /-- A symmetric `q`-stable random variable with scale parameter zero vanishes almost surely
-and therefore belongs to `Lᵖ` for every positive real exponent `p`. -/
+and therefore belongs to `Lᵖ` for every nonnegative real exponent `p`. -/
 lemma memLp_of_scale_eq_zero (hX : HasSymmetricStableLaw X q c P)
-    (hc : c = 0) (p : ℝ≥0) (_hp_pos : 0 < p) :
+    (hc : c = 0) (p : ℝ≥0) :
     MemLp X p P := by
   letI := hX.isProbabilityMeasure
   have hzero := (hX.scale_eq_zero_iff_ae_eq_zero).mp hc
@@ -57,7 +57,7 @@ lemma integrable_iff (hX : HasSymmetricStableLaw X q c P) :
   rw [← memLp_one_iff_integrable]
   by_cases hc : c = 0
   · have hX_one : MemLp X 1 P := by
-      simpa only [ENNReal.ofReal_one] using hX.memLp_of_scale_eq_zero hc 1 zero_lt_one
+      simpa only [ENNReal.ofReal_one] using hX.memLp_of_scale_eq_zero hc 1
     simp [hc, hX_one]
   have hc_pos : 0 < c := pos_iff_ne_zero.mpr hc
   by_cases hq : q = 2
@@ -79,9 +79,9 @@ lemma memLp_iff_of_scale_pos_of_index_lt_two
   memLp_iff_of_scale_pos_of_index_lt_two_nnreal hX hc hq hp_pos
 
 /-- A symmetric `2`-stable random variable with scale parameter `c` is centered Gaussian with
-variance `2 * c`, and hence belongs to `Lᵖ` for every positive finite exponent `p`. -/
+variance `2 * c`, and hence belongs to `Lᵖ` for every `p ≥ 0`. -/
 lemma memLp_of_index_eq_two (hX : HasSymmetricStableLaw X q c P)
-    (hq : q = 2) (_hp_pos : 0 < p) :
+    (hq : q = 2) :
     MemLp X p P := by
   subst q
   exact (hasSymmetricStableLaw_two_iff_hasLaw_gaussianReal.mp hX).hasGaussianLaw.memLp
@@ -92,10 +92,10 @@ degenerate, or when either `q = 2` or `p < q`. -/
 lemma memLp_iff (hX : HasSymmetricStableLaw X q c P) (hp_pos : 0 < p) :
     MemLp X p P ↔ c = 0 ∨ q = 2 ∨ (p : ℝ) < q := by
   by_cases hc : c = 0
-  · simp [hc, hX.memLp_of_scale_eq_zero hc p hp_pos]
+  · simp [hc, hX.memLp_of_scale_eq_zero hc p]
   have hc_pos : 0 < c := pos_iff_ne_zero.mpr hc
   by_cases hq : q = 2
-  · simp [hc, hq, hX.memLp_of_index_eq_two hq hp_pos]
+  · simp [hc, hq, hX.memLp_of_index_eq_two hq]
   · have hq_lt_two : q < 2 := lt_of_le_of_ne hX.isSymmetricStable_map.index_le_two hq
     simpa [hc, hq] using
       hX.memLp_iff_of_scale_pos_of_index_lt_two hc_pos hq_lt_two hp_pos
@@ -185,7 +185,7 @@ lemma lpNorm_finset_sum_mul_of_hasSymmetricStableLaw
     (hX : ∀ i, HasSymmetricStableLaw (X i) q c P)
     (hZ : HasSymmetricStableLaw Z q c Q)
     (h_indep : iIndepFun X P) (s : Finset ι) (a : ι → ℝ)
-    (_hp_pos : 0 < p) (_hpq : q = 2 ∨ (p : ℝ) < q) :
+    (_hpq : q = 2 ∨ (p : ℝ) < q) :
     lpNorm (fun ω ↦ ∑ i ∈ s, a i * X i ω) p P =
       ((↑(∑ i ∈ s, ‖a i‖₊ ^ q) : ℝ) ^ q⁻¹) *
         lpNorm Z p Q := by
@@ -202,8 +202,8 @@ lemma lpNorm_finset_sum_mul_of_hasSymmetricStableLaw
   rw [coe_nnnorm, Real.norm_of_nonneg]
   positivity
 
-/-- Let `(X i)` be independent symmetric `q`-stable random variables with common scale `c`,
-and let `Z` be another symmetric `q`-stable random variable with scale `c`. Then:
+/-- For `p > 0` with `q = 2` or `p < q`, let `(X i)` be independent symmetric `q`-stable
+random variables with common scale `c`, and let `Z` have the same law. Then:
 `∫ |∑ i ∈ s, a i X i|ᵖ dP = (∑ i ∈ s, |a i|^q) ^ (p / q) ∫ |Z|ᵖ dQ`. -/
 lemma integral_abs_rpow_finset_sum_mul_of_hasSymmetricStableLaw
     {Ω' ι : Type*} [MeasurableSpace Ω'] {Q : Measure Ω'}
@@ -238,7 +238,7 @@ lemma integral_abs_rpow_finset_sum_mul_of_hasSymmetricStableLaw
   simp_rw [hpoint]
   rw [integral_const_mul]
 
-/-- Let `(X i)` be independent standard centered Gaussian random variables and let `Z` be
+/-- Let `(X i)` be independent standard centered Gaussian random variables and `Z` be
 standard centered Gaussian. Then
 `‖∑ i ∈ s, a i X i‖ₚ = (∑ i ∈ s, a i ^ 2) ^ (1 / 2) ‖Z‖ₚ`. -/
 lemma lpNorm_finset_sum_mul_standardGaussian
@@ -246,17 +246,16 @@ lemma lpNorm_finset_sum_mul_standardGaussian
     {X : ι → Ω → ℝ} {Z : Ω' → ℝ}
     (hX : ∀ i, HasLaw (X i) (gaussianReal 0 1) P)
     (hZ : HasLaw Z (gaussianReal 0 1) Q)
-    (h_indep : iIndepFun X P) (s : Finset ι) (a : ι → ℝ)
-    (hp_pos : 0 < p) :
+    (h_indep : iIndepFun X P) (s : Finset ι) (a : ι → ℝ) :
     lpNorm (fun ω ↦ ∑ i ∈ s, a i * X i ω) p P =
       Real.sqrt (∑ i ∈ s, (a i) ^ 2) * lpNorm Z p Q := by
   have hstable := lpNorm_finset_sum_mul_of_hasSymmetricStableLaw
     (fun i ↦ (hX i).hasSymmetricStableLaw_two) hZ.hasSymmetricStableLaw_two
-    h_indep s a hp_pos (Or.inl rfl)
+    h_indep s a (p := p) (Or.inl rfl)
   simpa [Real.sqrt_eq_rpow, Real.norm_eq_abs, sq_abs] using hstable
 
-/-- Let `(X i)` be independent standard centered Gaussian random variables and let `Z` be
-standard centered Gaussian. Then
+/-- For `p > 0`, let `(X i)` be independent standard centered Gaussian random variables and
+let `Z` be standard centered Gaussian. Then
 `∫ |∑ i ∈ s, a i X i|ᵖ dP = (∑ i ∈ s, a i ^ 2) ^ (p / 2) ∫ |Z|ᵖ dQ`. -/
 lemma integral_abs_rpow_finset_sum_mul_standardGaussian
     {Ω' ι : Type*} [MeasurableSpace Ω'] {Q : Measure Ω'}

@@ -106,11 +106,9 @@ private lemma norm_sum_standardGaussianToLp {X : ℕ → Ω → ℝ}
     (s : Finset ℕ) (a : ℕ → ℝ) :
     ‖∑ i ∈ s, a i • standardGaussianToLp p (hX i)‖ =
       ‖standardGaussianToLp p (hX 0)‖ * Real.sqrt (∑ i ∈ s, (a i) ^ 2) := by
-  have hp_pos : 0 < p := by
-    exact_mod_cast (lt_of_lt_of_le zero_lt_one (Fact.out : 1 ≤ (p : ℝ≥0∞)))
   have hnorm :=
     ProbabilityTheory.iIndepFun.lpNorm_finset_sum_mul_standardGaussian
-      (p := p) hX (hX 0) h_indep s a hp_pos
+      (p := p) hX (hX 0) h_indep s a
   have hcoe := coeFn_sum_standardGaussianToLp (p := p) hX s a
   have hsum_meas : AEStronglyMeasurable (fun ω ↦ ∑ i ∈ s, a i * X i ω) P := by
     exact (Lp.aestronglyMeasurable _).congr hcoe
@@ -161,7 +159,7 @@ private lemma summable_smul_standardGaussianToLp {X : ℕ → Ω → ℝ}
 
 /-- The `Lᵖ` norm of an infinite Gaussian series `∑ₖ aₖXₖ` is the standard
 Gaussian `Lᵖ` norm `∣∣X₀∣∣ₚ` multiplied by the `ℓ²` norm of its coefficients. -/
-private lemma norm_tsum_standardGaussianToLp {X : ℕ → Ω → ℝ}
+theorem norm_tsum_standardGaussianToLp {X : ℕ → Ω → ℝ}
     (hX : ∀ n, HasLaw (X n) (gaussianReal 0 1) P)
     (h_indep : iIndepFun X P) [Fact (1 ≤ (p : ℝ≥0∞))] (a : ℓ²(ℕ, ℝ)) :
   ‖∑' n, a n • standardGaussianToLp p (hX n)‖ =
@@ -396,19 +394,18 @@ theorem nonempty_linearIsometryEquiv_standardGaussian_closedSpan
   have hRange := range_linearIsometry_standardGaussian hX T hT
   exact ⟨T.equivRange.trans (LinearIsometryEquiv.ofEq _ _ hRange)⟩
 
-/-- For `0 < p < 1`, the normalized Gaussian map embeds `ℓ²(ℕ, ℝ)` linearly into
-`Lᵖ`, preserves the quasi-norm, and sends `eₙ` to `‖N(0, 1)‖ₚ⁻¹ · Xₙ`. -/
+/-- For `p > 0`, the normalized Gaussian map embeds `ℓ²(ℕ, ℝ)` linearly into
+`Lᵖ`, preserves the (quasi-)norm, and sends `eₙ` to `‖N(0, 1)‖ₚ⁻¹ · Xₙ`. -/
 theorem exists_linearMap_standardGaussian_preserving_quasiNorm
     {X : ℕ → Ω → ℝ} [IsProbabilityMeasure P]
     (hX : ∀ n, HasLaw (X n) (gaussianReal 0 1) P)
     (h_indep : iIndepFun X P)
-    (hp_pos : 0 < p) (hp_lt_one : p < 1) :
+    (hp_pos : 0 < p) :
     ∃ T : ℓ²(ℕ, ℝ) →ₗ[ℝ] Lp ℝ p P,
       Function.Injective T ∧
       (∀ a, ‖T a‖ = ‖a‖) ∧
       ∀ n, T (lp.single 2 n 1) =
         ‖standardGaussianToLp p (hX 0)‖⁻¹ • standardGaussianToLp p (hX n) := by
-  have _hp_lt_one := hp_lt_one
   obtain ⟨T, hTnorm, hT⟩ :=
     exists_linearMap_standardGaussian_norm_eq hX h_indep hp_pos
   have hTinj : Function.Injective T := by
