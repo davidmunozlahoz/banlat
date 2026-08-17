@@ -87,7 +87,6 @@ instance instLinearMapClass : LinearMapClass (VecLatHom X Y) ℝ X Y where
     exact f.toLinearMap.map_smul c x
 
 /-- The underlying function of a `VecLatHom` equals its coercion to `X → Y`. -/
-@[simp]
 theorem toFun_eq_coe {f : VecLatHom X Y} : f.toFun = (f : X → Y) := rfl
 
 /-- A vector lattice homomorphism preserves absolute values. -/

@@ -120,7 +120,6 @@ theorem coe_of (x : E) :
     ((of x : FVLv E) : C(dualUnitBall E, ℝ)) = dualEval E x := by
   rfl
 
-@[simp]
 theorem of_apply (x : E) (φ : dualUnitBall E) :
     (of x : FVLv E) φ = (φ : WeakDual ℝ E) x := by
   rfl
