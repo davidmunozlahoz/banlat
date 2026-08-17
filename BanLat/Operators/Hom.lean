@@ -28,6 +28,8 @@ structure VecLatHom (X : Type*) (Y : Type*) [AddCommGroup X] [AddCommGroup Y]
   [Lattice X] [Lattice Y] [IsOrderedAddMonoid X] [IsOrderedAddMonoid Y]
   [VectorLattice X] [VectorLattice Y] extends X →ₗ[ℝ] Y, LatticeHom X Y
 
+attribute [inherit_doc LatticeHom] VecLatHom.toLatticeHom
+
 variable {X : Type*} {Y : Type*} [AddCommGroup X] [AddCommGroup Y]
   [Lattice X] [Lattice Y] [IsOrderedAddMonoid X] [IsOrderedAddMonoid Y]
   [VectorLattice X] [VectorLattice Y]
@@ -286,6 +288,8 @@ structure VecLatEquiv (X : Type*) (Y : Type*) [AddCommGroup X] [AddCommGroup Y]
     [Lattice X] [Lattice Y] [IsOrderedAddMonoid X] [IsOrderedAddMonoid Y]
     [VectorLattice X] [VectorLattice Y] extends X ≃ₗ[ℝ] Y, LatticeHom X Y
 
+attribute [inherit_doc LatticeHom] VecLatEquiv.toLatticeHom
+
 namespace VecLatEquiv
 
 /-- The canonical `FunLike` instance, making `VecLatEquiv X Y` a type of functions `X → Y`. -/
@@ -447,6 +451,8 @@ structure BanachLatEquiv (X Y : Type*)
     [IsOrderedAddMonoid X] [IsOrderedAddMonoid Y]
     [BanachLattice X] [BanachLattice Y]
     extends X ≃ₗᵢ[ℝ] Y, LatticeHom X Y
+
+attribute [inherit_doc LatticeHom] BanachLatEquiv.toLatticeHom
 
 namespace BanachLatEquiv
 

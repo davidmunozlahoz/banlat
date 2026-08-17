@@ -29,7 +29,6 @@ variable {X : Type*} [AddCommGroup X] [Lattice X] [IsOrderedAddMonoid X]
 def IsVLDisjoint (x y : X) : Prop := |x| ⊓ |y| = 0
 
 omit [IsOrderedAddMonoid X] in
-@[simp]
 theorem isVLDisjoint_comm {x y : X} :
     IsVLDisjoint x y ↔ IsVLDisjoint y x := by
   unfold IsVLDisjoint; rw [inf_comm]

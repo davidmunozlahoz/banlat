@@ -55,6 +55,7 @@ end AMSpace
 whose gauge norm agrees with the original norm. -/
 class AMSpaceWithUnit (X : Type*) [NormedAddCommGroup X] [Lattice X]
     [IsOrderedAddMonoid X] extends AMSpace X where
+  /-- The distinguished strong order unit. -/
   unit : X
   strongOrderUnit_unit : StrongOrderUnit unit
   norm_eq_gaugeNorm : ∀ x : X, ‖x‖ = OrderIdeal.gaugeNorm unit x
