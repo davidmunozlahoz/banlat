@@ -824,7 +824,7 @@ theorem isOrderContinuousNorm_of_disjoint_tendsto_zero
     exact ⟨u 0 + a, isLUB_of_tendsto_atTop hu_mono hu_tend, hu_tend⟩
   let banach : BanachLattice X := inferInstance
   letI : SigmaConditionallyCompleteLattice X :=
-    sigmaConditionallyCompleteLattice_of_mono_bddAbove_tendsto hmono_tend
+    sigmaConditionallyCompleteLatticeOfMonoBddAboveTendsto hmono_tend
   let orderedAdd : IsOrderedAddMonoid X := {
     add_le_add_left := fun _ _ h _ => add_le_add_left h _
   }

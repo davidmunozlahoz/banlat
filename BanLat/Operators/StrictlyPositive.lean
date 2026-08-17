@@ -434,7 +434,7 @@ private lemma countable_of_isDisjointSet_dual_of_weakOrderUnit
     Λ.Countable := by
   classical
   letI : ConditionallyCompleteLattice X :=
-    BanachLattice.conditionallyCompleteLatticeOf_isOrderContinuousNorm
+    BanachLattice.conditionallyCompleteLatticeOfIsOrderContinuousNorm
   haveI : HasProjectionProperty X := inferInstance
   let T : Λ → OrderBoundedHom X ℝ := fun φ => StrongDual.toOrderDualSpace (φ : StrongDual ℝ X)
   let P : Λ → ProjectionBand X := fun φ =>

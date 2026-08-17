@@ -28,7 +28,7 @@ theorem tendsto_of_monotone_bddAbove [IsOrderContinuousNorm X]
   -- Order continuity implies order completeness, hence σ-order completeness;
   -- σ-OC gives the LUB and σ-order continuity of the norm gives convergence.
   letI : ConditionallyCompleteLattice X :=
-    conditionallyCompleteLatticeOf_isOrderContinuousNorm
+    conditionallyCompleteLatticeOfIsOrderContinuousNorm
   have hx : IsLUB (Set.range u) (sSup (Set.range u)) :=
     ⟨fun _ ha => le_csSup hbd ha,
       fun _ ha => csSup_le (Set.range_nonempty u) ha⟩
@@ -42,7 +42,7 @@ variable {X : Type*} [NormedAddCommGroup X] [Lattice X] [IsOrderedAddMonoid X]
 /-- A vector lattice in which every increasing order-bounded sequence
 converges in norm to a least upper bound is σ-conditionally complete. -/
 @[reducible]
-noncomputable def sigmaConditionallyCompleteLattice_of_mono_bddAbove_tendsto
+noncomputable def sigmaConditionallyCompleteLatticeOfMonoBddAboveTendsto
     [VectorLattice X]
     (h : ∀ {u : ℕ → X}, Monotone u → BddAbove (Set.range u) →
       ∃ x, IsLUB (Set.range u) x ∧ Filter.Tendsto u Filter.atTop (nhds x)) :
