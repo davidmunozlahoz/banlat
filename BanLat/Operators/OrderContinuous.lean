@@ -684,7 +684,7 @@ private lemma decomposition_OrderContinuousOperator (T : OrderBoundedHom X Y) :
       S ∈ OrderContinuousOperator (X := X) (Y := Y) ∧
         R ∈ disjointComplement (OrderContinuousOperator (X := X) (Y := Y)) ∧ T = S + R := by
   letI : ConditionallyCompleteLattice (OrderBoundedHom X Y) :=
-    @conditionallyCompleteLatticeOfPosSet (OrderBoundedHom X Y) _ _ _ _ _
+    @conditionallyCompleteLatticeOfPosSet (OrderBoundedHom X Y) _ _ _
       (fun {S} _ hne hbdd => OrderBoundedHom.exists_isLUB (S := S) hne hbdd)
   haveI : HasProjectionProperty (OrderBoundedHom X Y) :=
     HasProjectionProperty.of_isOrderComplete
@@ -705,7 +705,7 @@ theorem ogasawara_theorem
     ∃ B : ProjectionBand (OrderBoundedHom X Y),
       (B : Set (OrderBoundedHom X Y)) = OrderContinuousOperator (X := X) (Y := Y) := by
   letI : ConditionallyCompleteLattice (OrderBoundedHom X Y) :=
-    @conditionallyCompleteLatticeOfPosSet (OrderBoundedHom X Y) _ _ _ _ _
+    @conditionallyCompleteLatticeOfPosSet (OrderBoundedHom X Y) _ _ _
       (fun {S} _ hne hbdd => OrderBoundedHom.exists_isLUB (S := S) hne hbdd)
   haveI : HasProjectionProperty (OrderBoundedHom X Y) :=
     HasProjectionProperty.of_isOrderComplete

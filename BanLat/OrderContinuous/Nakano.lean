@@ -39,11 +39,10 @@ end Forward
 section Sigma
 variable {X : Type*} [NormedAddCommGroup X] [Lattice X] [IsOrderedAddMonoid X]
 
-/-- A vector lattice in which every increasing order-bounded sequence
+/-- A lattice-ordered additive commutative group in which every increasing order-bounded sequence
 converges in norm to a least upper bound is σ-conditionally complete. -/
 @[reducible]
 noncomputable def sigmaConditionallyCompleteLatticeOfMonoBddAboveTendsto
-    [VectorLattice X]
     (h : ∀ {u : ℕ → X}, Monotone u → BddAbove (Set.range u) →
       ∃ x, IsLUB (Set.range u) x ∧ Filter.Tendsto u Filter.atTop (nhds x)) :
     SigmaConditionallyCompleteLattice X := by

@@ -1,7 +1,3 @@
 [["unusedArguments", "FBL"],
  ["unusedArguments", "FVLv"],
- ["unusedArguments", "OrderConvergesTo"],
- ["unusedArguments", "conditionallyCompleteLatticeOfPosNet"],
- ["unusedArguments", "conditionallyCompleteLatticeOfPosSet"],
- ["unusedArguments", "sigmaConditionallyCompleteLatticeOfPosCountableSet"],
- ["unusedArguments", "sigmaConditionallyCompleteLatticeOfPosSeq"]]
+ ["unusedArguments", "OrderConvergesTo"]]
