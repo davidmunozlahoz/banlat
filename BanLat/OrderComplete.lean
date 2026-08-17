@@ -155,14 +155,13 @@ private lemma exists_isLUB_pos_set_of_pos_net
 
 /-! ### Characterisations of `ConditionallyCompleteLattice` -/
 
-/-- On a vector lattice, a `ConditionallyCompleteLattice` structure exists
-provided every increasing net of positive elements that is bounded above has
-a least upper bound. The net is indexed by a type in the same universe as
-the carrier. -/
+/-- On a lattice-ordered additive commutative group, a
+`ConditionallyCompleteLattice` structure exists provided every increasing net
+of positive elements that is bounded above has a least upper bound. The net is
+indexed by a type in the same universe as the carrier. -/
 @[reducible]
 noncomputable def conditionallyCompleteLatticeOfPosNet
     (X : Type u) [AddCommGroup X] [Lattice X] [IsOrderedAddMonoid X]
-    [VectorLattice X] [Nonempty X]
     (H : ∀ {ι : Type u} [Preorder ι] [IsDirected ι (· ≤ ·)] [Nonempty ι]
         {u : ι → X}, Monotone u → (∀ i, 0 ≤ u i) →
         BddAbove (range u) → ∃ x, IsLUB (range u) x) :
@@ -173,13 +172,12 @@ noncomputable def conditionallyCompleteLatticeOfPosNet
       (fun _ hpos hne hbdd => exists_isLUB_pos_set_of_pos_net H hpos hne hbdd)
       trivial)
 
-/-- On a vector lattice, a `ConditionallyCompleteLattice` structure exists
-provided every non-empty bounded above set of positive elements has a least
-upper bound. -/
+/-- On a lattice-ordered additive commutative group, a
+`ConditionallyCompleteLattice` structure exists provided every non-empty
+bounded above set of positive elements has a least upper bound. -/
 @[reducible]
 noncomputable def conditionallyCompleteLatticeOfPosSet
     (X : Type*) [AddCommGroup X] [Lattice X] [IsOrderedAddMonoid X]
-    [VectorLattice X] [Nonempty X]
     (H : ∀ {S : Set X}, S ⊆ {x | 0 ≤ x} → S.Nonempty → BddAbove S →
       ∃ x, IsLUB S x) :
     ConditionallyCompleteLattice X :=
@@ -311,13 +309,12 @@ private lemma exists_isLUB_pos_countable_set_of_pos_seq
     rintro _ ⟨n, rfl⟩
     exact Finset.sup'_le _ _ fun i _ => hg_le i c hc
 
-/-- On a vector lattice, a `SigmaConditionallyCompleteLattice` structure
+/-- On a lattice-ordered additive commutative group, a `SigmaConditionallyCompleteLattice` structure
 exists provided every increasing bounded above sequence of positive elements
 has a least upper bound. -/
 @[reducible]
 noncomputable def sigmaConditionallyCompleteLatticeOfPosSeq
     (X : Type*) [AddCommGroup X] [Lattice X] [IsOrderedAddMonoid X]
-    [VectorLattice X] [Nonempty X]
     (H : ∀ {u : ℕ → X}, Monotone u → (∀ n, 0 ≤ u n) →
       BddAbove (range u) → ∃ x, IsLUB (range u) x) :
     SigmaConditionallyCompleteLattice X :=
@@ -327,13 +324,12 @@ noncomputable def sigmaConditionallyCompleteLatticeOfPosSeq
       (fun hc hpos hne hbdd =>
         exists_isLUB_pos_countable_set_of_pos_seq H hpos hc hne hbdd))
 
-/-- On a vector lattice, a `SigmaConditionallyCompleteLattice` structure
+/-- On a lattice-ordered additive commutative group, a `SigmaConditionallyCompleteLattice` structure
 exists provided every non-empty bounded above countable set of positive
 elements has a least upper bound. -/
 @[reducible]
 noncomputable def sigmaConditionallyCompleteLatticeOfPosCountableSet
     (X : Type*) [AddCommGroup X] [Lattice X] [IsOrderedAddMonoid X]
-    [VectorLattice X] [Nonempty X]
     (H : ∀ {S : Set X}, S ⊆ {x | 0 ≤ x} → S.Countable → S.Nonempty →
       BddAbove S → ∃ x, IsLUB S x) :
     SigmaConditionallyCompleteLattice X :=

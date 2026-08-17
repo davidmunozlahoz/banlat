@@ -20,7 +20,9 @@ import BanLat.Disjoint
 import BanLat.Dual
 import BanLat.Examples.CofK.Basic
 import BanLat.Examples.CofK.Dual
+import BanLat.Examples.Lp.Atoms
 import BanLat.Examples.Lp.Basic
+import BanLat.Examples.Lp.OrderContinuous
 import BanLat.Examples.Lp.Sublattice
 import BanLat.Examples.Lp.Subspaces.Gaussian
 import BanLat.Examples.Lp.Subspaces.Stable
@@ -34,6 +36,9 @@ import BanLat.Examples.SignedMeasure.Basic
 import BanLat.Free.FBL
 import BanLat.Free.FVL
 import BanLat.Free.FVLv
+import BanLat.L1repr.Basic
+import BanLat.L1repr.HowItSeats
+import BanLat.L1repr.OrderContinuous
 import BanLat.LLexpr
 import BanLat.LocallySolid.Basic
 import BanLat.LocallySolid.Completion
@@ -41,11 +46,14 @@ import BanLat.LocallySolid.Lebesgue
 import BanLat.LocallySolid.LocallyConvexSolid
 import BanLat.LocallySolid.WithSeminorms
 import BanLat.Normed
+import BanLat.Operators.Carrier
 import BanLat.Operators.Hom
 import BanLat.Operators.OrderBounded
+import BanLat.Operators.OrderContinuous
 import BanLat.Operators.Positive
 import BanLat.Operators.Regular
 import BanLat.Operators.RieszKantorovich
+import BanLat.Operators.StrictlyPositive
 import BanLat.OrderComplete
 import BanLat.OrderContinuous.Ando
 import BanLat.OrderContinuous.Basic

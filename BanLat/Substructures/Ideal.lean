@@ -543,7 +543,7 @@ instance instIsOrderedAddMonoidPrincipal (a : X) :
 norm is a normed additive commutative group. -/
 @[reducible]
 noncomputable def principalNormedAddCommGroup [IsVLArchimedean X]
-    (a : X) (_ha : a ≠ 0) :
+    (a : X) :
     NormedAddCommGroup ↥(principalSubmodule a) :=
   NormedAddCommGroup.ofCore (𝕜 := ℝ) {
     toCore := {
@@ -572,12 +572,12 @@ noncomputable def principalVectorLattice (a : X) :
 the gauge norm is a normed vector lattice. -/
 @[reducible]
 noncomputable def principalNormedVectorLattice [IsVLArchimedean X]
-    (a : X) (ha : a ≠ 0) :
+    (a : X) :
     @NormedVectorLattice ↥(principalSubmodule a)
-      (principalNormedAddCommGroup a ha)
+      (principalNormedAddCommGroup a)
       (instLatticePrincipal a)
       (instIsOrderedAddMonoidPrincipal a) := by
-  letI : NormedAddCommGroup ↥(principalSubmodule a) := principalNormedAddCommGroup a ha
+  letI : NormedAddCommGroup ↥(principalSubmodule a) := principalNormedAddCommGroup a
   letI : Lattice ↥(principalSubmodule a) := instLatticePrincipal a
   letI : IsOrderedAddMonoid ↥(principalSubmodule a) := instIsOrderedAddMonoidPrincipal a
   letI : VectorLattice ↥(principalSubmodule a) := principalVectorLattice a
@@ -594,7 +594,7 @@ noncomputable def principalNormedVectorLattice [IsVLArchimedean X]
       rw [gaugeNorm_smul a r x.1, Real.norm_eq_abs]
   }
   exact @NormedVectorLattice.mk ↥(principalSubmodule a)
-    (principalNormedAddCommGroup a ha)
+    (principalNormedAddCommGroup a)
     (instLatticePrincipal a)
     (instIsOrderedAddMonoidPrincipal a)
     (principalVectorLattice a)

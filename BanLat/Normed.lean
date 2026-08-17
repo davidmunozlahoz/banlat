@@ -1,5 +1,6 @@
 import BanLat.Basic
 import Mathlib.Analysis.Normed.Order.Lattice
+import Mathlib.Analysis.Normed.Module.Completion
 import Mathlib.Topology.Order.MonotoneConvergence
 
 /-!
@@ -148,3 +149,245 @@ noncomputable instance : NormedVectorLattice ℝ where
 
 /-- The real numbers form a Banach lattice over themselves. -/
 noncomputable instance : BanachLattice ℝ where
+
+/-!
+## Completion of a normed vector lattice
+
+The metric completion of a normed vector lattice carries a compatible lattice structure
+making it again a normed vector lattice; being complete, it is a Banach lattice.
+-/
+
+section Completion
+
+open UniformSpace
+
+variable {X : Type*} [NormedAddCommGroup X] [Lattice X] [IsOrderedAddMonoid X]
+  [NormedVectorLattice X]
+
+private lemma uniformContinuous₂_sup_completion :
+    UniformContinuous fun p : X × X => p.1 ⊔ p.2 := by
+  have h : (fun p : X × X => p.1 ⊔ p.2) = fun p : X × X => p.1 + (p.2 - p.1)⁺ := by
+    funext p
+    exact sup_eq_add_posPart p.1 p.2
+  rw [h]
+  exact uniformContinuous_fst.add
+    (lipschitzWith_posPart.uniformContinuous.comp (uniformContinuous_snd.sub uniformContinuous_fst))
+
+private lemma uniformContinuous₂_inf_completion :
+    UniformContinuous fun p : X × X => p.1 ⊓ p.2 := by
+  have h : (fun p : X × X => p.1 ⊓ p.2) = fun p : X × X => -((-p.1) ⊔ (-p.2)) := by
+    funext p
+    rw [neg_sup, neg_neg, neg_neg]
+  rw [h]
+  exact (uniformContinuous₂_sup_completion.comp
+    (uniformContinuous_fst.neg.prodMk uniformContinuous_snd.neg)).neg
+
+/-- The completion of a normed vector lattice is a lattice. -/
+noncomputable instance instLatticeCompletion : Lattice (Completion X) := by
+  letI : Max (Completion X) := ⟨Completion.map₂ (fun x y : X => x ⊔ y)⟩
+  letI : Min (Completion X) := ⟨Completion.map₂ (fun x y : X => x ⊓ y)⟩
+  have coe_sup : ∀ x y : X, ((x ⊔ y : X) : Completion X) =
+      (x : Completion X) ⊔ (y : Completion X) := fun x y => by
+    rw [show (x : Completion X) ⊔ (y : Completion X) =
+        Completion.map₂ (fun x y : X => x ⊔ y) x y from rfl,
+      Completion.map₂_coe_coe x y (fun x y : X => x ⊔ y) uniformContinuous₂_sup_completion]
+  have coe_inf : ∀ x y : X, ((x ⊓ y : X) : Completion X) =
+      (x : Completion X) ⊓ (y : Completion X) := fun x y => by
+    rw [show (x : Completion X) ⊓ (y : Completion X) =
+        Completion.map₂ (fun x y : X => x ⊓ y) x y from rfl,
+      Completion.map₂_coe_coe x y (fun x y : X => x ⊓ y) uniformContinuous₂_inf_completion]
+  refine Lattice.mk' ?sup_comm ?sup_assoc ?inf_comm ?inf_assoc ?sup_inf_self ?inf_sup_self
+  · intro x y
+    refine Completion.induction_on₂ x y ?_ ?_
+    · exact isClosed_eq (Completion.continuous_map₂ continuous_fst continuous_snd)
+        (Completion.continuous_map₂ continuous_snd continuous_fst)
+    · intro x y
+      rw [← coe_sup, ← coe_sup, sup_comm]
+  · intro x y z
+    refine Completion.induction_on₃ x y z ?_ ?_
+    · exact isClosed_eq
+        (Completion.continuous_map₂
+          (Completion.continuous_map₂ continuous_fst (continuous_fst.comp continuous_snd))
+          (continuous_snd.comp continuous_snd))
+        (Completion.continuous_map₂ continuous_fst
+          (Completion.continuous_map₂ (continuous_fst.comp continuous_snd)
+            (continuous_snd.comp continuous_snd)))
+    · intro x y z
+      rw [← coe_sup, ← coe_sup, ← coe_sup, ← coe_sup, sup_assoc]
+  · intro x y
+    refine Completion.induction_on₂ x y ?_ ?_
+    · exact isClosed_eq (Completion.continuous_map₂ continuous_fst continuous_snd)
+        (Completion.continuous_map₂ continuous_snd continuous_fst)
+    · intro x y
+      rw [← coe_inf, ← coe_inf, inf_comm]
+  · intro x y z
+    refine Completion.induction_on₃ x y z ?_ ?_
+    · exact isClosed_eq
+        (Completion.continuous_map₂
+          (Completion.continuous_map₂ continuous_fst (continuous_fst.comp continuous_snd))
+          (continuous_snd.comp continuous_snd))
+        (Completion.continuous_map₂ continuous_fst
+          (Completion.continuous_map₂ (continuous_fst.comp continuous_snd)
+            (continuous_snd.comp continuous_snd)))
+    · intro x y z
+      rw [← coe_inf, ← coe_inf, ← coe_inf, ← coe_inf, inf_assoc]
+  · intro x y
+    refine Completion.induction_on₂ x y ?_ ?_
+    · exact isClosed_eq
+        (Completion.continuous_map₂ continuous_fst
+          (Completion.continuous_map₂ continuous_fst continuous_snd))
+        continuous_fst
+    · intro x y
+      rw [← coe_inf, ← coe_sup, sup_inf_self]
+  · intro x y
+    refine Completion.induction_on₂ x y ?_ ?_
+    · exact isClosed_eq
+        (Completion.continuous_map₂ continuous_fst
+          (Completion.continuous_map₂ continuous_fst continuous_snd))
+        continuous_fst
+    · intro x y
+      rw [← coe_sup, ← coe_inf, inf_sup_self]
+
+/-- The inclusion of a normed vector lattice into its completion preserves suprema. -/
+@[norm_cast]
+theorem coe_sup_completion (x y : X) :
+    ((x ⊔ y : X) : Completion X) = (x : Completion X) ⊔ (y : Completion X) := by
+  rw [show (x : Completion X) ⊔ (y : Completion X) =
+      Completion.map₂ (fun x y : X => x ⊔ y) x y from rfl,
+    Completion.map₂_coe_coe x y (fun x y : X => x ⊔ y) uniformContinuous₂_sup_completion]
+
+/-- The inclusion of a normed vector lattice into its completion preserves infima. -/
+@[norm_cast]
+theorem coe_inf_completion (x y : X) :
+    ((x ⊓ y : X) : Completion X) = (x : Completion X) ⊓ (y : Completion X) := by
+  rw [show (x : Completion X) ⊓ (y : Completion X) =
+      Completion.map₂ (fun x y : X => x ⊓ y) x y from rfl,
+    Completion.map₂_coe_coe x y (fun x y : X => x ⊓ y) uniformContinuous₂_inf_completion]
+
+/-- The inclusion of a normed vector lattice into its completion preserves absolute values. -/
+@[norm_cast]
+theorem coe_abs_completion (x : X) :
+    ((|x| : X) : Completion X) = |(x : Completion X)| := by
+  rw [abs, abs, ← Completion.coe_neg, ← coe_sup_completion]
+
+private theorem completion_sup_add (x y z : Completion X) :
+    (x + z) ⊔ (y + z) = (x ⊔ y) + z := by
+  refine Completion.induction_on₃ x y z ?_ ?_
+  · exact isClosed_eq
+      (Completion.continuous_map₂
+        (Completion.continuous_map₂ continuous_fst (continuous_snd.comp continuous_snd))
+        (Completion.continuous_map₂ (continuous_fst.comp continuous_snd)
+          (continuous_snd.comp continuous_snd)))
+      (Completion.continuous_map₂
+        (Completion.continuous_map₂ continuous_fst (continuous_fst.comp continuous_snd))
+        (continuous_snd.comp continuous_snd))
+  · intro x y z
+    rw [← Completion.coe_add, ← Completion.coe_add, ← coe_sup_completion,
+      ← coe_sup_completion, ← Completion.coe_add, add_comm x z, add_comm y z,
+      add_comm (x ⊔ y) z, ← add_sup]
+
+/-- The order on the completion of a normed vector lattice is compatible with addition. -/
+noncomputable instance instIsOrderedAddMonoidCompletion :
+    IsOrderedAddMonoid (Completion X) := by
+  refine
+    { add_le_add_left := fun x y hxy z => ?_
+      add_le_add_right := fun x y hxy z => ?_ }
+  · rw [← sup_eq_right] at hxy ⊢
+    rw [completion_sup_add, hxy]
+  · rw [← sup_eq_right] at hxy ⊢
+    rw [add_comm z x, add_comm z y, completion_sup_add, hxy]
+
+private theorem completion_smul_sup_of_nonneg {r : ℝ} (hr : 0 ≤ r)
+    (x y : Completion X) : r • (x ⊔ y) = r • x ⊔ r • y := by
+  refine Completion.induction_on₂ x y ?_ ?_
+  · exact isClosed_eq
+      ((Completion.continuous_map₂ continuous_fst continuous_snd).const_smul r)
+      (Completion.continuous_map₂ (continuous_fst.const_smul r) (continuous_snd.const_smul r))
+  · intro x y
+    rw [← coe_sup_completion, ← Completion.coe_smul, ← Completion.coe_smul,
+      ← Completion.coe_smul, ← coe_sup_completion, nonneg_smul_sup x y r hr]
+
+noncomputable instance instVectorLatticeCompletion : VectorLattice (Completion X) where
+  smul_le_smul_of_nonneg_left := by
+    intro r hr x y hxy
+    rw [← sup_eq_right] at hxy ⊢
+    rw [← completion_smul_sup_of_nonneg hr, hxy]
+
+private theorem continuous_sup_completion :
+    Continuous fun p : Completion X × Completion X => p.1 ⊔ p.2 :=
+  Completion.continuous_map₂ continuous_fst continuous_snd
+
+private theorem continuous_inf_completion :
+    Continuous fun p : Completion X × Completion X => p.1 ⊓ p.2 :=
+  Completion.continuous_map₂ continuous_fst continuous_snd
+
+private theorem continuous_abs_completion :
+    Continuous (|·| : Completion X → Completion X) := by
+  simpa [abs] using
+    (Completion.continuous_map₂ continuous_id continuous_neg :
+      Continuous fun z : Completion X => z ⊔ -z)
+
+omit [Lattice X] [IsOrderedAddMonoid X] [NormedVectorLattice X] in
+private lemma exists_seq_coe_tendsto (a : Completion X) :
+    ∃ u : ℕ → X, Filter.Tendsto (fun n => ((u n : Completion X))) Filter.atTop (nhds a) := by
+  have ha : a ∈ closure (Set.range ((↑) : X → Completion X)) := by
+    rw [(Completion.denseRange_coe (α := X)).closure_range]
+    exact Set.mem_univ a
+  obtain ⟨x, hxr, hxl⟩ := mem_closure_iff_seq_limit.mp ha
+  choose u hu using hxr
+  exact ⟨u, by simpa only [hu] using hxl⟩
+
+/-- The completion of a normed vector lattice has a solid norm. -/
+noncomputable instance instHasSolidNormCompletion : HasSolidNorm (Completion X) where
+  solid := by
+    intro a b hab
+    have ha_le : a ≤ |b| := (abs_le'.mp hab).1
+    have ha_ge : -|b| ≤ a := neg_le.mp (abs_le'.mp hab).2
+    obtain ⟨u, hu⟩ := exists_seq_coe_tendsto a
+    obtain ⟨v, hv⟩ := exists_seq_coe_tendsto b
+    have hclampcont : Continuous fun p : Completion X × Completion X =>
+        (p.1 ⊔ -|p.2|) ⊓ |p.2| := by
+      have habs2 : Continuous fun p : Completion X × Completion X => |p.2| :=
+        continuous_abs_completion.comp continuous_snd
+      have hsup : Continuous fun p : Completion X × Completion X => p.1 ⊔ -|p.2| :=
+        continuous_sup_completion.comp (continuous_fst.prodMk habs2.neg)
+      exact continuous_inf_completion.comp (hsup.prodMk habs2)
+    have hcoe : ∀ n, ((((u n ⊔ -|v n|) ⊓ |v n| : X)) : Completion X)
+        = (↑(u n) ⊔ -|↑(v n)|) ⊓ |↑(v n)| := fun n => by
+      rw [coe_inf_completion, coe_sup_completion, Completion.coe_neg, coe_abs_completion]
+    have hprod : Filter.Tendsto (fun n => ((↑(u n), ↑(v n)) : Completion X × Completion X))
+        Filter.atTop (nhds (a, b)) := hu.prodMk_nhds hv
+    have hclamp : Filter.Tendsto (fun n => (↑(u n) ⊔ -|↑(v n)|) ⊓ |↑(v n)|)
+        Filter.atTop (nhds ((a ⊔ -|b|) ⊓ |b|)) := (hclampcont.tendsto (a, b)).comp hprod
+    rw [sup_eq_left.mpr ha_ge, inf_eq_left.mpr ha_le] at hclamp
+    have hwlim : Filter.Tendsto
+        (fun n => (((u n ⊔ -|v n|) ⊓ |v n| : X) : Completion X)) Filter.atTop (nhds a) := by
+      simpa only [hcoe] using hclamp
+    have hnorm_w : Filter.Tendsto
+        (fun n => ‖(((u n ⊔ -|v n|) ⊓ |v n| : X) : Completion X)‖) Filter.atTop (nhds ‖a‖) :=
+      (continuous_norm.tendsto a).comp hwlim
+    have hnorm_v : Filter.Tendsto (fun n => ‖((v n : Completion X))‖) Filter.atTop (nhds ‖b‖) :=
+      (continuous_norm.tendsto b).comp hv
+    refine le_of_tendsto_of_tendsto' hnorm_w hnorm_v (fun n => ?_)
+    rw [Completion.norm_coe, Completion.norm_coe]
+    refine HasSolidNorm.solid ?_
+    have hc_le : (u n ⊔ -|v n|) ⊓ |v n| ≤ |v n| := inf_le_right
+    have hneg_le : -|v n| ≤ (u n ⊔ -|v n|) ⊓ |v n| :=
+      le_inf le_sup_right (le_trans (neg_nonpos_of_nonneg (abs_nonneg (v n))) (abs_nonneg (v n)))
+    rw [abs_le']
+    exact ⟨hc_le, by rwa [neg_le]⟩
+
+/-- The completion of a normed vector lattice is a normed vector lattice. -/
+noncomputable instance instNormedVectorLatticeCompletion :
+    NormedVectorLattice (Completion X) where
+
+/-- **The completion of a normed vector lattice is a Banach lattice.** -/
+noncomputable instance instBanachLatticeCompletion : BanachLattice (Completion X) where
+
+/-- The canonical inclusion into the completion preserves the isometry to `toComplₗᵢ`; it is
+an isometry from `X` into its completion. -/
+theorem isometry_coe_completion : Isometry ((↑) : X → Completion X) := by
+  rw [← Completion.coe_toComplₗᵢ (𝕜 := ℝ)]
+  exact (Completion.toComplₗᵢ (𝕜 := ℝ)).isometry
+
+end Completion

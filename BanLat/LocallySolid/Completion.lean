@@ -22,6 +22,7 @@ section Completion
 variable {E : Type*} [AddCommGroup E] [Lattice E] [IsOrderedAddMonoid E]
     [VectorLattice E] [TopologicalSpace E] [T2Space E] [IsLocallySolidVectorLattice E]
 
+/-- The right uniformity associated to the topological additive group structure. -/
 local instance : UniformSpace E := IsTopologicalAddGroup.rightUniformSpace E
 local instance : IsUniformAddGroup E := isUniformAddGroup_of_addCommGroup
 local instance : UniformContinuousConstSMul ℝ E :=

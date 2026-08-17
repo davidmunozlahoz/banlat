@@ -9,7 +9,7 @@ This file defines `VecLatHom`, the type of vector lattice homomorphisms — maps
 simultaneously real-linear and lattice homomorphisms — together with the
 proposition-valued predicate `IsVecLatHom` characterising such maps. Key results include
 the characterisation of vector lattice homomorphisms by their behaviour on absolute
-values (`of_abs`) and the fact that every vector lattice homomorphism is monotone.
+values (`VecLatHom.ofAbs`) and the fact that every vector lattice homomorphism is monotone.
 
 The second section develops `VecLatEquiv`, the type of vector lattice isomorphisms. It
 packages `Positive.extensionEquiv`, which extends an additive bijection between positive
@@ -27,6 +27,8 @@ real linear isometric equivalences that also preserve `⊔` and `⊓`.
 structure VecLatHom (X : Type*) (Y : Type*) [AddCommGroup X] [AddCommGroup Y]
   [Lattice X] [Lattice Y] [IsOrderedAddMonoid X] [IsOrderedAddMonoid Y]
   [VectorLattice X] [VectorLattice Y] extends X →ₗ[ℝ] Y, LatticeHom X Y
+
+attribute [inherit_doc LatticeHom] VecLatHom.toLatticeHom
 
 variable {X : Type*} {Y : Type*} [AddCommGroup X] [AddCommGroup Y]
   [Lattice X] [Lattice Y] [IsOrderedAddMonoid X] [IsOrderedAddMonoid Y]
@@ -58,7 +60,7 @@ theorem isVecLatHom (f : VecLatHom X Y) : IsVecLatHom f where
   map_inf' := f.toLatticeHom.map_inf'
 
 /-- Construct a `VecLatHom` from a proof that a function satisfies `IsVecLatHom`. -/
-def of_isVecLatHom (f : X → Y) (h : IsVecLatHom f) : VecLatHom X Y where
+def ofIsVecLatHom (f : X → Y) (h : IsVecLatHom f) : VecLatHom X Y where
   toFun := f
   map_add' := h.map_add
   map_smul' := h.map_smul
@@ -85,7 +87,6 @@ instance instLinearMapClass : LinearMapClass (VecLatHom X Y) ℝ X Y where
     exact f.toLinearMap.map_smul c x
 
 /-- The underlying function of a `VecLatHom` equals its coercion to `X → Y`. -/
-@[simp]
 theorem toFun_eq_coe {f : VecLatHom X Y} : f.toFun = (f : X → Y) := rfl
 
 /-- A vector lattice homomorphism preserves absolute values. -/
@@ -101,6 +102,13 @@ theorem monotone (f : VecLatHom X Y) : Monotone f := by
 /-- A vector lattice homomorphism maps nonneg elements to nonneg elements. -/
 theorem map_nonneg (f : VecLatHom X Y) {x : X} (hx : 0 ≤ x) : 0 ≤ f x := by
   have h := f.monotone hx; rwa [map_zero] at h
+
+/-- An injective vector lattice homomorphism reflects the order: if `f a ≤ f b` then
+`a ≤ b`. Together with `monotone`, an injective vector lattice homomorphism is an order
+embedding. -/
+theorem le_of_map_le (f : VecLatHom X Y) (hf : Function.Injective f) {a b : X}
+    (hab : f a ≤ f b) : a ≤ b :=
+  sup_eq_right.mp (hf (by rw [map_sup f a b]; exact sup_eq_right.mpr hab))
 
 /-- A vector lattice homomorphism preserves positive parts: `f x⁺ = (f x)⁺`. -/
 theorem map_posPart (f : VecLatHom X Y) (x : X) : f x⁺ = (f x)⁺ := by
@@ -121,7 +129,7 @@ def id : VecLatHom X X :=
     map_inf' := fun _ _ => rfl }
 
 /-- Construct a `VecLatHom` from a linear map that preserves absolute values. -/
-def of_abs (f : X →ₗ[ℝ] Y) (abs : ∀ x : X, f |x| = |f x|) : VecLatHom X Y :=
+def ofAbs (f : X →ₗ[ℝ] Y) (abs : ∀ x : X, f |x| = |f x|) : VecLatHom X Y :=
   { f with
     map_sup' := fun a b => by
       change f (a ⊔ b) = f a ⊔ f b
@@ -247,7 +255,7 @@ theorem mk'_apply {f : X → Y} (vlh : IsVecLatHom f) (x : X) :
 /-- A linear map that preserves absolute values satisfies `IsVecLatHom`. -/
 theorem of_abs {f : X → Y} (lin : IsLinearMap ℝ f) (abs : ∀ x : X, f |x|
   = |f x|) : IsVecLatHom f :=
-  VecLatHom.isVecLatHom (VecLatHom.of_abs (IsLinearMap.mk' f lin) abs)
+  VecLatHom.isVecLatHom (VecLatHom.ofAbs (IsLinearMap.mk' f lin) abs)
 
 /-- A positive linear map that preserves disjointness is a vector lattice homomorphism. -/
 theorem of_disjoint {f : X → Y} (lin : IsLinearMap ℝ f)
@@ -278,6 +286,8 @@ end IsVecLatHom
 structure VecLatEquiv (X : Type*) (Y : Type*) [AddCommGroup X] [AddCommGroup Y]
     [Lattice X] [Lattice Y] [IsOrderedAddMonoid X] [IsOrderedAddMonoid Y]
     [VectorLattice X] [VectorLattice Y] extends X ≃ₗ[ℝ] Y, LatticeHom X Y
+
+attribute [inherit_doc LatticeHom] VecLatEquiv.toLatticeHom
 
 namespace VecLatEquiv
 
@@ -441,6 +451,8 @@ structure BanachLatEquiv (X Y : Type*)
     [BanachLattice X] [BanachLattice Y]
     extends X ≃ₗᵢ[ℝ] Y, LatticeHom X Y
 
+attribute [inherit_doc LatticeHom] BanachLatEquiv.toLatticeHom
+
 namespace BanachLatEquiv
 
 variable {X Y : Type*}
@@ -476,4 +488,108 @@ def symm (e : BanachLatEquiv X Y) : BanachLatEquiv Y X where
   map_sup' := e.toVecLatEquiv.symm.map_sup'
   map_inf' := e.toVecLatEquiv.symm.map_inf'
 
+/-- The identity Banach lattice isometry. -/
+def refl (X : Type*) [NormedAddCommGroup X] [Lattice X] [IsOrderedAddMonoid X]
+    [BanachLattice X] : BanachLatEquiv X X where
+  toLinearIsometryEquiv := LinearIsometryEquiv.refl ℝ X
+  map_sup' := fun _ _ => rfl
+  map_inf' := fun _ _ => rfl
+
+/-- The composition of two Banach lattice isometries. -/
+def trans {Z : Type*} [NormedAddCommGroup Z] [Lattice Z] [IsOrderedAddMonoid Z]
+    [BanachLattice Z] (e₁ : BanachLatEquiv X Y) (e₂ : BanachLatEquiv Y Z) :
+    BanachLatEquiv X Z where
+  toLinearIsometryEquiv := e₁.toLinearIsometryEquiv.trans e₂.toLinearIsometryEquiv
+  map_sup' := (e₁.toVecLatEquiv.trans e₂.toVecLatEquiv).map_sup'
+  map_inf' := (e₁.toVecLatEquiv.trans e₂.toVecLatEquiv).map_inf'
+
 end BanachLatEquiv
+
+/-! ## Inclusion into the completion -/
+
+section Completion
+
+open UniformSpace
+
+variable {X : Type*} [NormedAddCommGroup X] [Lattice X] [IsOrderedAddMonoid X]
+  [NormedVectorLattice X]
+
+/-- The canonical inclusion of a normed vector lattice into its completion, as a vector
+lattice homomorphism. -/
+noncomputable def toCompletionVecLatHom : VecLatHom X (Completion X) where
+  toFun := ((↑) : X → Completion X)
+  map_add' := Completion.coe_add
+  map_smul' := Completion.coe_smul
+  map_sup' := coe_sup_completion
+  map_inf' := coe_inf_completion
+
+@[simp]
+theorem coe_toCompletionVecLatHom :
+    ⇑(toCompletionVecLatHom : VecLatHom X (Completion X)) = ((↑) : X → Completion X) :=
+  rfl
+
+/-- The canonical inclusion of a normed vector lattice into its completion is an isometry;
+together with `toCompletionVecLatHom` this exhibits the inclusion as a lattice isometry. -/
+theorem isometry_toCompletionVecLatHom :
+    Isometry (toCompletionVecLatHom : X → Completion X) := by
+  rw [coe_toCompletionVecLatHom]
+  exact isometry_coe_completion
+
+/-- A norm-preserving vector lattice homomorphism `T : X → Y` with dense range into a Banach
+lattice `Y` extends to a Banach lattice isometry from the completion of `X` onto `Y`. -/
+noncomputable def banachLatEquivCompletionOfDenseIsometry
+    {Y : Type*} [NormedAddCommGroup Y] [Lattice Y] [IsOrderedAddMonoid Y] [BanachLattice Y]
+    (T : VecLatHom X Y) (hT_norm : ∀ x, ‖T x‖ = ‖x‖) (hT_dense : DenseRange ⇑T) :
+    BanachLatEquiv (Completion X) Y := by
+  let Tli : X →ₗᵢ[ℝ] Y := { toLinearMap := T.toLinearMap, norm_map' := hT_norm }
+  have huc : UniformContinuous ⇑Tli := Tli.isometry.uniformContinuous
+  let Tc : Completion X →ₗᵢ[ℝ] Y :=
+    { toFun := Completion.extension Tli
+      map_add' := fun z w => by
+        refine Completion.induction_on₂ z w (isClosed_eq ?_ ?_) (fun x y => ?_)
+        · exact Completion.continuous_extension.comp continuous_add
+        · exact (Completion.continuous_extension.comp continuous_fst).add
+            (Completion.continuous_extension.comp continuous_snd)
+        · rw [← Completion.coe_add, Completion.extension_coe huc, Completion.extension_coe huc,
+            Completion.extension_coe huc, map_add]
+      map_smul' := fun r z => by
+        refine Completion.induction_on z (isClosed_eq ?_ ?_) (fun x => ?_)
+        · exact Completion.continuous_extension.comp (continuous_const_smul r)
+        · exact (continuous_const_smul r).comp Completion.continuous_extension
+        · rw [← Completion.coe_smul, Completion.extension_coe huc, Completion.extension_coe huc,
+            map_smul, RingHom.id_apply]
+      norm_map' := fun z => by
+        refine Completion.induction_on z (isClosed_eq ?_ ?_) (fun x => ?_)
+        · exact continuous_norm.comp Completion.continuous_extension
+        · exact continuous_norm
+        · change ‖Completion.extension (⇑Tli) (x : Completion X)‖ = ‖(x : Completion X)‖
+          rw [Completion.extension_coe huc, Tli.norm_map, Completion.norm_coe] }
+  have hTc_coe : ∀ a : X, Tc (a : Completion X) = T a := fun a =>
+    Completion.extension_coe huc a
+  have hdense : DenseRange ⇑Tc := by
+    refine hT_dense.mono ?_
+    rintro _ ⟨x, rfl⟩
+    exact ⟨(x : Completion X), hTc_coe x⟩
+  have hsurj : Function.Surjective ⇑Tc := by
+    have hclosed : IsClosed (Set.range ⇑Tc) := Tc.isometry.isClosedEmbedding.isClosed_range
+    rw [← Set.range_eq_univ, ← hclosed.closure_eq, hdense.closure_range]
+  refine
+    { toLinearIsometryEquiv := LinearIsometryEquiv.ofSurjective Tc hsurj
+      map_sup' := fun z w => ?_
+      map_inf' := fun z w => ?_ }
+  · change Tc (z ⊔ w) = Tc z ⊔ Tc w
+    refine Completion.induction_on₂ z w (isClosed_eq ?_ ?_) (fun x y => ?_)
+    · exact Tc.continuous.comp ContinuousSup.continuous_sup
+    · exact ContinuousSup.continuous_sup.comp
+        ((Tc.continuous.comp continuous_fst).prodMk (Tc.continuous.comp continuous_snd))
+    · rw [← coe_sup_completion, hTc_coe, hTc_coe, hTc_coe]
+      exact T.map_sup' x y
+  · change Tc (z ⊓ w) = Tc z ⊓ Tc w
+    refine Completion.induction_on₂ z w (isClosed_eq ?_ ?_) (fun x y => ?_)
+    · exact Tc.continuous.comp ContinuousInf.continuous_inf
+    · exact ContinuousInf.continuous_inf.comp
+        ((Tc.continuous.comp continuous_fst).prodMk (Tc.continuous.comp continuous_snd))
+    · rw [← coe_inf_completion, hTc_coe, hTc_coe, hTc_coe]
+      exact T.map_inf' x y
+
+end Completion

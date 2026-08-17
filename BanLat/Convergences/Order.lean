@@ -14,14 +14,28 @@ variable {X : Type u} [AddCommGroup X] [Lattice X] [IsOrderedAddMonoid X]
 
 /-- A net `u` **order converges** to `x` if its tails are eventually controlled
 by a separate decreasing regulator net with greatest lower bound zero. -/
-def OrderConvergesTo {ι : Type v} [Preorder ι] [IsDirected ι (· ≤ ·)] [Nonempty ι]
-    (u : ι → X) (x : X) : Prop :=
+def OrderConvergesTo {ι : Type v} [Preorder ι] (u : ι → X) (x : X) : Prop :=
   ∃ (κ : Type u) (_ : Preorder κ) (_ : IsDirected κ (· ≤ ·)) (_ : Nonempty κ),
     ∃ r : κ → X,
       Antitone r ∧
         (∀ k, 0 ≤ r k) ∧
         IsGLB (Set.range r) 0 ∧
         ∀ k, ∀ᶠ i in Filter.atTop, |u i - x| ≤ r k
+
+/-- A constant net order converges to its constant value. -/
+theorem orderConvergesTo_const {ι : Type v} [Preorder ι] [IsDirected ι (· ≤ ·)]
+    [Nonempty ι] (x : X) :
+    OrderConvergesTo (fun _ : ι => x) x := by
+  refine ⟨ULift.{u} PUnit, inferInstance, inferInstance, inferInstance,
+    fun _ => 0, ?_, ?_, ?_, ?_⟩
+  · intro _ _ _
+    exact le_rfl
+  · intro _
+    exact le_rfl
+  · simp
+  · intro _
+    filter_upwards with i
+    simp
 
 omit [AddCommGroup X] [Lattice X] [IsOrderedAddMonoid X] in
 private theorem isDirected_prod {κ τ : Type u} [Preorder κ] [Preorder τ]
@@ -87,6 +101,22 @@ private theorem isDirected_range_monotone {ι : Type v} [Preorder ι]
     change (b : X) ≤ u k
     simpa [← hj] using hmono hjk⟩
 
+omit [AddCommGroup X] [IsOrderedAddMonoid X] in
+private theorem isDirected_orderDual_range_antitone {ι : Type v} [Preorder ι]
+    [IsDirected ι (· ≤ ·)] {u : ι → X} (hanti : Antitone u) :
+    IsDirected (OrderDual (Set.range u)) (· ≤ ·) := by
+  refine ⟨fun a b => ?_⟩
+  rcases (OrderDual.ofDual a : Set.range u).2 with ⟨i, hi⟩
+  rcases (OrderDual.ofDual b : Set.range u).2 with ⟨j, hj⟩
+  obtain ⟨k, hik, hjk⟩ := directed_of (· ≤ ·) i j
+  refine ⟨OrderDual.toDual (⟨u k, ⟨k, rfl⟩⟩ : Set.range u), ?_, ?_⟩
+  · change (⟨u k, ⟨k, rfl⟩⟩ : Set.range u) ≤ OrderDual.ofDual a
+    change u k ≤ (OrderDual.ofDual a : Set.range u)
+    simpa [hi] using hanti hik
+  · change (⟨u k, ⟨k, rfl⟩⟩ : Set.range u) ≤ OrderDual.ofDual b
+    change u k ≤ (OrderDual.ofDual b : Set.range u)
+    simpa [hj] using hanti hjk
+
 /-- An increasing net order converges to its least upper bound. -/
 theorem orderConvergesTo_of_monotone_isLUB {ι : Type v} [Preorder ι]
     [IsDirected ι (· ≤ ·)] [Nonempty ι] {u : ι → X} {x : X}
@@ -117,7 +147,58 @@ theorem orderConvergesTo_of_monotone_isLUB {ι : Type v} [Preorder ι]
     rw [abs_of_nonpos (sub_nonpos.mpr hix), neg_sub]
     simpa [hj] using sub_le_sub_left (hmono hij) x
 
+/-- A decreasing net order converges to its greatest lower bound. -/
+theorem orderConvergesTo_of_antitone_isGLB {ι : Type v} [Preorder ι]
+    [IsDirected ι (· ≤ ·)] [Nonempty ι] {u : ι → X} {x : X}
+    (hanti : Antitone u) (hglb : IsGLB (Set.range u) x) :
+    OrderConvergesTo u x := by
+  letI : IsDirected (OrderDual (Set.range u)) (· ≤ ·) :=
+    isDirected_orderDual_range_antitone hanti
+  letI : Nonempty (OrderDual (Set.range u)) := by
+    obtain ⟨i⟩ := (inferInstance : Nonempty ι)
+    exact ⟨OrderDual.toDual (⟨u i, ⟨i, rfl⟩⟩ : Set.range u)⟩
+  refine ⟨OrderDual (Set.range u), inferInstance, inferInstance, inferInstance,
+    fun y => ((OrderDual.ofDual y : Set.range u) : X) - x, ?_, ?_, ?_, ?_⟩
+  · intro a b hab
+    exact sub_le_sub_right (show ((OrderDual.ofDual b : Set.range u) : X) ≤
+      ((OrderDual.ofDual a : Set.range u) : X) from hab) x
+  · intro y
+    exact sub_nonneg.mpr (hglb.1 (OrderDual.ofDual y).2)
+  · refine ⟨?_, ?_⟩
+    · rintro _ ⟨y, rfl⟩
+      exact sub_nonneg.mpr (hglb.1 (OrderDual.ofDual y).2)
+    · intro w hw
+      have hlb : ∀ y ∈ Set.range u, w + x ≤ y := by
+        rintro _ ⟨i, rfl⟩
+        exact add_le_of_le_sub_right
+          (hw ⟨OrderDual.toDual (⟨u i, ⟨i, rfl⟩⟩ : Set.range u), rfl⟩)
+      have h := hglb.2 hlb
+      rwa [add_le_iff_nonpos_left] at h
+  · intro y
+    rcases (OrderDual.ofDual y : Set.range u).2 with ⟨j, hj⟩
+    refine Filter.eventually_atTop.mpr ⟨j, fun i hij => ?_⟩
+    have hxi : x ≤ u i := hglb.1 ⟨i, rfl⟩
+    rw [abs_of_nonneg (sub_nonneg.mpr hxi)]
+    simpa [hj] using sub_le_sub_right (hanti hij) x
+
 namespace OrderConvergesTo
+
+/-- The positive cone is order closed: a pointwise non-negative order-convergent net has a
+non-negative limit. -/
+theorem nonneg {ι : Type v} [Preorder ι] [IsDirected ι (· ≤ ·)] [Nonempty ι]
+    {u : ι → X} {x : X} (hu : OrderConvergesTo u x) (hnn : ∀ i, 0 ≤ u i) :
+    0 ≤ x := by
+  rcases hu with ⟨κ, hκpre, hκdir, hκnon, r, _hranti, _hrnn, hrglb, hrevent⟩
+  letI : Preorder κ := hκpre
+  letI : IsDirected κ (· ≤ ·) := hκdir
+  letI : Nonempty κ := hκnon
+  have hlb : -x ∈ lowerBounds (Set.range r) := by
+    rintro _ ⟨k, rfl⟩
+    rcases (hrevent k).exists with ⟨i, hi⟩
+    have hx_le : -x ≤ u i - x := by
+      simpa [zero_sub] using sub_le_sub_right (hnn i) x
+    exact hx_le.trans ((le_abs_self (u i - x)).trans hi)
+  exact neg_nonpos.mp (hrglb.2 hlb)
 
 /-- Addition is order continuous. -/
 theorem add {ι : Type v} [Preorder ι] [IsDirected ι (· ≤ ·)] [Nonempty ι]
@@ -173,6 +254,28 @@ theorem sub {ι : Type v} [Preorder ι] [IsDirected ι (· ≤ ·)] [Nonempty ι
     (hv : OrderConvergesTo v y) :
     OrderConvergesTo (fun i => u i - v i) (x - y) := by
   simpa [sub_eq_add_neg] using hu.add hv.neg
+
+/-- Order limits respect pointwise order between two nets with the same index set. -/
+theorem le {ι : Type v} [Preorder ι] [IsDirected ι (· ≤ ·)] [Nonempty ι]
+    {u v : ι → X} {x y : X} (hu : OrderConvergesTo u x)
+    (hv : OrderConvergesTo v y) (hle : ∀ i, u i ≤ v i) :
+    x ≤ y := by
+  have hsub : OrderConvergesTo (fun i => v i - u i) (y - x) := hv.sub hu
+  exact sub_nonneg.mp (hsub.nonneg fun i => sub_nonneg.mpr (hle i))
+
+/-- If an order-convergent net is pointwise bounded above, then its limit is bounded above by
+the same bound. -/
+theorem le_of_forall_le {ι : Type v} [Preorder ι] [IsDirected ι (· ≤ ·)] [Nonempty ι]
+    {u : ι → X} {x b : X} (hu : OrderConvergesTo u x) (hub : ∀ i, u i ≤ b) :
+    x ≤ b :=
+  hu.le (orderConvergesTo_const b) hub
+
+/-- If an order-convergent net is pointwise bounded below, then its limit is bounded below by
+the same bound. -/
+theorem forall_le {ι : Type v} [Preorder ι] [IsDirected ι (· ≤ ·)] [Nonempty ι]
+    {u : ι → X} {a x : X} (hu : OrderConvergesTo u x) (hau : ∀ i, a ≤ u i) :
+    a ≤ x :=
+  (orderConvergesTo_const a).le hu hau
 
 /-- Scalar multiplication is order continuous. -/
 theorem smul [VectorLattice X] (a : ℝ) {ι : Type v} [Preorder ι]
@@ -243,3 +346,11 @@ theorem abs {ι : Type v} [Preorder ι] [IsDirected ι (· ≤ ·)] [Nonempty ι
   simpa [abs] using hu.sup hu.neg
 
 end OrderConvergesTo
+
+/-- If an order-convergent net is pointwise bounded above, then its limit is bounded above by
+the same bound. -/
+theorem le_of_orderConvergesTo_of_forall_le {ι : Type v} [Preorder ι]
+    [IsDirected ι (· ≤ ·)] [Nonempty ι] {u : ι → X} {x b : X}
+    (hu : OrderConvergesTo u x) (hub : ∀ i, u i ≤ b) :
+    x ≤ b :=
+  hu.le_of_forall_le hub

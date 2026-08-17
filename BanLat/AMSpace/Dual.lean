@@ -153,7 +153,7 @@ private lemma StrongDual.norm_add_eq_of_nonneg_inf_eq_zero
   linarith
 
 /-- The norm dual of an AM-space is an AL-space. -/
-noncomputable instance StrongDual.instALSpace_of_amSpace :
+noncomputable instance StrongDual.instALSpaceOfAMSpace :
     ALSpace (StrongDual ℝ X) where
   norm_add_eq_of_inf_eq_zero {φ ψ} hφψ := by
     have hφ : 0 ≤ φ := by

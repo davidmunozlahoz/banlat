@@ -353,7 +353,7 @@ theorem liftQVecLatHom_apply {Y : Type*}
     [VectorLattice Y] (T : VecLatHom X Y)
     (hker : J.toSubmodule ≤ LinearMap.ker T.toLinearMap)
     (x : X) :
-    J.liftQVecLatHom T hker (J.mkQ x) = T x := rfl
+    J.liftQVecLatHom T hker (Submodule.Quotient.mk x) = T x := rfl
 
 /-! ### Uniformly closed ideals and the Archimedean property -/
 

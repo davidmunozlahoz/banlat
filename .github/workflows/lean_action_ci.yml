@@ -9,8 +9,14 @@ on:
 
 jobs:
   build:
+    name: Build, style, and lint
     runs-on: ubuntu-latest
 
     steps:
       - uses: actions/checkout@v4
       - uses: leanprover/lean-action@v1
+        with:
+          build: true
+          build-args: "--wfail"
+          lint: true
+          mk_all-check: true
