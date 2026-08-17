@@ -762,7 +762,8 @@ noncomputable def topologicalClosure (Y : VectorSublattice X) : VectorSublattice
 
 /-- A norm-closed vector sublattice of a Banach lattice is itself a Banach
 lattice under the induced structures. -/
-noncomputable instance instBanachLatticeSubtype [BanachLattice X]
+@[reducible]
+noncomputable def banachLatticeSubtype [BanachLattice X]
     (hclosed : IsClosed (Y : Set X)) : BanachLattice ↥Y.toSubmodule where
   toCompleteSpace := by
     haveI : IsClosed (Y.toSubmodule : Set X) := hclosed

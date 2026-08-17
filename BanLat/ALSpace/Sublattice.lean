@@ -39,7 +39,8 @@ private instance instIsOrderedAddMonoidClosedSublattice
 
 /-- A closed vector sublattice of an AL-space, equipped with the subspace norm
 and induced lattice operations, is an AL-space. -/
-instance instALSpace_closedSublattice (Y : VectorSublattice X)
+@[reducible]
+noncomputable def ofClosedSublattice (Y : VectorSublattice X)
     (hclosed : IsClosed (Y : Set X)) :
     @ALSpace Y.toSubmodule Y.toSubmodule.normedAddCommGroup
       (instLatticeClosedSublattice Y)

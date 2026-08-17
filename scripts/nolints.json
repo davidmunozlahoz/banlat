@@ -1,7 +1,4 @@
-[["defsWithUnderscore", "ALSpace.instALSpace_closedSublattice"],
- ["impossibleInstance", "ALSpace.instALSpace_closedSublattice"],
- ["impossibleInstance", "VectorSublattice.instBanachLatticeSubtype"],
- ["unusedArguments", "FBL"],
+[["unusedArguments", "FBL"],
  ["unusedArguments", "FVLv"],
  ["unusedArguments", "OrderConvergesTo"],
  ["unusedArguments", "conditionallyCompleteLatticeOfPosNet"],

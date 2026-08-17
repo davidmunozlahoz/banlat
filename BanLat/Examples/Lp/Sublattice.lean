@@ -513,10 +513,10 @@ private noncomputable def banachLatEquiv [IsFiniteMeasure μ]
     (hp_ne_top : p ≠ ⊤) (L : VectorSublattice (Lp ℝ p μ))
     (hclosed : IsClosed (L : Set (Lp ℝ p μ)))
     (hone : Lp.const p μ (1 : ℝ) ∈ L) :
-    letI : BanachLattice ↥L.toSubmodule := L.instBanachLatticeSubtype hclosed
+    letI : BanachLattice ↥L.toSubmodule := L.banachLatticeSubtype hclosed
     BanachLatEquiv ↥L.toSubmodule
       (Lp ℝ p (trimmedMeasure hp_ne_top L hclosed hone)) :=
-  letI : BanachLattice ↥L.toSubmodule := L.instBanachLatticeSubtype hclosed
+  letI : BanachLattice ↥L.toSubmodule := L.banachLatticeSubtype hclosed
   { toLinearIsometryEquiv := linearIsometryEquiv hp_ne_top L hclosed hone
     map_sup' := linearIsometryEquiv_map_sup hp_ne_top L hclosed hone
     map_inf' := linearIsometryEquiv_map_inf hp_ne_top L hclosed hone }
@@ -531,11 +531,11 @@ theorem exists_Lp_banachLatEquiv_of_closed_sublattice_containing_one
     (L : VectorSublattice (Lp ℝ p μ))
     (hclosed : IsClosed (L : Set (Lp ℝ p μ)))
     (hone : Lp.const p μ (1 : ℝ) ∈ L) :
-    letI : BanachLattice ↥L.toSubmodule := L.instBanachLatticeSubtype hclosed
+    letI : BanachLattice ↥L.toSubmodule := L.banachLatticeSubtype hclosed
     ∃ (Ω' : Type u) (_ : MeasurableSpace Ω') (ν : MeasureTheory.Measure Ω')
       (_ : IsFiniteMeasure ν) (φ : BanachLatEquiv ↥L.toSubmodule (Lp ℝ p ν)),
       ∀ᵐ a ∂ν, (φ ⟨Lp.const p μ (1 : ℝ), hone⟩ : Ω' → ℝ) a = 1 := by
-  letI : BanachLattice ↥L.toSubmodule := L.instBanachLatticeSubtype hclosed
+  letI : BanachLattice ↥L.toSubmodule := L.banachLatticeSubtype hclosed
   refine ⟨Ω,
     exists_Lp_banachLatEquiv_aux.sigmaAlgebra hp_ne_top L hclosed hone,
     exists_Lp_banachLatEquiv_aux.trimmedMeasure hp_ne_top L hclosed hone,
@@ -855,7 +855,7 @@ theorem exists_L1_banachLatEquiv_of_embeds_in_L1_with_aePositive.{v}
     exact LinearMap.mem_range_self _ _
   letI : Lattice ↥L.toSubmodule := L.instLatticeSubtype
   letI : IsOrderedAddMonoid ↥L.toSubmodule := L.instIsOrderedAddMonoidSubtype
-  letI : BanachLattice ↥L.toSubmodule := L.instBanachLatticeSubtype hL_closed
+  letI : BanachLattice ↥L.toSubmodule := L.banachLatticeSubtype hL_closed
   obtain ⟨Ω', mΩ', ν', hν'_finite, φ, hφ_one⟩ :=
     exists_Lp_banachLatEquiv_of_closed_sublattice_containing_one (μ := ν)
       (by norm_num : (1 : ENNReal) ≠ ⊤) L hL_closed hL_one

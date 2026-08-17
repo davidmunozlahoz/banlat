@@ -663,7 +663,7 @@ instance instNormedVectorLatticeFBL :
 instance instBanachLatticeFBL :
     @BanachLattice (FBL E) (instNormedAddCommGroupFBL (E := E))
       (instLatticeFBL (E := E)) (instIsOrderedAddMonoidFBL (E := E)) := by
-  exact VectorSublattice.instBanachLatticeSubtype (Y := closedFreeVectorLattice E) (by
+  exact VectorSublattice.banachLatticeSubtype (Y := closedFreeVectorLattice E) (by
     rw [coe_closedFreeVectorLattice]
     exact isClosed_closure)
 
