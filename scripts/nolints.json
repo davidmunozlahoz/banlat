@@ -12,7 +12,6 @@
  ["defsWithUnderscore", "AMSpace.StrongDual.instALSpace_of_amSpace"],
  ["impossibleInstance", "ALSpace.instALSpace_closedSublattice"],
  ["impossibleInstance", "VectorSublattice.instBanachLatticeSubtype"],
- ["simpNF", "VectorSublattice.coe_toPointedCone"],
  ["unusedArguments", "FBL"],
  ["unusedArguments", "FVLv"],
  ["unusedArguments", "OrderConvergesTo"],
