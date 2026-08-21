@@ -9,9 +9,9 @@ import Mathlib.MeasureTheory.Measure.Typeclasses.ZeroOne
 
 This file characterizes the **lattice atoms of `L^p(μ)`, `0 < p < ∞`:**
 a positive `a ∈ L^p(μ)` is an atom if and only if `a = c 1_A` a.e. for
-some finite measure-theoretic atom `A` and some `c > 0`.
+some finite measure-theoretic atom `A` of finite measure and some `c > 0`.
 
-In BanLat, `A` is a *measure-theoretic atom (for `μ`)* if:        (!!!)
+In BanLat, `A` is a *measure-theoretic atom (for `μ`)* if:
   • `A` is `μ`-measurable.
   • `0 < μ(A)`.
   • For every measurable `B ⊆ A`, either `μ(B) = 0` or `μ(B) = μ(A)`.
@@ -108,7 +108,7 @@ private lemma indicatorConstLp_pos_iff
       exact hc.ne' this
     exact hμ.ne' (measure_eq_zero_iff_ae_notMem.2 hs_ae)
 
-/-- `r · (c · 1_A) = (r · c) · 1_A` -/
+/-- For all `r, c ∈ ℝ` and measurable set `A`, `r · (c · 1_A) = (r · c) · 1_A` -/
 private lemma smul_indicatorConstLp
     {s : Set α} (hs : MeasurableSet s) (hμs : μ s < ∞) (r c : ℝ) :
     r • indicatorConstLp (p : ENNReal) hs hμs.ne c =
