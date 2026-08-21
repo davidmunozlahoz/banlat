@@ -1470,12 +1470,12 @@ lemma atomCoordinate_eq_zero_of_isVLDisjoint
     rw [Set.mem_singleton_iff] at hw
     subst w
     exact hax
-  simpa [inf_comm] using hsub hy x (Set.mem_singleton x)
+  simpa only [isVLDisjoint_comm] using hsub hy x (Set.mem_singleton x)
 
 /-- The coordinate associated with an atom, as a vector lattice homomorphism. -/
 noncomputable def atomCoordinateVecLatHom
     {a : X} (ha : IsVLAtom a) : VecLatHom X ℝ := by
-  refine VecLatHom.of_abs (atomCoordinateLinearMap ha) ?_
+  refine VecLatHom.ofAbs (atomCoordinateLinearMap ha) ?_
   intro x
   apply smul_left_injective ℝ ha.ne_zero
   change atomCoordinate ha |x| • a = |atomCoordinate ha x| • a
@@ -1483,7 +1483,7 @@ noncomputable def atomCoordinateVecLatHom
   calc
     Band.principalBandProjection a |x| =
         |Band.principalBandProjection a x| := by
-      exact (VecLatHom.of_isVecLatHom _
+      exact (VecLatHom.ofIsVecLatHom _
         (Band.principalProjectionBand a).bandProjection_isVecLatHom).map_abs x
     _ = |atomCoordinate ha x • a| :=
       congrArg abs (principalBandProjection_eq_atomCoordinate_smul ha x)
