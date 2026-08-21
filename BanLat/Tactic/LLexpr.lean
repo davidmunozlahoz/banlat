@@ -288,7 +288,7 @@ def assertAtomSignFacts (infos : Array (Option AtomSignInfo)) : TacticM Unit := 
       setGoals [goal]
 
 /-- Build a closed expression for the `idx`th element of `Fin arity`. -/
-def mkFinExpr (idx arity : Nat) (_hidx : idx < arity) : Expr :=
+def mkFinExpr (idx arity : Nat) : Expr :=
   have idxExpr : Q(ℕ) := mkNatLitQ idx
   have arityExpr : Q(ℕ) := mkNatLitQ arity
   have hdec : decide ($idxExpr < $arityExpr) =Q true := ⟨⟩
@@ -299,8 +299,8 @@ partial def Quoted.toLLexpr (arity : Nat) : Quoted → TacticM Expr
   | .zero =>
       mkAppOptM ``LLexpr.zero #[some (mkNatLit arity)]
   | .var idx =>
-      if hidx : idx < arity then
-        mkAppM ``LLexpr.var #[mkFinExpr idx arity hidx]
+      if idx < arity then
+        mkAppM ``LLexpr.var #[mkFinExpr idx arity]
       else
         throwError "llarith internal error: variable index out of bounds"
   | .add lhs rhs => do

@@ -425,7 +425,7 @@ theorem solid_range_iff_isOrderContinuousOp_and_orderComplete
       exact T.monotone (hb hs)
     have hexists : ∃ w, IsLUB ((T : X → Lp ℝ 1 μ) '' S) w := by
       letI : ConditionallyCompleteLattice (Lp ℝ 1 μ) :=
-        BanachLattice.conditionallyCompleteLatticeOf_isOrderContinuousNorm (X := Lp ℝ 1 μ)
+        BanachLattice.conditionallyCompleteLatticeOfIsOrderContinuousNorm (X := Lp ℝ 1 μ)
       exact ⟨sSup ((T : X → Lp ℝ 1 μ) '' S), isLUB_csSup hTS_ne (hb := hTS_bdd)⟩
     obtain ⟨w, hw⟩ := hexists
     have h1 : T s₀ ≤ w := hw.1 ⟨s₀, hs₀, rfl⟩

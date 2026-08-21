@@ -9,6 +9,7 @@ on:
 
 jobs:
   build:
+    name: Build, style, and lint
     runs-on: ubuntu-latest
 
     steps:
@@ -17,5 +18,5 @@ jobs:
         with:
           build: true
           build-args: "--wfail"
-          lint: false
+          lint: true
           mk_all-check: true

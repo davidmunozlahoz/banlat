@@ -9,7 +9,7 @@ This file defines `VecLatHom`, the type of vector lattice homomorphisms — maps
 simultaneously real-linear and lattice homomorphisms — together with the
 proposition-valued predicate `IsVecLatHom` characterising such maps. Key results include
 the characterisation of vector lattice homomorphisms by their behaviour on absolute
-values (`of_abs`) and the fact that every vector lattice homomorphism is monotone.
+values (`VecLatHom.ofAbs`) and the fact that every vector lattice homomorphism is monotone.
 
 The second section develops `VecLatEquiv`, the type of vector lattice isomorphisms. It
 packages `Positive.extensionEquiv`, which extends an additive bijection between positive
@@ -27,6 +27,8 @@ real linear isometric equivalences that also preserve `⊔` and `⊓`.
 structure VecLatHom (X : Type*) (Y : Type*) [AddCommGroup X] [AddCommGroup Y]
   [Lattice X] [Lattice Y] [IsOrderedAddMonoid X] [IsOrderedAddMonoid Y]
   [VectorLattice X] [VectorLattice Y] extends X →ₗ[ℝ] Y, LatticeHom X Y
+
+attribute [inherit_doc LatticeHom] VecLatHom.toLatticeHom
 
 variable {X : Type*} {Y : Type*} [AddCommGroup X] [AddCommGroup Y]
   [Lattice X] [Lattice Y] [IsOrderedAddMonoid X] [IsOrderedAddMonoid Y]
@@ -58,7 +60,7 @@ theorem isVecLatHom (f : VecLatHom X Y) : IsVecLatHom f where
   map_inf' := f.toLatticeHom.map_inf'
 
 /-- Construct a `VecLatHom` from a proof that a function satisfies `IsVecLatHom`. -/
-def of_isVecLatHom (f : X → Y) (h : IsVecLatHom f) : VecLatHom X Y where
+def ofIsVecLatHom (f : X → Y) (h : IsVecLatHom f) : VecLatHom X Y where
   toFun := f
   map_add' := h.map_add
   map_smul' := h.map_smul
@@ -85,7 +87,6 @@ instance instLinearMapClass : LinearMapClass (VecLatHom X Y) ℝ X Y where
     exact f.toLinearMap.map_smul c x
 
 /-- The underlying function of a `VecLatHom` equals its coercion to `X → Y`. -/
-@[simp]
 theorem toFun_eq_coe {f : VecLatHom X Y} : f.toFun = (f : X → Y) := rfl
 
 /-- A vector lattice homomorphism preserves absolute values. -/
@@ -128,7 +129,7 @@ def id : VecLatHom X X :=
     map_inf' := fun _ _ => rfl }
 
 /-- Construct a `VecLatHom` from a linear map that preserves absolute values. -/
-def of_abs (f : X →ₗ[ℝ] Y) (abs : ∀ x : X, f |x| = |f x|) : VecLatHom X Y :=
+def ofAbs (f : X →ₗ[ℝ] Y) (abs : ∀ x : X, f |x| = |f x|) : VecLatHom X Y :=
   { f with
     map_sup' := fun a b => by
       change f (a ⊔ b) = f a ⊔ f b
@@ -254,7 +255,7 @@ theorem mk'_apply {f : X → Y} (vlh : IsVecLatHom f) (x : X) :
 /-- A linear map that preserves absolute values satisfies `IsVecLatHom`. -/
 theorem of_abs {f : X → Y} (lin : IsLinearMap ℝ f) (abs : ∀ x : X, f |x|
   = |f x|) : IsVecLatHom f :=
-  VecLatHom.isVecLatHom (VecLatHom.of_abs (IsLinearMap.mk' f lin) abs)
+  VecLatHom.isVecLatHom (VecLatHom.ofAbs (IsLinearMap.mk' f lin) abs)
 
 /-- A positive linear map that preserves disjointness is a vector lattice homomorphism. -/
 theorem of_disjoint {f : X → Y} (lin : IsLinearMap ℝ f)
@@ -285,6 +286,8 @@ end IsVecLatHom
 structure VecLatEquiv (X : Type*) (Y : Type*) [AddCommGroup X] [AddCommGroup Y]
     [Lattice X] [Lattice Y] [IsOrderedAddMonoid X] [IsOrderedAddMonoid Y]
     [VectorLattice X] [VectorLattice Y] extends X ≃ₗ[ℝ] Y, LatticeHom X Y
+
+attribute [inherit_doc LatticeHom] VecLatEquiv.toLatticeHom
 
 namespace VecLatEquiv
 
@@ -447,6 +450,8 @@ structure BanachLatEquiv (X Y : Type*)
     [IsOrderedAddMonoid X] [IsOrderedAddMonoid Y]
     [BanachLattice X] [BanachLattice Y]
     extends X ≃ₗᵢ[ℝ] Y, LatticeHom X Y
+
+attribute [inherit_doc LatticeHom] BanachLatEquiv.toLatticeHom
 
 namespace BanachLatEquiv
 

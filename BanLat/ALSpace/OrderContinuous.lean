@@ -125,6 +125,6 @@ variable [IsOrderContinuousNorm X]
 /-- An AL-space with order continuous norm is conditionally complete. -/
 noncomputable instance instConditionallyCompleteLattice :
     ConditionallyCompleteLattice X :=
-  BanachLattice.conditionallyCompleteLatticeOf_isOrderContinuousNorm
+  BanachLattice.conditionallyCompleteLatticeOfIsOrderContinuousNorm
 
 end ALSpace

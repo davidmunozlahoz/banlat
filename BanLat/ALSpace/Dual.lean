@@ -128,7 +128,7 @@ theorem dualUnit_strongOrderUnit [Nontrivial X] :
   exact ⟨‖φ‖, norm_nonneg φ, abs_le_norm_smul_dualUnit (X := X) φ⟩
 
 /-- The norm dual of a non-trivial AL-space is an AM-space with unit. -/
-noncomputable instance StrongDual.instAMSpaceWithUnit_of_alSpace [Nontrivial X] :
+noncomputable instance StrongDual.instAMSpaceWithUnitOfALSpace [Nontrivial X] :
     AMSpaceWithUnit (StrongDual ℝ X) := by
   exact
     { unit := dualUnit X

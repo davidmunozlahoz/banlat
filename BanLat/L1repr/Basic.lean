@@ -169,23 +169,23 @@ private theorem banachLatEquiv_strongDual_completion_principal
     (hnorm : ∀ x : X, ‖x‖ = ĥ |x|) :
     letI : IsUniformlyCompleteVectorLattice (OrderDualSpace X) :=
       isUniformlyCompleteVectorLattice_of_sigmaConditionallyCompleteLattice (OrderDualSpace X)
-    letI := OrderIdeal.principalNormedAddCommGroup ĥ (ne_of_gt hĥ)
+    letI := OrderIdeal.principalNormedAddCommGroup ĥ
     letI : Lattice ↥(OrderIdeal.principal ĥ) := OrderIdeal.instLatticePrincipal _
     letI : IsOrderedAddMonoid ↥(OrderIdeal.principal ĥ) :=
       OrderIdeal.instIsOrderedAddMonoidPrincipal _
     letI : AMSpaceWithUnit ↥(OrderIdeal.principal ĥ) :=
-      OrderIdeal.principalAMSpaceWithUnit hĥ.le (ne_of_gt hĥ)
+      OrderIdeal.principalAMSpaceWithUnit hĥ.le
         (IsUniformlyCompleteVectorLattice.complete_principal _ hĥ)
     Nonempty (BanachLatEquiv (StrongDual ℝ (UniformSpace.Completion X))
       ↥(OrderIdeal.principal ĥ)) := by
   letI : IsUniformlyCompleteVectorLattice (OrderDualSpace X) :=
     isUniformlyCompleteVectorLattice_of_sigmaConditionallyCompleteLattice (OrderDualSpace X)
-  letI := OrderIdeal.principalNormedAddCommGroup ĥ (ne_of_gt hĥ)
+  letI := OrderIdeal.principalNormedAddCommGroup ĥ
   letI : Lattice ↥(OrderIdeal.principal ĥ) := OrderIdeal.instLatticePrincipal _
   letI : IsOrderedAddMonoid ↥(OrderIdeal.principal ĥ) :=
     OrderIdeal.instIsOrderedAddMonoidPrincipal _
   letI : AMSpaceWithUnit ↥(OrderIdeal.principal ĥ) :=
-    OrderIdeal.principalAMSpaceWithUnit hĥ.le (ne_of_gt hĥ)
+    OrderIdeal.principalAMSpaceWithUnit hĥ.le
       (IsUniformlyCompleteVectorLattice.complete_principal _ hĥ)
   have hĥ_nonneg : (0 : OrderDualSpace X) ≤ ĥ := hĥ.le
   -- The fundamental bound: the restriction of `φ` to `X` has modulus at most `‖φ‖ • ĥ`.
@@ -370,14 +370,12 @@ theorem banachLatEquiv_strongDual_of_L1_representation [Nontrivial X]
     letI : IsUniformlyCompleteVectorLattice (OrderDualSpace X) :=
       isUniformlyCompleteVectorLattice_of_sigmaConditionallyCompleteLattice (OrderDualSpace X)
     letI := OrderIdeal.principalNormedAddCommGroup (OrderBoundedHom.ofPositive h hh.positive)
-      (ne_of_gt (ofPositive_pos_of_strictlyPositive hh))
     letI : Lattice ↥(OrderIdeal.principal (OrderBoundedHom.ofPositive h hh.positive)) :=
       OrderIdeal.instLatticePrincipal _
     letI : IsOrderedAddMonoid ↥(OrderIdeal.principal (OrderBoundedHom.ofPositive h hh.positive)) :=
       OrderIdeal.instIsOrderedAddMonoidPrincipal _
     letI : AMSpaceWithUnit ↥(OrderIdeal.principal (OrderBoundedHom.ofPositive h hh.positive)) :=
       OrderIdeal.principalAMSpaceWithUnit (ofPositive_pos_of_strictlyPositive hh).le
-        (ne_of_gt (ofPositive_pos_of_strictlyPositive hh))
         (IsUniformlyCompleteVectorLattice.complete_principal _
           (ofPositive_pos_of_strictlyPositive hh))
     Nonempty (BanachLatEquiv (StrongDual ℝ (Lp ℝ 1 μ))
@@ -385,14 +383,12 @@ theorem banachLatEquiv_strongDual_of_L1_representation [Nontrivial X]
   letI : IsUniformlyCompleteVectorLattice (OrderDualSpace X) :=
     isUniformlyCompleteVectorLattice_of_sigmaConditionallyCompleteLattice (OrderDualSpace X)
   letI := OrderIdeal.principalNormedAddCommGroup (OrderBoundedHom.ofPositive h hh.positive)
-    (ne_of_gt (ofPositive_pos_of_strictlyPositive hh))
   letI : Lattice ↥(OrderIdeal.principal (OrderBoundedHom.ofPositive h hh.positive)) :=
     OrderIdeal.instLatticePrincipal _
   letI : IsOrderedAddMonoid ↥(OrderIdeal.principal (OrderBoundedHom.ofPositive h hh.positive)) :=
     OrderIdeal.instIsOrderedAddMonoidPrincipal _
   letI : AMSpaceWithUnit ↥(OrderIdeal.principal (OrderBoundedHom.ofPositive h hh.positive)) :=
     OrderIdeal.principalAMSpaceWithUnit (ofPositive_pos_of_strictlyPositive hh).le
-      (ne_of_gt (ofPositive_pos_of_strictlyPositive hh))
       (IsUniformlyCompleteVectorLattice.complete_principal _
         (ofPositive_pos_of_strictlyPositive hh))
   -- Endow `X` with the AL-type norm `‖x‖ = h |x|` associated to `h`, so that its

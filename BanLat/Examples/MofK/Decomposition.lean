@@ -404,7 +404,7 @@ theorem exists_sum_dirac_add_noAtoms (μ : MofK K) :
   let vectorOrig : @VectorLattice (MofK K) addGroup latticeOrig orderedAddOrig :=
     inferInstance
   letI ccl : ConditionallyCompleteLattice (MofK K) :=
-    BanachLattice.conditionallyCompleteLatticeOf_isOrderContinuousNorm
+    BanachLattice.conditionallyCompleteLatticeOfIsOrderContinuousNorm
   letI orderedAdd : @IsOrderedAddMonoid (MofK K) addGroup.toAddCommMonoid
       ccl.toLattice.toPartialOrder.toPreorder :=
     orderedAddOrig

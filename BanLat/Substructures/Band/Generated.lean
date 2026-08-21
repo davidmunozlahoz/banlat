@@ -443,7 +443,7 @@ theorem isClosed_toSubmodule : IsClosed ((B.toSubmodule : Set X)) := isClosed_co
 lattice structure, is itself a Banach lattice. -/
 noncomputable instance instBanachLatticeSubtype [BanachLattice X] :
     BanachLattice ↥B.toSubmodule :=
-  VectorSublattice.instBanachLatticeSubtype _ B.isClosed_coe
+  VectorSublattice.banachLatticeSubtype _ B.isClosed_coe
 
 end Band
 

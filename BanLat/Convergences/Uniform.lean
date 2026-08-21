@@ -16,9 +16,9 @@ gauge norm. The omitted zero principal ideal is trivial. -/
 class IsUniformlyCompleteVectorLattice (X : Type*) [AddCommGroup X] [Lattice X]
     [IsOrderedAddMonoid X] [VectorLattice X] : Prop extends IsVLArchimedean X where
   complete_principal :
-    ∀ (e : X) (he : 0 < e),
+    ∀ (e : X) (_he : 0 < e),
       letI : IsVLArchimedean X := toIsVLArchimedean
-      letI := OrderIdeal.principalNormedAddCommGroup e (ne_of_gt he)
+      letI := OrderIdeal.principalNormedAddCommGroup e
       CompleteSpace ↥(OrderIdeal.principalSubmodule e)
 
 private theorem abs_sub_le_of_gauge_le {X : Type*} [AddCommGroup X] [Lattice X]
@@ -50,10 +50,10 @@ private theorem norm_coe_le_norm_generator_mul_gauge {X : Type*}
 
 private theorem norm_principal_eq_gauge {X : Type*} [AddCommGroup X] [Lattice X]
     [IsOrderedAddMonoid X] [VectorLattice X] [IsVLArchimedean X]
-    {e : X} (he : e ≠ 0) (x : ↥(OrderIdeal.principalSubmodule e)) :
-    letI := OrderIdeal.principalNormedAddCommGroup e he
+    {e : X} (x : ↥(OrderIdeal.principalSubmodule e)) :
+    letI := OrderIdeal.principalNormedAddCommGroup e
     ‖x‖ = OrderIdeal.gaugeNorm e (x : X) := by
-  letI := OrderIdeal.principalNormedAddCommGroup e he
+  letI := OrderIdeal.principalNormedAddCommGroup e
   rfl
 
 private theorem completeSpace_principal_of_banachLattice {X : Type*}
@@ -63,13 +63,13 @@ private theorem completeSpace_principal_of_banachLattice {X : Type*}
       (@PseudoMetricSpace.toUniformSpace _
         (@SeminormedAddCommGroup.toPseudoMetricSpace _
           (@NormedAddCommGroup.toSeminormedAddCommGroup _
-            (OrderIdeal.principalNormedAddCommGroup e (ne_of_gt he))))) := by
-  letI := OrderIdeal.principalNormedAddCommGroup e (ne_of_gt he)
+            (OrderIdeal.principalNormedAddCommGroup e)))) := by
+  letI := OrderIdeal.principalNormedAddCommGroup e
   let Y := ↥(OrderIdeal.principalSubmodule e)
   letI : PseudoMetricSpace Y :=
     @SeminormedAddCommGroup.toPseudoMetricSpace Y
       (@NormedAddCommGroup.toSeminormedAddCommGroup Y
-        (OrderIdeal.principalNormedAddCommGroup e (ne_of_gt he)))
+        (OrderIdeal.principalNormedAddCommGroup e))
   refine Metric.complete_of_cauchySeq_tendsto (α := Y) fun u hu => ?_
   have hnorme_pos : 0 < ‖e‖ := norm_pos_iff.mpr (ne_of_gt he)
   have hu_ambient : CauchySeq (fun n => (u n : X)) := by
@@ -157,14 +157,14 @@ private theorem completeSpace_principal_of_sigmaConditionallyCompleteLattice {X 
       (@PseudoMetricSpace.toUniformSpace _
         (@SeminormedAddCommGroup.toPseudoMetricSpace _
           (@NormedAddCommGroup.toSeminormedAddCommGroup _
-            (OrderIdeal.principalNormedAddCommGroup e (ne_of_gt he))))) := by
+            (OrderIdeal.principalNormedAddCommGroup e)))) := by
   letI : IsVLArchimedean X := IsVLArchimedean_of_sigmaConditionallyCompleteLattice
-  letI := OrderIdeal.principalNormedAddCommGroup e (ne_of_gt he)
+  letI := OrderIdeal.principalNormedAddCommGroup e
   let Y := ↥(OrderIdeal.principalSubmodule e)
   letI : PseudoMetricSpace Y :=
     @SeminormedAddCommGroup.toPseudoMetricSpace Y
       (@NormedAddCommGroup.toSeminormedAddCommGroup Y
-        (OrderIdeal.principalNormedAddCommGroup e (ne_of_gt he)))
+        (OrderIdeal.principalNormedAddCommGroup e))
   let b : ℕ → ℝ := fun n => (1 / 2 : ℝ) ^ n
   let r : ℕ → ℝ := fun n => 2 * b n
   have hb_pos : ∀ n, 0 < b n := fun n => pow_pos (by norm_num) n

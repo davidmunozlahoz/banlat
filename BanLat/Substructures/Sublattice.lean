@@ -202,6 +202,10 @@ theorem toSubmodule_injective :
   intro p q h
   cases p; cases q; congr
 
+/-- A vector sublattice and its underlying submodule have the same carrier. -/
+@[simp]
+theorem coe_toSubmodule : (Y.toSubmodule : Set X) = (Y : Set X) := rfl
+
 /-! ### Coercion to pointed cone
 
 Every vector sublattice, being a linear subspace, is in particular a pointed
@@ -213,7 +217,6 @@ instance : CoeHead (VectorSublattice X) (PointedCone ℝ X) where
     { toAddSubmonoid := Y.toSubmodule.toAddSubmonoid
       smul_mem' := fun c _ hx => Y.toSubmodule.smul_mem c.1 hx }
 
-@[simp]
 theorem coe_toPointedCone (Y : VectorSublattice X) :
     ((Y : PointedCone ℝ X) : Set X) = (Y : Set X) := rfl
 
@@ -759,7 +762,8 @@ noncomputable def topologicalClosure (Y : VectorSublattice X) : VectorSublattice
 
 /-- A norm-closed vector sublattice of a Banach lattice is itself a Banach
 lattice under the induced structures. -/
-noncomputable instance instBanachLatticeSubtype [BanachLattice X]
+@[reducible]
+noncomputable def banachLatticeSubtype [BanachLattice X]
     (hclosed : IsClosed (Y : Set X)) : BanachLattice ↥Y.toSubmodule where
   toCompleteSpace := by
     haveI : IsClosed (Y.toSubmodule : Set X) := hclosed

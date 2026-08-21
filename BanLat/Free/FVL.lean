@@ -688,7 +688,6 @@ theorem equivGenerated_apply (x : α → X) (hx : LatticeLinearIndependent x) (f
     equivGenerated x hx f = toGenerated x f :=
   rfl
 
-@[simp]
 theorem equivGenerated_of (x : α → X) (hx : LatticeLinearIndependent x) (a : α) :
     equivGenerated x hx (of a) = generatedOf x a := by
   simp [equivGenerated_apply]

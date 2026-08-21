@@ -55,6 +55,7 @@ end AMSpace
 whose gauge norm agrees with the original norm. -/
 class AMSpaceWithUnit (X : Type*) [NormedAddCommGroup X] [Lattice X]
     [IsOrderedAddMonoid X] extends AMSpace X where
+  /-- The distinguished strong order unit. -/
   unit : X
   strongOrderUnit_unit : StrongOrderUnit unit
   norm_eq_gaugeNorm : ∀ x : X, ‖x‖ = OrderIdeal.gaugeNorm unit x
@@ -87,17 +88,16 @@ namespace OrderIdeal
 variable {X : Type*} [AddCommGroup X] [Lattice X] [IsOrderedAddMonoid X]
   [VectorLattice X]
 
-private theorem principal_strongOrderUnit [IsVLArchimedean X] {e : X} (he : 0 ≤ e)
-    (hne : e ≠ 0) :
-    letI : NormedAddCommGroup ↥(principal e) := principalNormedAddCommGroup e hne
+private theorem principal_strongOrderUnit [IsVLArchimedean X] {e : X} (he : 0 ≤ e) :
+    letI : NormedAddCommGroup ↥(principal e) := principalNormedAddCommGroup e
     letI : Lattice ↥(principal e) := instLatticePrincipal e
     letI : IsOrderedAddMonoid ↥(principal e) := instIsOrderedAddMonoidPrincipal e
-    letI : NormedVectorLattice ↥(principal e) := principalNormedVectorLattice e hne
+    letI : NormedVectorLattice ↥(principal e) := principalNormedVectorLattice e
     StrongOrderUnit (⟨e, self_mem_principal e⟩ : ↥(principal e)) := by
-  letI : NormedAddCommGroup ↥(principal e) := principalNormedAddCommGroup e hne
+  letI : NormedAddCommGroup ↥(principal e) := principalNormedAddCommGroup e
   letI : Lattice ↥(principal e) := instLatticePrincipal e
   letI : IsOrderedAddMonoid ↥(principal e) := instIsOrderedAddMonoidPrincipal e
-  letI : NormedVectorLattice ↥(principal e) := principalNormedVectorLattice e hne
+  letI : NormedVectorLattice ↥(principal e) := principalNormedVectorLattice e
   refine ⟨he, ?_⟩
   intro x
   obtain ⟨c, hc, hcx⟩ := mem_principal.mp x.2
@@ -105,33 +105,32 @@ private theorem principal_strongOrderUnit [IsVLArchimedean X] {e : X} (he : 0 �
   change |(x : X)| ≤ c • e
   rwa [abs_of_nonneg he] at hcx
 
-private theorem principal_norm_eq_gaugeNorm_unit [IsVLArchimedean X] {e : X}
-    (hne : e ≠ 0) :
-    letI : NormedAddCommGroup ↥(principal e) := principalNormedAddCommGroup e hne
+private theorem principal_norm_eq_gaugeNorm_unit [IsVLArchimedean X] {e : X} :
+    letI : NormedAddCommGroup ↥(principal e) := principalNormedAddCommGroup e
     letI : Lattice ↥(principal e) := instLatticePrincipal e
     letI : IsOrderedAddMonoid ↥(principal e) := instIsOrderedAddMonoidPrincipal e
-    letI : NormedVectorLattice ↥(principal e) := principalNormedVectorLattice e hne
+    letI : NormedVectorLattice ↥(principal e) := principalNormedVectorLattice e
     ∀ x : ↥(principal e),
       ‖x‖ = gaugeNorm (⟨e, self_mem_principal e⟩ : ↥(principal e)) x := by
-  letI : NormedAddCommGroup ↥(principal e) := principalNormedAddCommGroup e hne
+  letI : NormedAddCommGroup ↥(principal e) := principalNormedAddCommGroup e
   letI : Lattice ↥(principal e) := instLatticePrincipal e
   letI : IsOrderedAddMonoid ↥(principal e) := instIsOrderedAddMonoidPrincipal e
-  letI : NormedVectorLattice ↥(principal e) := principalNormedVectorLattice e hne
+  letI : NormedVectorLattice ↥(principal e) := principalNormedVectorLattice e
   intro x
   change gaugeNorm e (x : X) = gaugeNorm (⟨e, self_mem_principal e⟩ : ↥(principal e)) x
   rfl
 
 private theorem principal_norm_add_eq_max_of_inf_eq_zero [IsVLArchimedean X]
-    {e : X} (he : 0 ≤ e) (hne : e ≠ 0) :
-    letI : NormedAddCommGroup ↥(principal e) := principalNormedAddCommGroup e hne
+    {e : X} (he : 0 ≤ e) :
+    letI : NormedAddCommGroup ↥(principal e) := principalNormedAddCommGroup e
     letI : Lattice ↥(principal e) := instLatticePrincipal e
     letI : IsOrderedAddMonoid ↥(principal e) := instIsOrderedAddMonoidPrincipal e
-    letI : NormedVectorLattice ↥(principal e) := principalNormedVectorLattice e hne
+    letI : NormedVectorLattice ↥(principal e) := principalNormedVectorLattice e
     ∀ {x y : ↥(principal e)}, x ⊓ y = 0 → ‖x + y‖ = max ‖x‖ ‖y‖ := by
-  letI : NormedAddCommGroup ↥(principal e) := principalNormedAddCommGroup e hne
+  letI : NormedAddCommGroup ↥(principal e) := principalNormedAddCommGroup e
   letI : Lattice ↥(principal e) := instLatticePrincipal e
   letI : IsOrderedAddMonoid ↥(principal e) := instIsOrderedAddMonoidPrincipal e
-  letI : NormedVectorLattice ↥(principal e) := principalNormedVectorLattice e hne
+  letI : NormedVectorLattice ↥(principal e) := principalNormedVectorLattice e
   intro x y hxy
   have hx : 0 ≤ x := by rw [← hxy]; exact inf_le_left
   have hy : 0 ≤ y := by rw [← hxy]; exact inf_le_right
@@ -180,29 +179,28 @@ private theorem principal_norm_add_eq_max_of_inf_eq_zero [IsVLArchimedean X]
       rw [abs_of_nonneg hy, abs_of_nonneg hsum_nonneg]
       exact le_add_of_nonneg_left hx
 
-/-- In an Archimedean vector lattice, a complete nonzero principal ideal,
+/-- In an Archimedean vector lattice, a complete principal ideal,
 equipped with its gauge norm and inherited vector lattice structure, is an
 AM-space with unit. -/
 @[reducible]
 noncomputable def principalAMSpaceWithUnit [IsVLArchimedean X] {e : X} (he : 0 ≤ e)
-    (hne : e ≠ 0)
     (hcomplete :
-      letI : NormedAddCommGroup ↥(principal e) := principalNormedAddCommGroup e hne
+      letI : NormedAddCommGroup ↥(principal e) := principalNormedAddCommGroup e
       CompleteSpace ↥(principal e)) :
     @AMSpaceWithUnit ↥(principal e)
-      (principalNormedAddCommGroup e hne)
+      (principalNormedAddCommGroup e)
       (instLatticePrincipal e)
       (instIsOrderedAddMonoidPrincipal e) := by
-  letI : NormedAddCommGroup ↥(principal e) := principalNormedAddCommGroup e hne
+  letI : NormedAddCommGroup ↥(principal e) := principalNormedAddCommGroup e
   letI : Lattice ↥(principal e) := instLatticePrincipal e
   letI : IsOrderedAddMonoid ↥(principal e) := instIsOrderedAddMonoidPrincipal e
-  letI : NormedVectorLattice ↥(principal e) := principalNormedVectorLattice e hne
+  letI : NormedVectorLattice ↥(principal e) := principalNormedVectorLattice e
   letI : CompleteSpace ↥(principal e) := hcomplete
   letI : BanachLattice ↥(principal e) := { }
   refine { (inferInstance : BanachLattice ↥(principal e)) with
     unit := ⟨e, self_mem_principal e⟩
-    strongOrderUnit_unit := principal_strongOrderUnit he hne
-    norm_eq_gaugeNorm := principal_norm_eq_gaugeNorm_unit hne
-    norm_add_eq_max_of_inf_eq_zero := principal_norm_add_eq_max_of_inf_eq_zero he hne }
+    strongOrderUnit_unit := principal_strongOrderUnit he
+    norm_eq_gaugeNorm := principal_norm_eq_gaugeNorm_unit
+    norm_add_eq_max_of_inf_eq_zero := principal_norm_add_eq_max_of_inf_eq_zero he }
 
 end OrderIdeal

@@ -82,10 +82,10 @@ theorem isLUB_principalBandProjection_of_isMaximalDisjoint
       have hPx_le_y : B.bandProjection x ≤ y := hyx a ha
       have hPx_le_Py : B.bandProjection x ≤ B.bandProjection y := by
         have hmono :=
-          (VecLatHom.of_isVecLatHom B.bandProjection B.bandProjection_isVecLatHom).monotone
+          (VecLatHom.ofIsVecLatHom B.bandProjection B.bandProjection_isVecLatHom).monotone
             hPx_le_y
         have hmono' : B.bandProjection (B.bandProjection x) ≤ B.bandProjection y := by
-          simpa [VecLatHom.of_isVecLatHom] using hmono
+          simpa [VecLatHom.ofIsVecLatHom] using hmono
         rwa [show B.bandProjection (B.bandProjection x) = B.bandProjection x from
           congrArg (fun T : X →ₗ[ℝ] X => T x) B.bandProjection_sq] at hmono'
       have hinf_eq : B.bandProjection x ⊓ B.bandProjection y = B.bandProjection x :=
@@ -222,8 +222,8 @@ theorem exists_orderDense_lattice_embedding_of_isMaximalDisjoint
       intro a ha
       have hvlh := (Band.principalProjectionBand a).bandProjection_isVecLatHom
       have :=
-        (VecLatHom.of_isVecLatHom _ hvlh).map_posPart z
-      simp only [VecLatHom.of_isVecLatHom] at this
+        (VecLatHom.ofIsVecLatHom _ hvlh).map_posPart z
+      simp only [VecLatHom.ofIsVecLatHom] at this
       change Band.principalBandProjection a z⁺ =
         (Band.principalBandProjection a z)⁺ at this
       rw [this, hPz a ha, posPart_zero]
@@ -231,8 +231,8 @@ theorem exists_orderDense_lattice_embedding_of_isMaximalDisjoint
       intro a ha
       have hvlh := (Band.principalProjectionBand a).bandProjection_isVecLatHom
       have :=
-        (VecLatHom.of_isVecLatHom _ hvlh).map_negPart z
-      simp only [VecLatHom.of_isVecLatHom] at this
+        (VecLatHom.ofIsVecLatHom _ hvlh).map_negPart z
+      simp only [VecLatHom.ofIsVecLatHom] at this
       change Band.principalBandProjection a z⁻ =
         (Band.principalBandProjection a z)⁻ at this
       rw [this, hPz a ha, negPart_zero]

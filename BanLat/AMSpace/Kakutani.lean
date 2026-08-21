@@ -195,19 +195,19 @@ ideal, equipped with its gauge norm and inherited vector lattice structure, is
 lattice isometric to continuous functions on a compact space. -/
 noncomputable def principalKakutaniEquiv
     [IsUniformlyCompleteVectorLattice X] {e : X} (he : 0 < e) :
-    letI := principalNormedAddCommGroup e (ne_of_gt he)
+    letI := principalNormedAddCommGroup e
     letI : Lattice ↥(principal e) := instLatticePrincipal e
     letI : IsOrderedAddMonoid ↥(principal e) := instIsOrderedAddMonoidPrincipal e
     letI : AMSpaceWithUnit ↥(principal e) :=
-      principalAMSpaceWithUnit he.le (ne_of_gt he)
+      principalAMSpaceWithUnit he.le
         (IsUniformlyCompleteVectorLattice.complete_principal e he)
     BanachLatEquiv ↥(principal e)
       C(AMSpaceWithUnit.LatticeCharacter ↥(principal e), ℝ) := by
-  letI := principalNormedAddCommGroup e (ne_of_gt he)
+  letI := principalNormedAddCommGroup e
   letI : Lattice ↥(principal e) := instLatticePrincipal e
   letI : IsOrderedAddMonoid ↥(principal e) := instIsOrderedAddMonoidPrincipal e
   letI : AMSpaceWithUnit ↥(principal e) :=
-    principalAMSpaceWithUnit he.le (ne_of_gt he)
+    principalAMSpaceWithUnit he.le
       (IsUniformlyCompleteVectorLattice.complete_principal e he)
   haveI : Nontrivial ↥(principal e) := by
     refine ⟨⟨0, ⟨e, self_mem_principal e⟩, ?_⟩⟩
