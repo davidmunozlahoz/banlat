@@ -7,9 +7,9 @@ import Mathlib.MeasureTheory.Measure.Typeclasses.ZeroOne
 /-!
 # Vector lattice atoms in `Lₚ` spaces with `0 < p < ∞'
 
-We characterize the **lattice atoms of `L^p(μ)`, `0 < p < ∞`:** a positive
-`a ∈ L^p(μ)` is an atom if and only if `a = c 1_A` a.e., for some finite
-measure-theoretic atom `A` and some `c > 0`.
+This file characterizes the **lattice atoms of `L^p(μ)`, `0 < p < ∞`:**
+a positive `a ∈ L^p(μ)` is an atom if and only if `a = c 1_A` a.e. for
+some finite measure-theoretic atom `A` and some `c > 0`.
 
 In BanLat, `A` is a *measure-theoretic atom (for `μ`)* if:        (!!!)
   • `A` is `μ`-measurable.

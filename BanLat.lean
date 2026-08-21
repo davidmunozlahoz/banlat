@@ -20,7 +20,7 @@ import BanLat.Disjoint
 import BanLat.Dual
 import BanLat.Examples.CofK.Basic
 import BanLat.Examples.CofK.Dual
-import BanLat.Examples.Lp.Atoms
+import BanLat.Examples.Lp.Atom
 import BanLat.Examples.Lp.Basic
 import BanLat.Examples.Lp.OrderContinuous
 import BanLat.Examples.Lp.Sublattice

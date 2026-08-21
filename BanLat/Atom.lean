@@ -1,6 +1,9 @@
 import BanLat.Substructures.Band.Projection
 import BanLat.OrderDense
 import BanLat.Pi
+import BanLat.Normed
+import BanLat.Operators.Hom
+import BanLat.Substructures.Band.Decomposition
 import Mathlib.LinearAlgebra.FiniteDimensional.Defs
 
 /-!
@@ -1241,3 +1244,250 @@ theorem exists_isLUB_smul_of_isAtomic_maximal_disjoint
     rw [← add_smul] at h_main
     have hsum_le_c : c ai + μ ≤ c ai := (smul_le_smul_iff_atom ha'_atom).mp h_main
     linarith only [hμ_pos, hsum_le_c]
+
+/-! ### Atomic coordinates -/
+
+section AtomicCoordinates
+
+variable {X : Type*} [AddCommGroup X] [Lattice X]
+  [IsOrderedAddMonoid X] [VectorLattice X]
+  [HasPrincipalProjectionProperty X]
+
+/-- The principal-band projection onto an atom has a unique scalar
+coefficient. -/
+lemma exists_unique_principalBandProjection_eq_smul
+    {a : X} (ha : IsVLAtom a) (x : X) :
+    ∃! c : ℝ, Band.principalBandProjection a x = c • a := by
+  have hmem : Band.principalBandProjection a x ∈
+      Band.generated ({a} : Set X) := by
+    have h := (Band.principalProjectionBand a).bandProjection_mem x
+    change Band.principalBandProjection a x ∈
+      (Band.principalProjectionBand a : Set X) at h
+    rw [Band.principalProjectionBand_coe] at h
+    exact h
+  letI : IsVLArchimedean X := isVLArchimedean_of_hasPrincipalProjectionProperty
+  change Band.principalBandProjection a x ∈
+    (Band.generated ({a} : Set X) : Set X) at hmem
+  rw [principalBand_eq_smul_of_isVLAtom ha] at hmem
+  obtain ⟨c, hc⟩ := hmem
+  refine ⟨c, hc, ?_⟩
+  intro d hd
+  apply smul_left_injective ℝ ha.ne_zero
+  exact hd.symm.trans hc
+
+/-- The coordinate of `x` along the atom `a`, `Pₐx`. -/
+noncomputable def atomCoordinate
+    {a : X} (ha : IsVLAtom a) (x : X) : ℝ := by
+  exact (exists_unique_principalBandProjection_eq_smul ha x).choose
+
+/-- The principal-band projection onto `a` is `Pₐx a`. -/
+lemma principalBandProjection_eq_atomCoordinate_smul
+    {a : X} (ha : IsVLAtom a) (x : X) :
+    Band.principalBandProjection a x =
+      atomCoordinate ha x • a := by
+  exact (exists_unique_principalBandProjection_eq_smul ha x).choose_spec.1
+
+/-- The coordinate associated with an atom, as a linear map. -/
+noncomputable def atomCoordinateLinearMap
+    {a : X} (ha : IsVLAtom a) : X →ₗ[ℝ] ℝ := by
+  exact
+    { toFun := atomCoordinate ha
+      map_add' := by
+        intro x y
+        apply smul_left_injective ℝ ha.ne_zero
+        change atomCoordinate ha (x + y) • a =
+          (atomCoordinate ha x + atomCoordinate ha y) • a
+        rw [add_smul, ← principalBandProjection_eq_atomCoordinate_smul ha,
+          ← principalBandProjection_eq_atomCoordinate_smul ha,
+          ← principalBandProjection_eq_atomCoordinate_smul ha, map_add]
+      map_smul' := by
+        intro c x
+        apply smul_left_injective ℝ ha.ne_zero
+        change atomCoordinate ha (c • x) • a =
+          (c • atomCoordinate ha x) • a
+        rw [← principalBandProjection_eq_atomCoordinate_smul ha,
+          map_smul, principalBandProjection_eq_atomCoordinate_smul ha]
+        exact smul_smul c (atomCoordinate ha x) a }
+
+/-- The bundled coordinate map evaluates to the atomic coordinate. -/
+@[simp]
+lemma atomCoordinateLinearMap_apply
+    {a : X} (ha : IsVLAtom a) (x : X) :
+    atomCoordinateLinearMap ha x = atomCoordinate ha x := by
+  rfl
+
+end AtomicCoordinates
+
+/-! ### Normalized atoms -/
+
+section NormalizedAtoms
+
+variable {X : Type*} [NormedAddCommGroup X] [Lattice X]
+  [IsOrderedAddMonoid X] [NormedVectorLattice X]
+
+variable (X) in
+/-- The set of normalized vector lattice atoms of `X`. -/
+def normalizedAtoms : Set X :=
+  {a ∈ vlAtoms X | ‖a‖ = 1}
+
+/-- Membership in `normalizedAtoms X` means being an atom of norm one. -/
+@[simp]
+lemma mem_normalizedAtoms {a : X} :
+    a ∈ normalizedAtoms X ↔ IsVLAtom a ∧ ‖a‖ = 1 := by
+  rfl
+
+/-- The set of normalized atoms in `X` is pairwise disjoint. -/
+lemma normalizedAtoms_isDisjointSet :
+    IsDisjointSet (normalizedAtoms X) := by
+  refine ⟨?_, ?_⟩
+  · intro hzero
+    rw [mem_normalizedAtoms] at hzero
+    exact hzero.1.ne_zero rfl
+  · intro a ha b hb hab
+    rw [mem_normalizedAtoms] at ha hb
+    rcases isVLDisjoint_or_smul_of_isVLAtom ha.1 hb.1 with hdis | ⟨c, hc⟩
+    · exact hdis
+    · have hc_pos : 0 < c := by
+        by_contra hc_nonpos
+        push Not at hc_nonpos
+        have hle : c • a ≤ 0 :=
+          smul_nonpos_of_nonpos_of_nonneg hc_nonpos ha.1.pos.le
+        rw [← hc] at hle
+        exact hb.1.ne_zero (le_antisymm hle hb.1.pos.le)
+      have hc_one : c = 1 := by
+        have hnorm := congrArg norm hc
+        rw [hb.2, norm_smul, ha.2, Real.norm_of_nonneg hc_pos.le,
+          mul_one] at hnorm
+        exact hnorm.symm
+      exact (hab (hc.trans (by rw [hc_one, one_smul])).symm).elim
+
+/-- In an atomic normed vector lattice, normalized atoms form a maximal
+disjoint family. -/
+lemma normalizedAtoms_isMaximalDisjoint
+    [IsAtomicVectorLattice X] :
+    IsMaximalDisjoint (normalizedAtoms X) := by
+  apply (isMaximalDisjoint_iff_forall_eq_zero
+    (fun a ha => (mem_normalizedAtoms.mp ha).1.pos)
+    normalizedAtoms_isDisjointSet).2
+  intro x hx
+  by_contra hxne
+  have habs_ne : |x| ≠ 0 :=
+    fun h => hxne ((abs_eq_zero_iff_zero x).mp h)
+  have habs_pos : 0 < |x| :=
+    lt_of_le_of_ne (abs_nonneg x) (Ne.symm habs_ne)
+  obtain ⟨b, hb, hb_le⟩ :=
+    isAtomicVectorLattice_iff_forall_pos_dominates_atom.mp
+      (inferInstance : IsAtomicVectorLattice X) |x| habs_pos
+  have hb_norm_pos : 0 < ‖b‖ := norm_pos_iff.mpr hb.ne_zero
+  let a := ‖b‖⁻¹ • b
+  have ha_mem : a ∈ normalizedAtoms X := by
+    rw [mem_normalizedAtoms]
+    refine ⟨IsVLAtom.smul hb (inv_pos.mpr hb_norm_pos), ?_⟩
+    rw [show a = ‖b‖⁻¹ • b from rfl, norm_smul, Real.norm_of_nonneg
+      (inv_pos.mpr hb_norm_pos).le, inv_mul_cancel₀ hb_norm_pos.ne']
+  have hxb : IsVLDisjoint x b := by
+    have h := (hx a ha_mem).smul_right ‖b‖
+    rw [show a = ‖b‖⁻¹ • b from rfl, smul_smul,
+      mul_inv_cancel₀ hb_norm_pos.ne', one_smul] at h
+    exact h
+  apply hb.ne_zero
+  have hinf : |x| ⊓ b = 0 := by
+    change |x| ⊓ |b| = 0 at hxb
+    rwa [abs_of_nonneg hb.pos.le] at hxb
+  exact (inf_eq_right.mpr hb_le).symm.trans hinf
+
+/-- Distinct normalized atoms are separated by distance at least one. -/
+lemma one_le_dist_normalizedAtoms
+    {a b : normalizedAtoms X} (hab : a ≠ b) :
+    1 ≤ dist (a : X) b := by
+  have ha := mem_normalizedAtoms.mp a.property
+  have hb := mem_normalizedAtoms.mp b.property
+  have hab_coe : (a : X) ≠ b := fun h => hab (Subtype.ext h)
+  have hdis :=
+    normalizedAtoms_isDisjointSet.2 a.property b.property hab_coe
+  change |(a : X)| ⊓ |(b : X)| = 0 at hdis
+  rw [abs_of_nonneg ha.1.pos.le, abs_of_nonneg hb.1.pos.le] at hdis
+  have hnorm := norm_inf_sub_inf_le_norm (a : X) b a
+  rw [inf_idem, inf_comm (b : X) a, hdis, sub_zero, ha.2] at hnorm
+  simpa [dist_eq_norm] using hnorm
+
+/-- In a separable normed vector lattice, the set of normalized atoms is
+countable. -/
+lemma countable_normalizedAtoms
+    [TopologicalSpace.SeparableSpace X] :
+    Countable (normalizedAtoms X) := by
+  let balls : normalizedAtoms X → Set X :=
+    fun a => Metric.ball (a : X) (1 / 2 : ℝ)
+  apply Pairwise.countable_of_isOpen_disjoint (s := balls)
+  · intro a b hab
+    apply Metric.ball_disjoint_ball
+    norm_num [balls]
+    exact one_le_dist_normalizedAtoms hab
+  · intro a
+    exact Metric.isOpen_ball
+  · intro a
+    exact ⟨a, Metric.mem_ball_self (by norm_num)⟩
+
+end NormalizedAtoms
+
+/-! ### Lattice structure of atomic coordinates -/
+
+section AtomicCoordinateLatticeHom
+
+variable {X : Type*} [AddCommGroup X] [Lattice X]
+  [IsOrderedAddMonoid X] [VectorLattice X]
+  [HasPrincipalProjectionProperty X]
+
+/-- The coordinate of an atom along itself is one. -/
+@[simp]
+lemma atomCoordinate_self {a : X} (ha : IsVLAtom a) :
+    atomCoordinate ha a = 1 := by
+  apply smul_left_injective ℝ ha.ne_zero
+  change atomCoordinate ha a • a = (1 : ℝ) • a
+  rw [← principalBandProjection_eq_atomCoordinate_smul ha, one_smul]
+  apply (Band.principalProjectionBand a).bandProjection_eq_of_mem
+  change a ∈ (Band.principalProjectionBand a : Set X)
+  rw [Band.principalProjectionBand_coe]
+  exact Band.subset_generated {a} (Set.mem_singleton a)
+
+/-- The coordinate along an atom vanishes on every element disjoint from it. -/
+lemma atomCoordinate_eq_zero_of_isVLDisjoint
+    {a x : X} (ha : IsVLAtom a) (hax : IsVLDisjoint a x) :
+    atomCoordinate ha x = 0 := by
+  apply smul_left_injective ℝ ha.ne_zero
+  change atomCoordinate ha x • a = (0 : ℝ) • a
+  rw [← principalBandProjection_eq_atomCoordinate_smul ha, zero_smul]
+  apply (Band.principalProjectionBand a).bandProjection_eq_zero_of_mem_dc
+  intro y hy
+  rw [Band.principalProjectionBand_coe] at hy
+  have hsub : (Band.generated ({a} : Set X) : Set X) ⊆
+      (Band.disjointComplement ({x} : Set X) : Set X) := by
+    apply Band.generated_le
+    intro z hz
+    rw [Set.mem_singleton_iff] at hz
+    subst z
+    intro w hw
+    rw [Set.mem_singleton_iff] at hw
+    subst w
+    exact hax
+  simpa [inf_comm] using hsub hy x (Set.mem_singleton x)
+
+/-- The coordinate associated with an atom, as a vector lattice homomorphism. -/
+noncomputable def atomCoordinateVecLatHom
+    {a : X} (ha : IsVLAtom a) : VecLatHom X ℝ := by
+  refine VecLatHom.of_abs (atomCoordinateLinearMap ha) ?_
+  intro x
+  apply smul_left_injective ℝ ha.ne_zero
+  change atomCoordinate ha |x| • a = |atomCoordinate ha x| • a
+  rw [← principalBandProjection_eq_atomCoordinate_smul ha]
+  calc
+    Band.principalBandProjection a |x| =
+        |Band.principalBandProjection a x| := by
+      exact (VecLatHom.of_isVecLatHom _
+        (Band.principalProjectionBand a).bandProjection_isVecLatHom).map_abs x
+    _ = |atomCoordinate ha x • a| :=
+      congrArg abs (principalBandProjection_eq_atomCoordinate_smul ha x)
+    _ = |atomCoordinate ha x| • a := by
+      rw [abs_smul', abs_of_nonneg ha.pos.le]
+
+end AtomicCoordinateLatticeHom
