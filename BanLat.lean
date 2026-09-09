@@ -15,6 +15,11 @@ import BanLat.AMSpace.Maximal
 import BanLat.Atom
 import BanLat.Basic
 import BanLat.Bidual
+import BanLat.BooleanAlgebras.Atomless
+import BanLat.BooleanAlgebras.MeasureAlgebras.Atomless
+import BanLat.BooleanAlgebras.MeasureAlgebras.Basic
+import BanLat.BooleanAlgebras.MeasureAlgebras.Metric
+import BanLat.BooleanAlgebras.SigmaComplete
 import BanLat.Convergences.Order
 import BanLat.Convergences.Uniform
 import BanLat.Disjoint
