@@ -189,7 +189,7 @@ instance : CoeFun (MeasureAlgebraEquiv μ ν) (fun _ ↦ B → C) := by
 /-- A measure-algebra equivalence preserves the measure. -/
 @[simp]
 theorem map_measure (e : MeasureAlgebraEquiv μ ν) (a : B) :
-    ν (e a) = μ a := by
+    ν (e.toRelIso a) = μ a := by
   exact e.map_measure' a
 
 end MeasureAlgebraEquiv

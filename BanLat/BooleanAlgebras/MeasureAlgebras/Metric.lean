@@ -59,7 +59,6 @@ theorem dist_eq_measure_symmDiff (a b : B) :
   rfl
 
 /-- The distance from an element to the bottom element is its measure. -/
-@[simp]
 theorem dist_bot (a : B) :
     letI := μ.toMetricSpace
     dist a ⊥ = (μ a).toReal := by
