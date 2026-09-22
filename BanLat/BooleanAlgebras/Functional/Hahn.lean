@@ -11,7 +11,7 @@ import Mathlib.Topology.Instances.ENNReal.Lemmas
 
 This file proves the **Hahn decomposition theorem:**
 
-for any pair `(μ, ν)` of countably additive functionals on a `σ`-complete Boolean
+for any pair `(μ, ν)` of finite countably additive functionals on a `σ`-complete Boolean
 algebra `B` there exists a *Hahn decomposition*, that is, an element `p ∈ B`
 such that:
 * if `b ≤ p`, then `μ(b) ≤ ν(b)`.

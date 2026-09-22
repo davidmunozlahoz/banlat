@@ -115,6 +115,14 @@ theorem map_sdiff_add_inf (a b : B) :
     ν (a \ b) + ν (a ⊓ b) = ν a := by
   rw [← ν.map_sup disjoint_inf_sdiff.symm, sup_sdiff_inf]
 
+/-- The value of a difference is the difference of the values when the
+subtracted element lies below the first and has finite value. -/
+theorem map_sdiff {a b : B} (hba : b ≤ a) (hb : ν b ≠ ∞) :
+    ν (a \ b) = ν a - ν b := by
+  have h := ν.map_sdiff_add_inf a b
+  rw [inf_eq_right.mpr hba] at h
+  exact ENNReal.eq_sub_of_add_eq hb h
+
 /-- A countably additive functional maps a symmetric difference to the sum of
 the two corresponding differences. -/
 theorem map_symmDiff (a b : B) :
@@ -175,6 +183,17 @@ theorem infFunctional_apply (A : BooleanSubalgebra B)
     letI := hA.toSigmaCompleteBooleanAlgebra
     ν.infFunctional A hA b a = ν ((a : B) ⊓ b) := by
   rfl
+
+/-- The functional obtained by intersecting with a disjoint supremum is the
+sum of the functionals obtained from its two terms. -/
+theorem infFunctional_sup_apply (A : BooleanSubalgebra B)
+    (hA : A.IsSigmaComplete) {b c : B} (hbc : Disjoint b c) (a : A) :
+    letI := hA.toSigmaCompleteBooleanAlgebra
+    ν.infFunctional A hA (b ⊔ c) a =
+      ν.infFunctional A hA b a + ν.infFunctional A hA c a := by
+  letI := hA.toSigmaCompleteBooleanAlgebra
+  simp only [infFunctional_apply, inf_sup_left]
+  exact ν.map_sup (hbc.mono inf_le_right inf_le_right)
 
 /-- The functional obtained by intersecting with `b` is dominated by the
 restriction of the original functional. -/
@@ -328,6 +347,20 @@ noncomputable def subFunctional (ρ : CountablyAdditiveFunctional B)
       exact ρ.ne_top hρ _
     rw [ν.map_iSup ha, ρ.map_iSup ha]
     exact (ENNReal.tsum_sub hsum fun n ↦ hρν (a n)).symm
+
+/-- The subtracted functional evaluates to the pointwise difference. -/
+@[simp]
+theorem subFunctional_apply (ρ : CountablyAdditiveFunctional B)
+    (hρ : ρ.IsFinite) (hρν : ∀ b, ρ b ≤ ν b) (b : B) :
+    ν.subFunctional ρ hρ hρν b = ν b - ρ b := by
+  rfl
+
+/-- Adding a subtracted functional back to the finite functional being
+subtracted recovers the original functional. -/
+theorem add_subFunctional_apply (ρ : CountablyAdditiveFunctional B)
+    (hρ : ρ.IsFinite) (hρν : ∀ b, ρ b ≤ ν b) (b : B) :
+    ρ b + ν.subFunctional ρ hρ hρν b = ν b := by
+  rw [subFunctional_apply, add_comm, tsub_add_cancel_of_le (hρν b)]
 
 /-- Let `e : B ≃o C` be an order isomorphism and let `ρ : C → ℝ≥0∞` be a
 countably additive functional. Then `pullbackFunctional e ρ` is the countably

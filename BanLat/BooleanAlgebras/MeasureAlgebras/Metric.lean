@@ -2,33 +2,38 @@
 Authors: Jesús Illescas-Fiorito
 -/
 
+import BanLat.BooleanAlgebras.Atomless
 import BanLat.BooleanAlgebras.MeasureAlgebras.Basic
+import BanLat.Preliminaries.DensityCharacter
 import Mathlib.Analysis.SpecificLimits.Basic
+import Mathlib.Order.BooleanSubalgebra
 import Mathlib.Order.SymmDiff
 import Mathlib.Topology.MetricSpace.Cauchy
 import Mathlib.Topology.MetricSpace.Isometry
 import Mathlib.Topology.MetricSpace.Lipschitz
+import Mathlib.Topology.UniformSpace.UniformEmbedding
 
 /-!
 # Metric structure on measure algebras
 
 This file shows that the function `d(a, b) = μ (a ∆ b)` defines a metric
-over every measure algebra `(B, μ)`. The metric space `(B, d)` is complete.
+over every measure algebra `(B, μ)`.
+
+The metric space `(B, d)` **is complete.**
+
+It also defines **separable measure algebras** and their **density character.**
 -/
 
 open scoped ENNReal symmDiff
 
 universe u v
 
+/-! ## The measure metric -/
+
 namespace MeasureAlgebra
 
 variable {B : Type u} [SigmaCompleteBooleanAlgebra B]
 variable (μ : MeasureAlgebra B)
-
-/-- For all `a, b` in a measure algebra, `μ (a ∆ b) = μ (a \ b) + μ (b \ a)`. -/
-theorem measure_symmDiff (a b : B) :
-    μ (a ∆ b) = μ (a \ b) + μ (b \ a) := by
-  exact μ.measure_sup disjoint_sdiff_sdiff
 
 /-- The metric associated with a finite measure algebra. -/
 @[implicit_reducible]
@@ -64,6 +69,15 @@ theorem dist_bot (a : B) :
     dist a ⊥ = (μ a).toReal := by
   simp [dist_eq_measure_symmDiff]
 
+end MeasureAlgebra
+
+/-! ## Isometries and Lipschitz operations -/
+
+namespace MeasureAlgebra
+
+variable {B : Type u} [SigmaCompleteBooleanAlgebra B]
+variable (μ : MeasureAlgebra B)
+
 /-- Taking complements is an isometry. -/
 theorem isometry_compl :
     letI := μ.toMetricSpace
@@ -73,17 +87,34 @@ theorem isometry_compl :
   intro a b
   simp only [dist_eq_measure_symmDiff, compl_symmDiff_compl]
 
-private theorem symmDiff_sup_le_sup (a b c d : B) :
-    (a ⊔ b) ∆ (c ⊔ d) ≤ (a ∆ c) ⊔ (b ∆ d) := by
-  apply symmDiff_le
-  · have ha := le_symmDiff_sup_right a c
-    have hb := le_symmDiff_sup_right b d
-    order
-  · have hc := le_symmDiff_sup_right c a
-    have hd := le_symmDiff_sup_right d b
-    rw [symmDiff_comm c a] at hc
-    rw [symmDiff_comm d b] at hd
-    order
+end MeasureAlgebra
+
+namespace MeasureAlgebraEquiv
+
+variable {B : Type u} {C : Type v}
+variable [SigmaCompleteBooleanAlgebra B] [SigmaCompleteBooleanAlgebra C]
+variable {μ : MeasureAlgebra B} {ν : MeasureAlgebra C}
+
+/-- A measure-algebra equivalence is an isometry for the corresponding
+measure metrics. -/
+theorem isometry (e : MeasureAlgebraEquiv μ ν) :
+    letI := μ.toMetricSpace
+    letI := ν.toMetricSpace
+    Isometry e := by
+  letI := μ.toMetricSpace
+  letI := ν.toMetricSpace
+  rw [isometry_iff_dist_eq]
+  intro a b
+  simp only [MeasureAlgebra.dist_eq_measure_symmDiff]
+  change (ν (e.toRelIso a ∆ e.toRelIso b)).toReal = _
+  rw [← map_symmDiff' e.toRelIso, e.map_measure]
+
+end MeasureAlgebraEquiv
+
+namespace MeasureAlgebra
+
+variable {B : Type u} [SigmaCompleteBooleanAlgebra B]
+variable (μ : MeasureAlgebra B)
 
 /-- Supremum is Lipschitz as a binary operation. -/
 theorem lipschitzWith_sup :
@@ -109,6 +140,69 @@ theorem lipschitzWith_sup :
       linarith [le_max_left (dist p.1 q.1) (dist p.2 q.2),
         le_max_right (dist p.1 q.1) (dist p.2 q.2)]
     _ = ((2 : NNReal) : ℝ) * max (dist p.1 q.1) (dist p.2 q.2) := by norm_num
+
+/-- The density character of a measure algebra for its measure metric. -/
+noncomputable def densityCharacter (μ : MeasureAlgebra B) : Cardinal.{u} :=
+  letI := μ.toMetricSpace
+  TopologicalSpace.densityCharacter B
+
+/-- A measure algebra is separable when its measure-metric topology is separable. -/
+noncomputable def IsSeparable : Prop :=
+  letI := μ.toMetricSpace
+  TopologicalSpace.SeparableSpace B
+
+/-- The density character of a nontrivial atomless measure algebra is infinite. -/
+theorem aleph0_le_densityCharacter_of_isAtomless [Nontrivial B]
+    (μ : MeasureAlgebra B) (hB : BooleanAlgebra.IsAtomless B) :
+    Cardinal.aleph0 ≤ μ.densityCharacter := by
+  letI := μ.toMetricSpace
+  letI : Infinite B := BooleanAlgebra.infinite_of_isAtomless hB
+  unfold densityCharacter
+  exact TopologicalSpace.aleph0_le_densityCharacter B
+
+/-- For any sequence `(a n)`, its finite partial suprema
+`a 0`, `a 0 ⊔ a 1`, ..., `⨆ k ≤ n, a k` converge in the measure metric to the
+countable supremum `⨆ n, a n`. -/
+theorem tendsto_partialSups (a : ℕ → B) :
+    letI := μ.toMetricSpace
+    Filter.Tendsto (partialSups a) Filter.atTop (nhds (⨆ n, a n)) := by
+  letI := μ.toMetricSpace
+  rw [tendsto_iff_dist_tendsto_zero]
+  have hle : ∀ n, partialSups a n ≤ ⨆ n, a n := fun n ↦
+    partialSups_le a n _ fun j _ ↦ SigmaCompleteBooleanAlgebra.le_iSup_nat a j
+  have hsymm : ∀ n, partialSups a n ∆ (⨆ n, a n) =
+      (⨆ n, a n) \ partialSups a n := by
+    intro n
+    rw [symmDiff_def, sdiff_eq_bot_iff.2 (hle n), bot_sup_eq]
+  have hmeasure : ∀ n, μ ((⨆ n, a n) \ partialSups a n) =
+      μ (⨆ n, a n) - μ (partialSups a n) := by
+    intro n
+    have hsum := μ.measure_sdiff_add_inf (⨆ n, a n) (partialSups a n)
+    rw [inf_eq_right.mpr (hle n)] at hsum
+    exact ENNReal.eq_sub_of_add_eq' (μ.measure_ne_top _) hsum
+  have hμ_mono : Monotone (fun n ↦ μ (partialSups a n)) := fun _ _ hnm ↦
+    μ.measure_mono (partialSups_monotone a hnm)
+  have hμ_iSup : (⨆ n, μ (partialSups a n)) = μ (⨆ n, a n) := by
+    rw [← μ.measure_iSup_eq_iSup (partialSups_monotone a),
+      SigmaCompleteBooleanAlgebra.iSup_partialSups_nat]
+  have hμ_tend : Filter.Tendsto (fun n ↦ μ (partialSups a n)) Filter.atTop
+      (nhds (μ (⨆ n, a n))) := by
+    rw [← hμ_iSup]
+    exact tendsto_atTop_iSup hμ_mono
+  have hsub_tend : Filter.Tendsto
+      (fun n ↦ μ (⨆ n, a n) - μ (partialSups a n)) Filter.atTop (nhds 0) := by
+    have hconst : Filter.Tendsto (fun _ : ℕ ↦ μ (⨆ n, a n)) Filter.atTop
+        (nhds (μ (⨆ n, a n))) := tendsto_const_nhds
+    have h := ENNReal.tendsto_sub (Or.inr (μ.measure_ne_top (⨆ n, a n))) |>.comp
+      (Filter.Tendsto.prodMk_nhds hconst hμ_tend)
+    change Filter.Tendsto (fun n ↦ μ (⨆ n, a n) - μ (partialSups a n))
+      Filter.atTop (nhds (μ (⨆ n, a n) - μ (⨆ n, a n))) at h
+    simpa only [tsub_self] using h
+  have hreal := (ENNReal.tendsto_toReal ENNReal.zero_ne_top).comp hsub_tend
+  convert hreal using 1
+  · funext n
+    rw [dist_eq_measure_symmDiff, Function.comp_apply, hsymm n, hmeasure n]
+  · simp
 
 private def symmDiffTail (g : ℕ → B) (n : ℕ) : B :=
   ⨆ k, g (n + k) ∆ g (n + k + 1)
@@ -230,5 +324,206 @@ theorem completeSpace :
   refine ⟨symmDiffLimit g, tendsto_nhds_of_cauchySeq_of_subseq hu
     hf_mono.tendsto_atTop ?_⟩
   exact tendsto_symmDiffLimit μ g hg_bound
+
+end MeasureAlgebra
+
+/-! ## Extension from dense Boolean subalgebras -/
+
+namespace MeasureAlgebra
+
+variable {B : Type u} {C : Type v}
+variable [SigmaCompleteBooleanAlgebra B] [SigmaCompleteBooleanAlgebra C]
+variable {μ : MeasureAlgebra B} {ν : MeasureAlgebra C}
+
+/-- A measure-preserving order isomorphism between Boolean subalgebras is an
+isometry for the metrics induced by the ambient measure algebras. -/
+private theorem isometry_coe_orderIso
+    (A : BooleanSubalgebra B) (D : BooleanSubalgebra C)
+    (e : A ≃o D) (he : ∀ a : A, ν (e a : C) = μ (a : B)) :
+    letI := μ.toMetricSpace
+    letI := ν.toMetricSpace
+    Isometry (fun a : A ↦ (e a : C)) := by
+  letI := μ.toMetricSpace
+  letI := ν.toMetricSpace
+  rw [isometry_iff_dist_eq]
+  intro a b
+  change (ν (symmDiff (e a : C) (e b : C))).toReal =
+    (μ (symmDiff (a : B) (b : B))).toReal
+  rw [show symmDiff (e a : C) (e b : C) = (e (symmDiff a b) : C) from
+    congrArg Subtype.val (map_symmDiff' e a b).symm, he]
+  rfl
+
+/-- The continuous extension of an isometry from a dense Boolean subalgebra
+into a complete measure algebra is an isometry. -/
+private theorem isometry_extend
+    (A : BooleanSubalgebra B)
+    (hA :
+      letI := μ.toMetricSpace
+      Dense (A : Set B))
+    (f : A → C)
+    (hf :
+      letI := μ.toMetricSpace
+      letI := ν.toMetricSpace
+      Isometry f) :
+    letI := μ.toMetricSpace
+    letI := ν.toMetricSpace
+    letI := ν.completeSpace
+    Isometry (hA.extend f) := by
+  letI := μ.toMetricSpace
+  letI := ν.toMetricSpace
+  letI := ν.completeSpace
+  rw [isometry_iff_dist_eq]
+  apply isClosed_property2
+    (p := fun a b : B ↦ dist (hA.extend f a) (hA.extend f b) = dist a b)
+      hA.denseRange_val
+  · exact isClosed_eq
+      (continuous_dist.comp
+        (((hA.uniformContinuous_extend hf.uniformContinuous).continuous.comp
+          continuous_fst).prodMk
+          ((hA.uniformContinuous_extend hf.uniformContinuous).continuous.comp
+            continuous_snd)))
+      continuous_dist
+  · intro a b
+    rw [hA.extend_of_ind hf.uniformContinuous, hA.extend_of_ind hf.uniformContinuous]
+    exact hf.dist_eq a b
+
+/-- If a uniformly continuous map on a dense Boolean subalgebra preserves
+binary suprema, then its continuous extension preserves binary suprema. -/
+private theorem extend_map_sup
+    (A : BooleanSubalgebra B)
+    (hA :
+      letI := μ.toMetricSpace
+      Dense (A : Set B))
+    (f : A → C)
+    (hf :
+      letI := μ.toMetricSpace
+      letI := ν.toMetricSpace
+      UniformContinuous f)
+    (hsup : ∀ a b : A, f (a ⊔ b) = f a ⊔ f b) :
+    letI := μ.toMetricSpace
+    letI := ν.toMetricSpace
+    letI := ν.completeSpace
+    ∀ a b : B, hA.extend f (a ⊔ b) = hA.extend f a ⊔ hA.extend f b := by
+  letI := μ.toMetricSpace
+  letI := ν.toMetricSpace
+  letI := ν.completeSpace
+  apply isClosed_property2
+    (p := fun a b : B ↦ hA.extend f (a ⊔ b) = hA.extend f a ⊔ hA.extend f b)
+      hA.denseRange_val
+  · exact isClosed_eq
+      (hA.uniformContinuous_extend hf |>.continuous.comp μ.lipschitzWith_sup.continuous)
+      (ν.lipschitzWith_sup.continuous.comp
+        (((hA.uniformContinuous_extend hf).continuous.comp continuous_fst).prodMk
+          ((hA.uniformContinuous_extend hf).continuous.comp continuous_snd)))
+  · intro a b
+    rw [← show ((a ⊔ b : A) : B) = (a : B) ⊔ (b : B) by rfl]
+    rw [hA.extend_of_ind hf, hA.extend_of_ind hf, hA.extend_of_ind hf]
+    exact hsup a b
+
+/-- A measure-preserving order isomorphism `e : A ≃o D` between dense Boolean
+subalgebras extends to a measure-algebra equivalence `f` with `f(a) = e(a)` for `a ∈ A`. -/
+theorem exists_measureAlgebraEquiv_of_dense_booleanSubalgebra_orderIso
+    (A : BooleanSubalgebra B)
+    (D : BooleanSubalgebra C)
+    (hA :
+      letI := μ.toMetricSpace
+      Dense (A : Set B))
+    (hD :
+      letI := ν.toMetricSpace
+      Dense (D : Set C))
+    (e : A ≃o D)
+    (he : ∀ a : A, ν (e a : C) = μ (a : B)) :
+    ∃ f : MeasureAlgebraEquiv μ ν,
+      ∀ a : A, f (a : B) = (e a : C) := by
+  letI := μ.toMetricSpace
+  letI := ν.toMetricSpace
+  letI := μ.completeSpace
+  letI := ν.completeSpace
+  have h_iso : Isometry (fun a : A ↦ (e a : C)) := by
+    exact isometry_coe_orderIso A D e he
+  have he_symm (d : D) : μ (e.symm d : B) = ν (d : C) := by
+    simpa using (he (e.symm d)).symm
+  have h_iso_symm : Isometry (fun d : D ↦ (e.symm d : B)) := by
+    exact isometry_coe_orderIso (μ := ν) (ν := μ) D A e.symm he_symm
+  let F : B → C := hA.extend (fun a : A ↦ (e a : C))
+  let G : C → B := hD.extend (fun d : D ↦ (e.symm d : B))
+  have hF_iso : Isometry F := by
+    exact isometry_extend A hA (fun a : A ↦ (e a : C)) h_iso
+  have hG_iso : Isometry G := by
+    exact isometry_extend (μ := ν) (ν := μ) D hD
+      (fun d : D ↦ (e.symm d : B)) h_iso_symm
+  have hF_uc : UniformContinuous F := by
+    exact hF_iso.uniformContinuous
+  have hG_uc : UniformContinuous G := by
+    exact hG_iso.uniformContinuous
+  have hF (a : A) : F a = (e a : C) := by
+    exact hA.extend_of_ind h_iso.uniformContinuous a
+  have hG (d : D) : G d = (e.symm d : B) := by
+    exact hD.extend_of_ind h_iso_symm.uniformContinuous d
+  have hGF : G ∘ F = id := by
+    apply hA.denseRange_val.equalizer (hG_uc.comp hF_uc).continuous continuous_id
+    funext a
+    change G (F a) = (a : B)
+    rw [hF a, hG (e a), e.symm_apply_apply]
+  have hFG : F ∘ G = id := by
+    apply hD.denseRange_val.equalizer (hF_uc.comp hG_uc).continuous continuous_id
+    funext d
+    change F (G d) = (d : C)
+    rw [hG d, hF (e.symm d), e.apply_symm_apply]
+  let equiv : B ≃ C :=
+    { toFun := F
+      invFun := G
+      left_inv := fun b ↦ congrFun hGF b
+      right_inv := fun c ↦ congrFun hFG c }
+  have hF_sup : ∀ a b : B, F (a ⊔ b) = F a ⊔ F b := by
+    exact extend_map_sup A hA (fun a : A ↦ (e a : C)) h_iso.uniformContinuous
+      fun a b ↦ congrArg Subtype.val (e.map_sup a b)
+  have hG_sup : ∀ c d : C, G (c ⊔ d) = G c ⊔ G d := by
+    exact extend_map_sup (μ := ν) (ν := μ) D hD
+      (fun d : D ↦ (e.symm d : B)) h_iso_symm.uniformContinuous
+      fun c d ↦ congrArg Subtype.val (e.symm.map_sup c d)
+  have hF_mono : Monotone F := by
+    intro a b hab
+    rw [← sup_eq_right.2 hab, hF_sup]
+    exact le_sup_left
+  have hG_mono : Monotone G := by
+    intro c d hcd
+    rw [← sup_eq_right.2 hcd, hG_sup]
+    exact le_sup_left
+  let orderIso : B ≃o C := equiv.toOrderIso hF_mono hG_mono
+  have hF_bot : F ⊥ = ⊥ := by
+    calc
+      F ⊥ = (e (⊥ : A) : C) := hF ⊥
+      _ = ⊥ := congrArg Subtype.val e.map_bot
+  have hmeasure (b : B) : ν (F b) = μ b := by
+    apply (ENNReal.toReal_eq_toReal_iff'
+      (ν.measure_ne_top _) (μ.measure_ne_top _)).mp
+    calc
+      (ν (F b)).toReal = dist (F b) ⊥ := (ν.dist_bot (F b)).symm
+      _ = dist (F b) (F ⊥) := by rw [hF_bot]
+      _ = dist b ⊥ := hF_iso.dist_eq b ⊥
+      _ = (μ b).toReal := μ.dist_bot b
+  let e' : MeasureAlgebraEquiv μ ν := { orderIso with map_measure' := hmeasure }
+  refine ⟨e', ?_⟩
+  intro a
+  exact hF a
+
+/-- A measure-preserving order isomorphism between dense Boolean subalgebras
+extends to a measure-algebra equivalence of the ambient algebras. -/
+theorem nonempty_measureAlgebraEquiv_of_dense_booleanSubalgebra_orderIso
+    (A : BooleanSubalgebra B)
+    (D : BooleanSubalgebra C)
+    (hA :
+      letI := μ.toMetricSpace
+      Dense (A : Set B))
+    (hD :
+      letI := ν.toMetricSpace
+      Dense (D : Set C))
+    (e : A ≃o D)
+    (he : ∀ a : A, ν (e a : C) = μ (a : B)) :
+    Nonempty (MeasureAlgebraEquiv μ ν) := by
+  obtain ⟨f, _⟩ :=
+    exists_measureAlgebraEquiv_of_dense_booleanSubalgebra_orderIso A D hA hD e he
+  exact ⟨f⟩
 
 end MeasureAlgebra

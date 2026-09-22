@@ -15,9 +15,11 @@ This file add some basic constructions for Boolean algebras that are missing in 
 the induced structure.
 * the increasing union over a (non-empty) linearly ordered set `{A i, i ∈ ι}` of Boolean
 subalgebras becomes as well a Boolean subalgebra.
+* a compatible family of order isomorphisms `εᵢ : A i ≃o C i` between two increasing
+families of Boolean subalgebras extends to an order isomorphism `ε : (⋃ i, A i) ≃o (⋃ i, C i)`.
 -/
 
-universe u
+universe u v
 
 open scoped symmDiff
 
@@ -150,5 +152,117 @@ noncomputable def increasingUnion {ι : Type*} [LinearOrder ι] [Nonempty ι]
     obtain ⟨j, hj⟩ := Set.mem_iUnion.1 hy
     exact Set.mem_iUnion.2 ⟨max i j, (A (max i j)).inf_mem
       (hA (le_max_left i j) hi) (hA (le_max_right i j) hj)⟩
+
+/-- Membership in an increasing union of Boolean subalgebras. -/
+@[simp]
+theorem mem_increasingUnion {ι : Type*} [LinearOrder ι] [Nonempty ι]
+    (A : ι → BooleanSubalgebra B) (hA : Monotone A) (x : B) :
+    x ∈ increasingUnion A hA ↔ ∃ i, x ∈ A i := by
+  change x ∈ ⋃ i, (A i : Set B) ↔ ∃ i, x ∈ A i
+  exact Set.mem_iUnion
+
+section IncreasingUnionOrderIso
+
+variable {D : Type v} [BooleanAlgebra D]
+variable {ι : Type*} [LinearOrder ι] [Nonempty ι]
+variable (A : ι → BooleanSubalgebra B) (C : ι → BooleanSubalgebra D)
+variable (hA : Monotone A) (hC : Monotone C)
+variable (e : ∀ i, A i ≃o C i)
+
+private noncomputable def increasingUnionStage
+    (a : increasingUnion A hA) : ι :=
+  Classical.choose ((mem_increasingUnion A hA a).1 a.property)
+
+private theorem increasingUnionStage_mem
+    (a : increasingUnion A hA) :
+    (a : B) ∈ A (increasingUnionStage A hA a) :=
+  Classical.choose_spec ((mem_increasingUnion A hA a).1 a.property)
+
+private noncomputable def increasingUnionMap
+    (a : increasingUnion A hA) : increasingUnion C hC :=
+  ⟨e (increasingUnionStage A hA a)
+      ⟨a, increasingUnionStage_mem A hA a⟩,
+    (mem_increasingUnion C hC _).2
+      ⟨increasingUnionStage A hA a,
+        (e (increasingUnionStage A hA a)
+          ⟨a, increasingUnionStage_mem A hA a⟩).property⟩⟩
+
+private theorem increasingUnionMap_apply
+    (he : ∀ i j (hij : i ≤ j) (a : A i),
+      ((e j ⟨a, hA hij a.property⟩ : C j) : D) = (e i a : D))
+    (i) (a : A i) :
+    ((increasingUnionMap A C hA hC e
+      ⟨a, (mem_increasingUnion A hA a).2 ⟨i, a.property⟩⟩ :
+        increasingUnion C hC) : D) = (e i a : D) := by
+  let a' : increasingUnion A hA :=
+    ⟨a, (mem_increasingUnion A hA a).2 ⟨i, a.property⟩⟩
+  let j := increasingUnionStage A hA a'
+  have hj : (a : B) ∈ A j := increasingUnionStage_mem A hA a'
+  change (e j ⟨a, hj⟩ : D) = (e i a : D)
+  exact (he j (max j i) (le_max_left _ _) _).symm.trans
+    (he i (max j i) (le_max_right _ _) a)
+
+private theorem increasingUnionMap_le_iff
+    (he : ∀ i j (hij : i ≤ j) (a : A i),
+      ((e j ⟨a, hA hij a.property⟩ : C j) : D) = (e i a : D))
+    (a a' : increasingUnion A hA) :
+    increasingUnionMap A C hA hC e a ≤ increasingUnionMap A C hA hC e a' ↔
+      a ≤ a' := by
+  let i := max (increasingUnionStage A hA a) (increasingUnionStage A hA a')
+  have ha : (a : B) ∈ A i :=
+    hA (le_max_left _ _) (increasingUnionStage_mem A hA a)
+  have ha' : (a' : B) ∈ A i :=
+    hA (le_max_right _ _) (increasingUnionStage_mem A hA a')
+  change (increasingUnionMap A C hA hC e a : D) ≤
+    (increasingUnionMap A C hA hC e a' : D) ↔ (a : B) ≤ (a' : B)
+  rw [show (increasingUnionMap A C hA hC e a : D) = (e i ⟨a, ha⟩ : D) by
+      simpa using increasingUnionMap_apply A C hA hC e he i ⟨a, ha⟩,
+    show (increasingUnionMap A C hA hC e a' : D) = (e i ⟨a', ha'⟩ : D) by
+      simpa using increasingUnionMap_apply A C hA hC e he i ⟨a', ha'⟩]
+  exact (e i).le_iff_le
+
+private theorem increasingUnionMap_surjective
+    (he : ∀ i j (hij : i ≤ j) (a : A i),
+      ((e j ⟨a, hA hij a.property⟩ : C j) : D) = (e i a : D)) :
+    Function.Surjective (increasingUnionMap A C hA hC e) := by
+  intro d
+  obtain ⟨i, hi⟩ := (mem_increasingUnion C hC d).1 d.property
+  let ai := (e i).symm ⟨d, hi⟩
+  let a : increasingUnion A hA :=
+    ⟨ai, (mem_increasingUnion A hA ai).2 ⟨i, ai.property⟩⟩
+  refine ⟨a, ?_⟩
+  apply Subtype.ext
+  rw [show (increasingUnionMap A C hA hC e a : D) = (e i ai : D) by
+      simpa [a] using increasingUnionMap_apply A C hA hC e he i ai]
+  simp [ai]
+
+private noncomputable def increasingUnionOrderEmbedding
+    (he : ∀ i j (hij : i ≤ j) (a : A i),
+      ((e j ⟨a, hA hij a.property⟩ : C j) : D) = (e i a : D)) :
+    increasingUnion A hA ↪o increasingUnion C hC :=
+  OrderEmbedding.ofMapLEIff (increasingUnionMap A C hA hC e)
+    (increasingUnionMap_le_iff A C hA hC e he)
+
+/-- Compatible order isomorphisms between increasing families of Boolean subalgebras
+induce an order isomorphism between their increasing unions. -/
+noncomputable def increasingUnionOrderIso
+    (he : ∀ i j (hij : i ≤ j) (a : A i),
+      ((e j ⟨a, hA hij a.property⟩ : C j) : D) = (e i a : D)) :
+    increasingUnion A hA ≃o increasingUnion C hC :=
+  OrderIso.ofSurjective (increasingUnionOrderEmbedding A C hA hC e he)
+    (increasingUnionMap_surjective A C hA hC e he)
+
+/-- The order isomorphism between increasing unions agrees with each order isomorphism
+in the compatible family. -/
+theorem increasingUnionOrderIso_apply
+    (he : ∀ i j (hij : i ≤ j) (a : A i),
+      ((e j ⟨a, hA hij a.property⟩ : C j) : D) = (e i a : D))
+    (i) (a : A i) :
+    ((increasingUnionOrderIso A C hA hC e he
+      ⟨a, (mem_increasingUnion A hA a).2 ⟨i, a.property⟩⟩ :
+        increasingUnion C hC) : D) = (e i a : D) :=
+  increasingUnionMap_apply A C hA hC e he i a
+
+end IncreasingUnionOrderIso
 
 end BooleanSubalgebra

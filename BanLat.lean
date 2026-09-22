@@ -22,6 +22,7 @@ import BanLat.BooleanAlgebras.Functional.Basic
 import BanLat.BooleanAlgebras.Functional.Hahn
 import BanLat.BooleanAlgebras.MeasureAlgebras.Atomless
 import BanLat.BooleanAlgebras.MeasureAlgebras.Basic
+import BanLat.BooleanAlgebras.MeasureAlgebras.ClosedSubalgebra
 import BanLat.BooleanAlgebras.MeasureAlgebras.Metric
 import BanLat.BooleanAlgebras.SigmaComplete
 import BanLat.ComplexBanachLattice.Basic
