@@ -225,7 +225,7 @@ end VecLatHom
 namespace VectorSublattice
 
 /-- The canonical inclusion of a vector sublattice into its ambient vector lattice. -/
-def subtype (Y : VectorSublattice X) : VecLatHom ↥Y.toSubmodule X where
+def subtype (Y : VectorSublattice X) : VecLatHom Y X where
   toFun y := y
   map_add' _ _ := rfl
   map_smul' _ _ := rfl
@@ -234,8 +234,31 @@ def subtype (Y : VectorSublattice X) : VecLatHom ↥Y.toSubmodule X where
 
 /-- The canonical inclusion maps a vector-sublattice element to its underlying value. -/
 @[simp]
-theorem subtype_apply (Y : VectorSublattice X) (y : ↥Y.toSubmodule) :
+theorem subtype_apply (Y : VectorSublattice X) (y : Y) :
     Y.subtype y = (y : X) := rfl
+
+/-- The canonical inclusion of a vector sublattice is injective. -/
+theorem subtype_injective (Y : VectorSublattice X) :
+    Function.Injective Y.subtype :=
+  Subtype.coe_injective
+
+/-- The inclusion of a vector sublattice into a larger vector sublattice. -/
+def inclusion {Y Z : VectorSublattice X} (h : Y ≤ Z) :
+    VecLatHom Y Z where
+  toFun := Set.inclusion h
+  map_add' _ _ := rfl
+  map_smul' _ _ := rfl
+  map_sup' _ _ := rfl
+  map_inf' _ _ := rfl
+
+/-- Sublattice inclusion agrees with the corresponding set inclusion. -/
+theorem inclusion_apply {Y Z : VectorSublattice X} (h : Y ≤ Z) (y : Y) :
+    inclusion h y = Set.inclusion h y := rfl
+
+/-- Inclusion into a larger vector sublattice is injective. -/
+theorem inclusion_injective {Y Z : VectorSublattice X} (h : Y ≤ Z) :
+    Function.Injective (inclusion h) :=
+  Set.inclusion_injective h
 
 end VectorSublattice
 
@@ -259,8 +282,8 @@ theorem map_eval {Y Z : Type*}
 
 /-- Evaluation in a vector sublattice agrees with evaluation in the ambient lattice. -/
 theorem coe_eval_vectorSublattice {n : ℕ} (Y : VectorSublattice X)
-    (y : Fin n → ↥Y.toSubmodule) (e : LLexpr n) :
-    ((eval y e : ↥Y.toSubmodule) : X) = eval (fun i ↦ (y i : X)) e := by
+    (y : Fin n → Y) (e : LLexpr n) :
+    ((eval y e : Y) : X) = eval (fun i ↦ (y i : X)) e := by
   simpa using map_eval Y.subtype y e
 
 end LLexpr
@@ -474,7 +497,7 @@ def ContainsLatticeCopy (X Y : Type*)
     [Lattice X] [Lattice Y] [IsOrderedAddMonoid X] [IsOrderedAddMonoid Y]
     [BanachLattice X] [BanachLattice Y] : Prop :=
   ∃ Z : VectorSublattice X,
-    IsClosed (Z : Set X) ∧ Nonempty (VecLatEquiv Y ↥Z.toSubmodule)
+    IsClosed (Z : Set X) ∧ Nonempty (VecLatEquiv Y Z)
 
 /-! ## Banach lattice isometries -/
 

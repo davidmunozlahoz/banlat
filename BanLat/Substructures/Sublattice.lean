@@ -1,5 +1,5 @@
 /-
-Authors: David Muñoz-Lahoz
+Authors: David Muñoz-Lahoz, Jesús Illescas-Fiorito
 -/
 
 import BanLat.Disjoint
@@ -138,7 +138,48 @@ instance : SetLike (VectorSublattice X) X where
     cases p; cases q; congr
     exact SetLike.ext' h
 
+/-- Two vector sublattices are equal if they have the same elements. -/
+@[ext]
+theorem ext {Y Z : VectorSublattice X} (h : ∀ x, x ∈ Y ↔ x ∈ Z) : Y = Z :=
+  SetLike.ext h
+
+/-- Vector sublattices are additive subgroups of their ambient vector lattice. -/
+instance addSubgroupClass :
+    AddSubgroupClass (VectorSublattice X) X where
+  zero_mem := fun Y => Y.toSubmodule.zero_mem
+  add_mem := fun {Y _ _} hx hy => Y.toSubmodule.add_mem hx hy
+  neg_mem := fun {Y _} hx => Y.toSubmodule.neg_mem hx
+
+/-- Vector sublattices are closed under real scalar multiplication. -/
+instance smulMemClass :
+    SMulMemClass (VectorSublattice X) ℝ X where
+  smul_mem := fun {Y} r _ hx => Y.toSubmodule.smul_mem r hx
+
 variable (Y : VectorSublattice X)
+
+/-- A vector sublattice contains zero. -/
+protected theorem zero_mem : (0 : X) ∈ Y := by
+  exact Y.toSubmodule.zero_mem
+
+/-- A vector sublattice is closed under addition. -/
+protected theorem add_mem {x y : X} (hx : x ∈ Y) (hy : y ∈ Y) :
+    x + y ∈ Y := by
+  exact Y.toSubmodule.add_mem hx hy
+
+/-- A vector sublattice is closed under negation. -/
+protected theorem neg_mem {x : X} (hx : x ∈ Y) :
+    -x ∈ Y := by
+  exact Y.toSubmodule.neg_mem hx
+
+/-- A vector sublattice is closed under subtraction. -/
+protected theorem sub_mem {x y : X} (hx : x ∈ Y) (hy : y ∈ Y) :
+    x - y ∈ Y := by
+  exact Y.toSubmodule.sub_mem hx hy
+
+/-- A vector sublattice is closed under real scalar multiplication. -/
+protected theorem smul_mem (c : ℝ) {x : X} (hx : x ∈ Y) :
+    c • x ∈ Y := by
+  exact Y.toSubmodule.smul_mem c hx
 
 /-- A vector sublattice is closed under `⊔`. -/
 theorem sup_mem {x y : X} (hx : x ∈ Y) (hy : y ∈ Y) :
@@ -149,19 +190,19 @@ theorem sup_mem {x y : X} (hx : x ∈ Y) (hy : y ∈ Y) :
 theorem inf_mem {x y : X} (hx : x ∈ Y) (hy : y ∈ Y) :
     x ⊓ y ∈ Y := by
   rw [inf_eq_sub_posPart x y]
-  exact Y.toSubmodule.sub_mem hx (Y.sup_mem' (Y.toSubmodule.sub_mem hx hy) (Y.toSubmodule.zero_mem))
+  exact Y.sub_mem hx (Y.sup_mem' (Y.sub_mem hx hy) Y.zero_mem)
 
 /-- A vector sublattice is closed under the positive part. -/
 theorem posPart_mem {x : X} (hx : x ∈ Y) : x⁺ ∈ Y :=
-  Y.sup_mem' hx (Y.toSubmodule.zero_mem)
+  Y.sup_mem' hx Y.zero_mem
 
 /-- A vector sublattice is closed under the negative part. -/
 theorem negPart_mem {x : X} (hx : x ∈ Y) : x⁻ ∈ Y :=
-  posPart_mem Y (Y.toSubmodule.neg_mem hx)
+  posPart_mem Y (Y.neg_mem hx)
 
 /-- A vector sublattice is closed under absolute value. -/
 theorem abs_mem {x : X} (hx : x ∈ Y) : |x| ∈ Y :=
-  sup_mem Y hx (Y.toSubmodule.neg_mem hx)
+  sup_mem Y hx (Y.neg_mem hx)
 
 /-- The underlying set of a vector sublattice is an `IsSublattice`. -/
 theorem isSublattice : IsSublattice (Y : Set X) where
@@ -219,7 +260,7 @@ convex cone. -/
 instance : CoeHead (VectorSublattice X) (PointedCone ℝ X) where
   coe Y :=
     { toAddSubmonoid := Y.toSubmodule.toAddSubmonoid
-      smul_mem' := fun c _ hx => Y.toSubmodule.smul_mem c.1 hx }
+      smul_mem' := fun c _ hx => Y.smul_mem c.1 hx }
 
 theorem coe_toPointedCone (Y : VectorSublattice X) :
     ((Y : PointedCone ℝ X) : Set X) = (Y : Set X) := rfl
@@ -229,29 +270,68 @@ theorem coe_toPointedCone (Y : VectorSublattice X) :
 A vector sublattice `Y` inherits a lattice and vector-lattice structure from
 the ambient space, with `⊔` and `⊓` computed pointwise. -/
 
-/-- The lattice structure on the underlying subtype of a vector sublattice. -/
-noncomputable instance instLatticeSubtype : Lattice ↥Y.toSubmodule :=
-  Subtype.lattice (P := fun x => x ∈ Y.toSubmodule)
-    (fun _ _ hx hy => Y.sup_mem hx hy) (fun _ _ hx hy => Y.inf_mem hx hy)
+/-- A vector sublattice inherits supremum from its ambient vector lattice. -/
+instance instSupCoe : Max Y where
+  max x y := ⟨x ⊔ y, Y.sup_mem x.2 y.2⟩
+
+/-- A vector sublattice inherits infimum from its ambient vector lattice. -/
+instance instInfCoe : Min Y where
+  min x y := ⟨x ⊓ y, Y.inf_mem x.2 y.2⟩
+
+/-- Suprema in a vector sublattice are computed in the ambient vector lattice. -/
+@[simp, norm_cast]
+theorem coe_sup (x y : Y) :
+    ((x ⊔ y : Y) : X) = (x : X) ⊔ (y : X) := by
+  rfl
+
+/-- Infima in a vector sublattice are computed in the ambient vector lattice. -/
+@[simp, norm_cast]
+theorem coe_inf (x y : Y) :
+    ((x ⊓ y : Y) : X) = (x : X) ⊓ (y : X) := by
+  rfl
+
+/-- The supremum of two explicitly constructed sublattice elements is computed
+in the ambient vector lattice. -/
+@[simp]
+theorem mk_sup_mk (x y : X) (hx : x ∈ Y) (hy : y ∈ Y) :
+    (⟨x, hx⟩ ⊔ ⟨y, hy⟩ : Y) =
+      ⟨x ⊔ y, Y.sup_mem hx hy⟩ := by
+  rfl
+
+/-- The infimum of two explicitly constructed sublattice elements is computed
+in the ambient vector lattice. -/
+@[simp]
+theorem mk_inf_mk (x y : X) (hx : x ∈ Y) (hy : y ∈ Y) :
+    (⟨x, hx⟩ ⊓ ⟨y, hy⟩ : Y) =
+      ⟨x ⊓ y, Y.inf_mem hx hy⟩ := by
+  rfl
+
+/-- The lattice structure on the subtype of a vector sublattice. -/
+instance instLatticeCoe : Lattice Y :=
+  Subtype.coe_injective.lattice _ .rfl .rfl (fun _ _ ↦ rfl) (fun _ _ ↦ rfl)
 
 /-- The subtype of a vector sublattice is an ordered additive monoid. -/
-instance instIsOrderedAddMonoidSubtype :
-    IsOrderedAddMonoid ↥Y.toSubmodule where
-  add_le_add_left := by
-    intro a b (h : a.1 ≤ b.1) c; exact add_le_add_left h c.1
-  add_le_add_right := by
-    intro a b (h : a.1 ≤ b.1) c; exact add_le_add_right h c.1
+instance instIsOrderedAddMonoidCoe :
+    @IsOrderedAddMonoid Y inferInstance
+      (instLatticeCoe Y).toPartialOrder.toPreorder := by
+  constructor
+  · intro a b h c
+    exact add_le_add_left h c
+  · intro a b h c
+    exact add_le_add_right h c
 
 /-- Scalar multiplication by non-negative reals is monotone on the subtype of
 a vector sublattice. -/
-instance instPosSMulMonoSubtype : PosSMulMono ℝ ↥Y.toSubmodule where
+instance instPosSMulMonoCoe : PosSMulMono ℝ Y where
   smul_le_smul_of_nonneg_left := by
     intro a ha b₁ b₂ h
     change (a • b₁).1 ≤ (a • b₂).1
     exact smul_le_smul_of_nonneg_left h ha
 
 /-- The subtype of a vector sublattice is itself a vector lattice. -/
-instance instVectorLatticeSubtype : VectorLattice ↥Y.toSubmodule := ⟨⟩
+instance instVectorLatticeCoe :
+    @VectorLattice Y inferInstance (instLatticeCoe Y)
+      (instIsOrderedAddMonoidCoe Y) := ⟨⟩
 
 /-! ### Lattice structure on `VectorSublattice X`
 
@@ -476,7 +556,7 @@ theorem generated_pointedCone_eq_sub_supClosure (C : PointedCone ℝ X) :
       (generated (C : Set X)).isSublattice.supClosed
     have hu_gen := supClosure_min hC h_sup hu
     have hv_gen := supClosure_min hC h_sup hv
-    exact (generated (C : Set X)).toSubmodule.sub_mem hu_gen hv_gen
+    exact (generated (C : Set X)).sub_mem hu_gen hv_gen
 
 open scoped Pointwise in
 /-- The difference set `infClosure C - infClosure C` of a pointed cone is a
@@ -560,7 +640,7 @@ theorem generated_pointedCone_eq_sub_infClosure (C : PointedCone ℝ X) :
       (generated (C : Set X)).isSublattice.infClosed
     have hu_gen := infClosure_min hC h_inf hu
     have hv_gen := infClosure_min hC h_inf hv
-    exact (generated (C : Set X)).toSubmodule.sub_mem hu_gen hv_gen
+    exact (generated (C : Set X)).sub_mem hu_gen hv_gen
 
 /-- Disjoint sum of a scalar family: for a Finset `s` of pairwise-disjoint
 elements with any scalars `f`, `|∑ f(a) • a| = ∑ |f(a)| • |a|`. -/
@@ -642,13 +722,13 @@ theorem generated_range_eq_combinations (x : Fin n → X) :
   · rintro _ ⟨e, rfl⟩
     induction e with
     | zero =>
-        exact (VectorSublattice.generated (Set.range x)).toSubmodule.zero_mem
+        exact (VectorSublattice.generated (Set.range x)).zero_mem
     | var i =>
         exact VectorSublattice.subset_generated (Set.range x) ⟨i, rfl⟩
     | add e₁ e₂ he₁ he₂ =>
-        exact (VectorSublattice.generated (Set.range x)).toSubmodule.add_mem he₁ he₂
+        exact (VectorSublattice.generated (Set.range x)).add_mem he₁ he₂
     | smul r e he =>
-        exact (VectorSublattice.generated (Set.range x)).toSubmodule.smul_mem r he
+        exact (VectorSublattice.generated (Set.range x)).smul_mem r he
     | sup e₁ e₂ he₁ he₂ =>
         exact (VectorSublattice.generated (Set.range x)).sup_mem he₁ he₂
     | inf e₁ e₂ he₁ he₂ =>
@@ -725,8 +805,9 @@ variable (Y : VectorSublattice X)
 
 /-- A vector sublattice of a normed vector lattice is itself a normed vector
 lattice under the induced norm and lattice operations. -/
-instance instNormedVectorLatticeSubtype :
-    NormedVectorLattice ↥Y.toSubmodule where
+instance instNormedVectorLatticeCoe :
+    @NormedVectorLattice Y inferInstance (instLatticeCoe Y)
+      (instIsOrderedAddMonoidCoe Y) where
   solid := by
     intro x y h
     change ‖x.1‖ ≤ ‖y.1‖
@@ -749,6 +830,31 @@ noncomputable def topologicalClosure (Y : VectorSublattice X) : VectorSublattice
     rw [← Submodule.topologicalClosure_coe] at hxy
     exact hxy
 
+/-- The underlying set of the topological closure of a vector sublattice is
+the closure of its underlying set. -/
+@[simp]
+theorem topologicalClosure_coe (Y : VectorSublattice X) :
+    (Y.topologicalClosure : Set X) = closure (Y : Set X) :=
+  Submodule.topologicalClosure_coe Y.toSubmodule
+
+/-- A vector sublattice is contained in its topological closure. -/
+theorem le_topologicalClosure (Y : VectorSublattice X) :
+    Y ≤ Y.topologicalClosure :=
+  Y.toSubmodule.le_topologicalClosure
+
+/-- The topological closure of a vector sublattice is closed. -/
+theorem isClosed_topologicalClosure (Y : VectorSublattice X) :
+    IsClosed (Y.topologicalClosure : Set X) :=
+  Y.toSubmodule.isClosed_topologicalClosure
+
+/-- The topological closure of a vector sublattice is contained in every
+closed vector sublattice containing it. -/
+theorem topologicalClosure_minimal {Y Z : VectorSublattice X}
+    (hYZ : Y ≤ Z) (hZ : IsClosed (Z : Set X)) :
+    Y.topologicalClosure ≤ Z := by
+  change closure (Y : Set X) ⊆ (Z : Set X)
+  exact closure_minimal hYZ hZ
+
 end VectorSublattice
 
 end Normed
@@ -765,10 +871,9 @@ lattice under the induced structures. -/
 @[reducible]
 noncomputable def banachLatticeSubtype (Y : VectorSublattice X)
     (hclosed : IsClosed (Y : Set X)) :
-    BanachLattice ↥Y.toSubmodule where
-  toCompleteSpace := by
-    haveI : IsClosed (Y.toSubmodule : Set X) := hclosed
-    infer_instance
+    @BanachLattice Y inferInstance (instLatticeCoe Y)
+      (instIsOrderedAddMonoidCoe Y) where
+  toCompleteSpace := hclosed.completeSpace_coe
 
 end VectorSublattice
 
@@ -908,7 +1013,7 @@ vector lattice is separable. -/
 theorem separableSpace_topologicalClosure_generated_of_countable
     {A : Set X} (hA : A.Countable) :
     TopologicalSpace.SeparableSpace
-      ↥(topologicalClosure (generated A)).toSubmodule := by
+      (topologicalClosure (generated A)) := by
   have h_span_eq : (generated A : Set X) =
       (generated (Submodule.span ℝ A : Set X) : Set X) := by
     refine Set.Subset.antisymm ?_ ?_
@@ -924,9 +1029,9 @@ theorem separableSpace_topologicalClosure_generated_of_countable
     rw [h_gen]
     exact isSeparable_supClosure (isSeparable_infClosure h_span_sep)
   have h_closure_sep : TopologicalSpace.IsSeparable
-      ((topologicalClosure (generated A)).toSubmodule : Set X) := by
-    have : ((topologicalClosure (generated A)).toSubmodule : Set X) =
-        closure (generated A : Set X) := Submodule.topologicalClosure_coe _
+      (topologicalClosure (generated A) : Set X) := by
+    have : (topologicalClosure (generated A) : Set X) =
+        closure (generated A : Set X) := topologicalClosure_coe _
     rw [this]
     exact h_gen_sep.closure
   exact h_closure_sep.separableSpace

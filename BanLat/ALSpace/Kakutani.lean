@@ -95,7 +95,7 @@ private lemma mem_principalBand_image_of_continuous_latticeHom
     rw [hT_w n]
     have h_nn : 0 ≤ T z ⊓ n • T a := le_inf hTz_nn (nsmul_nonneg hTa_nn n)
     refine (Band.principal (T a)).solid
-      ((Band.principal (T a)).toSubmodule.nsmul_mem
+      ((Band.principal (T a)).toVectorSublattice.nsmul_mem
         (Band.subset_generated ({T a} : Set B) rfl) n) ?_ ?_
     · exact h_nn
     · exact inf_le_right
@@ -364,12 +364,12 @@ private lemma intoMofK_posPart_sub_negPart [ALSpace X] [Nontrivial X] (z : X) :
     _ = intoMofK (X := X) z⁺ - intoMofK (X := X) z⁻ := by rw [sub_eq_add_neg]
 
 private lemma intoMofK_posPart_mem_principalBand [ALSpace X] [Nontrivial X] {x z : X}
-    (hx : 0 ≤ x) (hz : z ∈ (Band.principal x).toSubmodule) :
+    (hx : 0 ≤ x) (hz : z ∈ Band.principal x) :
     intoMofK (X := X) z⁺ ∈
-      (Band.principal (intoMofK (X := X) x)).toSubmodule := by
+      Band.principal (intoMofK (X := X) x) := by
   have hz_pos_mem : z⁺ ∈ Band.principal x := by
     rw [posPart_def]
-    exact (Band.principal x).sup_mem hz (Band.principal x).toSubmodule.zero_mem
+    exact (Band.principal x).sup_mem hz (Band.principal x).toVectorSublattice.zero_mem
   exact mem_principalBand_image_of_continuous_latticeHom
     (intoMofKLi (X := X)).toContinuousLinearMap
     (fun a b => intoMofK_sup (X := X) a b)
@@ -377,14 +377,14 @@ private lemma intoMofK_posPart_mem_principalBand [ALSpace X] [Nontrivial X] {x z
     hx (posPart_nonneg z) hz_pos_mem
 
 private lemma intoMofK_negPart_mem_principalBand [ALSpace X] [Nontrivial X] {x z : X}
-    (hx : 0 ≤ x) (hz : z ∈ (Band.principal x).toSubmodule) :
+    (hx : 0 ≤ x) (hz : z ∈ Band.principal x) :
     intoMofK (X := X) z⁻ ∈
-      (Band.principal (intoMofK (X := X) x)).toSubmodule := by
+      Band.principal (intoMofK (X := X) x) := by
   have hz_neg_mem : z⁻ ∈ Band.principal x := by
     rw [negPart_def]
     exact (Band.principal x).sup_mem
-      ((Band.principal x).toSubmodule.neg_mem hz)
-      (Band.principal x).toSubmodule.zero_mem
+      ((Band.principal x).toVectorSublattice.neg_mem hz)
+      (Band.principal x).toVectorSublattice.zero_mem
   exact mem_principalBand_image_of_continuous_latticeHom
     (intoMofKLi (X := X)).toContinuousLinearMap
     (fun a b => intoMofK_sup (X := X) a b)
@@ -392,17 +392,17 @@ private lemma intoMofK_negPart_mem_principalBand [ALSpace X] [Nontrivial X] {x z
     hx (negPart_nonneg z) hz_neg_mem
 
 private lemma intoMofK_mem_principalBand [ALSpace X] [Nontrivial X] {x z : X}
-    (hx : 0 ≤ x) (hz : z ∈ (Band.principal x).toSubmodule) :
-    intoMofK (X := X) z ∈ (Band.principal (intoMofK (X := X) x)).toSubmodule := by
+    (hx : 0 ≤ x) (hz : z ∈ Band.principal x) :
+    intoMofK (X := X) z ∈ Band.principal (intoMofK (X := X) x) := by
   have h1 := intoMofK_posPart_mem_principalBand (X := X) hx hz
   have h2 := intoMofK_negPart_mem_principalBand (X := X) hx hz
   rw [intoMofK_posPart_sub_negPart (X := X) z]
-  exact (Band.principal (intoMofK (X := X) x)).toSubmodule.sub_mem h1 h2
+  exact (Band.principal (intoMofK (X := X) x)).toVectorSublattice.sub_mem h1 h2
 
 private noncomputable def intoMofKPrincipalBandLi [ALSpace X] [Nontrivial X]
     {x : X} (hx : 0 ≤ x) :
-    ↥(Band.principal x).toSubmodule →ₗᵢ[ℝ]
-      ↥(Band.principal (intoMofK (X := X) x)).toSubmodule :=
+    (Band.principal x).toVectorSublattice →ₗᵢ[ℝ]
+      (Band.principal (intoMofK (X := X) x)).toVectorSublattice :=
   { toLinearMap :=
       { toFun := fun v => ⟨intoMofK (X := X) v.val,
           intoMofK_mem_principalBand (X := X) hx v.property⟩
@@ -411,14 +411,14 @@ private noncomputable def intoMofKPrincipalBandLi [ALSpace X] [Nontrivial X]
     norm_map' := fun v => intoMofK_norm (X := X) v.val }
 
 private lemma intoMofKPrincipalBandLi_map_sup [ALSpace X] [Nontrivial X]
-    {x : X} (hx : 0 ≤ x) (v w : ↥(Band.principal x).toSubmodule) :
+    {x : X} (hx : 0 ≤ x) (v w : (Band.principal x).toVectorSublattice) :
     intoMofKPrincipalBandLi (X := X) hx (v ⊔ w) =
       intoMofKPrincipalBandLi (X := X) hx v ⊔
         intoMofKPrincipalBandLi (X := X) hx w :=
   Subtype.ext (intoMofK_sup (X := X) v.val w.val)
 
 private lemma intoMofKPrincipalBandLi_map_inf [ALSpace X] [Nontrivial X]
-    {x : X} (hx : 0 ≤ x) (v w : ↥(Band.principal x).toSubmodule) :
+    {x : X} (hx : 0 ≤ x) (v w : (Band.principal x).toVectorSublattice) :
     intoMofKPrincipalBandLi (X := X) hx (v ⊓ w) =
       intoMofKPrincipalBandLi (X := X) hx v ⊓
         intoMofKPrincipalBandLi (X := X) hx w :=
@@ -428,33 +428,33 @@ private lemma exists_L1_banachLatEquiv_principalBand_of_nontrivial_ALSpace
     [ALSpace X] [Nontrivial X] (x : X) (hx : 0 ≤ x) :
     ∃ (Ω : Type u) (_ : MeasurableSpace Ω) (μ : Measure Ω),
       Nonempty (BanachLatEquiv
-        ↥(Band.principal x).toSubmodule (Lp ℝ 1 μ)) := by
+        (Band.principal x).toVectorSublattice (Lp ℝ 1 μ)) := by
   let Φ : X → MofK (CharacterSpace X) := intoMofK (X := X)
-  have hΦ_mem : ∀ z : X, z ∈ (Band.principal x).toSubmodule →
-      Φ z ∈ (Band.principal (Φ x)).toSubmodule :=
+  have hΦ_mem : ∀ z : X, z ∈ Band.principal x →
+      Φ z ∈ Band.principal (Φ x) :=
     fun z hz => intoMofK_mem_principalBand (X := X) hx hz
   have hΦx_nn : (0 : MofK (CharacterSpace X)) ≤ Φ x :=
     intoMofK_nonneg (X := X) hx
   obtain ⟨Ω, mΩ, ν, _hν_fin, ⟨φ_eq⟩⟩ :=
     MofK.exists_principalBand_banachLatEquivL1 (Φ x)
-  have hx_mem : x ∈ (Band.principal x).toSubmodule :=
+  have hx_mem : x ∈ Band.principal x :=
     Band.subset_generated ({x} : Set X) (Set.mem_singleton _)
-  let x_band : ↥(Band.principal x).toSubmodule := ⟨x, hx_mem⟩
-  have hx_band_nn : (0 : ↥(Band.principal x).toSubmodule) ≤ x_band := hx
-  let Φx_band : ↥(Band.principal (Φ x)).toSubmodule :=
+  let x_band : (Band.principal x).toVectorSublattice := ⟨x, hx_mem⟩
+  have hx_band_nn : (0 : (Band.principal x).toVectorSublattice) ≤ x_band := hx
+  let Φx_band : (Band.principal (Φ x)).toVectorSublattice :=
     ⟨Φ x, hΦ_mem x hx_mem⟩
-  have hΦx_band_nn : (0 : ↥(Band.principal (Φ x)).toSubmodule) ≤ Φx_band :=
+  have hΦx_band_nn : (0 : (Band.principal (Φ x)).toVectorSublattice) ≤ Φx_band :=
     hΦx_nn
   let Φ_restr := intoMofKPrincipalBandLi (X := X) hx
-  let φ_li : ↥(Band.principal (Φ x)).toSubmodule →ₗᵢ[ℝ] Lp ℝ 1 ν :=
+  let φ_li : (Band.principal (Φ x)).toVectorSublattice →ₗᵢ[ℝ] Lp ℝ 1 ν :=
     φ_eq.toLinearIsometryEquiv.toLinearIsometry
-  let T : ↥(Band.principal x).toSubmodule →ₗᵢ[ℝ] Lp ℝ 1 ν :=
+  let T : (Band.principal x).toVectorSublattice →ₗᵢ[ℝ] Lp ℝ 1 ν :=
     φ_li.comp Φ_restr
   have hT_x : T x_band = φ_eq Φx_band := rfl
   have hTx_nn : (0 : Lp ℝ 1 ν) ≤ T x_band := by
     rw [hT_x]
     exact φ_eq.toVecLatEquiv.toVecLatHom.map_nonneg hΦx_band_nn
-  have hΦx_band_wou : ∀ u : ↥(Band.principal (Φ x)).toSubmodule,
+  have hΦx_band_wou : ∀ u : (Band.principal (Φ x)).toVectorSublattice,
       IsVLDisjoint u Φx_band → u = 0 := fun u hudis =>
     Subtype.ext (eq_zero_of_mem_principalBand_of_isVLDisjoint u.property
       (congrArg Subtype.val hudis))
@@ -464,18 +464,18 @@ private lemma exists_L1_banachLatEquiv_principalBand_of_nontrivial_ALSpace
     exact banachLatEquiv_forall_isVLDisjoint_eq_zero φ_eq hΦx_band_wou w hw
   have hT_closed : IsClosed (Set.range T) :=
     T.isometry.isClosedEmbedding.isClosed_range
-  have hT_sup : ∀ v w : ↥(Band.principal x).toSubmodule,
+  have hT_sup : ∀ v w : (Band.principal x).toVectorSublattice,
       T (v ⊔ w) = T v ⊔ T w := fun v w => by
     change φ_eq (Φ_restr (v ⊔ w)) = φ_eq (Φ_restr v) ⊔ φ_eq (Φ_restr w)
     rw [intoMofKPrincipalBandLi_map_sup]
     exact φ_eq.map_sup' _ _
-  have hT_inf : ∀ v w : ↥(Band.principal x).toSubmodule,
+  have hT_inf : ∀ v w : (Band.principal x).toVectorSublattice,
       T (v ⊓ w) = T v ⊓ T w := fun v w => by
     change φ_eq (Φ_restr (v ⊓ w)) = φ_eq (Φ_restr v) ⊓ φ_eq (Φ_restr w)
     rw [intoMofKPrincipalBandLi_map_inf]
     exact φ_eq.map_inf' _ _
   obtain ⟨Ω', mΩ', ν', _, φ, _⟩ := exists_L1_banachLatEquiv_of_embeds_in_L1_with_aePositive
-    (X := ↥(Band.principal x).toSubmodule) ν T hT_sup hT_inf hT_closed
+    (X := (Band.principal x).toVectorSublattice) ν T hT_sup hT_inf hT_closed
     x_band hx_band_nn (lp_aePos_of_forall_isVLDisjoint_eq_zero hTx_nn hTx_wou)
   exact ⟨Ω', mΩ', ν', ⟨φ⟩⟩
 
@@ -483,13 +483,13 @@ private lemma exists_L1_banachLatEquiv_principalBand_of_ALSpace
     [ALSpace X] (x : X) (hx : 0 ≤ x) :
     ∃ (Ω : Type u) (_ : MeasurableSpace Ω) (μ : Measure Ω),
       Nonempty (BanachLatEquiv
-        ↥(Band.principal x).toSubmodule (Lp ℝ 1 μ)) := by
+        (Band.principal x).toVectorSublattice (Lp ℝ 1 μ)) := by
   classical
   by_cases hntriv : Nontrivial X
   · haveI : Nontrivial X := hntriv
     exact exists_L1_banachLatEquiv_principalBand_of_nontrivial_ALSpace x hx
   · haveI hssX : Subsingleton X := not_nontrivial_iff_subsingleton.mp hntriv
-    haveI : Subsingleton ↥(Band.principal x).toSubmodule :=
+    haveI : Subsingleton (Band.principal x).toVectorSublattice :=
       ⟨fun a b => Subtype.ext (Subsingleton.elim _ _)⟩
     refine ⟨PUnit.{u+1}, (⊤ : MeasurableSpace PUnit.{u+1}), 0, ⟨?_⟩⟩
     haveI : Subsingleton (Lp ℝ 1 (0 : @Measure PUnit.{u+1} ⊤)) := by
@@ -530,22 +530,21 @@ theorem exists_L1_banachLatEquiv_isFiniteMeasure_of_weakOrderUnit [ALSpace X] {e
     haveI : Nontrivial X := hnt
     have hband : Band.principal e = ⊤ :=
       (weakOrderUnit_iff_generated_singleton_eq_top he.1).mp he
-    have hmem_top : ∀ z : X, z ∈ (Band.principal e).toSubmodule := fun z => by
-      rw [hband]
-      exact Submodule.mem_top
+    have hmem_top : ∀ z : X, z ∈ Band.principal e := fun z => by
+      simp [hband]
     obtain ⟨Ω, mΩ, ν, hν_fin, ⟨φ_eq⟩⟩ :=
       MofK.exists_principalBand_banachLatEquivL1 (intoMofK (X := X) e)
     haveI : IsFiniteMeasure ν := hν_fin
     have hΦe_nn : (0 : MofK (CharacterSpace X)) ≤ intoMofK (X := X) e :=
       intoMofK_nonneg (X := X) he.1
-    let Φ_X : X →ₗᵢ[ℝ] ↥(Band.principal (intoMofK (X := X) e)).toSubmodule :=
+    let Φ_X : X →ₗᵢ[ℝ] (Band.principal (intoMofK (X := X) e)).toVectorSublattice :=
       { toLinearMap :=
           { toFun := fun z => ⟨intoMofK (X := X) z,
               intoMofK_mem_principalBand (X := X) he.1 (hmem_top z)⟩
             map_add' := fun a b => Subtype.ext (intoMofK_add (X := X) a b)
             map_smul' := fun r a => Subtype.ext (intoMofK_smul (X := X) r a) }
         norm_map' := fun v => intoMofK_norm (X := X) v }
-    let φ_li : ↥(Band.principal (intoMofK (X := X) e)).toSubmodule →ₗᵢ[ℝ] Lp ℝ 1 ν :=
+    let φ_li : (Band.principal (intoMofK (X := X) e)).toVectorSublattice →ₗᵢ[ℝ] Lp ℝ 1 ν :=
       φ_eq.toLinearIsometryEquiv.toLinearIsometry
     let T : X →ₗᵢ[ℝ] Lp ℝ 1 ν := φ_li.comp Φ_X
     have hT_sup : ∀ v w : X, T (v ⊔ w) = T v ⊔ T w := by
@@ -565,7 +564,7 @@ theorem exists_L1_banachLatEquiv_isFiniteMeasure_of_weakOrderUnit [ALSpace X] {e
     have hTe_nn : (0 : Lp ℝ 1 ν) ≤ T e := by
       rw [hTe_eq]
       exact φ_eq.toVecLatEquiv.toVecLatHom.map_nonneg hΦe_nn
-    have hband_wou : ∀ u : ↥(Band.principal (intoMofK (X := X) e)).toSubmodule,
+    have hband_wou : ∀ u : (Band.principal (intoMofK (X := X) e)).toVectorSublattice,
         IsVLDisjoint u (Φ_X e) → u = 0 := fun u hudis =>
       Subtype.ext (eq_zero_of_mem_principalBand_of_isVLDisjoint u.property
         (congrArg Subtype.val hudis))

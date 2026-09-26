@@ -462,7 +462,7 @@ variable (B : Band X)
 /-- A band of a Banach lattice, equipped with the inherited normed vector
 lattice structure, is itself a Banach lattice. -/
 noncomputable instance instBanachLatticeSubtype :
-    BanachLattice ↥B.toSubmodule :=
+    BanachLattice B.toVectorSublattice :=
   VectorSublattice.banachLatticeSubtype B.toVectorSublattice B.isClosed_coe
 
 end Band
