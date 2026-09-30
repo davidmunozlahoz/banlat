@@ -184,19 +184,23 @@ namespace Band
 /-! ### Order completeness of the underlying subtype -/
 
 /-- A band in an order complete vector lattice is itself order complete. -/
-noncomputable instance instConditionallyCompleteLatticeSubtype
+noncomputable instance instConditionallyCompleteLatticeCoe
     (B : Band X) :
-    ConditionallyCompleteLattice ↥B.toSubmodule := by
-  letI : Nonempty ↥B.toSubmodule := ⟨0⟩
-  refine conditionallyCompleteLatticeOfPosSet ↥B.toSubmodule ?_
+    ConditionallyCompleteLattice B.toOrderIdeal.toVectorSublattice := by
+  letI : Nonempty B.toOrderIdeal.toVectorSublattice := ⟨0⟩
+  refine conditionallyCompleteLatticeOfPosSet B.toOrderIdeal.toVectorSublattice ?_
   intro S _ hne hbdd
-  set T : Set X := Subtype.val '' S with hT_def
+  set T : Set X :=
+    (fun x : B.toOrderIdeal.toVectorSublattice => (x : X)) '' S with hT_def
   have hT_sub : T ⊆ (B : Set X) := by
-    rintro _ ⟨⟨a, ha⟩, _, rfl⟩; exact ha
+    rintro _ ⟨⟨a, ha⟩, _, rfl⟩
+    exact ha
   have hT_ne : T.Nonempty := hne.image _
   obtain ⟨u, hu⟩ := hbdd
-  have hT_bdd : BddAbove T :=
-    ⟨u.1, by rintro _ ⟨v, hv, rfl⟩; exact hu hv⟩
+  have hT_bdd : BddAbove T := by
+    refine ⟨u.1, ?_⟩
+    rintro _ ⟨v, hv, rfl⟩
+    exact hu hv
   have hT_lub : IsLUB T (sSup T) := isLUB_csSup hT_ne hT_bdd
   refine ⟨⟨sSup T, B.sSup_mem hT_sub hT_ne hT_lub⟩, ?_, ?_⟩
   · rintro a ha
@@ -204,7 +208,9 @@ noncomputable instance instConditionallyCompleteLatticeSubtype
     exact hT_lub.1 ⟨a, ha, rfl⟩
   · rintro a hub
     change sSup T ≤ a.1
-    exact hT_lub.2 (by rintro _ ⟨b, hb, rfl⟩; exact hub hb)
+    exact hT_lub.2 (by
+      rintro _ ⟨b, hb, rfl⟩
+      exact hub hb)
 
 end Band
 

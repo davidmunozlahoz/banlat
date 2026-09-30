@@ -37,7 +37,7 @@ namespace exists_Lp_banachLatEquiv_aux
 private def indicatorFamily [IsFiniteMeasure μ]
     (L : VectorSublattice (Lp ℝ p μ)) : Set (Set Ω) :=
   {A | ∃ hA : MeasurableSet A,
-    indicatorConstLp p hA (measure_ne_top μ A) (1 : ℝ) ∈ L.toSubmodule}
+    indicatorConstLp p hA (measure_ne_top μ A) (1 : ℝ) ∈ L}
 
 omit [Fact (1 ≤ p)] in
 /-- The empty set belongs to `indicatorFamily` since `1_∅ = 0 ∈ L`. -/
@@ -45,7 +45,7 @@ private lemma empty_mem_indicatorFamily [IsFiniteMeasure μ]
     (L : VectorSublattice (Lp ℝ p μ)) :
     ∅ ∈ indicatorFamily (μ := μ) (p := p) L :=
   ⟨MeasurableSet.empty, by
-    rw [indicatorConstLp_empty]; exact L.toSubmodule.zero_mem⟩
+    rw [indicatorConstLp_empty]; exact L.zero_mem⟩
 
 omit [Fact (1 ≤ p)] in
 /-- `indicatorFamily` is closed under complements: if `1_A ∈ L`, then
@@ -70,7 +70,7 @@ private lemma compl_mem_indicatorFamily [IsFiniteMeasure μ]
     rw [h1, h2, Pi.sub_apply, h3, h4, Set.indicator_compl]
     rfl
   rw [h]
-  exact L.toSubmodule.sub_mem hone hAL
+  exact L.sub_mem hone hAL
 
 omit [Fact (1 ≤ p)] in
 /-- In `Lp`, the indicator of a union of two measurable sets is the supremum
@@ -106,14 +106,14 @@ private lemma iUnion_mem_indicatorFamily [IsFiniteMeasure μ]
     (⋃ i, f i) ∈ indicatorFamily (μ := μ) (p := p) L := by
   have hfm : ∀ i, MeasurableSet (f i) := fun i => (hf i).1
   have hfL : ∀ i, indicatorConstLp p (hfm i) (measure_ne_top μ (f i)) (1:ℝ)
-                ∈ L.toSubmodule := fun i => (hf i).2
+                ∈ L := fun i => (hf i).2
   let A : ℕ → Set Ω := Set.accumulate f
   have hAm : ∀ n, MeasurableSet (A n) := fun n =>
     MeasurableSet.iUnion (fun i => MeasurableSet.iUnion (fun _ => hfm i))
   have hAmono : Monotone A := Set.monotone_accumulate
   have hAunion : ⋃ n, A n = ⋃ i, f i := Set.iUnion_accumulate
   have hAL : ∀ n, indicatorConstLp p (hAm n) (measure_ne_top μ (A n)) (1:ℝ)
-                ∈ L.toSubmodule := by
+                ∈ L := by
     intro n
     induction n with
     | zero =>
@@ -191,19 +191,19 @@ private lemma simpleFunc_mem_sublattice [IsFiniteMeasure μ]
     (hone : Lp.const p μ (1 : ℝ) ∈ L)
     (f : Lp ℝ p μ)
     (hf : AEStronglyMeasurable[sigmaAlgebra hp_ne_top L hclosed hone] f μ) :
-    f ∈ L.toSubmodule := by
+    f ∈ L := by
   set hm := sigmaAlgebra_le hp_ne_top L hclosed hone
   refine Lp.induction_stronglyMeasurable hm hp_ne_top
-    (fun f => f ∈ L.toSubmodule) ?_ ?_ ?_ f hf
+    (fun f => f ∈ L) ?_ ?_ ?_ f hf
   · intro c s hs hμs
     rw [Lp.simpleFunc.coe_indicatorConst]
     obtain ⟨hsm, hsL⟩ := hs
     rw [show indicatorConstLp p (hm s ⟨hsm, hsL⟩) hμs.ne c
           = c • indicatorConstLp p hsm (measure_ne_top μ s) (1 : ℝ) from
         Lp.indicatorConstLp_eq_smul hsm (measure_ne_top μ s) c]
-    exact L.toSubmodule.smul_mem c hsL
+    exact L.smul_mem c hsL
   · intros _ _ _ _ _ _ _ hPf hPg
-    exact L.toSubmodule.add_mem hPf hPg
+    exact L.add_mem hPf hPg
   · exact hclosed.preimage continuous_induced_dom
 
 /-- For `f ∈ L`, every superlevel set `{f > λ}` lies in the induced
@@ -215,27 +215,27 @@ private lemma indicatorConstLp_superlevel_mem_sublattice
     (L : VectorSublattice (Lp ℝ p μ))
     (hclosed : IsClosed (L : Set (Lp ℝ p μ)))
     (hone : Lp.const p μ (1 : ℝ) ∈ L)
-    {f : Lp ℝ p μ} (hf : f ∈ L.toSubmodule) (lam : ℝ) :
+    {f : Lp ℝ p μ} (hf : f ∈ L) (lam : ℝ) :
     indicatorConstLp p
       ((Lp.stronglyMeasurable f).measurable
         (measurableSet_Ioi : MeasurableSet (Set.Ioi lam)))
-      (measure_ne_top μ _) (1 : ℝ) ∈ L.toSubmodule := by
+      (measure_ne_top μ _) (1 : ℝ) ∈ L := by
   set A : Set Ω := ⇑f ⁻¹' Set.Ioi lam with hA_def
   set hA : MeasurableSet A :=
     (Lp.stronglyMeasurable f).measurable measurableSet_Ioi
   set Igw : Lp ℝ p μ := indicatorConstLp p hA (measure_ne_top μ A) (1 : ℝ)
     with hIgw_def
   set g : Lp ℝ p μ := f - lam • Lp.const p μ (1 : ℝ) with hg_def
-  have hgL : g ∈ L.toSubmodule :=
-    L.toSubmodule.sub_mem hf (L.toSubmodule.smul_mem _ hone)
+  have hgL : g ∈ L :=
+    L.sub_mem hf (L.smul_mem _ hone)
   have hp_one : (1 : ENNReal) ≤ p := Fact.out
   have hp_ne_zero : p ≠ 0 := by
     intro h; rw [h] at hp_one; norm_num at hp_one
   have hp_real_pos : 0 < p.toReal := ENNReal.toReal_pos hp_ne_zero hp_ne_top
   set F : ℕ → Lp ℝ p μ := fun n =>
     (((n + 1 : ℕ) : ℝ) • g⁺) ⊓ Lp.const p μ (1 : ℝ) with hF_def
-  have hFL : ∀ n, F n ∈ L.toSubmodule := fun n =>
-    L.inf_mem (L.toSubmodule.smul_mem _ (L.posPart_mem hgL)) hone
+  have hFL : ∀ n, F n ∈ L := fun n =>
+    L.inf_mem (L.smul_mem _ (L.posPart_mem hgL)) hone
   set B : ℕ → Set Ω := fun n =>
     ⇑f ⁻¹' Set.Ioo lam (lam + (((n + 1 : ℕ) : ℝ))⁻¹) with hB_def
   have hBm : ∀ n, MeasurableSet (B n) := fun n =>
@@ -363,7 +363,7 @@ private lemma aeStronglyMeasurable_of_mem_sublattice [IsFiniteMeasure μ]
     (hp_ne_top : p ≠ ⊤) (L : VectorSublattice (Lp ℝ p μ))
     (hclosed : IsClosed (L : Set (Lp ℝ p μ)))
     (hone : Lp.const p μ (1 : ℝ) ∈ L) {f : Lp ℝ p μ}
-    (hf : f ∈ L.toSubmodule) :
+    (hf : f ∈ L) :
     AEStronglyMeasurable[sigmaAlgebra hp_ne_top L hclosed hone] f μ := by
   refine ⟨⇑f, ?_, Filter.EventuallyEq.rfl⟩
   refine Measurable.stronglyMeasurable ?_
@@ -417,14 +417,14 @@ private noncomputable def submoduleEquivLie
   map_smul' _ _ := rfl
   norm_map' _ := rfl
 
-/-- The linear isometric equivalence between `↥L.toSubmodule` and
+/-- The linear isometric equivalence between `L` and
 `Lp ℝ p (μ.trim h)`, obtained from `lpMeasToLpTrimLie` by identifying the
 sublattice with `lpMeas`. -/
 private noncomputable def linearIsometryEquiv [IsFiniteMeasure μ]
     (hp_ne_top : p ≠ ⊤) (L : VectorSublattice (Lp ℝ p μ))
     (hclosed : IsClosed (L : Set (Lp ℝ p μ)))
     (hone : Lp.const p μ (1 : ℝ) ∈ L) :
-    ↥L.toSubmodule ≃ₗᵢ[ℝ]
+    L ≃ₗᵢ[ℝ]
       Lp ℝ p (trimmedMeasure hp_ne_top L hclosed hone) :=
   (submoduleEquivLie (toSubmodule_eq_lpMeas hp_ne_top L hclosed hone)).trans
     (lpMeasToLpTrimLie ℝ ℝ p μ (sigmaAlgebra_le hp_ne_top L hclosed hone))
@@ -435,7 +435,7 @@ private lemma linearIsometryEquiv_coeFn_ae_eq [IsFiniteMeasure μ]
     (hp_ne_top : p ≠ ⊤) (L : VectorSublattice (Lp ℝ p μ))
     (hclosed : IsClosed (L : Set (Lp ℝ p μ)))
     (hone : Lp.const p μ (1 : ℝ) ∈ L)
-    (z : ↥L.toSubmodule) :
+    (z : L) :
     (linearIsometryEquiv hp_ne_top L hclosed hone z : Ω → ℝ) =ᵐ[μ]
       (z.1 : Ω → ℝ) :=
   lpMeasToLpTrim_ae_eq (sigmaAlgebra_le hp_ne_top L hclosed hone) _
@@ -445,7 +445,7 @@ private lemma linearIsometryEquiv_map_sup [IsFiniteMeasure μ]
     (hp_ne_top : p ≠ ⊤) (L : VectorSublattice (Lp ℝ p μ))
     (hclosed : IsClosed (L : Set (Lp ℝ p μ)))
     (hone : Lp.const p μ (1 : ℝ) ∈ L)
-    (x y : ↥L.toSubmodule) :
+    (x y : L) :
     linearIsometryEquiv hp_ne_top L hclosed hone (x ⊔ y) =
       linearIsometryEquiv hp_ne_top L hclosed hone x ⊔
         linearIsometryEquiv hp_ne_top L hclosed hone y := by
@@ -470,7 +470,7 @@ private lemma linearIsometryEquiv_map_inf [IsFiniteMeasure μ]
     (hp_ne_top : p ≠ ⊤) (L : VectorSublattice (Lp ℝ p μ))
     (hclosed : IsClosed (L : Set (Lp ℝ p μ)))
     (hone : Lp.const p μ (1 : ℝ) ∈ L)
-    (x y : ↥L.toSubmodule) :
+    (x y : L) :
     linearIsometryEquiv hp_ne_top L hclosed hone (x ⊓ y) =
       linearIsometryEquiv hp_ne_top L hclosed hone x ⊓
         linearIsometryEquiv hp_ne_top L hclosed hone y := by
@@ -496,10 +496,10 @@ private noncomputable def banachLatEquiv [IsFiniteMeasure μ]
     (hp_ne_top : p ≠ ⊤) (L : VectorSublattice (Lp ℝ p μ))
     (hclosed : IsClosed (L : Set (Lp ℝ p μ)))
     (hone : Lp.const p μ (1 : ℝ) ∈ L) :
-    letI : BanachLattice ↥L.toSubmodule := L.banachLatticeSubtype hclosed
-    BanachLatEquiv ↥L.toSubmodule
+    letI : BanachLattice L := L.banachLatticeSubtype hclosed
+    BanachLatEquiv L
       (Lp ℝ p (trimmedMeasure hp_ne_top L hclosed hone)) :=
-  letI : BanachLattice ↥L.toSubmodule := L.banachLatticeSubtype hclosed
+  letI : BanachLattice L := L.banachLatticeSubtype hclosed
   { toLinearIsometryEquiv := linearIsometryEquiv hp_ne_top L hclosed hone
     map_sup' := linearIsometryEquiv_map_sup hp_ne_top L hclosed hone
     map_inf' := linearIsometryEquiv_map_inf hp_ne_top L hclosed hone }
@@ -514,11 +514,11 @@ theorem exists_Lp_banachLatEquiv_of_closed_sublattice_containing_one
     (L : VectorSublattice (Lp ℝ p μ))
     (hclosed : IsClosed (L : Set (Lp ℝ p μ)))
     (hone : Lp.const p μ (1 : ℝ) ∈ L) :
-    letI : BanachLattice ↥L.toSubmodule := L.banachLatticeSubtype hclosed
+    letI : BanachLattice L := L.banachLatticeSubtype hclosed
     ∃ (Ω' : Type u) (_ : MeasurableSpace Ω') (ν : MeasureTheory.Measure Ω')
-      (_ : IsFiniteMeasure ν) (φ : BanachLatEquiv ↥L.toSubmodule (Lp ℝ p ν)),
+      (_ : IsFiniteMeasure ν) (φ : BanachLatEquiv L (Lp ℝ p ν)),
       ∀ᵐ a ∂ν, (φ ⟨Lp.const p μ (1 : ℝ), hone⟩ : Ω' → ℝ) a = 1 := by
-  letI : BanachLattice ↥L.toSubmodule := L.banachLatticeSubtype hclosed
+  letI : BanachLattice L := L.banachLatticeSubtype hclosed
   refine ⟨Ω,
     exists_Lp_banachLatEquiv_aux.sigmaAlgebra hp_ne_top L hclosed hone,
     exists_Lp_banachLatEquiv_aux.trimmedMeasure hp_ne_top L hclosed hone,
@@ -778,32 +778,31 @@ theorem exists_L1_banachLatEquiv_of_embeds_in_L1_with_aePositive.{v}
   have hL_one : Lp.const 1 ν (1 : ℝ) ∈ L := by
     rw [← hT'u]
     exact LinearMap.mem_range_self _ _
-  letI : Lattice ↥L.toSubmodule := L.instLatticeSubtype
-  letI : IsOrderedAddMonoid ↥L.toSubmodule := L.instIsOrderedAddMonoidSubtype
-  letI : BanachLattice ↥L.toSubmodule := L.banachLatticeSubtype hL_closed
+  letI : BanachLattice L := L.banachLatticeSubtype hL_closed
   obtain ⟨Ω', mΩ', ν', hν'_finite, φ, hφ_one⟩ :=
     exists_Lp_banachLatEquiv_of_closed_sublattice_containing_one (μ := ν)
       (by norm_num : (1 : ENNReal) ≠ ⊤) L hL_closed hL_one
+  let e : X ≃ₗᵢ[ℝ] L := T'.equivRange
   have hψ_sup : ∀ x y : X,
-      T'.equivRange (x ⊔ y) = T'.equivRange x ⊔ T'.equivRange y := fun x y =>
+      e (x ⊔ y) = e x ⊔ e y := fun x y =>
     Subtype.ext (hT'_sup x y)
   have hψ_inf : ∀ x y : X,
-      T'.equivRange (x ⊓ y) = T'.equivRange x ⊓ T'.equivRange y := fun x y =>
+      e (x ⊓ y) = e x ⊓ e y := fun x y =>
     Subtype.ext (hT'_inf x y)
   refine ⟨Ω', mΩ', ν', hν'_finite,
-    { toLinearIsometryEquiv := T'.equivRange.trans φ.toLinearIsometryEquiv
+    { toLinearIsometryEquiv := e.trans φ.toLinearIsometryEquiv
       map_sup' := ?_
       map_inf' := ?_ }, ?_⟩
   · intro x y
-    change φ (T'.equivRange (x ⊔ y)) = φ (T'.equivRange x) ⊔ φ (T'.equivRange y)
+    change φ (e (x ⊔ y)) = φ (e x) ⊔ φ (e y)
     rw [hψ_sup]
     exact φ.map_sup' _ _
   · intro x y
-    change φ (T'.equivRange (x ⊓ y)) = φ (T'.equivRange x) ⊓ φ (T'.equivRange y)
+    change φ (e (x ⊓ y)) = φ (e x) ⊓ φ (e y)
     rw [hψ_inf]
     exact φ.map_inf' _ _
-  · have hrange_u : T'.equivRange u = ⟨Lp.const 1 ν (1 : ℝ), hL_one⟩ := Subtype.ext hT'u
-    change ∀ᵐ a ∂ν', (φ (T'.equivRange u) : Ω' → ℝ) a = 1
+  · have hrange_u : e u = ⟨Lp.const 1 ν (1 : ℝ), hL_one⟩ := Subtype.ext hT'u
+    change ∀ᵐ a ∂ν', (φ (e u) : Ω' → ℝ) a = 1
     rw [hrange_u]
     exact hφ_one
 

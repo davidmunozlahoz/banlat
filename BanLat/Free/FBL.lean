@@ -358,23 +358,23 @@ instance instNormedSpaceFunctionSpace :
   }
 
 instance instMaxFunctionSpace : Max (FunctionSpace E) := by
-  exact inferInstanceAs (Max ↥(functionSpaceVectorSublattice E).toSubmodule)
+  exact inferInstanceAs (Max (functionSpaceVectorSublattice E))
 
 instance instMinFunctionSpace : Min (FunctionSpace E) := by
-  exact inferInstanceAs (Min ↥(functionSpaceVectorSublattice E).toSubmodule)
+  exact inferInstanceAs (Min (functionSpaceVectorSublattice E))
 
 instance instLEFunctionSpace : LE (FunctionSpace E) := by
-  exact inferInstanceAs (LE ↥(functionSpaceVectorSublattice E).toSubmodule)
+  exact inferInstanceAs (LE (functionSpaceVectorSublattice E))
 
 instance instLatticeFunctionSpace : Lattice (FunctionSpace E) := by
-  exact inferInstanceAs (Lattice ↥(functionSpaceVectorSublattice E).toSubmodule)
+  exact inferInstanceAs (Lattice (functionSpaceVectorSublattice E))
 
 instance instIsOrderedAddMonoidFunctionSpace :
     @IsOrderedAddMonoid (FunctionSpace E)
       (AddCommGroup.toAddCommMonoid (G := FunctionSpace E)
         (self := instAddCommGroupFunctionSpace E))
       (instLatticeFunctionSpace E).toPartialOrder.toPreorder := by
-  exact inferInstanceAs (IsOrderedAddMonoid ↥(functionSpaceVectorSublattice E).toSubmodule)
+  exact inferInstanceAs (IsOrderedAddMonoid (functionSpaceVectorSublattice E))
 
 instance instVectorLatticeFunctionSpace :
     @VectorLattice (FunctionSpace E) (instAddCommGroupFunctionSpace E)
@@ -599,7 +599,7 @@ end FBL
 its concrete free vector lattice in `C(B_{E*}, ℝ)`. -/
 abbrev FBL (E : Type u) [NormedAddCommGroup E] [NormedSpace ℝ E] :
     Type u :=
-  ↥(FBL.closedFreeVectorLattice E).toSubmodule
+  FBL.closedFreeVectorLattice E
 
 namespace FBL
 
@@ -611,67 +611,8 @@ instance instCoeFunctionSpace : Coe (FBL E) (FunctionSpace E) where
 instance instCoeFun : CoeFun (FBL E) (fun _ => FVLv.dualUnitBall E → ℝ) where
   coe f := (f : FunctionSpace E)
 
-instance instNormFBL : Norm (FBL E) where
-  norm f := ‖(f : FunctionSpace E)‖
-
-instance instNormedAddCommGroupFBL : NormedAddCommGroup (FBL E) := by
-  exact inferInstanceAs (NormedAddCommGroup ↥(closedFreeVectorLattice E).toSubmodule)
-
-instance instAddCommGroupFBL : AddCommGroup (FBL E) :=
-  NormedAddCommGroup.toAddCommGroup (E := FBL E)
-    (self := instNormedAddCommGroupFBL (E := E))
-
-instance instNormedSpaceFBL :
-    @NormedSpace ℝ (FBL E) _
-      (instNormedAddCommGroupFBL (E := E)).toSeminormedAddCommGroup := by
-  exact inferInstanceAs (NormedSpace ℝ ↥(closedFreeVectorLattice E).toSubmodule)
-
-instance instMaxFBL : Max (FBL E) := by
-  exact inferInstanceAs (Max ↥(closedFreeVectorLattice E).toSubmodule)
-
-instance instMinFBL : Min (FBL E) := by
-  exact inferInstanceAs (Min ↥(closedFreeVectorLattice E).toSubmodule)
-
-instance instLEFBL : LE (FBL E) := by
-  exact inferInstanceAs (LE ↥(closedFreeVectorLattice E).toSubmodule)
-
-instance instLatticeFBL : Lattice (FBL E) := by
-  exact inferInstanceAs (Lattice ↥(closedFreeVectorLattice E).toSubmodule)
-
-instance instIsOrderedAddMonoidFBL :
-    @IsOrderedAddMonoid (FBL E)
-      (AddCommGroup.toAddCommMonoid (G := FBL E)
-        (self := instAddCommGroupFBL (E := E)))
-      (instLatticeFBL (E := E)).toPartialOrder.toPreorder := by
-  exact inferInstanceAs (IsOrderedAddMonoid ↥(closedFreeVectorLattice E).toSubmodule)
-
-instance instVectorLatticeFBL :
-    @VectorLattice (FBL E) (instAddCommGroupFBL (E := E)) (instLatticeFBL (E := E))
-      (instIsOrderedAddMonoidFBL (E := E)) where
-  toModule :=
-    NormedSpace.toModule (𝕜 := ℝ) (E := FBL E) (self := instNormedSpaceFBL (E := E))
-  smul_le_smul_of_nonneg_left := by
-    intro c hc f g hfg
-    change c • (f : FunctionSpace E) ≤ c • (g : FunctionSpace E)
-    exact smul_le_smul_of_nonneg_left hfg hc
-
-instance instNormedVectorLatticeFBL :
-    @NormedVectorLattice (FBL E) (instNormedAddCommGroupFBL (E := E))
-      (instLatticeFBL (E := E)) (instIsOrderedAddMonoidFBL (E := E)) where
-  toVectorLattice := instVectorLatticeFBL (E := E)
-  solid := by
-    intro f g hfg
-    change ‖(f : FunctionSpace E)‖ ≤ ‖(g : FunctionSpace E)‖
-    exact HasSolidNorm.solid hfg
-  norm_smul := by
-    intro c f
-    change ‖c • (f : FunctionSpace E)‖ = ‖c‖ * ‖(f : FunctionSpace E)‖
-    exact norm_smul c (f : FunctionSpace E)
-
-instance instBanachLatticeFBL :
-    @BanachLattice (FBL E) (instNormedAddCommGroupFBL (E := E))
-      (instLatticeFBL (E := E)) (instIsOrderedAddMonoidFBL (E := E)) := by
-  exact VectorSublattice.banachLatticeSubtype (Y := closedFreeVectorLattice E) (by
+instance instBanachLatticeFBL : BanachLattice (FBL E) :=
+  VectorSublattice.banachLatticeSubtype (closedFreeVectorLattice E) (by
     rw [coe_closedFreeVectorLattice]
     exact isClosed_closure)
 
@@ -753,7 +694,7 @@ theorem denseRange_ofFVLv : DenseRange (ofFVLv (E := E)) := by
     intro f hf
     rw [coe_closedFreeVectorLattice]
     exact subset_closure hf
-  let ι : ↥(freeVectorLattice E).toSubmodule → FBL E := Set.inclusion hst
+  let ι : freeVectorLattice E → FBL E := Set.inclusion hst
   have hι_dense : DenseRange ι := by
     change DenseRange (Set.inclusion hst)
     exact (denseRange_inclusion_iff hst).2 (by

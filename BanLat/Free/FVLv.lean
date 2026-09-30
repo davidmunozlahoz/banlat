@@ -53,20 +53,11 @@ end FVLv
 /-- The free vector lattice over a real normed space, realized inside `C(B_{E*}, ℝ)`. -/
 abbrev FVLv (E : Type u) [NormedAddCommGroup E] [NormedSpace ℝ E] :
     Type _ :=
-  ↥(FVLv.concreteSublattice E).toSubmodule
+  FVLv.concreteSublattice E
 
 namespace FVLv
 
 variable {E : Type u} [NormedAddCommGroup E] [NormedSpace ℝ E]
-
-noncomputable instance instLattice : Lattice (FVLv E) :=
-  inferInstanceAs (Lattice ↥(concreteSublattice E).toSubmodule)
-
-instance instIsOrderedAddMonoid : IsOrderedAddMonoid (FVLv E) :=
-  inferInstanceAs (IsOrderedAddMonoid ↥(concreteSublattice E).toSubmodule)
-
-noncomputable instance instVectorLattice : VectorLattice (FVLv E) :=
-  inferInstanceAs (VectorLattice ↥(concreteSublattice E).toSubmodule)
 
 noncomputable instance instCoeFun : CoeFun (FVLv E) (fun _ => dualUnitBall E → ℝ) where
   coe f := f.1
@@ -84,12 +75,10 @@ theorem smul_apply (r : ℝ) (f : FVLv E) (φ : dualUnitBall E) :
     (r • f : FVLv E) φ = r * f φ := by
   rfl
 
-@[simp]
 theorem sup_apply (f g : FVLv E) (φ : dualUnitBall E) :
     (f ⊔ g : FVLv E) φ = f φ ⊔ g φ := by
   rfl
 
-@[simp]
 theorem inf_apply (f g : FVLv E) (φ : dualUnitBall E) :
     (f ⊓ g : FVLv E) φ = f φ ⊓ g φ := by
   rfl
@@ -206,7 +195,7 @@ theorem generated_range_of :
 
 private noncomputable def equivTopOfEq {X : Type*} [AddCommGroup X] [Lattice X]
     [IsOrderedAddMonoid X] [VectorLattice X] (Y : VectorSublattice X) (hY : Y = ⊤) :
-    VecLatEquiv ↥Y.toSubmodule X :=
+    VecLatEquiv Y X :=
   { LinearEquiv.ofBijective Y.subtype.toLinearMap
       ⟨by
         intro a b h
@@ -347,7 +336,7 @@ private theorem of_mem_generated_basis {ι : Type v} (b : Module.Basis ι ℝ E)
       Finsupp.linearCombination ℝ (fun i : ι => of (b i)) (b.repr x) ∈ Y := by
     rw [Finsupp.linearCombination_apply, Finsupp.sum]
     exact Submodule.sum_mem _ fun i _ =>
-      Y.toSubmodule.smul_mem _ (VectorSublattice.subset_generated _ ⟨i, rfl⟩)
+      Y.smul_mem _ (VectorSublattice.subset_generated _ ⟨i, rfl⟩)
   have hmap :
       of (Finsupp.linearCombination ℝ b (b.repr x)) =
         Finsupp.linearCombination ℝ (fun i : ι => of (b i)) (b.repr x) := by
@@ -450,7 +439,7 @@ that finite set. -/
 noncomputable def equivGeneratedOfLinearIndependent {n : ℕ} (x : Fin n → E)
     (hx : LinearIndependent ℝ x) :
     VecLatEquiv (FVL (Fin n))
-      ↥(VectorSublattice.generated (Set.range fun i : Fin n => of (x i))).toSubmodule := by
+      (VectorSublattice.generated (Set.range fun i : Fin n => of (x i))) := by
   exact FVL.equivGenerated (fun i : Fin n => of (x i))
     (latticeLinearIndependent_of_linearIndependent hx)
 
