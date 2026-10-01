@@ -47,8 +47,8 @@ noncomputable def coordinateLLFunctions (n : ℕ) :
 
 /-- A coordinate lattice-linear function on `ℝⁿ`, bundled with a proof
 of its membership in `coordinateLLFunctions`. -/
-abbrev CoordinateLLFunction (n : ℕ) :=
-  ↥(coordinateLLFunctions n).toSubmodule
+noncomputable abbrev CoordinateLLFunction (n : ℕ) :=
+  coordinateLLFunctions n
 
 instance instCoeFunCoordinateLLFunction :
     CoeFun (CoordinateLLFunction n) (fun _ ↦ (Fin n → ℝ) → ℝ) where
@@ -232,8 +232,8 @@ noncomputable def posHomFunctions (n : ℕ) :
 
 /-- A continuous positively homogeneous real-valued function of `n` variables,
 bundled with a proof of membership in `posHomFunctions`. -/
-abbrev PosHomFunction (n : ℕ) :=
-  ↥(posHomFunctions n).toSubmodule
+noncomputable abbrev PosHomFunction (n : ℕ) :=
+  posHomFunctions n
 
 namespace PosHomFunction
 
@@ -285,14 +285,8 @@ theorem coordinateLLFunctions_le_posHomFunctions :
 /-- The inclusion `coordinateLLFunctions n ≤ posHomFunctions n` as a
 vector lattice homomorphism. -/
 noncomputable def coordinateLLInclusion :
-    VecLatHom (CoordinateLLFunction n) (PosHomFunction n) := by
-  refine
-    { toFun := fun f => ⟨f.1, coordinateLLFunctions_le_posHomFunctions f.2⟩
-      map_add' := ?_
-      map_smul' := ?_
-      map_sup' := ?_
-      map_inf' := ?_ }
-  all_goals intros; rfl
+    VecLatHom (CoordinateLLFunction n) (PosHomFunction n) :=
+  VectorSublattice.inclusion coordinateLLFunctions_le_posHomFunctions
 
 @[simp]
 theorem coordinateLLInclusion_apply (f : CoordinateLLFunction n) (x : Fin n → ℝ) :
@@ -571,8 +565,8 @@ noncomputable instance instNormedAddCommGroup :
 /-- `PosHomFunction n` becomes a normed vector lattice. -/
 noncomputable instance instNormedVectorLattice :
     @NormedVectorLattice (PosHomFunction n) (instNormedAddCommGroup (n := n))
-      (posHomFunctions n).instLatticeSubtype
-      (posHomFunctions n).instIsOrderedAddMonoidSubtype := by
+      (posHomFunctions n).instLatticeCoe
+      (posHomFunctions n).instIsOrderedAddMonoidCoe := by
   refine
     { solid := ?_
       norm_smul := ?_ }
@@ -599,8 +593,8 @@ noncomputable def ellInfinityUnitSphereIsometry :
 /-- `PosHomFunction n` is a Banach lattice. -/
 noncomputable instance instBanachLattice :
     @BanachLattice (PosHomFunction n) (instNormedAddCommGroup (n := n))
-      (posHomFunctions n).instLatticeSubtype
-      (posHomFunctions n).instIsOrderedAddMonoidSubtype := by
+      (posHomFunctions n).instLatticeCoe
+      (posHomFunctions n).instIsOrderedAddMonoidCoe := by
   let e := ellInfinityUnitSphereIsometry (n := n)
   exact { toCompleteSpace := e.completeSpace }
 
