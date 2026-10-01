@@ -869,7 +869,7 @@ namespace VectorSublattice
 /-- A norm-closed vector sublattice of a Banach lattice is itself a Banach
 lattice under the induced structures. -/
 @[reducible]
-noncomputable def banachLatticeSubtype (Y : VectorSublattice X)
+noncomputable def banachLatticeCoe (Y : VectorSublattice X)
     (hclosed : IsClosed (Y : Set X)) :
     @BanachLattice Y inferInstance (instLatticeCoe Y)
       (instIsOrderedAddMonoidCoe Y) where

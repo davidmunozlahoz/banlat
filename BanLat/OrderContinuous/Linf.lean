@@ -476,7 +476,7 @@ private theorem not_containsLatticeCopy_linf_of_isOrderContinuousNorm
     [BanachLattice X] [IsOrderContinuousNorm X] :
     ¬ ContainsLatticeCopy X (ℓ^∞(ℕ, ℝ)) := by
   rintro ⟨Z, hZ_closed, ⟨e⟩⟩
-  letI : BanachLattice Z := Z.banachLatticeSubtype hZ_closed
+  letI : BanachLattice Z := Z.banachLatticeCoe hZ_closed
   let v : ℕ → X := fun n => (e (linftyBasis n)).1
   have hv_nonneg : ∀ n, 0 ≤ v n := fun n =>
     e.toVecLatHom.map_nonneg (linftyBasis_nonneg n)
