@@ -86,7 +86,7 @@ theorem exists_L1_banachLatEquiv_of_principalBandModels [ALSpace X]
     (h : ∀ x : X, 0 ≤ x →
       ∃ (Ω : Type u) (_ : MeasurableSpace Ω) (μ : Measure Ω),
         Nonempty (BanachLatEquiv
-          ↥(Band.principal x).toSubmodule (Lp ℝ 1 μ))) :
+          (Band.principal x).toVectorSublattice (Lp ℝ 1 μ))) :
     ∃ (Ω : Type u) (_ : MeasurableSpace Ω) (ν : Measure Ω),
       Nonempty (BanachLatEquiv X (Lp ℝ 1 ν)) := by
   classical
@@ -95,7 +95,7 @@ theorem exists_L1_banachLatEquiv_of_principalBandModels [ALSpace X]
   choose Ω mΩ μ hT using fun (z : Λ) =>
     h z.1 (le_of_lt (hpos z.1 z.2))
   have T : ∀ z : Λ, BanachLatEquiv
-      (Band.principal (z : X)).toSubmodule
+      (Band.principal (z : X)).toVectorSublattice
       (Lp ℝ 1 (μ z)) :=
     fun z => (hT z).some
   letI : ∀ z : Λ, MeasurableSpace (Ω z) := mΩ
@@ -104,7 +104,7 @@ theorem exists_L1_banachLatEquiv_of_principalBandModels [ALSpace X]
   set ν := Measure.sum (fun z : Λ => (μ z).map (Sigma.mk z)) with hν_def
   have hP_mem : ∀ (z : Λ) (x : X),
       Band.principalBandProjection (z : X) x ∈
-        (Band.principal (z : X)).toSubmodule :=
+        (Band.principal (z : X)).toVectorSublattice :=
     fun z x => by
       change _root_.Band.principalBandProjection (z : X) x ∈
         (_root_.Band.generated ({(z : X)} : Set X) : Set X)
@@ -115,14 +115,14 @@ theorem exists_L1_banachLatEquiv_of_principalBandModels [ALSpace X]
   have hfL_add : ∀ z x y, fL z (x + y) = fL z x + fL z y := by
     intro z x y
     have heq : (⟨Band.principalBandProjection (z : X) (x + y),
-        hP_mem z (x + y)⟩ : (Band.principal (z : X)).toSubmodule) =
+        hP_mem z (x + y)⟩ : (Band.principal (z : X)).toVectorSublattice) =
       ⟨_, hP_mem z x⟩ + ⟨_, hP_mem z y⟩ := by ext; simp [map_add]
     change T z ⟨_, _⟩ = T z ⟨_, _⟩ + T z ⟨_, _⟩
     rw [heq]; exact (T z).toLinearIsometryEquiv.map_add _ _
   have hfL_smul : ∀ z (c : ℝ) x, fL z (c • x) = c • fL z x := by
     intro z c x
     have heq : (⟨Band.principalBandProjection (z : X) (c • x),
-        hP_mem z (c • x)⟩ : (Band.principal (z : X)).toSubmodule) =
+        hP_mem z (c • x)⟩ : (Band.principal (z : X)).toVectorSublattice) =
       c • ⟨_, hP_mem z x⟩ := by ext; simp [map_smul]
     change T z ⟨_, _⟩ = c • T z ⟨_, _⟩
     rw [heq]; exact (T z).toLinearIsometryEquiv.map_smul c _
@@ -211,7 +211,7 @@ theorem exists_L1_banachLatEquiv_of_principalBandModels [ALSpace X]
         _ < ⊤ := ENNReal.coe_lt_top
     let g_z (z : ↑Λ) : Lp ℝ 1 (μ z) := (hg_fiber_memLp z).toLp _
     let y (z : ↑Λ) :
-        ↥(Band.principal (↑z : X)).toSubmodule :=
+        (Band.principal (↑z : X)).toVectorSublattice :=
       (T z).toLinearIsometryEquiv.symm (g_z z)
     have hTy : ∀ z, T z (y z) = g_z z := fun z =>
       (T z).toLinearIsometryEquiv.apply_symm_apply (g_z z)
@@ -314,7 +314,7 @@ theorem exists_L1_banachLatEquiv_of_principalBandModels [ALSpace X]
       change T z' ⟨Band.principalBandProjection (↑z' : X)
           (∑' z, (y z).val), _⟩ = g_z z'
       have heq : (⟨Band.principalBandProjection (↑z' : X) (∑' z, (y z).val),
-          hP_mem z' _⟩ : (Band.principal (↑z' : X)).toSubmodule) =
+          hP_mem z' _⟩ : (Band.principal (↑z' : X)).toVectorSublattice) =
           y z' := Subtype.ext (hP_tsum z')
       rw [heq, hTy z']
     apply Lp.ext
@@ -332,7 +332,7 @@ theorem exists_L1_banachLatEquiv_of_principalBandModels [ALSpace X]
       have hP := (Band.principalProjectionBand (z : X)).bandProjection_isVecLatHom.map_sup' x y
       have hsub : (⟨Band.principalBandProjection (↑z : X) (x ⊔ y),
           hP_mem z (x ⊔ y)⟩ :
-          (Band.principal (↑z : X)).toSubmodule) =
+          (Band.principal (↑z : X)).toVectorSublattice) =
         ⟨_, hP_mem z x⟩ ⊔ ⟨_, hP_mem z y⟩ := Subtype.ext hP
       change T z ⟨_, _⟩ = T z ⟨_, _⟩ ⊔ T z ⟨_, _⟩
       rw [hsub]; exact (T z).map_sup' _ _
@@ -353,7 +353,7 @@ theorem exists_L1_banachLatEquiv_of_principalBandModels [ALSpace X]
       have hP := (Band.principalProjectionBand (z : X)).bandProjection_isVecLatHom.map_inf' x y
       have hsub : (⟨Band.principalBandProjection (↑z : X) (x ⊓ y),
           hP_mem z (x ⊓ y)⟩ :
-          (Band.principal (↑z : X)).toSubmodule) =
+          (Band.principal (↑z : X)).toVectorSublattice) =
         ⟨_, hP_mem z x⟩ ⊓ ⟨_, hP_mem z y⟩ := Subtype.ext hP
       change T z ⟨_, _⟩ = T z ⟨_, _⟩ ⊓ T z ⟨_, _⟩
       rw [hsub]; exact (T z).map_inf' _ _

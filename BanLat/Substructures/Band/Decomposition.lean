@@ -126,7 +126,8 @@ theorem isLUB_principalBandProjection_of_isMaximalDisjoint
 lattice homomorphism into the dependent product of principal bands. -/
 private noncomputable def decompositionMap
     [HasPrincipalProjectionProperty X] (Λ : Set X) :
-    VecLatHom X ((a : Λ) → ↥(Band.generated ({(a : X)} : Set X)).toSubmodule) :=
+    VecLatHom X
+      ((a : Λ) → (Band.generated ({(a : X)} : Set X)).toVectorSublattice) :=
   IsVecLatHom.mk'
     (fun x (a : Λ) =>
       ⟨Band.principalBandProjection (a : X) x,
@@ -206,7 +207,7 @@ theorem exists_orderDense_lattice_embedding_of_isMaximalDisjoint
     [HasPrincipalProjectionProperty X] {Λ : Set X}
     (hΛ : IsMaximalDisjoint Λ) (hΛ_pos : ∀ a ∈ Λ, 0 < a) :
     ∃ T : VecLatHom X
-        ((a : Λ) → ↥(Band.generated ({(a : X)} : Set X)).toSubmodule),
+        ((a : Λ) → (Band.generated ({(a : X)} : Set X)).toVectorSublattice),
       Function.Injective T ∧ IsOrderDense (Set.range T) := by
   haveI : IsVLArchimedean X := isVLArchimedean_of_hasPrincipalProjectionProperty
   refine ⟨decompositionMap Λ, ?_, ?_⟩

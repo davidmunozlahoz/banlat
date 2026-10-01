@@ -186,7 +186,7 @@ open MeasureTheory.SignedMeasure in
 Hausdorff space `K`. -/
 abbrev MofK (K : Type*) [TopologicalSpace K] [T2Space K] [CompactSpace K]
     [MeasurableSpace K] [BorelSpace K] : Type _ :=
-  ↥(regularSignedMeasureSublattice (K := K)).toSubmodule
+  regularSignedMeasureSublattice (K := K)
 
 namespace MofK
 

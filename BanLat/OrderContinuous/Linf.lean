@@ -406,15 +406,11 @@ private theorem containsLatticeCopy_linf_of_disjoint
   have hrange : (T.toLinearMap.range : Set X) = Set.range Tc := by
     ext y
     constructor <;> rintro ⟨a, rfl⟩ <;> exact ⟨a, rfl⟩
-  letI : Lattice ↥Z.toSubmodule := VectorSublattice.instLatticeSubtype Z
-  letI : IsOrderedAddMonoid ↥Z.toSubmodule :=
-    VectorSublattice.instIsOrderedAddMonoidSubtype Z
-  letI : VectorLattice ↥Z.toSubmodule := VectorSublattice.instVectorLatticeSubtype Z
   have hZ_closed : IsClosed (Z : Set X) := by
     change IsClosed (T.toLinearMap.range : Set X)
     rw [hrange]
     exact hclosed_range
-  let Tr : ℓ^∞(ℕ, ℝ) →ₗ[ℝ] ↥Z.toSubmodule := T.toLinearMap.rangeRestrict
+  let Tr : ℓ^∞(ℕ, ℝ) →ₗ[ℝ] Z := T.toLinearMap.rangeRestrict
   have hTr_bij : Function.Bijective Tr := by
     constructor
     · intro a b hab
@@ -424,7 +420,7 @@ private theorem containsLatticeCopy_linf_of_disjoint
       obtain ⟨a, ha⟩ := hy
       refine ⟨a, ?_⟩
       exact Subtype.ext ha
-  let e : VecLatEquiv (ℓ^∞(ℕ, ℝ)) ↥Z.toSubmodule :=
+  let e : VecLatEquiv (ℓ^∞(ℕ, ℝ)) Z :=
     { toLinearEquiv := LinearEquiv.ofBijective Tr hTr_bij
       map_sup' := by
         intro a b
@@ -480,13 +476,7 @@ private theorem not_containsLatticeCopy_linf_of_isOrderContinuousNorm
     [BanachLattice X] [IsOrderContinuousNorm X] :
     ¬ ContainsLatticeCopy X (ℓ^∞(ℕ, ℝ)) := by
   rintro ⟨Z, hZ_closed, ⟨e⟩⟩
-  letI : Lattice ↥Z.toSubmodule := VectorSublattice.instLatticeSubtype Z
-  letI : IsOrderedAddMonoid ↥Z.toSubmodule :=
-    VectorSublattice.instIsOrderedAddMonoidSubtype Z
-  letI : VectorLattice ↥Z.toSubmodule := VectorSublattice.instVectorLatticeSubtype Z
-  letI : NormedVectorLattice ↥Z.toSubmodule :=
-    VectorSublattice.instNormedVectorLatticeSubtype Z
-  letI : BanachLattice ↥Z.toSubmodule := Z.banachLatticeSubtype hZ_closed
+  letI : BanachLattice Z := Z.banachLatticeSubtype hZ_closed
   let v : ℕ → X := fun n => (e (linftyBasis n)).1
   have hv_nonneg : ∀ n, 0 ≤ v n := fun n =>
     e.toVecLatHom.map_nonneg (linftyBasis_nonneg n)
