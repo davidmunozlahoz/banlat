@@ -442,10 +442,6 @@ theorem isClosed_coe : IsClosed ((B : Set X)) := by
   rw [← Band.eq_disjointComplement_disjointComplement B]
   exact isClosed_disjointComplement _
 
-/-- The underlying submodule of a band of a normed vector lattice is norm
-closed. -/
-theorem isClosed_toSubmodule : IsClosed ((B.toSubmodule : Set X)) := isClosed_coe B
-
 end Band
 
 end Normed
@@ -461,9 +457,9 @@ variable (B : Band X)
 
 /-- A band of a Banach lattice, equipped with the inherited normed vector
 lattice structure, is itself a Banach lattice. -/
-noncomputable instance instBanachLatticeSubtype :
+noncomputable instance instBanachLatticeCoe :
     BanachLattice B.toVectorSublattice :=
-  VectorSublattice.banachLatticeSubtype B.toVectorSublattice B.isClosed_coe
+  VectorSublattice.banachLatticeCoe B.toVectorSublattice B.isClosed_coe
 
 end Band
 

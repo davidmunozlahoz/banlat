@@ -195,7 +195,7 @@ variable {K : Type*} [TopologicalSpace K] [T2Space K] [CompactSpace K]
 
 /-- `M(K)` is a Banach lattice. -/
 noncomputable instance instBanachLattice : BanachLattice (MofK K) :=
-  VectorSublattice.banachLatticeSubtype _
+  VectorSublattice.banachLatticeCoe _
     MeasureTheory.SignedMeasure.isClosed_regularSignedMeasureSublattice
 
 end MofK
