@@ -56,6 +56,7 @@ import BanLat.Examples.SignedMeasure.Basic
 import BanLat.Free.FBL
 import BanLat.Free.FVL
 import BanLat.Free.FVLv
+import BanLat.FunctionalCalculus
 import BanLat.L1repr.Basic
 import BanLat.L1repr.HowItSeats
 import BanLat.L1repr.OrderContinuous
