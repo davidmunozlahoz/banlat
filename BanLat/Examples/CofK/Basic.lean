@@ -2,6 +2,7 @@
 Authors: David Muñoz-Lahoz
 -/
 
+import BanLat.AMSpace.Basic
 import BanLat.Normed
 import Mathlib.Topology.ContinuousMap.Compact
 import Mathlib.Topology.ContinuousMap.Lattice
@@ -11,7 +12,8 @@ import Mathlib.Topology.ContinuousMap.Lattice
 
 For a compact topological space `K`, the space `C(K, ℝ)` of continuous
 real-valued functions equipped with the supremum norm and the pointwise order
-is a Banach lattice.
+is a Banach lattice. In particular, it is an AM-space with the constant `1`
+function as unit.
 -/
 
 variable {K : Type*} [TopologicalSpace K] [CompactSpace K]
@@ -56,3 +58,59 @@ noncomputable instance instNormedVectorLatticeCofK :
 
 /-- `C(K, ℝ)` is a Banach lattice: a complete normed vector lattice. -/
 noncomputable instance instBanachLatticeCofK : BanachLattice C(K, ℝ) where
+
+/-! ### AM-space with unit -/
+
+omit [CompactSpace K] in
+/-- For every `f, g ∈ C(K, ℝ)`, `f ⊓ g = 0` iff their pointwise product is zero. -/
+private theorem mul_eq_zero_of_inf_eq_zero {f g : C(K, ℝ)}
+    (hfg : f ⊓ g = 0) : f * g = 0 := by
+  ext t
+  have ht := congrArg (fun h : C(K, ℝ) => h t) hfg
+  change min (f t) (g t) = 0 at ht
+  rcases le_total (f t) (g t) with h | h
+  · have : f t = 0 := by simpa [min_eq_left h] using ht
+    simp [this]
+  · have : g t = 0 := by simpa [min_eq_right h] using ht
+    simp [this]
+
+/-- The constant `1` function is a `StrongOrderUnit` in `C(K, ℝ)`. -/
+private theorem one_strongOrderUnit : StrongOrderUnit (1 : C(K, ℝ)) := by
+  refine ⟨?_, fun f => ⟨‖f‖, norm_nonneg f, ?_⟩⟩
+  · rw [ContinuousMap.le_def]
+    intro t
+    simp
+  rw [ContinuousMap.le_def]
+  intro t
+  simpa [ContinuousMap.abs_apply, ContinuousMap.smul_apply, Real.norm_eq_abs] using
+    ContinuousMap.norm_coe_le_norm f t
+
+/-- For every `f ∈ C(K, ℝ)`, `‖f‖_∞ = inf{λ>0, |f| ≤ λ · 1}`. -/
+private theorem norm_eq_gaugeNorm_one (f : C(K, ℝ)) :
+    ‖f‖ = OrderIdeal.gaugeNorm (1 : C(K, ℝ)) f := by
+  have hf : f ∈ OrderIdeal.principal (1 : C(K, ℝ)) := by
+    refine ⟨‖f‖, norm_nonneg f, ?_⟩
+    rw [ContinuousMap.le_def]
+    intro t
+    simpa [ContinuousMap.abs_apply, ContinuousMap.smul_apply, Real.norm_eq_abs] using
+      ContinuousMap.norm_coe_le_norm f t
+  apply le_antisymm
+  · apply (ContinuousMap.norm_le f (OrderIdeal.gaugeNorm_nonneg 1 f)).mpr
+    intro t
+    have ht := ContinuousMap.le_def.mp
+      (OrderIdeal.abs_le_gaugeNorm_smul_abs (1 : C(K, ℝ)) hf) t
+    simpa [ContinuousMap.abs_apply, ContinuousMap.smul_apply, Real.norm_eq_abs] using ht
+  · apply OrderIdeal.gaugeNorm_le_of_abs_le 1 (norm_nonneg f)
+    rw [ContinuousMap.le_def]
+    intro t
+    simpa [ContinuousMap.abs_apply, ContinuousMap.smul_apply, Real.norm_eq_abs] using
+      ContinuousMap.norm_coe_le_norm f t
+
+/-- With the constant-one function as its distinguished unit, `C(K, ℝ)` is an
+AM-space with unit. -/
+noncomputable instance instAMSpaceWithUnitCofK : AMSpaceWithUnit C(K, ℝ) where
+  norm_add_eq_max_of_inf_eq_zero hfg :=
+    ContinuousMap.norm_add_eq_max (mul_eq_zero_of_inf_eq_zero hfg)
+  unit := 1
+  strongOrderUnit_unit := one_strongOrderUnit
+  norm_eq_gaugeNorm := norm_eq_gaugeNorm_one
