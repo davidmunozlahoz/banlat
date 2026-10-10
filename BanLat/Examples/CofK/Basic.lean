@@ -12,7 +12,8 @@ import Mathlib.Topology.ContinuousMap.Lattice
 
 For a compact topological space `K`, the space `C(K, ℝ)` of continuous
 real-valued functions equipped with the supremum norm and the pointwise order
-is a Banach lattice.
+is a Banach lattice. In particular, it is an AM-space with the constant `1`
+function as unit.
 -/
 
 variable {K : Type*} [TopologicalSpace K] [CompactSpace K]
@@ -61,6 +62,7 @@ noncomputable instance instBanachLatticeCofK : BanachLattice C(K, ℝ) where
 /-! ### AM-space with unit -/
 
 omit [CompactSpace K] in
+/-- For every `f, g ∈ C(K, ℝ)`, `f ⊓ g = 0` iff their pointwise product is zero. -/
 private theorem mul_eq_zero_of_inf_eq_zero {f g : C(K, ℝ)}
     (hfg : f ⊓ g = 0) : f * g = 0 := by
   ext t
@@ -72,6 +74,7 @@ private theorem mul_eq_zero_of_inf_eq_zero {f g : C(K, ℝ)}
   · have : g t = 0 := by simpa [min_eq_right h] using ht
     simp [this]
 
+/-- The constant `1` function is a `StrongOrderUnit` in `C(K, ℝ)`. -/
 private theorem one_strongOrderUnit : StrongOrderUnit (1 : C(K, ℝ)) := by
   refine ⟨?_, fun f => ⟨‖f‖, norm_nonneg f, ?_⟩⟩
   · rw [ContinuousMap.le_def]
@@ -82,6 +85,7 @@ private theorem one_strongOrderUnit : StrongOrderUnit (1 : C(K, ℝ)) := by
   simpa [ContinuousMap.abs_apply, ContinuousMap.smul_apply, Real.norm_eq_abs] using
     ContinuousMap.norm_coe_le_norm f t
 
+/-- For every `f ∈ C(K, ℝ)`, `‖f‖_∞ = inf{λ>0, |f| ≤ λ · 1}`. -/
 private theorem norm_eq_gaugeNorm_one (f : C(K, ℝ)) :
     ‖f‖ = OrderIdeal.gaugeNorm (1 : C(K, ℝ)) f := by
   have hf : f ∈ OrderIdeal.principal (1 : C(K, ℝ)) := by
