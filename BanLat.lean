@@ -30,6 +30,14 @@ import BanLat.ComplexBanachLattice.Complexification
 import BanLat.ComplexBanachLattice.Modulus
 import BanLat.Convergences.Order
 import BanLat.Convergences.Uniform
+import BanLat.DedekindCompletion
+import BanLat.DedekindCompletion.Algebra
+import BanLat.DedekindCompletion.Banach
+import BanLat.DedekindCompletion.Cuts
+import BanLat.DedekindCompletion.Existence
+import BanLat.DedekindCompletion.OrderDense
+import BanLat.DedekindCompletion.Scalar
+import BanLat.DedekindCompletion.Uniqueness
 import BanLat.Disjoint
 import BanLat.Dual
 import BanLat.Examples.CofK.Basic
