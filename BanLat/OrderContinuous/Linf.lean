@@ -2,7 +2,7 @@
 Authors: David Muñoz-Lahoz
 -/
 
-import BanLat.Examples.Ellp.Basic
+import BanLat.Examples.Ellp.Sum
 import BanLat.OrderContinuous.MeyerNieberg
 
 /-!
