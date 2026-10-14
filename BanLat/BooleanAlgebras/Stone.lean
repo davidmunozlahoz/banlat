@@ -27,7 +27,82 @@ variable {B : Type u} [BooleanAlgebra B]
 def StoneSpace (B : Type u) [BooleanAlgebra B] :=
   {I : Order.Ideal B // Order.Ideal.IsPrime I}
 
-/-- The basic set associated to an element consists of the prime ideals omitting it. -/
+/-- A prime ideal determines the homomorphism that is false on its elements. -/
+private noncomputable def primeIdealToBoolHom (I : StoneSpace B) : BoundedLatticeHom B Bool where
+  toFun a := by classical exact decide (a ∉ I.1)
+  map_bot' := by classical simp
+  map_top' := by classical simpa using I.2.top_notMem
+  map_sup' a b := by classical simp
+  map_inf' a b := by
+    classical
+    have h : a ⊓ b ∈ I.1 ↔ a ∈ I.1 ∨ b ∈ I.1 :=
+      ⟨I.2.mem_or_mem, fun h => h.elim (I.1.lower inf_le_left) (I.1.lower inf_le_right)⟩
+    simp [h]
+
+/-- The homomorphism associated to a prime ideal is true outside that ideal. -/
+private theorem primeIdealToBoolHom_apply_eq_true (I : StoneSpace B) (a : B) :
+    primeIdealToBoolHom I a = true ↔ a ∉ I.1 := by
+  classical
+  simp [primeIdealToBoolHom]
+
+/-- The false fiber of a homomorphism to `Bool` is a prime ideal. -/
+private def boolHomToPrimeIdeal (f : BoundedLatticeHom B Bool) : StoneSpace B := by
+  let I : Order.Ideal B := {
+    carrier := {a | f a = false}
+    lower' := by
+      intro a b hab ha
+      change f a = false at ha
+      change f b = false
+      exact le_bot_iff.mp (by simpa [ha] using (map_rel f hab))
+    nonempty' := ⟨⊥, by simp⟩
+    directed' := by
+      intro a ha b hb
+      change f a = false at ha
+      change f b = false at hb
+      exact ⟨a ⊔ b, by simp [ha, hb], le_sup_left, le_sup_right⟩ }
+  haveI : I.IsProper := Order.Ideal.isProper_iff_top_notMem.mpr (by
+    change f ⊤ ≠ false
+    simp)
+  refine ⟨I, Order.Ideal.isPrime_of_mem_or_compl_mem ?_⟩
+  intro a
+  change f a = false ∨ f aᶜ = false
+  rw [map_compl' f]
+  cases f a <;> simp
+
+/-- Membership in the ideal associated to a homomorphism is its false fiber. -/
+private theorem mem_boolHomToPrimeIdeal_iff (f : BoundedLatticeHom B Bool) (a : B) :
+    a ∈ (boolHomToPrimeIdeal f).1 ↔ f a = false := Iff.rfl
+
+/-- Prime ideals of a Boolean algebra correspond to homomorphisms into the two-element
+Boolean algebra. -/
+noncomputable def stoneSpaceEquivBoolHom : StoneSpace B ≃ BoundedLatticeHom B Bool where
+  toFun := primeIdealToBoolHom
+  invFun := boolHomToPrimeIdeal
+  left_inv I := by
+    apply Subtype.ext
+    apply Order.Ideal.ext
+    ext a
+    change (primeIdealToBoolHom I a = false) ↔ a ∈ I.1
+    simp [primeIdealToBoolHom]
+  right_inv f := by
+    ext a
+    apply Bool.eq_iff_iff.mpr
+    rw [primeIdealToBoolHom_apply_eq_true, mem_boolHomToPrimeIdeal_iff]
+    cases f a <;> simp
+
+/-- Evaluation at a Stone point is true exactly outside its prime ideal. -/
+@[simp]
+theorem stoneSpaceEquivBoolHom_apply_eq_true (I : StoneSpace B) (a : B) :
+    stoneSpaceEquivBoolHom I a = true ↔ a ∉ I.1 :=
+  primeIdealToBoolHom_apply_eq_true I a
+
+/-- The ideal corresponding to a homomorphism consists of its false inputs. -/
+@[simp]
+theorem mem_stoneSpaceEquivBoolHom_symm_iff (f : BoundedLatticeHom B Bool) (a : B) :
+    a ∈ (stoneSpaceEquivBoolHom.symm f).1 ↔ f a = false :=
+  mem_boolHomToPrimeIdeal_iff f a
+
+/-- The Stone set associated to an element consists of the prime ideals omitting it. -/
 def stoneSet (a : B) : Set (StoneSpace B) :=
   {I | a ∉ I.1}
 
@@ -45,7 +120,7 @@ private lemma exists_prime_ideal_separating {a b : B} (hab : ¬ a ≤ b) :
   · exact (Set.disjoint_left.mp hFI) (Order.PFilter.mem_principal.mpr le_rfl)
   · exact hb Order.Ideal.mem_principal_self
 
-/-- Inclusion of basic sets reflects the order of the Boolean algebra. -/
+/-- Inclusion of Stone sets reflects the order of the Boolean algebra. -/
 theorem stoneSet_subset_iff (a b : B) : stoneSet a ⊆ stoneSet b ↔ a ≤ b := by
   constructor
   · intro h
@@ -59,7 +134,7 @@ theorem stoneSet_subset_iff (a b : B) : stoneSet a ⊆ stoneSet b ↔ a ≤ b :=
 def stoneEmbedding : B ↪o Set (StoneSpace B) :=
   OrderEmbedding.ofMapLEIff stoneSet stoneSet_subset_iff
 
-/-- The basic set of an infimum is the intersection of its basic sets. -/
+/-- The Stone set of an infimum is the intersection of its Stone sets. -/
 @[simp]
 theorem stoneSet_inf (a b : B) : stoneSet (a ⊓ b) = stoneSet a ∩ stoneSet b := by
   ext I
@@ -69,7 +144,7 @@ theorem stoneSet_inf (a b : B) : stoneSet (a ⊓ b) = stoneSet a ∩ stoneSet b 
       fun hb ↦ h (I.1.lower inf_le_right hb)⟩
   · exact fun ⟨ha, hb⟩ hab ↦ (I.2.mem_or_mem hab).elim ha hb
 
-/-- The basic set of a complement is the set complement. -/
+/-- The Stone set of a complement is the set complement. -/
 @[simp]
 theorem stoneSet_compl (a : B) : stoneSet aᶜ = (stoneSet a)ᶜ := by
   ext I
@@ -91,7 +166,7 @@ theorem stoneSet_bot : stoneSet (⊥ : B) = ∅ := by
 theorem stoneSet_top : stoneSet (⊤ : B) = Set.univ := by
   simpa using stoneSet_compl (a := (⊥ : B))
 
-/-- The basic set of a supremum is the union of its basic sets. -/
+/-- The Stone set of a supremum is the union of its Stone sets. -/
 @[simp]
 theorem stoneSet_sup (a b : B) : stoneSet (a ⊔ b) = stoneSet a ∪ stoneSet b := by
   ext I
@@ -135,15 +210,15 @@ private theorem stoneFieldEmbedding_surjective :
 noncomputable def stoneFieldRepresentation : B ≃o stoneField B :=
   RelIso.ofSurjective stoneFieldEmbedding stoneFieldEmbedding_surjective
 
-/-- The topology generated by the basic subsets of prime ideals. -/
+/-- The topology generated by the Stone sets of prime ideals. -/
 instance instTopologicalSpace : TopologicalSpace (StoneSpace B) :=
   TopologicalSpace.generateFrom (Set.range (stoneSet (B := B)))
 
-/-- Every basic set is open in the Stone topology. -/
+/-- Every Stone set is open in the Stone topology. -/
 theorem isOpen_stoneSet (a : B) : IsOpen (stoneSet a) :=
   TopologicalSpace.isOpen_generateFrom_of_mem ⟨a, rfl⟩
 
-/-- Every basic set is clopen in the Stone topology. -/
+/-- Every Stone set is clopen in the Stone topology. -/
 theorem isClopen_stoneSet (a : B) : IsClopen (stoneSet a) :=
   ⟨by simpa using (isOpen_stoneSet aᶜ).isClosed_compl, isOpen_stoneSet a⟩
 
@@ -159,7 +234,7 @@ def stoneClopenHom : BoundedLatticeHom B (TopologicalSpace.Clopens (StoneSpace B
   map_sup' a b := TopologicalSpace.Clopens.ext (stoneSet_sup a b)
   map_inf' a b := TopologicalSpace.Clopens.ext (stoneSet_inf a b)
 
-/-- The ideal of elements whose basic sets do not belong to an ultrafilter. -/
+/-- The ideal of elements whose Stone sets do not belong to an ultrafilter. -/
 private def idealOfUltrafilter (U : Ultrafilter (StoneSpace B)) : Order.Ideal B where
   carrier := {a | stoneSet a ∉ U}
   lower' := by
@@ -203,7 +278,7 @@ instance instCompactSpace : CompactSpace (StoneSpace B) := by
   change ¬ (stoneSet a ∉ U) at hx
   exact Ultrafilter.mem_coe.mpr (not_not.mp hx)
 
-/-- The basic sets form a basis for the Stone topology. -/
+/-- The Stone sets form a basis for the Stone topology. -/
 private theorem stoneSet_isTopologicalBasis :
     TopologicalSpace.IsTopologicalBasis (Set.range (stoneSet (B := B))) := by
   apply TopologicalSpace.isTopologicalBasis_of_subbasis_of_finiteInter rfl
@@ -212,7 +287,7 @@ private theorem stoneSet_isTopologicalBasis :
   · rintro s ⟨a, rfl⟩ t ⟨b, rfl⟩
     exact ⟨a ⊓ b, stoneSet_inf a b⟩
 
-/-- A finite join represents the union of its basic sets. -/
+/-- A finite join represents the union of its Stone sets. -/
 private theorem stoneSet_finset_sup {ι : Type*} (t : Finset ι) (f : ι → B) :
     stoneSet (t.sup f) = ⋃ i ∈ t, stoneSet (f i) := by
   classical
@@ -220,7 +295,7 @@ private theorem stoneSet_finset_sup {ι : Type*} (t : Finset ι) (f : ι → B) 
   | empty => simp
   | @insert i t hi ih => simp [ih, stoneSet_sup]
 
-/-- Every clopen subset is the basic set of an algebra element. -/
+/-- Every clopen subset is the Stone set of an algebra element. -/
 private theorem exists_stoneSet_eq_clopen
     (C : TopologicalSpace.Clopens (StoneSpace B)) :
     ∃ a : B, stoneSet a = (C : Set (StoneSpace B)) := by
