@@ -25,6 +25,7 @@ import BanLat.BooleanAlgebras.MeasureAlgebras.Basic
 import BanLat.BooleanAlgebras.MeasureAlgebras.ClosedSubalgebra
 import BanLat.BooleanAlgebras.MeasureAlgebras.Metric
 import BanLat.BooleanAlgebras.SigmaComplete
+import BanLat.BooleanAlgebras.Stone
 import BanLat.ComplexBanachLattice.Basic
 import BanLat.ComplexBanachLattice.Complexification
 import BanLat.ComplexBanachLattice.Modulus
