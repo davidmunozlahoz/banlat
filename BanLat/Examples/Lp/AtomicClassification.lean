@@ -2,7 +2,7 @@
 Author: Jesús Illescas-Fiorito
 -/
 
-import BanLat.Examples.Ellp.Basic
+import BanLat.Examples.Ellp.Sum
 import BanLat.Atom
 import BanLat.Examples.Lp.OrderContinuous
 import BanLat.OrderContinuous.Decomposition
@@ -254,12 +254,12 @@ theorem exists_banachLatEquiv_fin_or_nat
     letI : Finite A := hfin
     refine ⟨Nat.card A, ?_⟩
     exact ⟨(banachLatEquivNormalizedAtoms (μ := μ) (p := p)).trans
-      (lpCongr (p := (p : ENNReal)) (Finite.equivFin A).symm)⟩
+      (BanachLatEquiv.lpCongrLeft (p := (p : ENNReal)) (Finite.equivFin A))⟩
   · right
     letI : Infinite A := hinf
     let he : Nonempty (A ≃ ℕ) := inferInstance
     obtain ⟨e⟩ := he
     exact ⟨(banachLatEquivNormalizedAtoms (μ := μ) (p := p)).trans
-      (lpCongr (p := (p : ENNReal)) e.symm)⟩
+      (BanachLatEquiv.lpCongrLeft (p := (p : ENNReal)) e)⟩
 
 end MeasureTheory.Lp
