@@ -9,10 +9,10 @@ import Mathlib.MeasureTheory.Function.LpSpace.Indicator
 import Mathlib.MeasureTheory.Measure.Typeclasses.ZeroOne
 
 /-!
-# Vector lattice atoms in `Lᵖ` spaces with `0 < p < ∞`
+# Vector lattice atoms in `Lₚ` spaces with `0 < p < ∞`
 
-This file characterizes the **lattice atoms of `Lᵖ(μ)`, `0 < p < ∞`:**
-a positive `a ∈ Lᵖ(μ)` is an atom if and only if `a = c 1_A` a.e. for
+This file characterizes the **lattice atoms of `L^p(μ)`, `0 < p < ∞`:**
+a positive `a ∈ L^p(μ)` is an atom if and only if `a = c 1_A` a.e. for
 some finite measure-theoretic atom `A` of finite measure and some `c > 0`.
 
 In BanLat, `A` is a *measure-theoretic atom (for `μ`)* if:
@@ -112,7 +112,7 @@ private lemma indicatorConstLp_pos_iff
       exact hc.ne' this
     exact hμ.ne' (measure_eq_zero_iff_ae_notMem.2 hs_ae)
 
-/-- `∀ f ∈ Lᵖ(μ), f > 0` there exists measurable set `s`, with `0 < μ(s)`, and
+/-- `∀ f ∈ Lₚ(μ), f > 0` there exists measurable set `s`, with `0 < μ(s)`, and
 some `0 < c` such that `c1_s ≤ f` a.e. -/
 private lemma exists_indicatorConstLp_le_of_pos
     [Fact (0 < p)]
@@ -206,7 +206,7 @@ private lemma indicatorConstLp_le_of_subset
     · rw [Set.indicator_of_notMem hxs]
 
 /-- A strictly positive constant function on a finite measure theoretic atom is
-a lattice atom of `Lᵖ`. -/
+a lattice atom of `Lₚ`. -/
 theorem Measure.IsAtom.isVLAtom_indicatorConstLp
     {s : Set α} (hs : μ.IsAtom s) (hμs : μ s < ∞)
     {c : ℝ} (hc : 0 < c) :
@@ -244,7 +244,7 @@ theorem Measure.IsAtom.isVLAtom_indicatorConstLp
   congr 1
   exact (div_mul_cancel₀ d hc.ne').symm
 
-/-- If a strictly positive constant indicator is a lattice atom of `Lᵖ`,
+/-- If a strictly positive constant indicator is a lattice atom of `Lₚ`,
 then its support is a measure theoretic atom. -/
 theorem Measure.isAtom_of_isVLAtom_indicatorConstLp
     {s : Set α} (hs : MeasurableSet s) (hμs : μ s < ∞)
@@ -284,7 +284,7 @@ theorem Measure.isAtom_of_isVLAtom_indicatorConstLp
     have hst : μ s ≤ μ t := tsub_eq_zero_iff_le.mp (hdiff ▸ hμu)
     exact le_antisymm (measure_mono hts) hst
 
-/-- A strictly positive constant indicator is a lattice atom of `Lᵖ`
+/-- A strictly positive constant indicator is a lattice atom of `Lₚ`
 exactly when its support is a finite measure theoretic atom. -/
 theorem isVLAtom_indicatorConstLp_iff
     {s : Set α} (hs : MeasurableSet s) (hμs : μ s < ∞)
@@ -293,7 +293,7 @@ theorem isVLAtom_indicatorConstLp_iff
   exact ⟨Measure.isAtom_of_isVLAtom_indicatorConstLp hs hμs hc,
     fun ha ↦ Measure.IsAtom.isVLAtom_indicatorConstLp ha hμs hc⟩
 
-/-- The lattice atoms of `Lᵖ` are exactly the strictly positive constant
+/-- The lattice atoms of `Lₚ` are exactly the strictly positive constant
 multiples of indicators of finite measure theoretic atoms. -/
 theorem isVLAtom_iff_exists_isAtom
     [Fact (0 < p)]

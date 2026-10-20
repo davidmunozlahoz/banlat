@@ -12,18 +12,18 @@ import Mathlib.MeasureTheory.Function.SimpleFuncDenseLp
 import Mathlib.MeasureTheory.Integral.Bochner.Basic
 
 /-!
-# `Lᵖ` spaces as Banach lattices
+# `Lp` spaces as Banach lattices
 
-For a measure space `(α, μ)` and `1 ≤ p ≤ ∞`, the space `Lᵖ(μ; ℝ)` of real-valued
-`Lᵖ` functions is a Banach lattice under the pointwise order and the `Lᵖ` norm.
+For a measure space `(α, μ)` and `1 ≤ p ≤ ∞`, the space `Lp ℝ p μ` of real-valued
+`Lp` functions is a Banach lattice under the pointwise order and the `Lp` norm.
 
-Some simple properties about indicator functions in `Lᵖ(μ; ℝ)` are deduced.
+Some simple properties about indicator functions in `Lp ℝ p μ` are deduced.
 Extension by zero embeds `Lᵖ` over a restricted measure into the original space,
 preserving distances and order.
 
 Moreover:
-* `L¹` is an AL-space.
-* `Lᵖ` is an ALₚ-space for `1 ≤ p < ∞`.
+* `L₁` is an AL-space.
+* `Lₚ` is an ALₚ-space for `1 ≤ p < ∞`.
 -/
 
 open MeasureTheory Filter
@@ -44,7 +44,7 @@ Mathlib provides `Lattice (Lp ℝ p μ)`, `IsOrderedAddMonoid (Lp ℝ p μ)`,
 
 /-! ### Vector lattice -/
 
-/-- `Lᵖ(μ; ℝ)` is a vector lattice. -/
+/-- `Lp ℝ p μ` is a vector lattice. -/
 noncomputable instance instVectorLatticeLp : VectorLattice (Lp ℝ p μ) where
   smul_le_smul_of_nonneg_left a ha x y hxy := by
     rw [← Lp.coeFn_le] at hxy ⊢
@@ -54,16 +54,16 @@ noncomputable instance instVectorLatticeLp : VectorLattice (Lp ℝ p μ) where
 
 /-! ### Normed vector lattice -/
 
-/-- `Lᵖ(μ; ℝ)` is a normed vector lattice. -/
+/-- `Lp ℝ p μ` is a normed vector lattice. -/
 noncomputable instance instNormedVectorLatticeLp :
     NormedVectorLattice (Lp ℝ p μ) where
 
 /-! ### Banach lattice -/
 
-/-- `Lᵖ(μ; ℝ)` is a Banach lattice. -/
+/-- `Lp ℝ p μ` is a Banach lattice. -/
 noncomputable instance instBanachLatticeLp : BanachLattice (Lp ℝ p μ) where
 
-/-! ### p-th power of the `Lᵖ` norm formula -/
+/-! ### p-th power of the `L^p` norm formula -/
 
 namespace MeasureTheory.Lp
 
@@ -80,7 +80,7 @@ theorem norm_smul (r : ℝ) (f : Lp ℝ p μ) :
     eLpNorm_const_smul, ENNReal.toReal_mul, toReal_enorm, Real.norm_eq_abs,
     Lp.norm_def]
 
-/-- The `p`-th power of the `Lᵖ`-norm as an integral. -/
+/-- The `p`-th power of the `L^p`-norm as an integral. -/
 lemma norm_rpow_eq_integral_norm_rpow
     {p : ℝ≥0} (hp : p ≠ 0) (f : Lp E (p : ENNReal) μ) :
     ‖f‖ ^ (p : ℝ) = ∫ x, ‖f x‖ ^ (p : ℝ) ∂μ := by
@@ -202,7 +202,7 @@ theorem abs_indicatorConstLp {s : Set α} (hs : MeasurableSet s)
   by_cases hx : x ∈ s <;> simp [Set.indicator, hx]
 
 omit [Fact (1 ≤ p)] in
-/-- Constant indicators of disjoint measurable sets are lattice-disjoint in real `Lᵖ`. -/
+/-- Constant indicators of disjoint measurable sets are lattice-disjoint in real `Lp`. -/
 theorem indicatorConstLp_isVLDisjoint {s t : Set α} (hs : MeasurableSet s)
     (ht : MeasurableSet t) (hμs : μ s ≠ ⊤) (hμt : μ t ≠ ⊤)
     (hst : Disjoint s t) (c d : ℝ) :
@@ -250,7 +250,7 @@ theorem sum_indicatorConstLp [IsFiniteMeasure μ] (f : SimpleFunc α E) :
   simp [Set.indicator_apply, eq_comm, f.mem_range_self x]
 
 omit [Fact (1 ≤ p)] in
-/-- Simple functions with disjoint supports define lattice-disjoint elements of real `Lᵖ`. -/
+/-- Simple functions with disjoint supports define lattice-disjoint elements of real `Lp`. -/
 theorem simpleFunc.toLp_isVLDisjoint {f g : SimpleFunc α ℝ}
     (hf : MemLp f p μ) (hg : MemLp g p μ)
     (hfg : Disjoint (Function.support f) (Function.support g)) :
@@ -274,7 +274,7 @@ theorem simpleFunc.toLp_isVLDisjoint {f g : SimpleFunc α ℝ}
 
 end MeasureTheory.Lp
 
-/-! ### Lᵖ(μ) spaces are ALₚ-spaces -/
+/-! ### Lₚ(μ) spaces are ALₚ-spaces -/
 
 section ALpSpace
 
@@ -309,7 +309,7 @@ private lemma ae_norm_add_rpow_eq_of_isVLDisjoint
   · simp [hf, Real.zero_rpow (NNReal.coe_ne_zero.mpr hp)]
   · simp [hg, Real.zero_rpow (NNReal.coe_ne_zero.mpr hp)]
 
-/-- For every `1 ≤ p < ∞`, the real space `Lᵖ(μ)` is an ALₚ-space -/
+/-- For every `1 ≤ p < ∞`, the real space `L^p(μ)` is an ALₚ-space -/
 noncomputable instance instALpSpaceLp :
     ALpSpace p (Lp ℝ (p : ENNReal) μ) where
   norm_add_rpow_eq_of_isVLDisjoint {f g} hfg := by
