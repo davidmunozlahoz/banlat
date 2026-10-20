@@ -12,6 +12,7 @@ import Mathlib.Topology.MetricSpace.Basic
 
 This file defines the **density character** of a topological space and states
 its basic cardinal, attainment and invariance under homeomorphism properties.
+It also defines homogeneity of the density character of nontrivial order intervals.
 -/
 
 universe u v
@@ -152,6 +153,42 @@ theorem densityCharacter_le_card (X : Type u) [TopologicalSpace X] :
   apply csInf_le'
   exact ⟨Set.univ, dense_univ, Cardinal.mk_univ⟩
 
+/-- The density character of a nonempty metric space is at most that of any metric
+space into which it embeds topologically. -/
+theorem densityCharacter_le_of_isEmbedding
+    {X Y : Type u} [MetricSpace X] [MetricSpace Y] [Nonempty X]
+    {f : X → Y} (hf : Topology.IsEmbedding f) :
+    densityCharacter X ≤ densityCharacter Y := by
+  classical
+  obtain ⟨D, hD, hcard⟩ := exists_dense_mk_eq_densityCharacter Y
+  by_cases hfin : D.Finite
+  · have hDu : D = Set.univ := hfin.isClosed.closure_eq.symm.trans hD.closure_eq
+    exact (densityCharacter_le_card X).trans
+      ((Cardinal.mk_le_of_injective hf.injective).trans_eq
+        ((by rw [hDu, Cardinal.mk_univ] : Cardinal.mk Y = Cardinal.mk D).trans hcard))
+  · let g (i : D × ℕ) : X :=
+      if h : ∃ x, dist (f x) i.1.val < 1 / (i.2 + 1 : ℝ) then h.choose
+      else Classical.ofNonempty
+    have hg (i : D × ℕ) (h : ∃ x, dist (f x) i.1.val < 1 / (i.2 + 1 : ℝ)) :
+        dist (f (g i)) i.1.val < 1 / (i.2 + 1 : ℝ) := by
+      simpa only [g, dif_pos h] using h.choose_spec
+    suffices hdense : DenseRange g by
+      haveI : Infinite D := Set.infinite_coe_iff.mpr hfin
+      exact ((densityCharacter_le_mk_of_dense hdense).trans
+        Cardinal.mk_range_le).trans_eq
+          (by simpa [Cardinal.mk_prod,
+            Cardinal.mul_aleph0_eq (Cardinal.aleph0_le_mk D)] using hcard)
+    apply hf.isInducing.dense_iff.mpr
+    intro x
+    refine Metric.mem_closure_iff.mpr fun ε hε ↦ ?_
+    obtain ⟨n, hn⟩ := exists_nat_one_div_lt (half_pos hε)
+    obtain ⟨d, hd, hdist⟩ := hD.exists_dist_lt (f x)
+      (by positivity : 0 < 1 / (n + 1 : ℝ))
+    refine ⟨f (g (⟨d, hd⟩, n)), ⟨g (⟨d, hd⟩, n), ⟨(⟨d, hd⟩, n), rfl⟩, rfl⟩, ?_⟩
+    have hnear := hg (⟨d, hd⟩, n) ⟨x, hdist⟩
+    linarith [dist_triangle (f x) d (f (g (⟨d, hd⟩, n))),
+      dist_comm d (f (g (⟨d, hd⟩, n)))]
+
 /-- The density character of a finite topological space is strictly less than `ℵ₀`. -/
 theorem densityCharacter_lt_aleph0 (X : Type u) [TopologicalSpace X] [Finite X] :
     densityCharacter X < Cardinal.aleph0 := by
@@ -235,5 +272,11 @@ theorem densityCharacter_eq_of_homeomorph
       refine ⟨Cardinal.mk (e.symm '' D), ⟨e.symm '' D, ?_, rfl⟩, ?_⟩
       · exact e.symm.surjective.denseRange.dense_image e.symm.continuous hDdense
       · rw [Cardinal.mk_image_eq_lift e.symm D e.symm.injective]
+
+/-- An ordered topological space is **`κ`-homogeneous on order intervals** if every
+nontrivial closed order interval has density character `κ`. -/
+def IsOrderIntervalHomogeneous (X : Type u) [TopologicalSpace X] [PartialOrder X]
+    (κ : Cardinal.{u}) : Prop :=
+  ∀ ⦃a b : X⦄, a < b → densityCharacter (Set.Icc a b) = κ
 
 end TopologicalSpace

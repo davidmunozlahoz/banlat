@@ -6,18 +6,24 @@ import BanLat.Substructures.Ideal
 import BanLat.OrderUnit
 import BanLat.OrderContinuous.Ando
 import BanLat.Substructures.Band.Generated
+import BanLat.Preliminaries.DensityCharacter
+import Mathlib.SetTheory.Cardinal.Finsupp
+import Mathlib.SetTheory.Cardinal.Rat
 import Mathlib.Topology.Bases
 
 /-!
 # Quasi-interior points
 
-A non-negative element `e` of a normed vector lattice `X` is a **quasi-interior
-point** (or *topological order unit*) if the principal ideal it generates is
-norm-dense in `X`. This notion sits strictly between strong order units (whose
-principal ideal is the whole space) and weak order units (whose generated band
-is the whole space). This file develops the truncation characterisation by
-`x ⊓ n • e`, proves existence in separable Banach lattices, and relates
-quasi-interior points to weak order units under order continuity.
+A non-negative element `e` of a normed vector lattice `X` is a **quasi-interior point**
+(or *topological order unit*) if the principal ideal it generates is norm-dense in `X`.
+This notion sits strictly between strong order units (whose principal ideal is the whole
+space) and weak order units (whose generated band is the whole space). This file develops
+the truncation characterisation by `x ⊓ n • e`, proves existence in separable Banach lattices,
+and relates quasi-interior points to weak order units under order continuity.
+
+It also identifies the density character of the interval below a quasi-interior point with that
+of the ambient normed vector lattice, and, under order continuity, the density character of a
+principal band with that of its generating interval.
 -/
 
 variable {X : Type*} [NormedAddCommGroup X] [Lattice X] [IsOrderedAddMonoid X]
@@ -207,3 +213,117 @@ theorem quasiInteriorPoint_iff_weakOrderUnit [CompleteSpace X]
     have hxB : x ∈ B := hge_le_B (Band.mem_top)
     rw [← SetLike.mem_coe, hB] at hxB
     exact hxB
+
+/-- Order continuity makes a nonnegative generator quasi-interior in its principal band. -/
+theorem quasiInteriorPoint_principal [IsOrderContinuousNorm X]
+    {e : X} (he : 0 ≤ e) :
+    QuasiInteriorPoint
+      (⟨e, Band.subset_generated _ rfl⟩ : (Band.principal e).toVectorSublattice) := by
+  refine quasiInteriorPoint_iff_tendsto_inf.mpr ⟨he, ?_⟩
+  intro x hx
+  apply tendsto_subtype_rng.mpr
+  change Filter.Tendsto (fun n : ℕ ↦ (x : X) ⊓ (n : ℝ) • e)
+    Filter.atTop (nhds (x : X))
+  have hlub := (Band.mem_generated_singleton_iff_isLUB_inf_nsmul he hx).mp x.property
+  have ht := IsSigmaOrderContinuousNorm.tendsto_of_monotone_isLUB
+    (fun m n hmn ↦ inf_le_inf_left (x : X) (nsmul_le_nsmul_left he hmn)) hlub
+  simpa only [Nat.cast_smul_eq_nsmul] using ht
+
+/-! ### Density character of order intervals -/
+
+/-- A dense subset of the interval below a quasi-interior point has dense rational span. -/
+private lemma dense_span_Icc_of_dense
+    [NormedSpace ℚ X] [IsScalarTower ℚ ℝ X]
+    {e : X} (he : QuasiInteriorPoint e)
+    {D : Set (Set.Icc (0 : X) e)} (hD : Dense D) :
+    Dense (Submodule.span ℚ (Subtype.val '' D) : Set X) := by
+  let S := Submodule.span ℚ (Subtype.val '' D)
+  have hI (x : Set.Icc (0 : X) e) : (x : X) ∈ S.topologicalClosure :=
+    (closure_mono (Submodule.subset_span (R := ℚ)))
+      (continuous_subtype_val.range_subset_closure_image_dense hD (Set.mem_range_self x))
+  have hsmul (c : ℝ) {x : X} (hx : x ∈ S.topologicalClosure) :
+      c • x ∈ S.topologicalClosure := by
+    refine Rat.denseRange_cast.induction_on c
+      (S.isClosed_topologicalClosure.preimage (continuous_id.smul continuous_const)) ?_
+    exact fun q ↦ by
+      simpa only [Rat.cast_smul_eq_qsmul] using S.topologicalClosure.smul_mem q hx
+  refine Dense.of_closure (he.2.mono ?_)
+  rintro x ⟨c, hc, hxc⟩
+  have hcpos : 0 < c + 1 := by positivity
+  have hbound : |x| ≤ (c + 1) • e :=
+    (hxc.trans (smul_le_smul_of_nonneg_right
+      (le_add_of_nonneg_right zero_le_one) (abs_nonneg e))).trans_eq
+        (congrArg ((c + 1) • ·) (abs_of_nonneg he.1))
+  have hpart {y : X} (hy0 : 0 ≤ y) (hy : y ≤ |x|) : y ∈ S.topologicalClosure := by
+    simpa only [smul_inv_smul₀ hcpos.ne'] using hsmul (c + 1)
+      (hI ⟨(c + 1)⁻¹ • y, smul_nonneg (inv_nonneg.mpr hcpos.le) hy0,
+        (inv_smul_le_iff_of_pos hcpos).mpr (hy.trans hbound)⟩)
+  simpa only [posPart_sub_negPart, ← SetLike.mem_coe, Submodule.topologicalClosure_coe, S]
+    using S.topologicalClosure.sub_mem
+    (hpart (posPart_nonneg x) (posPart_le_abs x))
+    (hpart (negPart_nonneg x) (negPart_le_abs x))
+
+/-- A quasi-interior point bounds the ambient density character by the maximum
+of `ℵ₀` and the density character of the interval below it. -/
+private lemma densityCharacter_le_max_Icc {e : X} (he : QuasiInteriorPoint e) :
+    TopologicalSpace.densityCharacter X ≤ max Cardinal.aleph0
+      (TopologicalSpace.densityCharacter (Set.Icc (0 : X) e)) := by
+  letI := NormedSpace.restrictScalars ℚ ℝ X
+  letI : IsScalarTower ℚ ℝ X := IsScalarTower.restrictScalars ℚ ℝ X
+  letI : Nonempty (Set.Icc (0 : X) e) := ⟨⟨0, le_rfl, he.1⟩⟩
+  obtain ⟨D, hD, hcard⟩ := TopologicalSpace.exists_dense_mk_eq_densityCharacter
+    (Set.Icc (0 : X) e)
+  letI : Nonempty D := hD.nonempty.to_subtype
+  let g : D → X := fun a ↦ a.val.val
+  have hdense : DenseRange (Finsupp.linearCombination ℚ g) := by
+    change Dense (Set.range (Finsupp.linearCombination ℚ g))
+    simpa only [g, Set.image_eq_range, ← Finsupp.range_linearCombination,
+      LinearMap.coe_range] using dense_span_Icc_of_dense he hD
+  refine ((TopologicalSpace.densityCharacter_le_mk_of_dense hdense).trans
+    Cardinal.mk_range_le).trans_eq ?_
+  simp [hcard, max_comm]
+
+/-- The interval below a quasi-interior point has the density character
+of the ambient normed vector lattice. -/
+theorem QuasiInteriorPoint.densityCharacter_Icc {e : X} (he : QuasiInteriorPoint e) :
+    TopologicalSpace.densityCharacter (Set.Icc (0 : X) e) =
+      TopologicalSpace.densityCharacter X := by
+  letI : Nonempty (Set.Icc (0 : X) e) := ⟨⟨0, le_rfl, he.1⟩⟩
+  refine le_antisymm (TopologicalSpace.densityCharacter_le_of_isEmbedding
+    Topology.IsEmbedding.subtypeVal) ?_
+  by_cases he0 : e = 0
+  · have hzero (x : X) : x = 0 :=
+      closure_minimal (s := (OrderIdeal.principal e : Set X)) (t := {(0 : X)})
+        (fun y ⟨c, _, hy⟩ ↦ (abs_eq_zero_iff_zero y).mp (le_antisymm
+          (by simpa only [he0, abs_zero, smul_zero] using hy) (abs_nonneg y)))
+        isClosed_singleton (he.2 x)
+    exact TopologicalSpace.densityCharacter_le_of_continuous_surjective
+      (continuous_const : Continuous (fun _ : Set.Icc (0 : X) e ↦ (0 : X)))
+      (fun x ↦ ⟨⟨0, le_rfl, he.1⟩, (hzero x).symm⟩)
+  · letI : Infinite (Set.Icc (0 : ℝ) 1) := Set.Icc.infinite zero_lt_one
+    letI : Infinite (Set.Icc (0 : X) e) := Infinite.of_injective
+      (fun t : Set.Icc (0 : ℝ) 1 ↦ ⟨(t : ℝ) • e, smul_nonneg t.property.1 he.1,
+        (smul_le_smul_of_nonneg_right t.property.2 he.1).trans_eq (one_smul ℝ e)⟩)
+      (fun a b h ↦ Subtype.ext ((smul_left_injective ℝ he0) (congrArg Subtype.val h)))
+    exact (densityCharacter_le_max_Icc he).trans_eq
+      (max_eq_right (TopologicalSpace.aleph0_le_densityCharacter _))
+
+/-- In an order-continuous Banach lattice, a principal band generated by a nonnegative
+element has the same density character as the interval below that element. -/
+theorem Band.densityCharacter_principal [CompleteSpace X] [IsOrderContinuousNorm X]
+    {e : X} (he : 0 ≤ e) :
+    TopologicalSpace.densityCharacter (Band.principal e).toVectorSublattice =
+      TopologicalSpace.densityCharacter (Set.Icc (0 : X) e) := by
+  rw [← (quasiInteriorPoint_principal he).densityCharacter_Icc]
+  let E : Set.Icc (0 : (Band.principal e).toVectorSublattice)
+      ⟨e, Band.subset_generated _ rfl⟩ ≃ₜ Set.Icc (0 : X) e :=
+    { toFun := fun x ↦ ⟨x.val.val, x.property⟩
+      invFun := fun x ↦ ⟨⟨x.val,
+        (Band.principal e).solid (Band.subset_generated _ rfl) x.property.1 x.property.2⟩,
+        x.property⟩
+      left_inv := fun _ ↦ rfl
+      right_inv := fun _ ↦ rfl
+      continuous_toFun := by fun_prop
+      continuous_invFun := by fun_prop }
+  simpa only [Cardinal.lift_id] using
+    (TopologicalSpace.densityCharacter_eq_of_homeomorph E).symm

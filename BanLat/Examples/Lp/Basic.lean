@@ -7,19 +7,23 @@ import BanLat.ALpSpace.Basic
 import BanLat.Normed
 import Mathlib.MeasureTheory.Function.LpOrder
 import Mathlib.MeasureTheory.Function.LpSpace.Complete
+import Mathlib.MeasureTheory.Function.LpSpace.Indicator
+import Mathlib.MeasureTheory.Function.SimpleFuncDenseLp
 import Mathlib.MeasureTheory.Integral.Bochner.Basic
 
 /-!
-# `Lp` spaces as Banach lattices
+# `Lᵖ` spaces as Banach lattices
 
-For a measure space `(α, μ)` and `1 ≤ p ≤ ∞`, the space `Lp ℝ p μ` of real-valued
-`Lp` functions is a Banach lattice under the pointwise order and the `Lp` norm.
+For a measure space `(α, μ)` and `1 ≤ p ≤ ∞`, the space `Lᵖ(μ; ℝ)` of real-valued
+`Lᵖ` functions is a Banach lattice under the pointwise order and the `Lᵖ` norm.
 
-Some simple properties about indicator functions in `Lp ℝ p μ` are deduced.
+Some simple properties about indicator functions in `Lᵖ(μ; ℝ)` are deduced.
+Extension by zero embeds `Lᵖ` over a restricted measure into the original space,
+preserving distances and order.
 
 Moreover:
-* `L₁` is an AL-space.
-* `Lₚ` is an ALₚ-space for `1 ≤ p < ∞`.
+* `L¹` is an AL-space.
+* `Lᵖ` is an ALₚ-space for `1 ≤ p < ∞`.
 -/
 
 open MeasureTheory Filter
@@ -40,7 +44,7 @@ Mathlib provides `Lattice (Lp ℝ p μ)`, `IsOrderedAddMonoid (Lp ℝ p μ)`,
 
 /-! ### Vector lattice -/
 
-/-- `Lp ℝ p μ` is a vector lattice. -/
+/-- `Lᵖ(μ; ℝ)` is a vector lattice. -/
 noncomputable instance instVectorLatticeLp : VectorLattice (Lp ℝ p μ) where
   smul_le_smul_of_nonneg_left a ha x y hxy := by
     rw [← Lp.coeFn_le] at hxy ⊢
@@ -50,16 +54,16 @@ noncomputable instance instVectorLatticeLp : VectorLattice (Lp ℝ p μ) where
 
 /-! ### Normed vector lattice -/
 
-/-- `Lp ℝ p μ` is a normed vector lattice. -/
+/-- `Lᵖ(μ; ℝ)` is a normed vector lattice. -/
 noncomputable instance instNormedVectorLatticeLp :
     NormedVectorLattice (Lp ℝ p μ) where
 
 /-! ### Banach lattice -/
 
-/-- `Lp ℝ p μ` is a Banach lattice. -/
+/-- `Lᵖ(μ; ℝ)` is a Banach lattice. -/
 noncomputable instance instBanachLatticeLp : BanachLattice (Lp ℝ p μ) where
 
-/-! ### p-th power of the `L^p` norm formula -/
+/-! ### p-th power of the `Lᵖ` norm formula -/
 
 namespace MeasureTheory.Lp
 
@@ -76,7 +80,7 @@ theorem norm_smul (r : ℝ) (f : Lp ℝ p μ) :
     eLpNorm_const_smul, ENNReal.toReal_mul, toReal_enorm, Real.norm_eq_abs,
     Lp.norm_def]
 
-/-- The `p`-th power of the `L^p`-norm as an integral. -/
+/-- The `p`-th power of the `Lᵖ`-norm as an integral. -/
 lemma norm_rpow_eq_integral_norm_rpow
     {p : ℝ≥0} (hp : p ≠ 0) (f : Lp E (p : ENNReal) μ) :
     ‖f‖ ^ (p : ℝ) = ∫ x, ‖f x‖ ^ (p : ℝ) ∂μ := by
@@ -86,6 +90,72 @@ lemma norm_rpow_eq_integral_norm_rpow
   · exact Real.rpow_inv_rpow (integral_nonneg fun _ ↦ Real.rpow_nonneg (norm_nonneg _) _)
       (NNReal.coe_ne_zero.mpr hp)
   · exact Real.rpow_nonneg (integral_nonneg fun _ ↦ Real.rpow_nonneg (norm_nonneg _) _) _
+
+/-! ### Extension by zero -/
+
+omit [Fact (1 ≤ p)] in
+/-- Extends a class in `Lᵖ(μ.restrict s)` by zero outside `s` to a class in `Lᵖ(μ)`. -/
+noncomputable def extendRestricted {s : Set α} (hs : MeasurableSet s)
+    (g : Lp ℝ p (μ.restrict s)) : Lp ℝ p μ :=
+  ((memLp_indicator_iff_restrict hs).mpr (Lp.memLp g)).toLp (s.indicator g)
+
+omit [Fact (1 ≤ p)] in
+/-- Extension by zero is represented almost everywhere by `s.indicator g`. -/
+theorem extendRestricted_coeFn {s : Set α} (hs : MeasurableSet s)
+    (g : Lp ℝ p (μ.restrict s)) :
+    ⇑(extendRestricted hs g) =ᵐ[μ] s.indicator g :=
+  MemLp.coeFn_toLp _
+
+/-- Extending by zero preserves the distance between restricted `Lᵖ` classes. -/
+theorem isometry_extendRestricted {s : Set α} (hs : MeasurableSet s) :
+    Isometry (extendRestricted (p := p) (μ := μ) hs) := by
+  intro f g
+  rw [extendRestricted, extendRestricted, Lp.edist_toLp_toLp, ← Set.indicator_sub',
+    eLpNorm_indicator_eq_eLpNorm_restrict hs, Lp.edist_def]
+
+omit [Fact (1 ≤ p)] in
+/-- Extension by zero preserves and reflects the order on restricted `Lᵖ` classes. -/
+theorem extendRestricted_le_iff {s : Set α} (hs : MeasurableSet s)
+    (f g : Lp ℝ p (μ.restrict s)) :
+    extendRestricted hs f ≤ extendRestricted hs g ↔ f ≤ g := by
+  rw [← Lp.coeFn_le, ← Lp.coeFn_le]
+  change (∀ᵐ x ∂μ, extendRestricted hs f x ≤ extendRestricted hs g x) ↔
+    ∀ᵐ x ∂μ.restrict s, f x ≤ g x
+  rw [ae_restrict_iff' hs]
+  refine Filter.eventually_congr ?_
+  filter_upwards [extendRestricted_coeFn hs f, extendRestricted_coeFn hs g] with x hfx hgx
+  by_cases hx : x ∈ s <;> simp [hfx, hgx, hx]
+
+omit [Fact (1 ≤ p)] in
+/-- Extension by zero sends the zero class to the zero class. -/
+theorem extendRestricted_zero {s : Set α} (hs : MeasurableSet s) :
+    extendRestricted (p := p) (μ := μ) hs 0 = 0 := by
+  apply Lp.ext
+  exact (extendRestricted_coeFn hs 0).trans
+    ((indicator_ae_eq_zero_of_restrict_ae_eq_zero hs (Lp.coeFn_zero ℝ p
+      (μ.restrict s))).trans (Lp.coeFn_zero ℝ p μ).symm)
+
+omit [Fact (1 ≤ p)] in
+/-- Restricting a class that vanishes almost everywhere outside `s`, then extending
+it by zero, recovers the original class. -/
+theorem extendRestricted_restrict {s : Set α} (hs : MeasurableSet s)
+    (f : Lp ℝ p μ) (hf : s.indicator (f : α → ℝ) =ᵐ[μ] f) :
+    extendRestricted hs (((Lp.memLp f).restrict s).toLp f) = f := by
+  apply Lp.ext
+  exact (extendRestricted_coeFn hs _).trans
+    (((ae_eq_restrict_iff_indicator_ae_eq hs).mp
+      ((Lp.memLp f).restrict s).coeFn_toLp).trans hf)
+
+/-! ### Constant indicators -/
+
+omit [Fact (1 ≤ p)] in
+/-- The indicators of a union and intersection sum to the indicators of the two sets. -/
+theorem indicatorConstLp_union_add_inter {s t : Set α} (hs : MeasurableSet s)
+    (ht : MeasurableSet t) (hμs : μ s ≠ ⊤) (hμt : μ t ≠ ⊤) (c : E) :
+    indicatorConstLp p (hs.union ht) (by finiteness) c +
+        indicatorConstLp p (hs.inter ht) (by finiteness) c =
+      indicatorConstLp p hs hμs c + indicatorConstLp p ht hμt c := by
+  simp_rw [indicatorConstLp, ← MemLp.toLp_add, Set.indicator_union_add_inter]
 
 omit [Fact (1 ≤ p)] in
 /-- A real-valued constant indicator is a scalar multiple of the indicator with value one. -/
@@ -109,6 +179,15 @@ theorem smul_indicatorConstLp {s : Set α} (hs : MeasurableSet s)
     indicatorConstLp_eq_smul hs hμs (r * c), smul_smul]
 
 omit [Fact (1 ≤ p)] in
+/-- A real constant indicator is nonnegative when its value is nonnegative. -/
+theorem indicatorConstLp_nonneg {s : Set α} (hs : MeasurableSet s)
+    (hμs : μ s ≠ ⊤) {c : ℝ} (hc : 0 ≤ c) :
+    0 ≤ indicatorConstLp p hs hμs c := by
+  exact (Lp.coeFn_nonneg _).mp <|
+    (indicatorConstLp_coeFn (p := p) (hs := hs) (hμs := hμs) (c := c)).mono
+      (fun x hx ↦ hx.symm ▸ Set.indicator_nonneg (fun _ _ ↦ hc) x)
+
+omit [Fact (1 ≤ p)] in
 /-- The absolute value of a real constant indicator is obtained by taking the absolute value of
 its value. -/
 theorem abs_indicatorConstLp {s : Set α} (hs : MeasurableSet s)
@@ -123,7 +202,7 @@ theorem abs_indicatorConstLp {s : Set α} (hs : MeasurableSet s)
   by_cases hx : x ∈ s <;> simp [Set.indicator, hx]
 
 omit [Fact (1 ≤ p)] in
-/-- Constant indicators of disjoint measurable sets are lattice-disjoint in real `Lp`. -/
+/-- Constant indicators of disjoint measurable sets are lattice-disjoint in real `Lᵖ`. -/
 theorem indicatorConstLp_isVLDisjoint {s t : Set α} (hs : MeasurableSet s)
     (ht : MeasurableSet t) (hμs : μ s ≠ ⊤) (hμt : μ t ≠ ⊤)
     (hst : Disjoint s t) (c d : ℝ) :
@@ -157,7 +236,21 @@ theorem simpleFunc.indicatorConst_eq_smul {s : Set α} (hs : MeasurableSet s)
   exact indicatorConstLp_eq_smul hs hμs c
 
 omit [Fact (1 ≤ p)] in
-/-- Simple functions with disjoint supports define lattice-disjoint elements of real `Lp`. -/
+/-- Over a finite measure, a simple function in `Lᵖ` is the sum of its constant fiber indicators. -/
+theorem sum_indicatorConstLp [IsFiniteMeasure μ] (f : SimpleFunc α E) :
+    (∑ c ∈ f.range, indicatorConstLp p (f.measurableSet_fiber c)
+      (measure_ne_top μ _) c) = (f.memLp_of_isFiniteMeasure p μ).toLp f := by
+  classical
+  refine Lp.ext ?_
+  grw [Lp.coeFn_fun_finsetSum, MemLp.coeFn_toLp]
+  filter_upwards [(Filter.eventually_all_finset f.range).mpr (fun c _ ↦
+    indicatorConstLp_coeFn (p := p) (μ := μ)
+      (hs := f.measurableSet_fiber c) (hμs := measure_ne_top μ _) (c := c))] with x hx
+  rw [Finset.sum_congr rfl (fun c hc ↦ hx c hc)]
+  simp [Set.indicator_apply, eq_comm, f.mem_range_self x]
+
+omit [Fact (1 ≤ p)] in
+/-- Simple functions with disjoint supports define lattice-disjoint elements of real `Lᵖ`. -/
 theorem simpleFunc.toLp_isVLDisjoint {f g : SimpleFunc α ℝ}
     (hf : MemLp f p μ) (hg : MemLp g p μ)
     (hfg : Disjoint (Function.support f) (Function.support g)) :
@@ -181,7 +274,8 @@ theorem simpleFunc.toLp_isVLDisjoint {f g : SimpleFunc α ℝ}
 
 end MeasureTheory.Lp
 
-/-! ### Lₚ(μ) spaces are ALₚ-spaces -/
+/-! ### Lᵖ(μ) spaces are ALₚ-spaces -/
+
 section ALpSpace
 
 variable {p : ℝ≥0} [Fact (1 ≤ p)]
@@ -215,7 +309,7 @@ private lemma ae_norm_add_rpow_eq_of_isVLDisjoint
   · simp [hf, Real.zero_rpow (NNReal.coe_ne_zero.mpr hp)]
   · simp [hg, Real.zero_rpow (NNReal.coe_ne_zero.mpr hp)]
 
-/-- For every `1 ≤ p < ∞`, the real space `L^p(μ)` is an ALₚ-space -/
+/-- For every `1 ≤ p < ∞`, the real space `Lᵖ(μ)` is an ALₚ-space -/
 noncomputable instance instALpSpaceLp :
     ALpSpace p (Lp ℝ (p : ENNReal) μ) where
   norm_add_rpow_eq_of_isVLDisjoint {f g} hfg := by
