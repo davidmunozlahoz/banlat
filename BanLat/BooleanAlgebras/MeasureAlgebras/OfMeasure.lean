@@ -238,11 +238,26 @@ theorem mk_bot :
     mk μ (⊥ : MeasuredSets μ) = ⊥ := by
   rfl
 
+/-- Disjoint measurable sets determine disjoint elements of the induced Boolean algebra. -/
+theorem mk_disjoint (s t : MeasuredSets μ) (hst : Disjoint s.val t.val) :
+    Disjoint (mk μ s) (mk μ t) := by
+  exact disjoint_iff_inf_le.mpr <|
+    ((mk_inf μ s t).symm.trans
+      ((congrArg (mk μ) (Subtype.ext hst.eq_bot)).trans (mk_bot μ))).le
+
 /-- The quotient map sends the whole measurable space to the top element. -/
 @[simp]
 theorem mk_top :
     mk μ (⊤ : MeasuredSets μ) = ⊤ := by
   rfl
+
+/-- A nonzero measure induces a nontrivial Boolean algebra. -/
+theorem nontrivial_of_ne_zero (hμ : μ ≠ 0) : Nontrivial (InducedBooleanAlgebra μ) := by
+  refine nontrivial_of_ne (mk μ ⊤) (mk μ ⊥) ?_
+  rw [Ne, mk_eq_mk]
+  change μ ((⊤ : Set α) ∆ ⊥) ≠ 0
+  rw [symmDiff_bot]
+  exact Measure.measure_univ_ne_zero.mpr hμ
 
 /-- The quotient map preserves complements. -/
 @[simp]
@@ -409,6 +424,69 @@ underlying measure space. -/
 theorem ofMeasure_top (μ : Measure α) [IsFiniteMeasure μ] :
     ofMeasure μ ⊤ = μ Set.univ := by
   rw [← InducedBooleanAlgebra.mk_top, ofMeasure_mk]
+  rfl
+
+/-- `restrictClass` sends `[t]` modulo `μ.restrict s` to `[t ∩ s]`
+modulo `μ`, viewed in the principal interval below `[s]`. -/
+private noncomputable def restrictClass (μ : Measure α) {s : Set α}
+    (hs : MeasurableSet s) :
+    InducedBooleanAlgebra (μ.restrict s) → Set.Iic (InducedBooleanAlgebra.mk μ ⟨s, hs⟩) := by
+  refine fun a ↦ Quotient.liftOn a
+    (fun t : MeasuredSets (μ.restrict s) ↦
+      ⟨InducedBooleanAlgebra.mk μ ⟨(t : Set α) ∩ s, t.property.inter hs⟩,
+        InducedBooleanAlgebra.mk_le_mk_of_subset μ Set.inter_subset_right⟩) ?_
+  intro t u h
+  apply Subtype.ext
+  rw [InducedBooleanAlgebra.mk_eq_mk]
+  change μ (((t : Set α) ∩ s) ∆ ((u : Set α) ∩ s)) = 0
+  rw [← Set.inter_symmDiff_distrib_right, ← Measure.restrict_apply' hs]
+  exact (InducedBooleanAlgebra.mk_eq_mk (μ.restrict s) t u).mp (Quotient.sound h)
+
+/-- The intersection map preserves and reflects order between equivalence classes. -/
+private lemma restrictClass_le_iff (μ : Measure α) {s : Set α} (hs : MeasurableSet s)
+    (a b : InducedBooleanAlgebra (μ.restrict s)) :
+    restrictClass μ hs a ≤ restrictClass μ hs b ↔ a ≤ b := by
+  refine Quotient.inductionOn₂ a b ?_
+  intro t u
+  change InducedBooleanAlgebra.mk μ ⟨(t : Set α) ∩ s, t.property.inter hs⟩ ≤
+      InducedBooleanAlgebra.mk μ ⟨(u : Set α) ∩ s, u.property.inter hs⟩ ↔
+    InducedBooleanAlgebra.mk (μ.restrict s) t ≤ InducedBooleanAlgebra.mk (μ.restrict s) u
+  rw [InducedBooleanAlgebra.mk_le_mk_iff, InducedBooleanAlgebra.mk_le_mk_iff]
+  change μ (((t : Set α) ∩ s) \ ((u : Set α) ∩ s)) = 0 ↔
+    μ.restrict s ((t : Set α) \ (u : Set α)) = 0
+  rw [← Set.inter_sdiff_distrib_right, Measure.restrict_apply' hs]
+
+/-- Every class below `[s]` is the image of a class modulo `μ.restrict s`. -/
+private lemma restrictClass_surjective (μ : Measure α) {s : Set α} (hs : MeasurableSet s) :
+    Function.Surjective (restrictClass μ hs) := by
+  rintro ⟨b, hb⟩
+  obtain ⟨t, rfl⟩ := InducedBooleanAlgebra.mk_surjective μ b
+  refine ⟨InducedBooleanAlgebra.mk (μ.restrict s) ⟨t.val, t.property⟩, ?_⟩
+  exact Subtype.ext ((InducedBooleanAlgebra.mk_inf μ t ⟨s, hs⟩).trans (inf_eq_left.mpr hb))
+
+/-- Restricting a finite measure to a measurable set induces a measure-algebra equivalence
+with the principal interval below the class of that set. -/
+noncomputable def ofMeasureRestrictEquiv (μ : Measure α) [IsFiniteMeasure μ]
+    {s : Set α} (hs : MeasurableSet s) :
+    MeasureAlgebraEquiv (ofMeasure (μ.restrict s))
+      ((ofMeasure μ).restrict (InducedBooleanAlgebra.mk μ ⟨s, hs⟩)) := by
+  let e := OrderEmbedding.ofMapLEIff (restrictClass μ hs) (restrictClass_le_iff μ hs)
+  refine { OrderIso.ofSurjective e (restrictClass_surjective μ hs) with map_measure' := ?_ }
+  intro a
+  refine Quotient.inductionOn a ?_
+  intro t
+  change ofMeasure μ (InducedBooleanAlgebra.mk μ ⟨(t : Set α) ∩ s, t.property.inter hs⟩) =
+    ofMeasure (μ.restrict s) (InducedBooleanAlgebra.mk (μ.restrict s) t)
+  rw [ofMeasure_mk, ofMeasure_mk, Measure.restrict_apply' hs]
+  rfl
+
+/-- On measurable representatives, the restriction equivalence is intersection
+with the restricting set. -/
+@[simp]
+theorem ofMeasureRestrictEquiv_mk (μ : Measure α) [IsFiniteMeasure μ]
+    {s : Set α} (hs : MeasurableSet s) (t : MeasuredSets (μ.restrict s)) :
+    (ofMeasureRestrictEquiv μ hs (InducedBooleanAlgebra.mk (μ.restrict s) t)).val =
+      InducedBooleanAlgebra.mk μ ⟨(t : Set α) ∩ s, t.property.inter hs⟩ := by
   rfl
 
 namespace InducedBooleanAlgebra
