@@ -485,7 +485,7 @@ with the restricting set. -/
 @[simp]
 theorem ofMeasureRestrictEquiv_mk (μ : Measure α) [IsFiniteMeasure μ]
     {s : Set α} (hs : MeasurableSet s) (t : MeasuredSets (μ.restrict s)) :
-    (ofMeasureRestrictEquiv μ hs (InducedBooleanAlgebra.mk (μ.restrict s) t)).val =
+    ((ofMeasureRestrictEquiv μ hs).toRelIso (InducedBooleanAlgebra.mk (μ.restrict s) t)).val =
       InducedBooleanAlgebra.mk μ ⟨(t : Set α) ∩ s, t.property.inter hs⟩ := by
   rfl
 
