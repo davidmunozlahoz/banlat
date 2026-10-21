@@ -327,6 +327,26 @@ theorem completeSpace :
 
 end MeasureAlgebra
 
+namespace MeasureAlgebraEquiv
+
+variable {B : Type u} {C : Type v}
+variable [SigmaCompleteBooleanAlgebra B] [SigmaCompleteBooleanAlgebra C]
+variable {μ : MeasureAlgebra B} {ν : MeasureAlgebra C}
+
+/-- Equivalent measure algebras have the same density character. -/
+theorem densityCharacter_eq (e : MeasureAlgebraEquiv μ ν) :
+    Cardinal.lift.{u} ν.densityCharacter =
+      Cardinal.lift.{v} μ.densityCharacter := by
+  letI := μ.toMetricSpace
+  letI := ν.toMetricSpace
+  let h : B ≃ₜ C :=
+    { toEquiv := e.toRelIso.toEquiv
+      continuous_toFun := e.isometry.continuous
+      continuous_invFun := e.symm.isometry.continuous }
+  exact TopologicalSpace.densityCharacter_eq_of_homeomorph h
+
+end MeasureAlgebraEquiv
+
 /-! ## Extension from dense Boolean subalgebras -/
 
 namespace MeasureAlgebra
