@@ -25,6 +25,7 @@ import BanLat.BooleanAlgebras.MeasureAlgebras.Basic
 import BanLat.BooleanAlgebras.MeasureAlgebras.ClosedSubalgebra
 import BanLat.BooleanAlgebras.MeasureAlgebras.Metric
 import BanLat.BooleanAlgebras.SigmaComplete
+import BanLat.BooleanAlgebras.Stone
 import BanLat.ComplexBanachLattice.Basic
 import BanLat.ComplexBanachLattice.Complexification
 import BanLat.ComplexBanachLattice.Modulus
@@ -36,6 +37,7 @@ import BanLat.Examples.CofK.Basic
 import BanLat.Examples.CofK.Dual
 import BanLat.Examples.Ellp.Sum
 import BanLat.Examples.Ellp.WeakUnit
+import BanLat.Examples.CofK.FunctionalCalculus
 import BanLat.Examples.Lp.Atom
 import BanLat.Examples.Lp.AtomicClassification
 import BanLat.Examples.Lp.Basic
