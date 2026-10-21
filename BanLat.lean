@@ -35,9 +35,9 @@ import BanLat.Disjoint
 import BanLat.Dual
 import BanLat.Examples.CofK.Basic
 import BanLat.Examples.CofK.Dual
+import BanLat.Examples.Ellp.Sum
+import BanLat.Examples.Ellp.WeakUnit
 import BanLat.Examples.CofK.FunctionalCalculus
-import BanLat.Examples.Ellp.Basic
-import BanLat.Examples.Ellp.WeakUnits
 import BanLat.Examples.Lp.Atom
 import BanLat.Examples.Lp.AtomicClassification
 import BanLat.Examples.Lp.Basic
