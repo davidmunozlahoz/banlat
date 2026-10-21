@@ -16,13 +16,15 @@ proposition-valued predicate `IsVecLatHom` characterising such maps. Key results
 the characterisation of vector lattice homomorphisms by their behaviour on absolute
 values (`VecLatHom.ofAbs`) and the fact that every vector lattice homomorphism is monotone.
 
-The second section develops `VecLatEquiv`, the type of vector lattice isomorphisms. It
-packages `Positive.extensionEquiv`, which extends an additive bijection between positive
-cones to a vector lattice isomorphism, and `toContinuousLinearEquiv`, which turns a
-vector lattice isomorphism between Banach lattices into a continuous linear equivalence.
+The second section develops `VecLatEquiv`, the type of vector lattice isomorphisms, together
+with its coercions to vector lattice homomorphisms and order isomorphisms. It packages
+`Positive.extensionEquiv`, which extends an additive bijection between positive cones to a
+vector lattice isomorphism, and `toContinuousLinearEquiv`, which turns a vector lattice
+isomorphism between Banach lattices into a continuous linear equivalence.
 
 The final section introduces `BanachLatEquiv`, the type of Banach lattice isometries:
-real linear isometric equivalences that also preserve `⊔` and `⊓`.
+real linear isometric equivalences that also preserve `⊔` and `⊓`, with coercions to
+continuous linear equivalences, vector lattice isomorphisms, and order isomorphisms.
 -/
 
 /-! ## Vector lattice homomorphisms -/
@@ -379,6 +381,17 @@ def symm (e : VecLatEquiv X Y) : VecLatEquiv Y X :=
       change e.toLinearEquiv.symm (a ⊓ b) = e.toLinearEquiv.symm a ⊓ e.toLinearEquiv.symm b
       exact e.toLinearEquiv.injective (by rw [LinearEquiv.apply_symm_apply]; exact h.symm) }
 
+/-- Coerce a `VecLatEquiv` to an order isomorphism. -/
+def toOrderIso (e : VecLatEquiv X Y) : X ≃o Y :=
+  e.toLinearEquiv.toEquiv.toOrderIso
+    e.toVecLatHom.monotone e.symm.toVecLatHom.monotone
+
+/-- The order isomorphism underlying a vector lattice isomorphism has the same
+underlying function. -/
+@[simp]
+theorem coe_toOrderIso (e : VecLatEquiv X Y) : ⇑e.toOrderIso = e := by
+  rfl
+
 /-- Composition of vector lattice isomorphisms. -/
 def trans {Z : Type*} [AddCommGroup Z] [Lattice Z] [IsOrderedAddMonoid Z] [VectorLattice Z]
     (e₁ : VecLatEquiv X Y) (e₂ : VecLatEquiv Y Z) : VecLatEquiv X Z :=
@@ -485,8 +498,8 @@ variable {X Y : Type*} [NormedAddCommGroup X] [NormedAddCommGroup Y]
 equivalence. -/
 noncomputable def toContinuousLinearEquiv (e : VecLatEquiv X Y) : X ≃L[ℝ] Y :=
   ContinuousLinearEquiv.mk e.toLinearEquiv
-    (Positive.continuous (Positive.monotone_iff.mp e.toVecLatHom.monotone))
-    (Positive.continuous (Positive.monotone_iff.mp e.symm.toVecLatHom.monotone))
+    (Positive.continuous (Positive.monotone_iff.mp e.toOrderIso.monotone))
+    (Positive.continuous (Positive.monotone_iff.mp e.symm.toOrderIso.monotone))
 
 end VecLatEquiv
 
@@ -541,6 +554,16 @@ def toVecLatEquiv (e : BanachLatEquiv X Y) : VecLatEquiv X Y :=
   { e.toLinearIsometryEquiv.toLinearEquiv with
     map_sup' := e.map_sup'
     map_inf' := e.map_inf' }
+
+/-- Coerce a `BanachLatEquiv` to an order isomorphism. -/
+def toOrderIso (e : BanachLatEquiv X Y) : X ≃o Y :=
+  e.toVecLatEquiv.toOrderIso
+
+/-- The order isomorphism underlying a Banach lattice isometry has the same
+underlying function. -/
+@[simp]
+theorem coe_toOrderIso (e : BanachLatEquiv X Y) : ⇑e.toOrderIso = e := by
+  rfl
 
 /-- The inverse of a Banach lattice isometry. -/
 def symm (e : BanachLatEquiv X Y) : BanachLatEquiv Y X where
