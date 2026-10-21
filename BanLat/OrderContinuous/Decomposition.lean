@@ -28,14 +28,14 @@ instance (priority := 100) hasPrincipalProjectionProperty_of_isOrderContinuousNo
     inferInstance
   let vectorOrig : @VectorLattice X inferInstance latticeOrig orderedAddOrig :=
     inferInstance
-  letI : ConditionallyCompleteLattice X :=
+  let : ConditionallyCompleteLattice X :=
     conditionallyCompleteLatticeOfIsOrderContinuousNorm
-  letI scl : SigmaConditionallyCompleteLattice X :=
+  let scl : SigmaConditionallyCompleteLattice X :=
     ConditionallyCompleteLattice.toSigmaConditionallyCompleteLattice
-  letI orderedAdd : @IsOrderedAddMonoid X inferInstance
+  let orderedAdd : @IsOrderedAddMonoid X inferInstance
       scl.toLattice.toPartialOrder.toPreorder :=
     orderedAddOrig
-  letI vector : @VectorLattice X inferInstance scl.toLattice orderedAdd :=
+  let vector : @VectorLattice X inferInstance scl.toLattice orderedAdd :=
     vectorOrig
   exact @HasPrincipalProjectionProperty.of_isSigmaOrderComplete X
     inferInstance scl orderedAdd vector

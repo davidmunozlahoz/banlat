@@ -2,7 +2,7 @@
 Authors: David Muñoz-Lahoz
 -/
 
-import Mathlib.Data.Real.Basic
+import Mathlib.Basic.Real.Basic
 import Mathlib.Algebra.Order.Module.Defs
 import Mathlib.Algebra.Order.Monoid.Defs
 import Mathlib.Tactic
@@ -541,7 +541,7 @@ theorem exists_not_nonneg_not_nonpos_of_one_lt_rank
   push Not at hcon
   have hcon' : ∀ x : X, 0 ≤ x ∨ x ≤ 0 :=
     fun x => (Classical.or_iff_not_imp_left).mpr (hcon x)
-  haveI hnt : Nontrivial X :=
+  have hnt : Nontrivial X :=
     (rank_pos_iff_nontrivial (R := ℝ) (M := X)).mp (lt_of_le_of_lt zero_le_one h)
   obtain ⟨x0, hx0⟩ : ∃ x : X, x ≠ 0 := exists_ne 0
   obtain ⟨y0, hxy⟩ := exists_linearIndependent_pair_of_one_lt_rank h hx0

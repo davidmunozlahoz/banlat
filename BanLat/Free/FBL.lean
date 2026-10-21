@@ -540,7 +540,7 @@ private noncomputable instance instCompleteSpaceFunctionSpace :
     exact lt_of_le_of_lt hg_le
       (lt_top_iff_ne_top.mpr
         (ENNReal.add_ne_top.mpr ⟨ne_of_lt hdiff_lt, ne_of_lt (freeNormExt_lt_top E (u N))⟩))
-  refine ⟨⟨g, hg_finite⟩, ?_⟩
+  refine ⟨FunctionSpace.ofContinuousMap E g hg_finite, ?_⟩
   rw [Metric.tendsto_atTop]
   intro ε hε
   rw [Metric.cauchySeq_iff] at hu
@@ -553,10 +553,10 @@ private noncomputable instance instCompleteSpaceFunctionSpace :
   have hdiff : freeNormExt E ((u n : C(FVLv.dualUnitBall E, ℝ)) - g) ≤
       ENNReal.ofReal (ε / 2) :=
     freeNormExt_sub_limit_le_of_cauchySeq' E hg htail
-  have hnorm : ‖u n - ⟨g, hg_finite⟩‖ ≤ ε / 2 := by
-    change (freeNormExt E (((u n - ⟨g, hg_finite⟩ : FunctionSpace E) :
+  have hnorm : ‖u n - FunctionSpace.ofContinuousMap E g hg_finite‖ ≤ ε / 2 := by
+    change (freeNormExt E (((u n - FunctionSpace.ofContinuousMap E g hg_finite : FunctionSpace E) :
       C(FVLv.dualUnitBall E, ℝ)))).toReal ≤ ε / 2
-    have hcoe : (((u n - ⟨g, hg_finite⟩ : FunctionSpace E) :
+    have hcoe : (((u n - FunctionSpace.ofContinuousMap E g hg_finite : FunctionSpace E) :
         C(FVLv.dualUnitBall E, ℝ))) =
           (u n : C(FVLv.dualUnitBall E, ℝ)) - g := rfl
     rw [hcoe]
@@ -773,7 +773,8 @@ private theorem finiteSup_subtype_eq {n : ℕ} {Y : Type*} [AddCommGroup Y] [Lat
     exact ⟨⟨p, hp⟩, by simp⟩
   have hmap : A.coeffs.attach.map emb = A.coeffs := by
     ext a
-    simp [emb]
+    simp only [Finset.mem_map, Finset.mem_attach, true_and, Subtype.exists, emb]
+    exact ⟨fun ⟨_, hb, h⟩ => h ▸ hb, fun h => ⟨a, h, rfl⟩⟩
   have hsmap : (A.coeffs.attach.map emb).Nonempty := by
     simpa [hmap] using A.nonempty
   calc
@@ -819,7 +820,7 @@ private theorem supLinearCombination_exists_tuple {n : ℕ} (A : LLexpr.SupLinea
   let a : Fin (m + 1) → Fin n → ℝ := fun i => ((e.symm (finCongr hm i)).1)
   refine ⟨m, a, ?_⟩
   intro Y _ _ _ _ y
-  letI : Nonempty I := hI
+  let : Nonempty I := hI
   have h₁ :
       finiteSup (fun i : Fin (m + 1) => linCombEval (a i) y) =
         finiteSup (fun i : Fin (Fintype.card I) => linCombEval ((e.symm i).1) y) := by
@@ -898,8 +899,9 @@ private theorem ofFVLv_linearCombination_apply {n : ℕ}
         (fvlvLinearCombination x a) : FBL E) =
     dualLinearCombination x a φ
   rw [liftFVLv_linearCombination]
-  simp [ev, imageLinearCombination, dualLinearCombination, ofLinearIsometry_apply, of_apply,
+  simp [ev, imageLinearCombination, dualLinearCombination, ofLinearIsometry_apply,
     smul_eq_mul]
+  rfl
 
 private def evalAtFBL (φ : FVLv.dualUnitBall E) : VecLatHom (FBL E) ℝ where
   toFun f := f φ

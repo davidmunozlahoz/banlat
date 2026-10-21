@@ -61,10 +61,10 @@ private theorem isGLB_range_pow_smul {Z : Type*} [NormedAddCommGroup Z] [Lattice
 /-- A real-valued net that order converges also converges in the usual sense, whatever
 the universe of its index type. -/
 private theorem tendsto_of_orderConvergesTo_real {κ : Type v} [Preorder κ]
-    [IsDirected κ (· ≤ ·)] [Nonempty κ] {f : κ → ℝ} {a : ℝ}
+    {f : κ → ℝ} {a : ℝ}
     (hf : OrderConvergesTo f a) : Filter.Tendsto f Filter.atTop (nhds a) := by
   obtain ⟨κt, ht1, ht2, ht3, t, htanti, htnn, htglb, htev⟩ := hf
-  letI := ht1; letI := ht2; letI := ht3
+  let := ht1; let := ht2; let := ht3
   rw [Metric.tendsto_nhds]
   intro ε hε
   have hex : ∃ j, t j < ε := by
@@ -80,7 +80,7 @@ private theorem tendsto_of_orderConvergesTo_real {κ : Type v} [Preorder κ]
 /-- If a positive functional `h` sends some regulator net of `x →o a` to a null net of
 reals, then `h ∘ x` order converges to `h a`, regulated by the harmonic sequence. -/
 private theorem orderConvergesTo_apply_of_tendsto_zero (h : X →ₗ[ℝ] ℝ) (hpos : Positive h)
-    {ι : Type v} [Preorder ι] [IsDirected ι (· ≤ ·)] [Nonempty ι]
+    {ι : Type v} [Preorder ι]
     {κ : Type w} [Preorder κ] [IsDirected κ (· ≤ ·)] [Nonempty κ]
     {x : ι → X} {a : X} {r : κ → X} (hrnn : ∀ k, 0 ≤ r k)
     (hrev : ∀ k, ∀ᶠ i in Filter.atTop, |x i - a| ≤ r k)
@@ -125,7 +125,7 @@ theorem isOrderDense_range_iff_isOrderContinuousOp
   · -- Order density of the image forces `h` to be order continuous.
     intro hOD ι ipre idir inon x a hxa
     obtain ⟨κ, hκ1, hκ2, hκ3, r, hranti, hrnn, hrglb, hrev⟩ := hxa
-    letI := hκ1; letI := hκ2; letI := hκ3
+    let := hκ1; let := hκ2; let := hκ3
     -- The regulator net maps to a net decreasing to zero in `L¹(μ)`.
     have hTr_glb : IsGLB (Set.range fun k => T (r k)) (0 : Lp ℝ 1 μ) := by
       constructor
@@ -277,7 +277,7 @@ theorem isOrderDense_range_iff_isOrderContinuousOp
       have hhs := hoc hs_oconv
       rw [map_zero] at hhs
       obtain ⟨κt, ht1, ht2, ht3, t, htanti, htnn, htglb, htev⟩ := hhs
-      letI := ht1; letI := ht2; letI := ht3
+      let := ht1; let := ht2; let := ht3
       have hcnorm_pos : 0 < ‖c‖ := norm_pos_iff.mpr hc_pos.ne'
       have hex_t : ∃ k, t k < ‖c‖ := by
         by_contra hcon
@@ -330,7 +330,7 @@ theorem isOrderContinuousOp_toLinearMap_iff_isOrderContinuousOp
   · -- If `T` is order continuous, so is `h = ‖T ·‖` on the positive cone.
     intro hToc ι ipre idir inon x a hxa
     obtain ⟨κ, hκ1, hκ2, hκ3, r, hranti, hrnn, hrglb, hrev⟩ := hxa
-    letI := hκ1; letI := hκ2; letI := hκ3
+    let := hκ1; let := hκ2; let := hκ3
     have hr0 : OrderConvergesTo r (0 : X) := orderConvergesTo_of_antitone_isGLB hranti hrglb
     have hTr0 : OrderConvergesTo (fun k => T.toLinearMap (r k)) (0 : Lp ℝ 1 μ) := by
       have h1 := hToc hr0
@@ -345,7 +345,7 @@ theorem isOrderContinuousOp_toLinearMap_iff_isOrderContinuousOp
   · -- If `h` is order continuous, the image of a regulator net is again a regulator.
     intro hoc ι ipre idir inon x a hxa
     obtain ⟨κ, hκ1, hκ2, hκ3, r, hranti, hrnn, hrglb, hrev⟩ := hxa
-    letI := hκ1; letI := hκ2; letI := hκ3
+    let := hκ1; let := hκ2; let := hκ3
     have hr0 : OrderConvergesTo r (0 : X) := orderConvergesTo_of_antitone_isGLB hranti hrglb
     have hhr_tend : Filter.Tendsto (fun k => h (r k)) Filter.atTop (nhds 0) := by
       refine tendsto_of_orderConvergesTo_real ?_
@@ -385,7 +385,7 @@ theorem solid_range_iff_isOrderContinuousOp_and_orderComplete
     have hToc : IsOrderContinuousOp T.toLinearMap := by
       intro ι ipre idir inon x a hxa
       obtain ⟨κ, hκ1, hκ2, hκ3, r, hranti, hrnn, hrglb, hrev⟩ := hxa
-      letI := hκ1; letI := hκ2; letI := hκ3
+      let := hκ1; let := hκ2; let := hκ3
       -- Solidity puts positive lower bounds of the image net back in the image.
       have hTr_glb : IsGLB (Set.range fun k => T (r k)) (0 : Lp ℝ 1 μ) := by
         constructor
@@ -428,7 +428,7 @@ theorem solid_range_iff_isOrderContinuousOp_and_orderComplete
       rintro _ ⟨s, hs, rfl⟩
       exact T.monotone (hb hs)
     have hexists : ∃ w, IsLUB ((T : X → Lp ℝ 1 μ) '' S) w := by
-      letI : ConditionallyCompleteLattice (Lp ℝ 1 μ) :=
+      let : ConditionallyCompleteLattice (Lp ℝ 1 μ) :=
         BanachLattice.conditionallyCompleteLatticeOfIsOrderContinuousNorm (X := Lp ℝ 1 μ)
       exact ⟨sSup ((T : X → Lp ℝ 1 μ) '' S), isLUB_csSup hTS_ne (hb := hTS_bdd)⟩
     obtain ⟨w, hw⟩ := hexists
@@ -502,8 +502,8 @@ theorem solid_range_iff_isOrderContinuousOp_and_orderComplete
           exact hp_pos.ne'
             (IsVLArchimedean.eq_zero_of_nonneg_of_forall_nsmul_le hp_pos.le hTd_le)
       -- `T c` is also its least upper bound, by order continuity along the net `A`.
-      haveI : Nonempty ↥A := hA_ne.to_subtype
-      haveI : IsDirected ↥A (· ≤ ·) := by
+      have : Nonempty ↥A := hA_ne.to_subtype
+      have : IsDirected ↥A (· ≤ ·) := by
         refine ⟨fun a b => ?_⟩
         refine ⟨⟨(a : X) ⊔ (b : X), le_trans a.2.1 le_sup_left, ?_⟩, le_sup_left, le_sup_right⟩
         rw [map_sup]

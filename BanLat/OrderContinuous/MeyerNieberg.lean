@@ -815,15 +815,15 @@ theorem isOrderContinuousNorm_of_disjoint_tendsto_zero
         simp [v, sub_eq_add_neg]
     exact ⟨u 0 + a, isLUB_of_tendsto_atTop hu_mono hu_tend, hu_tend⟩
   let banach : BanachLattice X := inferInstance
-  letI : SigmaConditionallyCompleteLattice X :=
+  let : SigmaConditionallyCompleteLattice X :=
     sigmaConditionallyCompleteLatticeOfMonoBddAboveTendsto hmono_tend
   let orderedAdd : IsOrderedAddMonoid X := {
     add_le_add_left := fun _ _ h _ => add_le_add_left h _
   }
-  letI : IsOrderedAddMonoid X := orderedAdd
+  let : IsOrderedAddMonoid X := orderedAdd
   let sigmaOrderContinuous : IsSigmaOrderContinuousNorm X :=
     isSigmaOrderContinuousNorm_of_mono_bddAbove_tendsto hmono_tend
-  haveI : IsSigmaOrderContinuousNorm X := sigmaOrderContinuous
+  have : IsSigmaOrderContinuousNorm X := sigmaOrderContinuous
   exact @isOrderContinuousNorm_of_isSigmaConditionallyCompleteLattice X
     inferInstance inferInstance orderedAdd banach sigmaOrderContinuous
 

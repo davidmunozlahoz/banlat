@@ -5,6 +5,7 @@ Authors: David Muñoz-Lahoz
 import BanLat.Free.FVL
 import BanLat.Examples.CofK.Basic
 import BanLat.Tactic.LLexpr
+import Mathlib.Analysis.Normed.Module.HahnBanach
 import Mathlib.Analysis.Normed.Module.WeakDual
 import Mathlib.LinearAlgebra.Basis.VectorSpace
 
@@ -242,7 +243,7 @@ private theorem exists_strongDual_apply_eq_of_linearIndependent {n : ℕ} {x : F
     ∃ φ : StrongDual ℝ E, ∀ i, φ (x i) = r i := by
   classical
   let p : Submodule ℝ E := Submodule.span ℝ (Set.range x)
-  haveI : FiniteDimensional ℝ p :=
+  have : FiniteDimensional ℝ p :=
     FiniteDimensional.span_of_finite (K := ℝ) (A := Set.range x) (Set.finite_range x)
   let coeff : p →ₗ[ℝ] Fin n → ℝ :=
     (Finsupp.linearEquivFunOnFinite ℝ ℝ (Fin n)).toLinearMap.comp hx.repr
@@ -371,7 +372,7 @@ theorem abs_inf_le_add_abs {X : Type*} [AddCommGroup X] [Lattice X]
   llarith
 
 private theorem sum_abs_nonneg {X : Type*} [AddCommGroup X] [Lattice X]
-    [IsOrderedAddMonoid X] [VectorLattice X] {n : ℕ} (x : Fin n → X) :
+    [IsOrderedAddMonoid X] {n : ℕ} (x : Fin n → X) :
     0 ≤ ∑ i : Fin n, |x i| := by
   exact Finset.sum_nonneg fun i _ => abs_nonneg (x i)
 

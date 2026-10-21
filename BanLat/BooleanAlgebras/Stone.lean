@@ -284,7 +284,7 @@ private def idealOfUltrafilter (U : Ultrafilter (StoneSpace B)) : Order.Ideal B 
 /-- The ideal obtained from an ultrafilter is prime. -/
 private theorem idealOfUltrafilter_isPrime (U : Ultrafilter (StoneSpace B)) :
     Order.Ideal.IsPrime (idealOfUltrafilter U) := by
-  haveI : Order.Ideal.IsProper (idealOfUltrafilter U) := by
+  have : Order.Ideal.IsProper (idealOfUltrafilter U) := by
     apply Order.Ideal.isProper_iff_top_notMem.mpr
     change ¬ (stoneSet (⊤ : B) ∉ U)
     simpa only [stoneSet_top, not_not] using (Ultrafilter.mem_coe.mp U.univ_mem)

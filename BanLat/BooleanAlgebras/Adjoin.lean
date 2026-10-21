@@ -158,7 +158,7 @@ theorem mem_adjoin (A : BooleanSubalgebra B) (a : B) : a ∈ A.adjoin a := by
 subalgebra is again finite. -/
 theorem finite_adjoin {A : BooleanSubalgebra B} (hA : (A : Set B).Finite)
     (a : B) : (A.adjoin a : Set B).Finite := by
-  letI := hA.fintype
+  let := hA.fintype
   exact Set.finite_range _
 
 /-- The Boolean subalgebra obtained by adjoining one element to a `σ`-complete Boolean
@@ -278,7 +278,7 @@ theorem cardinalMk_closure_le_max (s : Set B) :
     _ ≤ Cardinal.sum (fun _ : Finset s ↦ Cardinal.aleph0) := by
       apply Cardinal.sum_le_sum
       intro t
-      letI := (finite_closure (t.finite_toSet.image Subtype.val)).fintype
+      let := (finite_closure (t.finite_toSet.image Subtype.val)).fintype
       exact (Cardinal.lt_aleph0_of_finite _).le
     _ = Cardinal.mk (Finset s) * Cardinal.aleph0 := Cardinal.sum_const' _ _
     _ ≤ max (Cardinal.mk s) Cardinal.aleph0 := by

@@ -54,7 +54,7 @@ is an AM-space. -/
 @[reducible]
 def amSpaceOfDualALSpace (hX' : ALSpace (StrongDual ℝ X)) : AMSpace X where
   norm_add_eq_max_of_inf_eq_zero {x y} hxy := by
-    haveI : AMSpace (BidualSpace X) := bidual_amSpace_of_dual_alSpace (X := X) hX'
+    have : AMSpace (BidualSpace X) := bidual_amSpace_of_dual_alSpace (X := X) hX'
     have hxy' :
         @min (BidualSpace X) SemilatticeInf.toMin
           (BidualSpace.inclusion x) (BidualSpace.inclusion y) = 0 := by
@@ -75,7 +75,7 @@ is an AL-space. -/
 @[reducible]
 def alSpaceOfDualAMSpace (hX' : AMSpace (StrongDual ℝ X)) : ALSpace X where
   norm_add_rpow_eq_of_isVLDisjoint {x y} hxy := by
-    haveI : ALSpace (BidualSpace X) := bidual_alSpace_of_dual_amSpace (X := X) hX'
+    have : ALSpace (BidualSpace X) := bidual_alSpace_of_dual_amSpace (X := X) hX'
     have hxy' : IsVLDisjoint (BidualSpace.inclusion x) (BidualSpace.inclusion y) := by
       unfold IsVLDisjoint at hxy ⊢
       rw [← BidualSpace.inclusion_abs, ← BidualSpace.inclusion_abs,

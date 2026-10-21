@@ -34,11 +34,11 @@ theorem exists_L1_representation_isFiniteMeasure_of_weakOrderUnit
       (T : VecLatHom X (Lp ℝ 1 μ)),
       Function.Injective (T : X → Lp ℝ 1 μ) ∧ DenseRange (T : X → Lp ℝ 1 μ) ∧
         (∀ x : X, 0 ≤ x → h x = ∫ ω, T x ω ∂μ) ∧ ∀ᵐ ω ∂μ, T e ω = 1 := by
-  letI : NormedAddCommGroup X := StrictlyPositive.associatedNormedAddCommGroup h hh
-  letI : NormedVectorLattice X := StrictlyPositive.associatedNormedVectorLattice h hh
+  let : NormedAddCommGroup X := StrictlyPositive.associatedNormedAddCommGroup h hh
+  let : NormedVectorLattice X := StrictlyPositive.associatedNormedVectorLattice h hh
   have hAL : ∀ x y : X, x ⊓ y = 0 → ‖x + y‖ = ‖x‖ + ‖y‖ :=
     fun x y hxy => StrictlyPositive.associatedNorm_add_eq_norm_add_of_inf_eq_zero h hh hxy
-  letI : ALSpace (UniformSpace.Completion X) := ALSpace.completion hAL
+  let : ALSpace (UniformSpace.Completion X) := ALSpace.completion hAL
   -- Any Banach lattice equivalence of the completion with an `L¹` space yields an
   -- `L¹`-representation of `X` by composition with the inclusion into the completion.
   have key : ∀ (Ω₀ : Type u) (m₀ : MeasurableSpace Ω₀) (μ₀ : Measure Ω₀)

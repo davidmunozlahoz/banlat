@@ -57,7 +57,7 @@ private lemma mem_principalBand_image_of_continuous_latticeHom
     {A B : Type*} [NormedAddCommGroup A] [NormedAddCommGroup B]
     [Lattice A] [Lattice B] [IsOrderedAddMonoid A] [IsOrderedAddMonoid B]
     [BanachLattice A] [BanachLattice B] [IsOrderContinuousNorm A]
-    [IsVLArchimedean A] [IsVLArchimedean B]
+    [IsVLArchimedean A]
     (T : A →L[ℝ] B)
     (hsup : ∀ x y, T (x ⊔ y) = T x ⊔ T y)
     (hinf : ∀ x y, T (x ⊓ y) = T x ⊓ T y)
@@ -245,14 +245,14 @@ private lemma eq_zero_of_mem_principalBand_of_isVLDisjoint
     (disjointComplement_inter_eq_zero _ ⟨hv_in_d, hv_in_dd⟩)
 
 private abbrev CharacterSpace (X : Type u) [NormedAddCommGroup X] [Lattice X]
-    [IsOrderedAddMonoid X] [ALSpace X] [Nontrivial X] : Type u :=
+    [IsOrderedAddMonoid X] [ALSpace X] : Type u :=
   AMSpaceWithUnit.LatticeCharacter (StrongDual ℝ X)
 
 private noncomputable instance instMeasurableSpaceCharacterSpace
-    [ALSpace X] [Nontrivial X] : MeasurableSpace (CharacterSpace X) :=
+    [ALSpace X] : MeasurableSpace (CharacterSpace X) :=
   borel (CharacterSpace X)
 
-private instance instBorelSpaceCharacterSpace [ALSpace X] [Nontrivial X] :
+private instance instBorelSpaceCharacterSpace [ALSpace X] :
     BorelSpace (CharacterSpace X) :=
   ⟨rfl⟩
 
@@ -486,10 +486,10 @@ private lemma exists_L1_banachLatEquiv_principalBand_of_ALSpace
         (Band.principal x).toVectorSublattice (Lp ℝ 1 μ)) := by
   classical
   by_cases hntriv : Nontrivial X
-  · haveI : Nontrivial X := hntriv
+  · have : Nontrivial X := hntriv
     exact exists_L1_banachLatEquiv_principalBand_of_nontrivial_ALSpace x hx
-  · haveI hssX : Subsingleton X := not_nontrivial_iff_subsingleton.mp hntriv
-    haveI : Subsingleton (Band.principal x).toVectorSublattice :=
+  · have hssX : Subsingleton X := not_nontrivial_iff_subsingleton.mp hntriv
+    have : Subsingleton (Band.principal x).toVectorSublattice :=
       ⟨fun a b => Subtype.ext (Subsingleton.elim _ _)⟩
     refine ⟨PUnit.{u+1}, (⊤ : MeasurableSpace PUnit.{u+1}), 0, ⟨?_⟩⟩
     haveI : Subsingleton (Lp ℝ 1 (0 : @Measure PUnit.{u+1} ⊤)) := by
@@ -516,8 +516,8 @@ theorem exists_L1_banachLatEquiv_isFiniteMeasure_of_weakOrderUnit [ALSpace X] {e
   classical
   rcases subsingleton_or_nontrivial X with hss | hnt
   · -- In the trivial case the zero measure on a point works.
-    haveI := hss
-    haveI : Subsingleton (Lp ℝ 1 (0 : @Measure PUnit.{u+1} ⊤)) := by
+    have := hss
+    have : Subsingleton (Lp ℝ 1 (0 : @Measure PUnit.{u+1} ⊤)) := by
       refine ⟨fun f g => Lp.ext ?_⟩
       rw [Filter.EventuallyEq, MeasureTheory.ae_zero]
       exact Filter.eventually_bot
@@ -527,14 +527,14 @@ theorem exists_L1_banachLatEquiv_isFiniteMeasure_of_weakOrderUnit [ALSpace X] {e
     exact Filter.eventually_bot
   · -- The weak unit generates the whole space as a band, so the principal band
     -- model for `intoMofK e` is a model for all of `X`.
-    haveI : Nontrivial X := hnt
+    have : Nontrivial X := hnt
     have hband : Band.principal e = ⊤ :=
       (weakOrderUnit_iff_generated_singleton_eq_top he.1).mp he
     have hmem_top : ∀ z : X, z ∈ Band.principal e := fun z => by
       simp [hband]
     obtain ⟨Ω, mΩ, ν, hν_fin, ⟨φ_eq⟩⟩ :=
       MofK.exists_principalBand_banachLatEquivL1 (intoMofK (X := X) e)
-    haveI : IsFiniteMeasure ν := hν_fin
+    have : IsFiniteMeasure ν := hν_fin
     have hΦe_nn : (0 : MofK (CharacterSpace X)) ≤ intoMofK (X := X) e :=
       intoMofK_nonneg (X := X) he.1
     let Φ_X : X →ₗᵢ[ℝ] (Band.principal (intoMofK (X := X) e)).toVectorSublattice :=

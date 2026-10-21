@@ -120,7 +120,7 @@ private lemma tendsto_zero_of_ae_tendsto_of_abs_le
       rw [← ENNReal.zero_rpow_of_pos (one_div_pos.mpr hp_real_pos)]
       exact ((@ENNReal.continuous_rpow_const (1 / (p : ℝ))).tendsto 0).comp h_integral
     simpa only [eLpNorm_eq_lintegral_rpow_enorm_toReal
-      hp_ne_zero hp_ne_top, hpreal] using hroot
+      hp_ne_zero hp_ne_top, Lp.aestronglyMeasurable, hpreal] using hroot
   rw [Lp.tendsto_Lp_iff_tendsto_eLpNorm']
   refine heLp.congr' (Eventually.of_forall fun n => ?_)
   apply eLpNorm_congr_ae

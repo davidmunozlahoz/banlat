@@ -81,11 +81,11 @@ private noncomputable def conditionallyCompleteLatticeOfHasLUB
       refine ⟨?_, ?_⟩
       · intro a ha
         change a ≤ sSup_fn s
-        simp only [sSup_fn, dif_pos (⟨hne, hb⟩ : s.Nonempty ∧ BddAbove s)]
+        simp only [sSup_fn, dite_eq_left (⟨hne, hb⟩ : s.Nonempty ∧ BddAbove s)]
         exact (Classical.choose_spec (hLUB hne hb)).1 ha
       · intro a ha
         change sSup_fn s ≤ a
-        simp only [sSup_fn, dif_pos (⟨hne, ⟨a, ha⟩⟩ : s.Nonempty ∧ BddAbove s)]
+        simp only [sSup_fn, dite_eq_left (⟨hne, ⟨a, ha⟩⟩ : s.Nonempty ∧ BddAbove s)]
         exact (Classical.choose_spec (hLUB hne ⟨a, ha⟩)).2 ha
     isGLB_csInf := fun s hne hb => by
       refine ⟨?_, ?_⟩
@@ -93,7 +93,7 @@ private noncomputable def conditionallyCompleteLatticeOfHasLUB
         change -sSup_fn (-s) ≤ a
         have hne' : (-s).Nonempty := hne_neg s hne
         have hbdd' : BddAbove (-s) := bddAbove_neg.mpr hb
-        simp only [sSup_fn, dif_pos (⟨hne', hbdd'⟩ : (-s).Nonempty ∧ BddAbove (-s))]
+        simp only [sSup_fn, dite_eq_left (⟨hne', hbdd'⟩ : (-s).Nonempty ∧ BddAbove (-s))]
         rw [neg_le]
         exact (Classical.choose_spec (hLUB hne' hbdd')).1
           (Set.mem_neg.mpr (by rwa [neg_neg]))
@@ -102,7 +102,7 @@ private noncomputable def conditionallyCompleteLatticeOfHasLUB
         have hb' : BddBelow s := ⟨a, ha⟩
         have hne' : (-s).Nonempty := hne_neg s hne
         have hbdd' : BddAbove (-s) := bddAbove_neg.mpr hb'
-        simp only [sSup_fn, dif_pos (⟨hne', hbdd'⟩ : (-s).Nonempty ∧ BddAbove (-s))]
+        simp only [sSup_fn, dite_eq_left (⟨hne', hbdd'⟩ : (-s).Nonempty ∧ BddAbove (-s))]
         rw [le_neg]
         apply (Classical.choose_spec (hLUB hne' hbdd')).2
         intro y hy
@@ -115,7 +115,7 @@ above net of positive elements, deduce the same conclusion for any non-empty
 bounded above set of positive elements. The net is obtained by indexing over
 non-empty finite subsets ordered by inclusion. -/
 private lemma exists_isLUB_pos_set_of_pos_net
-    {X : Type u} [AddCommGroup X] [Lattice X] [IsOrderedAddMonoid X]
+    {X : Type u} [AddCommGroup X] [Lattice X]
     (H : ∀ {ι : Type u} [Preorder ι] [IsDirected ι (· ≤ ·)] [Nonempty ι]
         {u : ι → X}, Monotone u → (∀ i, 0 ≤ u i) →
         BddAbove (range u) → ∃ x, IsLUB (range u) x)
@@ -123,12 +123,12 @@ private lemma exists_isLUB_pos_set_of_pos_net
     (hbdd : BddAbove S) : ∃ x, IsLUB S x := by
   classical
   let ι : Type u := {F : Finset X // F.Nonempty ∧ ↑F ⊆ S}
-  letI : Preorder ι := inferInstance
-  letI : IsDirected ι (· ≤ ·) := ⟨fun F G =>
+  let : Preorder ι := inferInstance
+  let : IsDirected ι (· ≤ ·) := ⟨fun F G =>
     ⟨⟨F.1 ∪ G.1, Finset.Nonempty.mono Finset.subset_union_left F.2.1, by
       rw [Finset.coe_union]; exact Set.union_subset F.2.2 G.2.2⟩,
       Finset.subset_union_left, Finset.subset_union_right⟩⟩
-  letI : Nonempty ι := by
+  let : Nonempty ι := by
     obtain ⟨s₀, hs₀⟩ := hne
     exact ⟨⟨{s₀}, Finset.singleton_nonempty _, by simpa using hs₀⟩⟩
   let u : ι → X := fun F => F.1.sup' F.2.1 id
@@ -241,13 +241,13 @@ private noncomputable def sigmaConditionallyCompleteLatticeOfHasCountableLUB
       have hne : s.Nonempty := ⟨a, ha⟩
       change a ≤ sSup_fn s
       simp only [sSup_fn,
-        dif_pos (⟨hc, hne, hb⟩ : s.Countable ∧ s.Nonempty ∧ BddAbove s)]
+        dite_eq_left (⟨hc, hne, hb⟩ : s.Countable ∧ s.Nonempty ∧ BddAbove s)]
       exact (Classical.choose_spec (hLUB hc hne hb)).1 ha
     csSup_le := fun s a hc hne ha => by
       have hb : BddAbove s := ⟨a, ha⟩
       change sSup_fn s ≤ a
       simp only [sSup_fn,
-        dif_pos (⟨hc, hne, hb⟩ : s.Countable ∧ s.Nonempty ∧ BddAbove s)]
+        dite_eq_left (⟨hc, hne, hb⟩ : s.Countable ∧ s.Nonempty ∧ BddAbove s)]
       exact (Classical.choose_spec (hLUB hc hne hb)).2 ha
     csInf_le := fun s a hc hb ha => by
       change -sSup_fn (-s) ≤ a
@@ -255,7 +255,7 @@ private noncomputable def sigmaConditionallyCompleteLatticeOfHasCountableLUB
       have hne' : (-s).Nonempty := hne_neg s ⟨a, ha⟩
       have hbdd' : BddAbove (-s) := bddAbove_neg.mpr hb
       simp only [sSup_fn,
-        dif_pos (⟨hc', hne', hbdd'⟩ : (-s).Countable ∧ (-s).Nonempty ∧ BddAbove (-s))]
+        dite_eq_left (⟨hc', hne', hbdd'⟩ : (-s).Countable ∧ (-s).Nonempty ∧ BddAbove (-s))]
       rw [neg_le]
       exact (Classical.choose_spec (hLUB hc' hne' hbdd')).1
         (Set.mem_neg.mpr (by rwa [neg_neg]))
@@ -266,7 +266,7 @@ private noncomputable def sigmaConditionallyCompleteLatticeOfHasCountableLUB
       have hne' : (-s).Nonempty := hne_neg s hne
       have hbdd' : BddAbove (-s) := bddAbove_neg.mpr hb
       simp only [sSup_fn,
-        dif_pos (⟨hc', hne', hbdd'⟩ : (-s).Countable ∧ (-s).Nonempty ∧ BddAbove (-s))]
+        dite_eq_left (⟨hc', hne', hbdd'⟩ : (-s).Countable ∧ (-s).Nonempty ∧ BddAbove (-s))]
       rw [le_neg]
       apply (Classical.choose_spec (hLUB hc' hne' hbdd')).2
       intro y hy
@@ -279,7 +279,7 @@ above sequence of positive elements, deduce the same conclusion for every
 non-empty bounded above countable set of positive elements. The sequence is
 obtained by enumerating the set and taking finite suprema. -/
 private lemma exists_isLUB_pos_countable_set_of_pos_seq
-    {X : Type*} [AddCommGroup X] [Lattice X] [IsOrderedAddMonoid X]
+    {X : Type*} [AddCommGroup X] [Lattice X]
     (H : ∀ {u : ℕ → X}, Monotone u → (∀ n, 0 ≤ u n) →
       BddAbove (range u) → ∃ x, IsLUB (range u) x)
     {S : Set X} (hpos : S ⊆ {x | 0 ≤ x}) (hcount : S.Countable)

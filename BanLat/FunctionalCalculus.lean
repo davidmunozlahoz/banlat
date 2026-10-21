@@ -303,7 +303,7 @@ private lemma isGreatest_coord_abs (x : ellInfinityUnitSphere n) :
     have hx := x.2
     change dist (x : Fin n → ℝ) 0 = 1 at hx
     rwa [dist_zero_right] at hx
-  haveI : Nonempty (Fin n) := by
+  have : Nonempty (Fin n) := by
     have hx_ne : (x : Fin n → ℝ) ≠ 0 := norm_ne_zero_iff.mp (by
       rw [hnorm]
       norm_num)
@@ -418,7 +418,7 @@ away from the origin. -/
 private theorem radialExtension_of_ne (f : C(ellInfinityUnitSphere n, ℝ))
     {x : Fin n → ℝ} (hx : x ≠ 0) :
     radialExtension f x = ‖x‖ • f (unitNormalize x hx) := by
-  rw [radialExtension, dif_neg hx]
+  rw [radialExtension, dite_eq_right hx]
 
 /-- A function and its radial extension agree on the unit sphere. -/
 @[simp]
@@ -493,7 +493,7 @@ noncomputable def extend : C(ellInfinityUnitSphere n, ℝ) → posHomFunctions n
                 (div_pos hε (by positivity))
             _ = ε := by field_simp
   · have hcontinuous : ContinuousOn (radialExtension f) ({0}ᶜ : Set (Fin n → ℝ)) := by
-      rw [continuousOn_iff_continuous_restrict]
+      rw [continuousOn_iff_continuous_domRestrict]
       change Continuous (fun y : {y : Fin n → ℝ // y ≠ 0} => radialExtension f y)
       apply Continuous.congr
         ((continuous_norm.comp continuous_subtype_val).smul
@@ -1003,7 +1003,7 @@ theorem functionalCalculus_comp (x : Fin n → X)
     (g : Fin m → posHomFunctions n) (f : posHomFunctions m) :
     functionalCalculus (fun i ↦ functionalCalculus x (g i)) f =
       functionalCalculus x (PosHomFunction.comp f g) := by
-  letI := isUniformlyCompleteVectorLattice_of_banachLattice (posHomFunctions n)
+  let := isUniformlyCompleteVectorLattice_of_banachLattice (posHomFunctions n)
   let V : VecLatHom (posHomFunctions m) (posHomFunctions n) :=
     { toFun := fun h ↦ PosHomFunction.comp h g
       map_add' := fun _ _ ↦ rfl

@@ -101,7 +101,7 @@ private lemma coeFn_sum_standardGaussianToLp {X : ℕ → Ω → ℝ}
 `Lᵖ` norm multiplied by the Euclidean norm of its coefficient vector. -/
 private lemma norm_sum_standardGaussianToLp {X : ℕ → Ω → ℝ}
     (hX : ∀ n, HasLaw (X n) (gaussianReal 0 1) P)
-    (h_indep : iIndepFun X P) [Fact (1 ≤ (p : ℝ≥0∞))]
+    (h_indep : iIndepFun X P)
     (s : Finset ℕ) (a : ℕ → ℝ) :
     ‖∑ i ∈ s, a i • standardGaussianToLp p (hX i)‖ =
       ‖standardGaussianToLp p (hX 0)‖ * Real.sqrt (∑ i ∈ s, (a i) ^ 2) := by
@@ -113,11 +113,11 @@ private lemma norm_sum_standardGaussianToLp {X : ℕ → Ω → ℝ}
     exact (Lp.aestronglyMeasurable _).congr hcoe
   have hstd_norm : lpNorm (X 0) p P = ‖standardGaussianToLp p (hX 0)‖ := by
     rw [standardGaussianToLp, Lp.norm_toLp,
-      toReal_eLpNorm (hX 0).aemeasurable.aestronglyMeasurable]
+      toReal_eLpNorm]
   calc
     ‖∑ i ∈ s, a i • standardGaussianToLp p (hX i)‖ =
         lpNorm (fun ω ↦ ∑ i ∈ s, a i * X i ω) p P := by
-      rw [Lp.norm_def, eLpNorm_congr_ae hcoe, toReal_eLpNorm hsum_meas]
+      rw [Lp.norm_def, eLpNorm_congr_ae hcoe, toReal_eLpNorm]
     _ = ‖standardGaussianToLp p (hX 0)‖ * Real.sqrt (∑ i ∈ s, (a i) ^ 2) := by
       rw [hnorm, hstd_norm, mul_comm]
 
@@ -184,12 +184,12 @@ theorem norm_tsum_standardGaussianToLp {X : ℕ → Ω → ℝ}
     tendstoInMeasure_ae_unique hpartial htsum_prob
   have hstd_norm : lpNorm (X 0) p P = ‖standardGaussianToLp p (hX 0)‖ := by
     rw [standardGaussianToLp, Lp.norm_toLp,
-      toReal_eLpNorm (hX 0).aemeasurable.aestronglyMeasurable]
+      toReal_eLpNorm]
   calc
     ‖∑' n, a n • standardGaussianToLp p (hX n)‖ =
         lpNorm Y p P := by
       rw [Lp.norm_def, eLpNorm_congr_ae hYeq.symm]
-      exact toReal_eLpNorm hYmem.1
+      exact toReal_eLpNorm
     _ = Real.sqrt (↑(∑' n, ‖a n‖₊ ^ 2) : ℝ) *
         lpNorm (X 0) p P := hYnorm
     _ = ‖standardGaussianToLp p (hX 0)‖ * ‖a‖ := by
@@ -203,7 +203,7 @@ private lemma exists_linearMap_standardGaussian {X : ℕ → Ω → ℝ}
     ∃ G : ℓ²(ℕ, ℝ) →ₗ[ℝ] Lp ℝ p P,
       (∀ a, ‖G a‖ = ‖standardGaussianToLp p (hX 0)‖ * ‖a‖) ∧
       ∀ n, G (lp.single 2 n 1) = standardGaussianToLp p (hX n) := by
-  letI := h_indep.isProbabilityMeasure
+  let := h_indep.isProbabilityMeasure
   let hex (a : ℓ²(ℕ, ℝ)) :
       ∃ Y : Ω → ℝ,
         TendstoInMeasure P
@@ -271,10 +271,10 @@ private lemma exists_linearMap_standardGaussian {X : ℕ → Ω → ℝ}
   have hstd_norm : lpNorm (X 0) p P = c := by
     change lpNorm (X 0) p P = ‖standardGaussianToLp p (hX 0)‖
     rw [standardGaussianToLp, Lp.norm_toLp,
-      toReal_eLpNorm (hX 0).aemeasurable.aestronglyMeasurable]
+      toReal_eLpNorm]
   have hGnorm (a : ℓ²(ℕ, ℝ)) : ‖G a‖ = c * ‖a‖ := by
     change ‖(hYmem a).toLp (Y a)‖ = c * ‖a‖
-    rw [Lp.norm_toLp, toReal_eLpNorm (hYmem a).1,
+    rw [Lp.norm_toLp, toReal_eLpNorm,
       (hYspec a).2.2.2.2, sqrt_tsum_nnnorm_sq, hstd_norm]
     exact mul_comm _ _
   have hGsingle (n : ℕ) : G (lp.single 2 n 1) = standardGaussianToLp p (hX n) := by
@@ -371,7 +371,7 @@ private lemma range_linearIsometry_standardGaussian {X : ℕ → Ω → ℝ}
       ‖standardGaussianToLp p (hX 0)‖⁻¹ <|
         Submodule.le_topologicalClosure _ <| Submodule.subset_span ⟨n, rfl⟩
   · have hclosed : IsClosed (T.range : Set (Lp ℝ p P)) := by
-      exact T.isometry.antilipschitz.isClosed_range T.isometry.uniformContinuous
+      exact T.isometry.antilipschitzWith.isClosed_range T.isometry.uniformContinuous
     refine Submodule.topologicalClosure_minimal _ (Submodule.span_le.2 ?_) hclosed
     rintro _ ⟨n, rfl⟩
     have hp_pos : 0 < p := by

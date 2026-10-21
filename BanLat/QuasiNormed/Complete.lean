@@ -34,7 +34,7 @@ variable {E : Type*} [AddCommGroup E] [Norm E] [IsQuasiSeminorm E]
 theorem cauchy_tendsto [QuasiSeminormCompleteSpace E] {F : Filter E}
     (hF : F.NeBot ∧ ∀ ε > 0, ∃ M ∈ F, ∀ x ∈ M, ∀ y ∈ M, ‖y - x‖ < ε) :
     ∃ x, F ≤ @nhds E (topology E) x := by
-  letI : UniformSpace E := uniformSpace E
+  let : UniformSpace E := uniformSpace E
   exact CompleteSpace.complete (cauchy_iff.mpr hF)
 
 /-- Completeness is equivalent to convergence of every quasi-seminorm Cauchy filter. -/
@@ -45,17 +45,17 @@ theorem quasiSeminormCompleteSpace_iff_cauchy_tendsto :
           ∃ x, F ≤ @nhds E (topology E) x := by
   constructor
   · intro hcomplete
-    letI : QuasiSeminormCompleteSpace E := hcomplete
+    let : QuasiSeminormCompleteSpace E := hcomplete
     exact fun _ ↦ cauchy_tendsto
   · intro h
-    letI : UniformSpace E := uniformSpace E
+    let : UniformSpace E := uniformSpace E
     exact ⟨fun {F} hF ↦ h F (cauchy_iff.mp hF)⟩
 
 /-- Every Cauchy sequence in a complete quasi-seminormed group converges. -/
 theorem cauchySeq_tendsto [QuasiSeminormCompleteSpace E] {u : ℕ → E}
     (hu : ∀ ε > 0, ∃ N, ∀ m ≥ N, ∀ n ≥ N, ‖u n - u m‖ < ε) :
     ∃ x, ∀ ε > 0, ∀ᶠ n in atTop, ‖u n - x‖ < ε := by
-  letI : UniformSpace E := uniformSpace E
+  let : UniformSpace E := uniformSpace E
   have hu' : CauchySeq u := cauchySeq_iff.mpr hu
   obtain ⟨x, hx⟩ := cauchySeq_tendsto_of_complete hu'
   change Tendsto u atTop (@nhds E (topology E) x) at hx
@@ -67,7 +67,7 @@ theorem quasiSeminormCompleteSpace_of_cauchySeq_tendsto
       (∀ ε > 0, ∃ N, ∀ m ≥ N, ∀ n ≥ N, ‖u n - u m‖ < ε) →
         ∃ x, ∀ ε > 0, ∀ᶠ n in atTop, ‖u n - x‖ < ε) :
     QuasiSeminormCompleteSpace E := by
-  letI : UniformSpace E := uniformSpace E
+  let : UniformSpace E := uniformSpace E
   apply UniformSpace.complete_of_cauchySeq_tendsto
   intro u hu
   obtain ⟨x, hx⟩ := h u (cauchySeq_iff.mp hu)
@@ -81,7 +81,7 @@ theorem quasiSeminormCompleteSpace_iff_cauchySeq_tendsto :
           ∃ x, ∀ ε > 0, ∀ᶠ n in atTop, ‖u n - x‖ < ε := by
   constructor
   · intro hcomplete
-    letI : QuasiSeminormCompleteSpace E := hcomplete
+    let : QuasiSeminormCompleteSpace E := hcomplete
     exact fun _ ↦ cauchySeq_tendsto
   · exact quasiSeminormCompleteSpace_of_cauchySeq_tendsto
 

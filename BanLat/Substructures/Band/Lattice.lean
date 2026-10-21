@@ -21,7 +21,7 @@ namespace Band
 /-! ### The order on bands -/
 
 /-- Bands of `X`, ordered by inclusion, form a partial order. -/
-instance : PartialOrder (Band X) := .ofSetLike (Band X) X
+instance : PartialOrder (Band X) := .ofSetLike (Band X)
 
 /-! ### Arbitrary intersections, top and bottom -/
 

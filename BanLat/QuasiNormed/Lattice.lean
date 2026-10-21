@@ -84,10 +84,10 @@ variable {E : Type*} [AddCommGroup E] [Lattice E] [IsOrderedAddMonoid E] [Vector
 /-- The topology induced by a solid homogeneous quasi-seminorm is locally solid. -/
 instance instIsLocallySolidVectorLattice :
     @IsLocallySolidVectorLattice E _ _ _ _ (IsQuasiSeminorm.topology E) := by
-  letI : TopologicalSpace E := IsQuasiSeminorm.topology E
-  haveI : IsTopologicalAddGroup E :=
+  let : TopologicalSpace E := IsQuasiSeminorm.topology E
+  have : IsTopologicalAddGroup E :=
     (IsQuasiSeminorm.addGroupFilterBasis E).isTopologicalAddGroup
-  haveI : ContinuousSMul ℝ E := IsQuasiSeminorm.continuousSMul
+  have : ContinuousSMul ℝ E := IsQuasiSeminorm.continuousSMul
   refine { hasBasis_solid := ?_ }
   refine IsQuasiSeminorm.nhds_zero_hasBasis.to_hasBasis ?_ ?_
   · intro r hr
@@ -109,13 +109,13 @@ instance instQuasiNormedSpace : QuasiNormedSpace ℝ E where
 
 /-- Every quasi-normed vector lattice is Archimedean. -/
 instance (priority := 100) instIsVLArchimedean : IsVLArchimedean E := by
-  letI : TopologicalSpace E := IsQuasiSeminorm.topology E
+  let : TopologicalSpace E := IsQuasiSeminorm.topology E
   exact isVLArchimedean_of_t2_locallySolidVectorLattice (E := E)
 
 /-- The order relation of a quasi-normed vector lattice is closed in its induced topology. -/
 instance (priority := 100) instOrderClosedTopology :
     @OrderClosedTopology E (IsQuasiSeminorm.topology E) _ := by
-  letI : TopologicalSpace E := IsQuasiSeminorm.topology E
+  let : TopologicalSpace E := IsQuasiSeminorm.topology E
   exact ⟨isClosed_le_of_isClosed_nonneg
     (isClosed_nonneg_cone_of_t2_locallySolidVectorLattice (E := E))⟩
 
@@ -171,7 +171,7 @@ private theorem norm_principal_eq_gauge [VectorLattice E] [IsVLArchimedean E] {e
     (x : ↥(OrderIdeal.principalSubmodule e)) :
     letI := OrderIdeal.principalNormedAddCommGroup e
     ‖x‖ = OrderIdeal.gaugeNorm e (x : E) := by
-  letI := OrderIdeal.principalNormedAddCommGroup e
+  let := OrderIdeal.principalNormedAddCommGroup e
   rfl
 
 /-- The distance on a principal ideal induced by its standard normed-group structure is the
@@ -184,8 +184,8 @@ private theorem dist_principal_eq_gauge {e : E}
         (@NormedAddCommGroup.toSeminormedAddCommGroup _
           (OrderIdeal.principalNormedAddCommGroup e))
     dist x y = OrderIdeal.gaugeNorm e ((x : E) - (y : E)) := by
-  letI := OrderIdeal.principalNormedAddCommGroup e
-  letI : PseudoMetricSpace ↥(OrderIdeal.principalSubmodule e) :=
+  let := OrderIdeal.principalNormedAddCommGroup e
+  let : PseudoMetricSpace ↥(OrderIdeal.principalSubmodule e) :=
     @SeminormedAddCommGroup.toPseudoMetricSpace _
       (@NormedAddCommGroup.toSeminormedAddCommGroup _
         (OrderIdeal.principalNormedAddCommGroup e))
@@ -204,12 +204,12 @@ theorem completeSpace_principal (e : E) (he : 0 < e) :
         (@SeminormedAddCommGroup.toPseudoMetricSpace _
           (@NormedAddCommGroup.toSeminormedAddCommGroup _
             (OrderIdeal.principalNormedAddCommGroup e)))) := by
-  letI : UniformSpace E := IsQuasiSeminorm.uniformSpace E
-  haveI : IsUniformAddGroup E :=
+  let : UniformSpace E := IsQuasiSeminorm.uniformSpace E
+  have : IsUniformAddGroup E :=
     (IsQuasiSeminorm.addGroupFilterBasis E).isUniformAddGroup
-  letI := OrderIdeal.principalNormedAddCommGroup e
+  let := OrderIdeal.principalNormedAddCommGroup e
   let Y := ↥(OrderIdeal.principalSubmodule e)
-  letI : PseudoMetricSpace Y :=
+  let : PseudoMetricSpace Y :=
     @SeminormedAddCommGroup.toPseudoMetricSpace Y
       (@NormedAddCommGroup.toSeminormedAddCommGroup Y
         (OrderIdeal.principalNormedAddCommGroup e))

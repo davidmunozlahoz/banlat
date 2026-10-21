@@ -341,9 +341,11 @@ private lemma indicatorConstLp_superlevel_mem_sublattice
     intro n
     have h1 : eLpNorm (⇑(F n) - ⇑Igw) p μ
         ≤ eLpNorm ((B n).indicator (fun _ => (1 : ℝ))) p μ := by
-      refine eLpNorm_mono_ae_real ?_
+      refine eLpNorm_mono_ae_real
+        ((Lp.aestronglyMeasurable (F n)).sub (Lp.aestronglyMeasurable Igw)) ?_
       filter_upwards [h_diff_bound n] with ω hω using hω
     have h2 := eLpNorm_indicator_const_le ((1 : ℝ)) (s := B n) (μ := μ) p
+      (hBm n).nullMeasurableSet
     rw [h_one, one_mul] at h2
     exact h1.trans h2
   have h_eLpNorm_tendsto :
@@ -518,7 +520,7 @@ theorem exists_Lp_banachLatEquiv_of_closed_sublattice_containing_one
     ∃ (Ω' : Type u) (_ : MeasurableSpace Ω') (ν : MeasureTheory.Measure Ω')
       (_ : IsFiniteMeasure ν) (φ : BanachLatEquiv L (Lp ℝ p ν)),
       ∀ᵐ a ∂ν, (φ ⟨Lp.const p μ (1 : ℝ), hone⟩ : Ω' → ℝ) a = 1 := by
-  letI : BanachLattice L := L.banachLatticeCoe hclosed
+  let : BanachLattice L := L.banachLatticeCoe hclosed
   refine ⟨Ω,
     exists_Lp_banachLatEquiv_aux.sigmaAlgebra hp_ne_top L hclosed hone,
     exists_Lp_banachLatEquiv_aux.trimmedMeasure hp_ne_top L hclosed hone,
@@ -709,7 +711,7 @@ theorem exists_L1_banachLatEquiv_of_embeds_in_L1_with_aePositive.{v}
             show ENNReal.ofReal |ρ ω| = (Real.toNNReal |ρ ω| : ENNReal) from rfl]
           exact_mod_cast Real.toNNReal_le_toNNReal (le_abs_self _)
       _ < ⊤ := hρ_memLp.2
-  letI : IsFiniteMeasure ν := hν_finite
+  let : IsFiniteMeasure ν := hν_finite
   let Φ : Lp ℝ 1 ν →ₗᵢ[ℝ] Lp ℝ 1 μ := withDensitySMulLI μ hf_nn_meas
   have hΦ_surj : Function.Surjective Φ :=
     withDensitySMulLI_surjective_of_ae_pos μ hf_nn_meas hf_pos
@@ -778,7 +780,7 @@ theorem exists_L1_banachLatEquiv_of_embeds_in_L1_with_aePositive.{v}
   have hL_one : Lp.const 1 ν (1 : ℝ) ∈ L := by
     rw [← hT'u]
     exact LinearMap.mem_range_self _ _
-  letI : BanachLattice L := L.banachLatticeCoe hL_closed
+  let : BanachLattice L := L.banachLatticeCoe hL_closed
   obtain ⟨Ω', mΩ', ν', hν'_finite, φ, hφ_one⟩ :=
     exists_Lp_banachLatEquiv_of_closed_sublattice_containing_one (μ := ν)
       (by norm_num : (1 : ENNReal) ≠ ⊤) L hL_closed hL_one

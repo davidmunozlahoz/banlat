@@ -100,7 +100,7 @@ theorem exists_injective_reindex {ι : Type*} {n : ℕ} (a : Fin n → ι) :
   classical
   let s : Set ι := Set.range a
   have hs : s.Finite := Set.finite_range a
-  letI : Fintype s := hs.fintype
+  let : Fintype s := hs.fintype
   let e : s ≃ Fin (Fintype.card s) := Fintype.equivFin s
   refine ⟨Fintype.card s, fun j => (e.symm j).1, ?_, fun i => e ⟨a i, ⟨i, rfl⟩⟩, ?_⟩
   · intro i j hij

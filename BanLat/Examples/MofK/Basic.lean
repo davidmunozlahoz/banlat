@@ -33,8 +33,8 @@ regular as well. -/
 /-- The modulus of a regular signed measure is regular. -/
 theorem IsRegular.abs {s : SignedMeasure K} (hs : s.IsRegular) :
     (|s|).IsRegular := by
-  haveI := hs.posPart_regular
-  haveI := hs.negPart_regular
+  have := hs.posPart_regular
+  have := hs.negPart_regular
   set μ := s.toJordanDecomposition.posPart + s.toJordanDecomposition.negPart
   let j : JordanDecomposition K :=
     ⟨μ, 0, Measure.MutuallySingular.zero_right⟩
@@ -167,8 +167,8 @@ theorem isClosed_isRegular :
       hlim_neg
     rw [toJordanDecomposition_neg] at h
     exact h
-  haveI := hpos
-  haveI := hneg
+  have := hpos
+  have := hneg
   change (s.toJordanDecomposition.posPart + s.toJordanDecomposition.negPart).Regular
   infer_instance
 

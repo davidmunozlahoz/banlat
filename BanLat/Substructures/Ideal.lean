@@ -35,7 +35,7 @@ instance : SetLike (OrderIdeal X) X where
     exact SetLike.ext' h
 
 /-- Order ideals of `X`, ordered by inclusion, form a **partial order**. -/
-instance : PartialOrder (OrderIdeal X) := .ofSetLike (OrderIdeal X) X
+instance : PartialOrder (OrderIdeal X) := .ofSetLike (OrderIdeal X)
 
 variable (J : OrderIdeal X)
 
@@ -209,16 +209,16 @@ private def generatedAux (s : Set X) : OrderIdeal X :=
               ∑ y ∈ t ∪ t', (if y ∈ t then c y else 0) • |y| := by
             rw [show ∑ y ∈ t, c y • |y| =
                 ∑ y ∈ t, (if y ∈ t then c y else 0) • |y| from
-              Finset.sum_congr rfl (fun y hy => by rw [if_pos hy])]
+              Finset.sum_congr rfl (fun y hy => by rw [ite_eq_left hy])]
             exact Finset.sum_subset Finset.subset_union_left
-              (fun y _ hy => by rw [if_neg hy, zero_smul])
+              (fun y _ hy => by rw [ite_eq_right hy, zero_smul])
           have h2 : ∑ y ∈ t', c' y • |y| =
               ∑ y ∈ t ∪ t', (if y ∈ t' then c' y else 0) • |y| := by
             rw [show ∑ y ∈ t', c' y • |y| =
                 ∑ y ∈ t', (if y ∈ t' then c' y else 0) • |y| from
-              Finset.sum_congr rfl (fun y hy => by rw [if_pos hy])]
+              Finset.sum_congr rfl (fun y hy => by rw [ite_eq_left hy])]
             exact Finset.sum_subset Finset.subset_union_right
-              (fun y _ hy => by rw [if_neg hy, zero_smul])
+              (fun y _ hy => by rw [ite_eq_right hy, zero_smul])
           calc |x + x'|
               ≤ |x| + |x'| := abs_add_le _ _
             _ ≤ (∑ y ∈ t, c y • |y|) + (∑ y ∈ t', c' y • |y|) :=
@@ -968,7 +968,7 @@ theorem isClosed (J : ClosedOrderIdeal X) : IsClosed (J : Set X) :=
 
 /-- Closed order ideals form a partial order under inclusion. -/
 instance : PartialOrder (ClosedOrderIdeal X) :=
-  .ofSetLike (ClosedOrderIdeal X) X
+  .ofSetLike (ClosedOrderIdeal X)
 
 /-- The intersection of two closed order ideals is a closed order ideal. -/
 def inf (J₁ J₂ : ClosedOrderIdeal X) : ClosedOrderIdeal X where

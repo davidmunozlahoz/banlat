@@ -57,9 +57,9 @@ theorem tendsto_of_orderConvergesTo_of_isOrderContinuousNorm.{u}
     {x : ι → X} {a : X} (hx : OrderConvergesTo x a) :
     Filter.Tendsto x Filter.atTop (nhds a) := by
   rcases hx with ⟨κ, hκpre, hκdir, hκnon, r, hranti, hrnn, hrglb, hrevent⟩
-  letI : Preorder κ := hκpre
-  letI : IsDirected κ (· ≤ ·) := hκdir
-  letI : Nonempty κ := hκnon
+  let : Preorder κ := hκpre
+  let : IsDirected κ (· ≤ ·) := hκdir
+  let : Nonempty κ := hκnon
   have hr_tend : Filter.Tendsto r Filter.atTop (nhds 0) :=
     IsOrderContinuousNorm.tendsto_of_antitone_isGLB_zero hranti hrnn hrglb
   rw [Metric.tendsto_nhds]
@@ -231,12 +231,12 @@ noncomputable def conditionallyCompleteLatticeOfIsOrderContinuousNorm
   let Ub : Type _ := {w : X // w ∈ upperBounds S}
   let Fn : Type _ := {F : Finset X // (↑F : Set X) ⊆ S ∧ F.Nonempty}
   let I : Type _ := Ubᵒᵈ × Fn
-  haveI : Nonempty Ub := ⟨⟨w₀, hw₀⟩⟩
-  haveI : Nonempty Fn := ⟨⟨{s₀}, by
+  have : Nonempty Ub := ⟨⟨w₀, hw₀⟩⟩
+  have : Nonempty Fn := ⟨⟨{s₀}, by
     refine ⟨?_, Finset.singleton_nonempty s₀⟩
     intro x hx; rcases Finset.mem_singleton.mp hx with rfl; exact hs₀⟩⟩
-  haveI : Nonempty I := instNonemptyProd
-  haveI : IsDirected Fn (· ≤ ·) := by
+  have : Nonempty I := instNonemptyProd
+  have : IsDirected Fn (· ≤ ·) := by
     refine ⟨fun F G => ?_⟩
     refine ⟨⟨F.val ∪ G.val, ?_, F.prop.2.mono Finset.subset_union_left⟩,
             Finset.subset_union_left, Finset.subset_union_right⟩
@@ -244,7 +244,7 @@ noncomputable def conditionallyCompleteLatticeOfIsOrderContinuousNorm
     rcases Finset.mem_union.mp hx with h | h
     · exact F.prop.1 h
     · exact G.prop.1 h
-  haveI : IsDirected Ubᵒᵈ (· ≤ ·) := by
+  have : IsDirected Ubᵒᵈ (· ≤ ·) := by
     refine ⟨fun a b => ?_⟩
     refine ⟨OrderDual.toDual ⟨(OrderDual.ofDual a).val ⊓ (OrderDual.ofDual b).val,
       fun s hs => le_inf ((OrderDual.ofDual a).prop hs) ((OrderDual.ofDual b).prop hs)⟩,
@@ -253,7 +253,7 @@ noncomputable def conditionallyCompleteLatticeOfIsOrderContinuousNorm
       exact inf_le_left
     · change (_ : Ub) ≤ OrderDual.ofDual b
       exact inf_le_right
-  haveI : IsDirected I (· ≤ ·) := by
+  have : IsDirected I (· ≤ ·) := by
     refine ⟨fun p q => ?_⟩
     obtain ⟨c, hac, hbc⟩ := (‹IsDirected Ubᵒᵈ (· ≤ ·)›).directed p.1 q.1
     obtain ⟨d, had, hbd⟩ := (‹IsDirected Fn (· ≤ ·)›).directed p.2 q.2

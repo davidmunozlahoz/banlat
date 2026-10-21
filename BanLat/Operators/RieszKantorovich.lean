@@ -48,7 +48,7 @@ private noncomputable def ppFun (f : OrderBoundedHom X Y)
 
 private lemma ppFun_isLUB (f : OrderBoundedHom X Y) {x : X}
     (hx : 0 ≤ x) : IsLUB (ppSet f x) (ppFun f x) := by
-  simp only [ppFun, if_pos hx]
+  simp only [ppFun, ite_eq_left hx]
   exact isLUB_csSup (ppSet_nonempty f hx) (ppSet_bddAbove f hx)
 
 private lemma ppFun_nonneg (f : OrderBoundedHom X Y) {x : X}
@@ -113,13 +113,13 @@ private noncomputable def ppOp (f : OrderBoundedHom X Y) :
 
 private lemma ppOp_apply_nonneg (f : OrderBoundedHom X Y)
     {x : X} (hx : 0 ≤ x) : ppOp f x = ppFun f x := by
-  haveI : IsVLArchimedean Y := IsVLArchimedean_of_sigmaConditionallyCompleteLattice
+  have : IsVLArchimedean Y := IsVLArchimedean_of_sigmaConditionallyCompleteLattice
   exact Positive.extension_nonneg (fun x hx => ppFun_nonneg f hx)
     (fun _ _ hx hy => ppFun_add f hx hy) hx
 
 private lemma ppOp_positive (f : OrderBoundedHom X Y) :
     Positive (ppOp f) := by
-  haveI : IsVLArchimedean Y := IsVLArchimedean_of_sigmaConditionallyCompleteLattice
+  have : IsVLArchimedean Y := IsVLArchimedean_of_sigmaConditionallyCompleteLattice
   exact Positive.extension_positive
     (fun x hx => ppFun_nonneg f hx)
     (fun _ _ hx hy => ppFun_add f hx hy)
@@ -765,13 +765,13 @@ private noncomputable def witLin {f : OrderBoundedHom X Y}
 private lemma witLin_apply_nonneg {f : OrderBoundedHom X Y}
     (hf : (0 : OrderBoundedHom X Y) ≤ f) {x₀ y : X}
     (hx₀ : 0 ≤ x₀) (hy : 0 ≤ y) : witLin hf hx₀ y = witFun f x₀ y := by
-  haveI : IsVLArchimedean Y := IsVLArchimedean_of_sigmaConditionallyCompleteLattice
+  have : IsVLArchimedean Y := IsVLArchimedean_of_sigmaConditionallyCompleteLattice
   exact Positive.extension_nonneg _ _ hy
 
 private lemma witLin_positive {f : OrderBoundedHom X Y}
     (hf : (0 : OrderBoundedHom X Y) ≤ f) {x₀ : X} (hx₀ : 0 ≤ x₀) :
     Positive (witLin hf hx₀) := by
-  haveI : IsVLArchimedean Y := IsVLArchimedean_of_sigmaConditionallyCompleteLattice
+  have : IsVLArchimedean Y := IsVLArchimedean_of_sigmaConditionallyCompleteLattice
   exact Positive.extension_positive _ _
 
 /-- The witness operator as an `OrderBoundedHom`. -/
@@ -1173,7 +1173,7 @@ theorem isLUB_of_directedOn
       ∀ {x : X}, 0 ≤ x →
         IsLUB ((fun g : OrderBoundedHom X Y => g x) '' S) (f x) := by
   classical
-  haveI : IsVLArchimedean Y := IsVLArchimedean_of_sigmaConditionallyCompleteLattice
+  have : IsVLArchimedean Y := IsVLArchimedean_of_sigmaConditionallyCompleteLattice
   obtain ⟨g₀, hg₀⟩ := hne
   obtain ⟨h, hh⟩ := hbdd
   have aux : ∀ {x : X}, 0 ≤ x →
@@ -1187,7 +1187,7 @@ theorem isLUB_of_directedOn
       IsLUB ((fun g : OrderBoundedHom X Y => g x - g₀ x) '' S) (σ x) := by
     intro x hx
     change IsLUB _ (if hx : 0 ≤ x then (aux hx).choose else 0)
-    rw [dif_pos hx]
+    rw [dite_eq_left hx]
     exact (aux hx).choose_spec
   have σ_nn : ∀ x, 0 ≤ x → 0 ≤ σ x := fun x hx => by
     have h1 := (σ_isLUB hx).1 ⟨g₀, hg₀, sub_self _⟩
@@ -1330,7 +1330,7 @@ noncomputable def conditionallyCompleteLattice :
     intro S hbdd hne
     change IsLUB S
       (if h : S.Nonempty ∧ BddAbove S then (exists_isLUB h.1 h.2).choose else 0)
-    rw [dif_pos ⟨hne, hbdd⟩]
+    rw [dite_eq_left ⟨hne, hbdd⟩]
     exact (exists_isLUB hne hbdd).choose_spec
   exact conditionallyCompleteLatticeOfLatticeOfsSup _ hsSup
 

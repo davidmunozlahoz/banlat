@@ -39,7 +39,7 @@ lemma hasSymmetricStableLaw_of_tendstoInMeasure_sum_range_mul
     (hlim : TendstoInMeasure P
       (fun N ω ↦ ∑ n ∈ Finset.range N, a n * X n ω) Filter.atTop Y) :
     HasSymmetricStableLaw Y q (c * ∑' n, ‖a n‖₊ ^ q) P := by
-  letI := (hX 0).isProbabilityMeasure
+  let := (hX 0).isProbabilityMeasure
   let S : ℕ → Ω → ℝ := fun N ω ↦ ∑ n ∈ Finset.range N, a n * X n ω
   have hS (N : ℕ) :
       HasSymmetricStableLaw (S N) q (c * ∑ n ∈ Finset.range N, ‖a n‖₊ ^ q) P := by
@@ -49,9 +49,8 @@ lemma hasSymmetricStableLaw_of_tendstoInMeasure_sum_range_mul
   have hlimS : TendstoInMeasure P S Filter.atTop Y := by
     simpa [S] using hlim
   have hdist := hlimS.tendstoInDistribution (fun N ↦ (hS N).aemeasurable)
-  refine ⟨⟨(hX 0).isSymmetricStable_map.index_pos,
-    (hX 0).isSymmetricStable_map.index_le_two,
-    Measure.isProbabilityMeasure_map hdist.aemeasurable_limit, ?_⟩⟩
+  refine ⟨hdist.aemeasurable_limit, ⟨(hX 0).isSymmetricStable_map.index_pos,
+    (hX 0).isSymmetricStable_map.index_le_two, inferInstance, ?_⟩⟩
   intro t
   have ht := (ProbabilityMeasure.tendsto_iff_tendsto_charFun.mp hdist.tendsto) t
   have hsum := ha.hasSum.tendsto_sum_nat
@@ -79,7 +78,7 @@ lemma exists_tendstoInMeasure_sum_range_mul_of_hasSymmetricStableLaw
         (fun N ω ↦ ∑ n ∈ Finset.range N, a n * X n ω) Filter.atTop Y ∧
       HasSymmetricStableLaw Y q (c * ∑' n, ‖a n‖₊ ^ q) P := by
   classical
-  letI := (hX 0).isProbabilityMeasure
+  let := (hX 0).isProbabilityMeasure
   let S : ℕ → Ω → ℝ := fun N ω ↦ ∑ n ∈ Finset.range N, a n * X n ω
   let u : ℕ → ℝ≥0 := fun i ↦ ‖a i‖₊ ^ q
   have hu : Summable u := by simpa only [u] using ha
@@ -160,13 +159,13 @@ lemma exists_tendstoInMeasure_sum_range_mul_of_hasSymmetricStableLaw
           (fun ω ↦ ‖∑ i ∈ Finset.Ico (min nm.1 nm.2) (max nm.1 nm.2),
             a i * X i ω‖) ⁻¹' Set.Ici ε := by
         ext ω
-        simp only [Set.mem_setOf_eq, Set.mem_preimage, Set.mem_Ici, Real.norm_eq_abs]
+        simp only [Set.mem_ofPred_eq, Set.mem_preimage, Set.mem_Ici, Real.norm_eq_abs]
         rw [hdist_block]
       have hright : {ω | ε ≤ |d * X 0 ω|} =
           (fun ω ↦ ‖((↑(∑ i ∈ Finset.Ico (min nm.1 nm.2) (max nm.1 nm.2),
             ‖a i‖₊ ^ q) : ℝ) ^ q⁻¹) * X 0 ω‖) ⁻¹' Set.Ici ε := by
         ext ω
-        simp only [Set.mem_setOf_eq, Set.mem_preimage, Set.mem_Ici, Real.norm_eq_abs,
+        simp only [Set.mem_ofPred_eq, Set.mem_preimage, Set.mem_Ici, Real.norm_eq_abs,
           d, A, u]
       rw [hleft, hright, hmem]
     rw [hmeasure]

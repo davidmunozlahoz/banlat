@@ -598,7 +598,7 @@ sum `B₁ + B₂ = {y + z : y ∈ B₁, z ∈ B₂}`, and the complement is the 
 complement. -/
 
 /-- Projection bands inherit the partial order by inclusion from `SetLike`. -/
-instance : PartialOrder (ProjectionBand X) := .ofSetLike (ProjectionBand X) X
+instance : PartialOrder (ProjectionBand X) := .ofSetLike (ProjectionBand X)
 
 /-- The whole space `X` is a projection band. -/
 instance : Top (ProjectionBand X) where

@@ -236,10 +236,10 @@ private theorem signedMeasureFunctional_sub (μ ν : SignedMeasure K) :
 private theorem signedMeasureFunctional_injective_of_regular
     {μ ν : SignedMeasure K} (hμ : μ.IsRegular) (hν : ν.IsRegular)
     (hfun : signedMeasureFunctional μ = signedMeasureFunctional ν) : μ = ν := by
-  haveI := hμ.posPart_regular
-  haveI := hμ.negPart_regular
-  haveI := hν.posPart_regular
-  haveI := hν.negPart_regular
+  have := hμ.posPart_regular
+  have := hμ.negPart_regular
+  have := hν.posPart_regular
+  have := hν.negPart_regular
   have hint : ∀ f : C(K, ℝ),
       ∫ x, f x ∂(μ.toJordanDecomposition.posPart + ν.toJordanDecomposition.negPart) =
       ∫ x, f x ∂(ν.toJordanDecomposition.posPart + μ.toJordanDecomposition.negPart) := by
@@ -669,7 +669,7 @@ private theorem norm_signedMeasureFunctional_of_nonneg
       signedMeasureLinearMap_norm_bound μ f)
     ?_
   by_cases hK : Nonempty K
-  · letI : Nonempty K := hK
+  · let : Nonempty K := hK
     have hzero : μ.toJordanDecomposition.negPart = 0 := jordan_negPart_eq_zero hμ
     have h1 : (1 : C(K, ℝ)) = ContinuousMap.const K 1 := rfl
     have hone_norm : ‖(1 : C(K, ℝ))‖ = 1 := by
@@ -691,7 +691,7 @@ private theorem norm_signedMeasureFunctional_of_nonneg
       simp only [ContinuousMap.const_apply, integral_const, smul_eq_mul, mul_one]
       rw [SignedMeasure.norm_of_nonneg hμ]
       conv_rhs => rw [← heq]
-      rw [Measure.toSignedMeasure_apply, if_pos MeasurableSet.univ]
+      rw [Measure.toSignedMeasure_apply, ite_eq_left MeasurableSet.univ]
     have hbound : ‖μ‖ = ‖signedMeasureFunctional μ 1‖ := by
       rw [hval, Real.norm_eq_abs, abs_of_nonneg (norm_nonneg _)]
     rw [hbound]
@@ -700,7 +700,7 @@ private theorem norm_signedMeasureFunctional_of_nonneg
         ≤ ‖signedMeasureFunctional μ‖ * ‖(1 : C(K, ℝ))‖ :=
           (signedMeasureFunctional μ).le_opNorm 1
       _ = ‖signedMeasureFunctional μ‖ := by rw [hone_norm, mul_one]
-  · letI : IsEmpty K := not_nonempty_iff.mp hK
+  · let : IsEmpty K := not_nonempty_iff.mp hK
     have hnorm_zero : ‖μ‖ = 0 := by
       rw [SignedMeasure.norm_of_nonneg hμ]
       have h_univ : (Set.univ : Set K) = ∅ := by

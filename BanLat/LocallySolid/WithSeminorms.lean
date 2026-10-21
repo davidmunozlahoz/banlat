@@ -124,7 +124,7 @@ private theorem with_convexSolidNhdGaugeSeminormFamily :
       change x ∈ (p S).toSeminorm.ball 0 1 at hx
       change x ∈ U
       rw [Seminorm.mem_ball_zero] at hx
-      apply setOf_gauge_lt_one_subset_self hU_convex (mem_of_mem_nhds hU_nhds)
+      apply setOfPred_gauge_lt_one_subset_self hU_convex (mem_of_mem_nhds hU_nhds)
         (absorbent_nhds_zero hU_nhds)
       simpa [p, S, convexSolidNhdGaugeLatticeSeminorm, gaugeSeminorm_toFun] using hx
   · intro U hU
@@ -156,16 +156,16 @@ theorem isLocallyConvexSolidVectorLattice_iff_exists_withLatticeSeminorms
       ∃ (ι : Type u) (p : ι → LatticeSeminorm E), WithLatticeSeminorms p := by
   constructor
   · intro h
-    letI : IsLocallyConvexSolidVectorLattice E := h
+    let : IsLocallyConvexSolidVectorLattice E := h
     exact
       ⟨IsLocallyConvexSolidVectorLattice.ConvexSolidNhd (E := E),
         IsLocallyConvexSolidVectorLattice.convexSolidNhdGaugeLatticeSeminorm (E := E),
         IsLocallyConvexSolidVectorLattice.with_convexSolidNhdGaugeSeminormFamily (E := E)⟩
   · rintro ⟨ι, p, hp⟩
-    have hTopAdd : IsTopologicalAddGroup E := hp.topologicalAddGroup
+    have hTopAdd : IsTopologicalAddGroup E := hp.isTopologicalAddGroup
     have hSMul : ContinuousSMul ℝ E := hp.continuousSMul
-    letI : IsTopologicalAddGroup E := hTopAdd
-    letI : ContinuousSMul ℝ E := hSMul
+    let : IsTopologicalAddGroup E := hTopAdd
+    let : ContinuousSMul ℝ E := hSMul
     have hLocalSolid : IsLocallySolidVectorLattice E := by
       refine { hasBasis_solid := ?_ }
       refine hp.hasBasis.to_hasBasis ?_ ?_

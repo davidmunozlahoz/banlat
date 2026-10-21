@@ -57,7 +57,7 @@ instance (priority := 100) HasProjectionProperty.of_isOrderComplete
     {X : Type*} [AddCommGroup X] [ConditionallyCompleteLattice X]
     [IsOrderedAddMonoid X] [VectorLattice X] :
     HasProjectionProperty X := by
-  haveI : IsVLArchimedean X := IsVLArchimedean_of_sigmaConditionallyCompleteLattice
+  have : IsVLArchimedean X := IsVLArchimedean_of_sigmaConditionallyCompleteLattice
   refine ⟨fun B => ?_⟩
   apply (ProjectionBand.projectionBand_iff_isLUB_inter_Icc B).mpr
   intro x hx
@@ -71,7 +71,7 @@ instance (priority := 100)
     {X : Type*} [AddCommGroup X] [SigmaConditionallyCompleteLattice X]
     [IsOrderedAddMonoid X] [VectorLattice X] :
     HasPrincipalProjectionProperty X := by
-  haveI : IsVLArchimedean X := IsVLArchimedean_of_sigmaConditionallyCompleteLattice
+  have : IsVLArchimedean X := IsVLArchimedean_of_sigmaConditionallyCompleteLattice
   refine ⟨fun a => ?_⟩
   have hband_eq : (Band.generated ({a} : Set X) : Set X)
       = (Band.generated ({|a|} : Set X) : Set X) := by

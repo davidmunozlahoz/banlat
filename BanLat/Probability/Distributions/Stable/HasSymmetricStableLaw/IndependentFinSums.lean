@@ -35,8 +35,8 @@ namespace IndepFun
 lemma hasSymmetricStableLaw_fun_add (hXY : IndepFun X Y P)
     (hX : HasSymmetricStableLaw X q c P) (hY : HasSymmetricStableLaw Y q d P) :
     HasSymmetricStableLaw (fun ω ↦ X ω + Y ω) q (c + d) P := by
-  letI := hX.isProbabilityMeasure
-  refine ⟨?_⟩
+  let := hX.isProbabilityMeasure
+  refine ⟨by fun_prop, ?_⟩
   rw [show (fun ω ↦ X ω + Y ω) = X + Y from rfl,
     hXY.map_add_eq_map_conv_map₀ hX.aemeasurable hY.aemeasurable]
   exact hX.isSymmetricStable_map.conv hY.isSymmetricStable_map
@@ -58,7 +58,7 @@ lemma hasSymmetricStableLaw_finset_sum {X : ι → Ω → ℝ} {c : ι → ℝ�
     (hX : ∀ i, HasSymmetricStableLaw (X i) q (c i) P) (h_indep : iIndepFun X P)
     (hq_pos : 0 < q) (hq_le_two : q ≤ 2) (s : Finset ι) :
     HasSymmetricStableLaw (fun ω ↦ ∑ i ∈ s, X i ω) q (∑ i ∈ s, c i) P := by
-  letI := h_indep.isProbabilityMeasure
+  let := h_indep.isProbabilityMeasure
   classical
   induction s using Finset.induction_on with
   | empty =>

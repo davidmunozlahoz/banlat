@@ -35,7 +35,7 @@ variable {Ω : Type*} [MeasurableSpace Ω] {P : Measure Ω}
 `X` has a symmetric `q`-stable law with scale parameter `c` under `P`. -/
 lemma HasLaw.hasSymmetricStableLaw (hX : HasLaw X μ P) (hμ : IsSymmetricStable μ q c) :
     HasSymmetricStableLaw X q c P := by
-  refine ⟨?_⟩
+  refine ⟨hX.aemeasurable, ?_⟩
   rwa [hX.map_eq]
 
 /-- If `P` is a probability measure and `0 < q ≤ 2`, then the zero random variable has a symmetric
@@ -43,29 +43,22 @@ lemma HasLaw.hasSymmetricStableLaw (hX : HasLaw X μ P) (hμ : IsSymmetricStable
 lemma hasSymmetricStableLaw_zero [IsProbabilityMeasure P]
     (hq_pos : 0 < q) (hq_le_two : q ≤ 2) :
     HasSymmetricStableLaw (fun _ ↦ 0) q 0 P := by
-  refine ⟨?_⟩
+  refine ⟨aemeasurable_const, ?_⟩
   simpa [Measure.map_const] using
     (isSymmetricStable_dirac_zero (q := q) hq_pos hq_le_two)
 
 namespace HasSymmetricStableLaw
 
-/-- If `X` has a symmetric `q`-stable law under `P`, then `X` is almost everywhere measurable
-with respect to `P`. -/
-@[fun_prop]
-lemma aemeasurable (hX : HasSymmetricStableLaw X q c P) : AEMeasurable X P := by
-  exact AEMeasurable.of_map_ne_zero
-    hX.isSymmetricStable_map.isProbabilityMeasure.ne_zero
-
 /-- If `X` has a symmetric `q`-stable law under `P`, then `P` is a probability measure. -/
 lemma isProbabilityMeasure (hX : HasSymmetricStableLaw X q c P) : IsProbabilityMeasure P := by
-  letI := hX.isSymmetricStable_map.isProbabilityMeasure
-  exact P.isProbabilityMeasure_of_map X
+  have := hX.isSymmetricStable_map.isProbabilityMeasure
+  exact Measure.isProbabilityMeasure_of_map hX.aemeasurable
 
 /-- If `X` has a symmetric `q`-stable law and `X = Y` almost everywhere under `P`, then `Y` has
 the same symmetric `q`-stable law. -/
 lemma congr (hX : HasSymmetricStableLaw X q c P)
     (h : X =ᵐ[P] Y) : HasSymmetricStableLaw Y q c P := by
-  refine ⟨?_⟩
+  refine ⟨hX.aemeasurable.congr h, ?_⟩
   rw [← Measure.map_congr h]
   exact hX.isSymmetricStable_map
 
@@ -86,7 +79,7 @@ lemma scale_eq_zero_iff_ae_eq_zero (hX : HasSymmetricStableLaw X q c P) :
     rw [hmap]
     simp
   · intro hzero
-    letI := hX.isProbabilityMeasure
+    let := hX.isProbabilityMeasure
     have hzeroLaw := hasSymmetricStableLaw_zero (P := P)
       hX.isSymmetricStable_map.index_pos hX.isSymmetricStable_map.index_le_two
     exact (hX.congr hzero).isSymmetricStable_map.scale_eq hzeroLaw.isSymmetricStable_map
@@ -95,7 +88,7 @@ lemma scale_eq_zero_iff_ae_eq_zero (hX : HasSymmetricStableLaw X q c P) :
 gives a symmetric `q`-stable law with scale parameter `c * |a| ^ q`. -/
 lemma const_mul (hX : HasSymmetricStableLaw X q c P) (a : ℝ) :
     HasSymmetricStableLaw (fun ω ↦ a * X ω) q (c * ‖a‖₊ ^ q) P := by
-  refine ⟨?_⟩
+  refine ⟨by fun_prop, ?_⟩
   rw [show (fun ω ↦ a * X ω) = (a * ·) ∘ X from rfl,
     ← AEMeasurable.map_map_of_aemeasurable]
   · exact hX.isSymmetricStable_map.map_mul a

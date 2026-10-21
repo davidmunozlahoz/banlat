@@ -130,7 +130,7 @@ theorem quasiInteriorPoint_iff_tendsto_inf {e : X} :
 theorem exists_quasiInteriorPoint_of_separable [CompleteSpace X]
     [TopologicalSpace.SeparableSpace X] :
     ∃ e : X, QuasiInteriorPoint e := by
-  haveI : Nonempty X := ⟨0⟩
+  have : Nonempty X := ⟨0⟩
   set u : ℕ → X := TopologicalSpace.denseSeq X with hu_def
   have hu_dense : DenseRange u := TopologicalSpace.denseRange_denseSeq X
   -- Coefficients `c n = 1 / (2^n * (1 + ‖u n‖))`, all in `(0, 1]`.
@@ -179,7 +179,7 @@ unit and quasi-interior point coincide. -/
 theorem quasiInteriorPoint_iff_weakOrderUnit [CompleteSpace X]
     [IsOrderContinuousNorm X] {e : X} :
     QuasiInteriorPoint e ↔ WeakOrderUnit e := by
-  letI : BanachLattice X := { }
+  let : BanachLattice X := { }
   refine ⟨fun ⟨he, hd⟩ => ?_, fun hw => ⟨hw.1, ?_⟩⟩
   · -- Forward: density gives `Band.generated {e} = ⊤`.
     rw [weakOrderUnit_iff_generated_singleton_eq_top he]

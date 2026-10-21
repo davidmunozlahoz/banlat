@@ -73,7 +73,7 @@ theorem basisSets_add (U : Set E) (hU : U ∈ basisSets E) :
   have hq : 0 < q := div_pos hr (mul_pos zero_lt_two hK.pos)
   refine ⟨ball 0 q, ⟨q, hq, rfl⟩, ?_⟩
   rintro z ⟨x, hx, y, hy, rfl⟩
-  simp only [ball, mem_setOf_eq, sub_zero] at hx hy ⊢
+  simp only [ball, mem_ofPred_eq, sub_zero] at hx hy ⊢
   have hlt : K * (‖x‖ + ‖y‖) < K * (q + q) :=
     mul_lt_mul_of_pos_left (add_lt_add hx hy) hK.pos
   have hqeq : K * (q + q) = r := by
@@ -121,10 +121,10 @@ theorem image_add_ball_zero (x : E) (r : ℝ) :
   ext z
   constructor
   · rintro ⟨y, hy, rfl⟩
-    simpa only [ball, mem_setOf_eq, add_sub_cancel_left, sub_zero] using hy
+    simpa only [ball, mem_ofPred_eq, add_sub_cancel_left, sub_zero] using hy
   · intro hz
     refine ⟨z - x, ?_, by abel_nf⟩
-    simpa only [ball, mem_setOf_eq, sub_zero] using hz
+    simpa only [ball, mem_ofPred_eq, sub_zero] using hz
 
 /-- The quasi-seminorm open balls of strictly positive radius
 form a neighborhood basis at zero. -/
@@ -153,10 +153,10 @@ difference form a basis of the induced uniformity. -/
 theorem uniformity_hasBasis :
     HasBasis (@uniformity E (uniformSpace E)) (fun r : ℝ ↦ 0 < r)
       (fun r ↦ {p : E × E | ‖p.2 - p.1‖ < r}) := by
-  letI : UniformSpace E := uniformSpace E
-  haveI : IsUniformAddGroup E := (addGroupFilterBasis E).isUniformAddGroup
+  let : UniformSpace E := uniformSpace E
+  have : IsUniformAddGroup E := (addGroupFilterBasis E).isUniformAddGroup
   rw [uniformity_eq_comap_nhds_zero E]
-  simpa only [ball, preimage_setOf_eq, sub_zero] using
+  simpa only [ball, preimage_ofPred_eq, sub_zero] using
     (nhds_zero_hasBasis (E := E)).comap (fun p : E × E ↦ p.2 - p.1)
 
 /-- The entourages with radii `1 / (n + 1)` form a countable basis of the induced uniformity. -/
@@ -199,20 +199,20 @@ theorem cauchy_iff {F : Filter E} :
     obtain ⟨M, hM, hM_small⟩ := h (ball 0 ε) ⟨ε, hε, rfl⟩
     refine ⟨M, hM, ?_⟩
     intro x hx y hy
-    simpa only [ball, mem_setOf_eq, sub_zero] using hM_small x hx y hy
+    simpa only [ball, mem_ofPred_eq, sub_zero] using hM_small x hx y hy
   · intro h U hU
     obtain ⟨ε, hε, rfl⟩ := hU
     obtain ⟨M, hM, hM_small⟩ := h ε hε
     refine ⟨M, hM, ?_⟩
     intro x hx y hy
-    simpa only [ball, mem_setOf_eq, sub_zero] using hM_small x hx y hy
+    simpa only [ball, mem_ofPred_eq, sub_zero] using hM_small x hx y hy
 
 /-- A sequence is Cauchy if, and only if, it verifies the usual `ε-N` definition. -/
 theorem cauchySeq_iff {u : ℕ → E} :
     @CauchySeq E ℕ (uniformSpace E) _ u ↔
       ∀ ε > 0, ∃ N, ∀ m ≥ N, ∀ n ≥ N, ‖u n - u m‖ < ε := by
-  letI : UniformSpace E := uniformSpace E
-  simpa only [mem_setOf_eq] using
+  let : UniformSpace E := uniformSpace E
+  simpa only [mem_ofPred_eq] using
     (uniformity_hasBasis (E := E)).cauchySeq_iff (u := u)
 
 /-!
@@ -257,7 +257,7 @@ variable {E : Type*} [AddCommGroup E] [Norm E] [IsQuasiNorm E]
 
 /-- The topology induced by a quasi-norm is Hausdorff. -/
 theorem t2Space : @T2Space E (IsQuasiSeminorm.topology E) := by
-  letI : TopologicalSpace E := IsQuasiSeminorm.topology E
+  let : TopologicalSpace E := IsQuasiSeminorm.topology E
   change T2Space E
   apply ((IsQuasiSeminorm.addGroupFilterBasis E).t2Space_iff rfl).2
   ext x
@@ -269,7 +269,7 @@ theorem t2Space : @T2Space E (IsQuasiSeminorm.topology E) := by
     have hpos : 0 < ‖x‖ := IsQuasiNorm.norm_pos hx0
     have hxball : x ∈ IsQuasiSeminorm.ball 0 ‖x‖ :=
       hx _ ⟨‖x‖, hpos, rfl⟩
-    rw [IsQuasiSeminorm.ball, mem_setOf_eq, sub_zero] at hxball
+    rw [IsQuasiSeminorm.ball, mem_ofPred_eq, sub_zero] at hxball
     exact (lt_irrefl ‖x‖) hxball
   · intro hx
     rw [mem_singleton_iff] at hx
@@ -294,8 +294,8 @@ variable {𝕜 E : Type*} [SeminormedRing 𝕜] [AddCommGroup E] [Norm E] [IsQua
 
 /-- Scalar multiplication is continuous for the topology induced by a homogeneous quasi-seminorm. -/
 theorem continuousSMul : @ContinuousSMul 𝕜 E _ _ (topology E) := by
-  letI : TopologicalSpace E := topology E
-  haveI : IsTopologicalAddGroup E := (addGroupFilterBasis E).isTopologicalAddGroup
+  let : TopologicalSpace E := topology E
+  have : IsTopologicalAddGroup E := (addGroupFilterBasis E).isTopologicalAddGroup
   apply ContinuousSMul.of_nhds_zero
   · rw [nhds_zero_hasBasis.tendsto_right_iff]
     intro r hr

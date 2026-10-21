@@ -47,7 +47,10 @@ private lemma eLpNorm_mul_density
     eLpNorm (fun x ↦ (h x : ℝ) * f x) (p : ENNReal) μ =
       eLpNorm f (p : ENNReal) (densityMeasure (p := p) μ h) := by
   have hp : p ≠ 0 := (lt_of_lt_of_le zero_lt_one Fact.out).ne'
-  rw [eLpNorm_nnreal_eq_lintegral hp, eLpNorm_nnreal_eq_lintegral hp]
+  have hhf : AEStronglyMeasurable (fun x ↦ (h x : ℝ) * f x) μ :=
+    (hh.coe_nnreal_real.mul (Lp.stronglyMeasurable f).measurable).aestronglyMeasurable
+  rw [eLpNorm_nnreal_eq_lintegral hp hhf,
+    eLpNorm_nnreal_eq_lintegral hp (Lp.aestronglyMeasurable f)]
   congr 1
   change (∫⁻ x, ‖(h x : ℝ) * f x‖ₑ ^ (p : ℝ) ∂μ) =
     ∫⁻ x, ‖f x‖ₑ ^ (p : ℝ) ∂μ.withDensity (fun x ↦ (h x : ℝ≥0∞) ^ (p : ℝ))
@@ -63,9 +66,8 @@ private lemma memLp_mul_density
     (μ : Measure α) {h : α → ℝ≥0} (hh : Measurable h)
     (f : Lp ℝ (p : ENNReal) (densityMeasure (p := p) μ h)) :
     MemLp (fun x ↦ (h x : ℝ) * f x) (p : ENNReal) μ := by
-  refine ⟨(hh.coe_nnreal_real.mul (Lp.stronglyMeasurable f).measurable).aestronglyMeasurable, ?_⟩
-  rw [eLpNorm_mul_density μ hh f]
-  exact (Lp.memLp f).2
+  rw [memLp_iff, eLpNorm_mul_density μ hh f]
+  exact Lp.memLp f
 
 /- If `f = g` a.e. with respect to `h^p μ`, then `h f = h g` a.e. with respect to `μ`. -/
 private lemma ae_mul_eq_mul_of_ae_eq_density
@@ -267,7 +269,7 @@ private lemma isProbabilityMeasure_densityMeasure
   rw [densityMeasure, withDensity_apply _ MeasurableSet.univ, Measure.restrict_univ]
   simp only [← enorm_eq_nnnorm]
   rw [← eLpNorm_nnreal_pow_eq_lintegral
-    (lt_of_lt_of_le zero_lt_one (Fact.out : 1 ≤ p)).ne']
+    (lt_of_lt_of_le zero_lt_one (Fact.out : 1 ≤ p)).ne' (Lp.aestronglyMeasurable e)]
   rw [← Lp.enorm_def]
   have hnn : ‖e‖₊ = 1 := NNReal.eq he
   rw [enorm_eq_nnnorm, hnn]
@@ -285,7 +287,7 @@ theorem exists_banachLatEquiv_isProbabilityMeasure_of_weakOrderUnit
           (Lp ℝ (p : ENNReal) ν)) := by
   have he' : QuasiInteriorPoint e := quasiInteriorPoint_iff_weakOrderUnit.mpr he
   let ν := densityMeasure (p := p) μ (fun x ↦ ‖e x‖₊)
-  letI : IsProbabilityMeasure ν :=
+  let : IsProbabilityMeasure ν :=
     isProbabilityMeasure_densityMeasure μ e he_norm
   let T := densityMulLI (p := p) μ (measurable_nnnorm_coeFn μ e)
   have hT : Function.Surjective T :=

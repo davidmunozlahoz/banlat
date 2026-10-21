@@ -2,6 +2,7 @@
 Authors: David Muñoz-Lahoz
 -/
 
+import Mathlib.Analysis.LocallyConvex.WeakSpace
 import Mathlib.Analysis.Normed.Module.DoubleDual
 import Mathlib.Analysis.Normed.Module.FiniteDimension
 import Mathlib.Analysis.Normed.Group.Submodule
@@ -11,7 +12,7 @@ import Mathlib.Topology.Compactness.CountablyCompact
 # The Eberlein--Smulian theorem
 
 This file proves that compactness and sequential compactness agree for the weak topology of a
-Banach space.
+normed space.
 -/
 
 noncomputable section
@@ -27,7 +28,7 @@ private structure ConstructionState (X : Type*) [NormedAddCommGroup X] [NormedSp
   functionals : Finset (StrongDual ℝ X)
   norm_functionals : ∀ f ∈ functionals, ‖f‖ < 1
 
-private lemma isBounded_preimage_of_isSeqCompact [CompleteSpace X]
+private lemma isBounded_preimage_of_isSeqCompact
     {s : Set (WeakSpace ℝ X)} (hs : IsSeqCompact s) :
     IsBounded ((toWeakSpace ℝ X) ⁻¹' s) := by
   let J : X →L[ℝ] StrongDual ℝ (StrongDual ℝ X) :=
@@ -56,12 +57,12 @@ private lemma exists_finset_norming_span
   classical
   let hBnorm : NormedAddCommGroup (StrongDual ℝ (StrongDual ℝ X)) := inferInstance
   let hBspace : NormedSpace ℝ (StrongDual ℝ (StrongDual ℝ X)) := inferInstance
-  letI : NormedAddCommGroup (StrongDual ℝ (StrongDual ℝ X)) := hBnorm
-  letI : NormedSpace ℝ (StrongDual ℝ (StrongDual ℝ X)) := hBspace
+  let : NormedAddCommGroup (StrongDual ℝ (StrongDual ℝ X)) := hBnorm
+  let : NormedSpace ℝ (StrongDual ℝ (StrongDual ℝ X)) := hBspace
   let F : Submodule ℝ (StrongDual ℝ (StrongDual ℝ X)) :=
     Submodule.span ℝ (v : Set (StrongDual ℝ (StrongDual ℝ X)))
-  letI : FiniteDimensional ℝ F := FiniteDimensional.span_finset ℝ v
-  letI : ProperSpace F := FiniteDimensional.proper_real F
+  let : FiniteDimensional ℝ F := FiniteDimensional.span_finset ℝ v
+  let : ProperSpace F := FiniteDimensional.proper_real F
   let U : StrongDual ℝ X → Set F := fun f ↦
     {y | 1 / 2 < ‖(y : StrongDual ℝ (StrongDual ℝ X)) f‖}
   have hU_open (f : StrongDual ℝ X) : IsOpen (U f) := by
@@ -174,13 +175,13 @@ private lemma exists_next_state
     exact ⟨f, Finset.mem_union_right _ hfh, hfy⟩
   · simpa only [q', WeakDual.toStrongDual_apply] using ha_approx
 
-private lemma isCompact_of_isSeqCompact [CompleteSpace X]
+private lemma isCompact_of_isSeqCompact
     {s : Set (WeakSpace ℝ X)} (hs : IsSeqCompact s) : IsCompact s := by
   classical
   let hBnorm : NormedAddCommGroup (StrongDual ℝ (StrongDual ℝ X)) := inferInstance
   let hBspace : NormedSpace ℝ (StrongDual ℝ (StrongDual ℝ X)) := inferInstance
-  letI : NormedAddCommGroup (StrongDual ℝ (StrongDual ℝ X)) := hBnorm
-  letI : NormedSpace ℝ (StrongDual ℝ (StrongDual ℝ X)) := hBspace
+  let : NormedAddCommGroup (StrongDual ℝ (StrongDual ℝ X)) := hBnorm
+  let : NormedSpace ℝ (StrongDual ℝ (StrongDual ℝ X)) := hBspace
   let e := NormedSpace.inclusionInDoubleDualWeak ℝ X
   have hb : IsBounded ((toWeakSpace ℝ X) ⁻¹' s) :=
     isBounded_preimage_of_isSeqCompact hs
@@ -260,8 +261,7 @@ private lemma isCompact_of_isSeqCompact [CompleteSpace X]
           ((WeakBilin.eval_continuous (topDualPairing ℝ X).flip f).tendsto xw).comp hφ_lim
         have h' : Tendsto (fun k ↦ f ((toWeakSpace ℝ X).symm (u (φ k)))) atTop
             (nhds (((topDualPairing ℝ X).flip xw) f)) :=
-          h.congr' <| Eventually.of_forall fun k ↦ by
-            simp only [Function.comp_apply, heval]
+          h.congr' <| Eventually.of_forall fun _ ↦ rfl
         simpa only [x, heval] using h'
       exact tendsto_nhds_unique h_to_z h_to_x
     have hx_span : x ∈ closure (Submodule.span ℝ (Set.range fun n ↦
@@ -364,7 +364,7 @@ private lemma isCompact_of_isSeqCompact [CompleteSpace X]
     rw [he_closed.closure_eq]
     simpa only [e] using Set.image_subset_range e s)
 
-private lemma isSeqCompact_of_isCompact [CompleteSpace X]
+private lemma isSeqCompact_of_isCompact
     {s : Set (WeakSpace ℝ X)} (hs : IsCompact s) : IsSeqCompact s := by
   classical
   intro u hu
@@ -375,7 +375,7 @@ private lemma isSeqCompact_of_isCompact [CompleteSpace X]
     apply TopologicalSpace.IsSeparable.closure
     apply TopologicalSpace.IsSeparable.span
     exact Set.countable_range _ |>.isSeparable
-  letI : TopologicalSpace.SeparableSpace Y := hY_separable.separableSpace
+  let : TopologicalSpace.SeparableSpace Y := hY_separable.separableSpace
   let K : Set (WeakSpace ℝ X) := s ∩ toWeakSpace ℝ X '' (Y : Set X)
   have hY_weak_closed : IsClosed (toWeakSpace ℝ X '' (Y : Set X)) := by
     change IsClosed (toWeakSpace ℝ X '' closure (P : Set X))
@@ -421,18 +421,18 @@ private lemma isSeqCompact_of_isCompact [CompleteSpace X]
         ← map_sub]
       exact ((f n).le_opNorm _).trans (mul_le_of_le_one_left (norm_nonneg _) (hf n).1)
     have hdist : ‖(TopologicalSpace.denseSeq Y n : X) - d‖ < ‖d‖ / 4 := by
-      simpa only [dist_eq_norm, norm_sub_rev, Submodule.coe_norm, Submodule.coe_sub] using hn
+      simpa only [dist_eq_norm, norm_sub_rev, ← Submodule.norm_coe, Submodule.coe_sub] using hn
     have hd_tri : ‖d‖ ≤ ‖d - TopologicalSpace.denseSeq Y n‖ +
         ‖(TopologicalSpace.denseSeq Y n : X)‖ := by
-      simpa only [sub_add_cancel, Submodule.coe_norm, Submodule.coe_sub] using
+      simpa only [sub_add_cancel, ← Submodule.norm_coe, Submodule.coe_sub] using
         norm_add_le (d - TopologicalSpace.denseSeq Y n) (TopologicalSpace.denseSeq Y n)
     have hsub_norm : ‖d - TopologicalSpace.denseSeq Y n‖ =
         ‖(TopologicalSpace.denseSeq Y n : X) - d‖ := by
       change ‖(d : X) - (TopologicalSpace.denseSeq Y n : X)‖ = _
       exact norm_sub_rev _ _
     nlinarith [hd_tri, hsub_norm]
-  letI : CompactSpace K := isCompact_iff_compactSpace.mp hK_compact
-  letI : TopologicalSpace.MetrizableSpace K :=
+  let : CompactSpace K := isCompact_iff_compactSpace.mp hK_compact
+  let : TopologicalSpace.MetrizableSpace K :=
     Metric.PiNatEmbed.TopologicalSpace.MetrizableSpace.of_countable_separating
       g hg_cont hg_sep
   let v : ℕ → K := fun n ↦ ⟨u n, hu n, ⟨(toWeakSpace ℝ X).symm (u n),
@@ -442,8 +442,8 @@ private lemma isSeqCompact_of_isCompact [CompleteSpace X]
   exact ⟨a.1, a.2.1, φ, hφ, continuous_subtype_val.tendsto a |>.comp hlim⟩
 
 /-- **Eberlein--Smulian theorem**: compactness and sequential compactness agree for subsets of a
-Banach space equipped with its weak topology. -/
-theorem isCompact_iff_isSeqCompact [CompleteSpace X] {s : Set (WeakSpace ℝ X)} :
+normed space equipped with its weak topology. -/
+theorem isCompact_iff_isSeqCompact {s : Set (WeakSpace ℝ X)} :
     IsCompact s ↔ IsSeqCompact s :=
   ⟨isSeqCompact_of_isCompact, isCompact_of_isSeqCompact⟩
 

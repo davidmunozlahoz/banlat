@@ -108,7 +108,7 @@ private theorem evalCLM_apply (A : Set K) (hA : MeasurableSet A) (μ : MofK K) :
 omit [CompactSpace K] in
 private theorem countable_pos_singletons (m : Measure K) [SFinite m] :
     Set.Countable {x : K | 0 < m ({x} : Set K)} := by
-  simpa only [Set.mem_setOf_eq] using
+  simpa only [Set.mem_ofPred_eq] using
     (Measure.countable_meas_pos_of_disjoint_iUnion (μ := m)
       (As_mble := fun x => measurableSet_singleton x)
       (As_disj := fun x y hxy => by
@@ -148,11 +148,11 @@ private theorem tsum_smul_dirac_apply {s : Set K} {c : s → ℝ}
   congr with x
   dsimp [evalCLM_apply, indicatorSubtype]
   by_cases hxA : x.1 ∈ A
-  · rw [if_pos hxA, smul_apply, dirac_apply_of_mem hA hxA, smul_eq_mul, mul_one]
-  · rw [if_neg hxA, smul_apply, dirac_apply_of_notMem hA hxA, smul_eq_mul, mul_zero]
+  · rw [ite_eq_left hxA, smul_apply, dirac_apply_of_mem hA hxA, smul_eq_mul, mul_one]
+  · rw [ite_eq_right hxA, smul_apply, dirac_apply_of_notMem hA hxA, smul_eq_mul, mul_zero]
 
 omit [CompactSpace K] in
-private theorem tsum_indicator_singletons_le_measure (m : Measure K) [SFinite m]
+private theorem tsum_indicator_singletons_le_measure (m : Measure K)
     (s : Set K) (A : Set K) (hA : MeasurableSet A) :
     ∑' x : s, A.indicator (fun y => m ({y} : Set K)) x.1 ≤ m A := by
   calc
@@ -185,7 +185,7 @@ private theorem tsum_indicator_singletons_le_measure (m : Measure K) [SFinite m]
 
 omit [CompactSpace K] in
 private theorem tsum_toReal_indicator_singletons_le_measure (m : Measure K)
-    [IsFiniteMeasure m] [SFinite m] (s : Set K) (A : Set K) (hA : MeasurableSet A) :
+    [IsFiniteMeasure m] (s : Set K) (A : Set K) (hA : MeasurableSet A) :
     ∑' x : s, A.indicator (fun y => (m ({y} : Set K)).toReal) x.1 ≤ (m A).toReal := by
   have h_indicator :
       (fun x : s => A.indicator (fun y => (m ({y} : Set K)).toReal) x.1) =
@@ -217,7 +217,7 @@ private theorem tsum_smul_dirac_nonneg_of_nonneg {s : Set K} {c : s → ℝ}
     · simp [hxA, hc_nn x]
     · simp [hxA]
 
-private theorem tsum_pos_singleton_dirac_apply (m : Measure K) [IsFiniteMeasure m] [SFinite m]
+private theorem tsum_pos_singleton_dirac_apply (m : Measure K)
     (s : Set K) (hs : s = {x : K | 0 < m ({x} : Set K)})
     (hc_sum : Summable (fun y : s => (m ({y.1} : Set K)).toReal • dirac y.1))
     (x : K) :
@@ -275,10 +275,10 @@ theorem exists_nonneg_sum_dirac_of_mem_atomicPart {μ : MofK K}
       μ = ∑' i : ι, c i • dirac (x i) := by
   let m : Measure K := (μ : SignedMeasure K).toMeasureOfZeroLE
     Set.univ MeasurableSet.univ ((VectorMeasure.le_restrict_univ_iff_le _ _).mpr hμ0)
-  haveI : IsFiniteMeasure m := by
+  have : IsFiniteMeasure m := by
     dsimp [m]
     infer_instance
-  letI : SFinite m := by infer_instance
+  let : SFinite m := by infer_instance
   have hm_signed : m.toSignedMeasure = (μ : SignedMeasure K) := by
     exact MeasureTheory.SignedMeasure.toMeasureOfZeroLE_toSignedMeasure _ _
   let s : Set K := {x | 0 < m ({x} : Set K)}
@@ -408,14 +408,14 @@ theorem exists_sum_dirac_add_noAtoms (μ : MofK K) :
     inferInstance
   let vectorOrig : @VectorLattice (MofK K) addGroup latticeOrig orderedAddOrig :=
     inferInstance
-  letI ccl : ConditionallyCompleteLattice (MofK K) :=
+  let ccl : ConditionallyCompleteLattice (MofK K) :=
     BanachLattice.conditionallyCompleteLatticeOfIsOrderContinuousNorm
-  letI orderedAdd : @IsOrderedAddMonoid (MofK K) addGroup.toAddCommMonoid
+  let orderedAdd : @IsOrderedAddMonoid (MofK K) addGroup.toAddCommMonoid
       ccl.toLattice.toPartialOrder.toPreorder :=
     orderedAddOrig
-  letI vector : @VectorLattice (MofK K) addGroup ccl.toLattice orderedAdd :=
+  let vector : @VectorLattice (MofK K) addGroup ccl.toLattice orderedAdd :=
     vectorOrig
-  haveI hp : @HasProjectionProperty (MofK K) addGroup ccl.toLattice orderedAdd vector :=
+  have hp : @HasProjectionProperty (MofK K) addGroup ccl.toLattice orderedAdd vector :=
     @HasProjectionProperty.of_isOrderComplete (MofK K) addGroup ccl orderedAdd vector
   obtain ⟨P, hP⟩ :=
     @HasProjectionProperty.exists_projectionBand (MofK K) addGroup ccl.toLattice

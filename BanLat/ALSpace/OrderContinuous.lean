@@ -81,7 +81,7 @@ private theorem tendsto_of_monotone_nonneg_bddAbove {u : ℕ → X}
 instance instIsOrderContinuousNorm : IsOrderContinuousNorm X := by
   classical
   let banach : BanachLattice X := inferInstance
-  letI : SigmaConditionallyCompleteLattice X :=
+  let : SigmaConditionallyCompleteLattice X :=
     sigmaConditionallyCompleteLatticeOfPosSeq X
       (fun hmono hnn hbd =>
         let ⟨x, hx, _⟩ := tendsto_of_monotone_nonneg_bddAbove hmono hnn hbd
@@ -89,7 +89,7 @@ instance instIsOrderContinuousNorm : IsOrderContinuousNorm X := by
   let orderedAdd : IsOrderedAddMonoid X := {
     add_le_add_left := fun _ _ h _ => add_le_add_left h _
   }
-  letI : IsOrderedAddMonoid X := orderedAdd
+  let : IsOrderedAddMonoid X := orderedAdd
   let sigmaOrderContinuous : IsSigmaOrderContinuousNorm X := by
     refine ⟨fun {u} hanti hnn hglb => ?_⟩
     let v : ℕ → X := fun n => u 0 - u n
@@ -120,7 +120,7 @@ instance instIsOrderContinuousNorm : IsOrderContinuousNorm X := by
       convert htend using 1
       ext n; abel
     rwa [hux_eq] at hux
-  haveI : IsSigmaOrderContinuousNorm X := sigmaOrderContinuous
+  have : IsSigmaOrderContinuousNorm X := sigmaOrderContinuous
   exact @BanachLattice.isOrderContinuousNorm_of_isSigmaConditionallyCompleteLattice X
     inferInstance inferInstance orderedAdd banach sigmaOrderContinuous
 

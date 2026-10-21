@@ -60,7 +60,7 @@ theorem hasNoAtoms_of_noAtoms_of_regular {K : Type*}
     {μ : Measure K} [IsFiniteMeasure μ] [NullSingletonClass μ] (hμ : μ.Regular) :
     μ.HasNoAtoms := by
   classical
-  haveI : μ.Regular := hμ
+  have : μ.Regular := hμ
   intro s hs hμs hs_atom
   obtain ⟨C, hCs, hC_compact, hC_pos⟩ :=
     MeasurableSet.exists_lt_isCompact_of_ne_top (μ := μ) hs (measure_ne_top μ s) hμs
@@ -448,7 +448,7 @@ private theorem chain_iUnion_admissible
     have hacc_tendsto :
         Filter.Tendsto (fun n => μ (accumulate u n)) Filter.atTop
           (nhds (μ (⋃ n, u n))) :=
-      tendsto_measure_iUnion_accumulate (μ := μ) (f := u)
+      tendsto_measure_iUnion_accumulate (μ := μ) (s := u)
     exact le_of_tendsto' hacc_tendsto hacc_le
 
 /-- The union of the cofinal sequence dominates every member of the chain
@@ -497,7 +497,7 @@ private theorem chain_iUnion_ae_dominates
     have hacc_tendsto_union :
         Filter.Tendsto (fun n => μ (accumulate u n)) Filter.atTop
           (nhds (μ (⋃ n, u n))) :=
-      tendsto_measure_iUnion_accumulate (μ := μ) (f := u)
+      tendsto_measure_iUnion_accumulate (μ := μ) (s := u)
     have hUnion_eq_sup :
         μ (⋃ n, u n) = sSup ((fun t : Set α => μ t) '' c) :=
       tendsto_nhds_unique hacc_tendsto_union hacc_tendsto_sup
@@ -769,12 +769,12 @@ theorem hasNoAtoms_of_map_eq
     dsimp [ρ]
     rw [← hmap]
     exact Measure.map_mono Measure.restrict_le_self hf
-  letI : IsFiniteMeasure ρ := by
+  let : IsFiniteMeasure ρ := by
     dsimp [ρ]
     infer_instance
-  letI : NullSingletonClass ρ := ⟨fun x ↦ by
+  let : NullSingletonClass ρ := ⟨fun x ↦ by
     exact le_zero_iff.mp ((hρ_le {x}).trans_eq (measure_singleton x))⟩
-  letI : ρ.Regular := by infer_instance
+  let : ρ.Regular := by infer_instance
   have hρ_cont : ρ.IsContinuous :=
     (hasNoAtoms_of_noAtoms_of_regular (μ := ρ) (by infer_instance)).isContinuous
   have hρ_univ : ρ Set.univ = μ s := by

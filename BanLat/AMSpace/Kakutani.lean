@@ -55,7 +55,7 @@ theorem gelfand_isVecLatHom :
 /-- The Gelfand transform preserves norms. -/
 theorem norm_gelfand [Nontrivial X] (x : X) :
     ‖(gelfand x : C(LatticeCharacter X, ℝ))‖ = ‖x‖ := by
-  haveI : Nonempty (LatticeCharacter X) := by
+  have : Nonempty (LatticeCharacter X) := by
     obtain ⟨φ, _⟩ := LatticeCharacter.exists_abs_apply_eq_norm (X := X) x
     exact ⟨φ⟩
   apply le_antisymm

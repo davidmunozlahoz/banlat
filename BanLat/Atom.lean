@@ -1034,10 +1034,9 @@ private lemma isAtomicVectorLattice_of_finiteDimensional [IsVLArchimedean X]
   simp only [Fintype.card_fin] at h_le
   exact absurd h_le (Nat.not_succ_le_self N)
 
-/-- A finite-dimensional atomic Archimedean vector lattice admits a finite
-maximal pairwise disjoint family of atoms. -/
-private lemma exists_max_disjoint_atom_family_of_finiteDimensional
-    [IsVLArchimedean X] [IsAtomicVectorLattice X] [FiniteDimensional ℝ X] :
+/-- A finite-dimensional vector lattice admits a finite maximal pairwise disjoint family of
+atoms. -/
+private lemma exists_max_disjoint_atom_family_of_finiteDimensional [FiniteDimensional ℝ X] :
     ∃ n : ℕ, ∃ a : Fin n → X, (∀ i, IsVLAtom (a i)) ∧
       Pairwise (fun i j : Fin n => IsVLDisjoint (a i) (a j)) ∧
       ∀ b : X, IsVLAtom b → ∃ i, ¬ IsVLDisjoint (a i) b := by
@@ -1065,7 +1064,7 @@ theorem finiteDimensional_iff_latticeIso_pi [IsVLArchimedean X] :
       ∃ n : ℕ, Nonempty (VecLatEquiv X (Fin n → ℝ)) := by
   refine ⟨fun hFD => ?_, ?_⟩
   · -- (⇒): X FD ⟹ exists iso to Fin n → ℝ.
-    haveI : IsAtomicVectorLattice X := isAtomicVectorLattice_of_finiteDimensional
+    have : IsAtomicVectorLattice X := isAtomicVectorLattice_of_finiteDimensional
     -- Get a finite max disjoint atom family.
     obtain ⟨n, a, ha_atom, ha_disj, ha_max⟩ :=
       exists_max_disjoint_atom_family_of_finiteDimensional (X := X)
@@ -1131,7 +1130,7 @@ theorem finiteDimensional_iff_latticeIso_pi [IsVLArchimedean X] :
     exact ⟨n, ⟨e.symm⟩⟩
   · -- (⇐): iso to Fin n → ℝ ⟹ FD.
     rintro ⟨n, ⟨e⟩⟩
-    haveI : FiniteDimensional ℝ (Fin n → ℝ) := inferInstance
+    have : FiniteDimensional ℝ (Fin n → ℝ) := inferInstance
     exact e.toLinearEquiv.symm.finiteDimensional
 
 /-! ### Coordinate expansion in discrete vector lattices -/
@@ -1269,7 +1268,7 @@ lemma exists_unique_principalBandProjection_eq_smul
       (Band.principalProjectionBand a : Set X) at h
     rw [Band.principalProjectionBand_coe] at h
     exact h
-  letI : IsVLArchimedean X := isVLArchimedean_of_hasPrincipalProjectionProperty
+  let : IsVLArchimedean X := isVLArchimedean_of_hasPrincipalProjectionProperty
   change Band.principalBandProjection a x ∈
     (Band.generated ({a} : Set X) : Set X) at hmem
   rw [principalBand_eq_smul_of_isVLAtom ha] at hmem

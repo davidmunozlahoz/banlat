@@ -69,7 +69,7 @@ private lemma solid_dd {A : Set X} {x y : X}
 private lemma archimedean_disjoint_step [IsVLArchimedean X]
     {v t w : X} (hv_nn : 0 ≤ v) (ht_nn : 0 ≤ t) (hw_nn : 0 ≤ w)
     (ht_le_v : t ≤ v) (hbound : ∀ n : ℕ, v ⊓ (n • t - w) ≤ 0) : t = 0 := by
-  letI : DistribLattice X := AddCommGroup.toDistribLattice X
+  let : DistribLattice X := AddCommGroup.toDistribLattice X
   refine IsVLArchimedean.eq_zero_of_nonneg_of_forall_nsmul_le (y := w) ht_nn
     (fun n => ?_)
   have h_nv_nn : (0 : X) ≤ n • v := nsmul_nonneg hv_nn n

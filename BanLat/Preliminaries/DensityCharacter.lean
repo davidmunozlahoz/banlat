@@ -226,7 +226,7 @@ theorem separableSpace_iff_densityCharacter_le_aleph0
     SeparableSpace X ↔ densityCharacter X ≤ Cardinal.aleph0 := by
   constructor
   · intro hX
-    letI := hX
+    let := hX
     exact densityCharacter_le_aleph0 X
   · intro hX
     obtain ⟨D, hD, hDcard⟩ :=
@@ -240,7 +240,7 @@ theorem separableSpace_iff_exists_dense_seq
     SeparableSpace X ↔ ∃ u : ℕ → X, DenseRange u := by
   constructor
   · intro hX
-    letI := hX
+    let := hX
     exact exists_dense_seq X
   · rintro ⟨u, hu⟩
     exact SeparableSpace.of_denseRange u hu

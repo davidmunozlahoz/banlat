@@ -160,7 +160,10 @@ private lemma coordinateMap_smul_normalizedAtom
   · rw [coordinateMap_apply]
     change atomCoordinateLinearMap a.property.1
       (c • (a : Lp ℝ (p : ENNReal) μ)) = c
-    rw [map_smul, atomCoordinateLinearMap_apply, atomCoordinate_self]
+    rw [map_smul]
+    change c • atomCoordinate a.property.1 (a : Lp ℝ (p : ENNReal) μ) = c
+    rw [show atomCoordinate a.property.1 (a : Lp ℝ (p : ENNReal) μ) = 1 from
+      atomCoordinate_self _]
     simp
   · intro b hba
     rw [coordinateMap_apply]
@@ -169,8 +172,8 @@ private lemma coordinateMap_smul_normalizedAtom
     have hdis : IsVLDisjoint (b : Lp ℝ (p : ENNReal) μ) a :=
       normalizedAtoms_isDisjointSet.2 b.property a.property
         (fun h ↦ hba (Subtype.ext h))
-    rw [atomCoordinateLinearMap_apply,
-      atomCoordinate_eq_zero_of_isVLDisjoint b.property.1 hdis, smul_zero]
+    change c • atomCoordinate b.property.1 (a : Lp ℝ (p : ENNReal) μ) = 0
+    rw [atomCoordinate_eq_zero_of_isVLDisjoint b.property.1 hdis, smul_zero]
 
 private lemma coordinateMap_smul_normalizedAtom_eq_single
     [IsAtomicVectorLattice (Lp ℝ (p : ENNReal) μ)]
@@ -248,15 +251,15 @@ theorem exists_banachLatEquiv_fin_or_nat
   classical
   let A := normalizedAtoms (Lp ℝ (p : ENNReal) μ)
   have hcount : Countable A := countable_normalizedAtoms
-  letI : Countable A := hcount
+  let : Countable A := hcount
   rcases finite_or_infinite A with hfin | hinf
   · left
-    letI : Finite A := hfin
+    let : Finite A := hfin
     refine ⟨Nat.card A, ?_⟩
     exact ⟨(banachLatEquivNormalizedAtoms (μ := μ) (p := p)).trans
       (BanachLatEquiv.lpCongrLeft (p := (p : ENNReal)) (Finite.equivFin A))⟩
   · right
-    letI : Infinite A := hinf
+    let : Infinite A := hinf
     let he : Nonempty (A ≃ ℕ) := inferInstance
     obtain ⟨e⟩ := he
     exact ⟨(banachLatEquivNormalizedAtoms (μ := μ) (p := p)).trans

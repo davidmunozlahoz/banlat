@@ -105,9 +105,9 @@ private lemma eq_zero_of_orderConvergesTo_const_zero
     (ha : OrderConvergesTo (fun _ : ι => (0 : Z)) a) :
     a = 0 := by
   rcases ha with ⟨κ, hκpre, hκdir, hκnon, r, _hranti, _hrnn, hrglb, hrevent⟩
-  letI : Preorder κ := hκpre
-  letI : IsDirected κ (· ≤ ·) := hκdir
-  letI : Nonempty κ := hκnon
+  let : Preorder κ := hκpre
+  let : IsDirected κ (· ≤ ·) := hκdir
+  let : Nonempty κ := hκnon
   have hle : |a| ≤ 0 := by
     apply hrglb.2
     rintro _ ⟨k, rfl⟩
@@ -139,11 +139,11 @@ private lemma null_sSup_mem_of_modulus_orderContinuous (T : OrderBoundedHom X Y)
     x ∈ null T := by
   let U : OrderBoundedHom X Y := |T|
   let ι : Type u := {y : X // y ∈ S}
-  letI : Preorder ι := inferInstance
-  haveI : IsDirected ι (· ≤ ·) := ⟨fun a b => by
+  let : Preorder ι := inferInstance
+  have : IsDirected ι (· ≤ ·) := ⟨fun a b => by
     obtain ⟨c, hcS, hac, hbc⟩ := hSdir (a : X) a.2 (b : X) b.2
     exact ⟨⟨c, hcS⟩, hac, hbc⟩⟩
-  haveI : Nonempty ι := by
+  have : Nonempty ι := by
     obtain ⟨s, hs⟩ := hSne
     exact ⟨⟨s, hs⟩⟩
   let u : ι → X := fun s => s
