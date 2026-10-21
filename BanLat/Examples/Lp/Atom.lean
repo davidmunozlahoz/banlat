@@ -9,7 +9,7 @@ import Mathlib.MeasureTheory.Function.LpSpace.Indicator
 import Mathlib.MeasureTheory.Measure.Typeclasses.ZeroOne
 
 /-!
-# Vector lattice atoms in `Lₚ` spaces with `0 < p < ∞'
+# Vector lattice atoms in `Lₚ` spaces with `0 < p < ∞`
 
 This file characterizes the **lattice atoms of `L^p(μ)`, `0 < p < ∞`:**
 a positive `a ∈ L^p(μ)` is an atom if and only if `a = c 1_A` a.e. for
@@ -180,23 +180,6 @@ private lemma exists_indicatorConstLp_le_of_pos
   · rw [Set.indicator_of_notMem hxs]
     exact hnonneg
 
-private lemma indicatorConstLp_nonneg
-    {s : Set α} (hs : MeasurableSet s) (hμs : μ s < ∞)
-    {c : ℝ} (hc : 0 ≤ c) :
-    0 ≤ indicatorConstLp (p : ENNReal) hs hμs.ne c := by
-  rw [← Lp.coeFn_nonneg]
-  have hcoe :
-      ((indicatorConstLp (p : ENNReal) hs hμs.ne c :
-        Lp ℝ (p : ENNReal) μ) : α → ℝ) =ᵐ[μ] s.indicator fun _ ↦ c :=
-    indicatorConstLp_coeFn
-  filter_upwards [hcoe] with x hx
-  rw [hx]
-  by_cases hxs : x ∈ s
-  · rw [Set.indicator_of_mem hxs]
-    exact hc
-  · rw [Set.indicator_of_notMem hxs]
-    simp
-
 private lemma indicatorConstLp_le_of_subset
     {s t : Set α} (hs : MeasurableSet s) (ht : MeasurableSet t)
     (hμs : μ s < ∞) (hμt : μ t < ∞) (hts : t ⊆ s)
@@ -282,8 +265,8 @@ theorem Measure.isAtom_of_isVLAtom_indicatorConstLp
   let x := indicatorConstLp (p : ENNReal) ht hμt_finite.ne c
   let y := indicatorConstLp (p : ENNReal) hu hμu_finite.ne c
   let a := indicatorConstLp (p : ENNReal) hs hμs.ne c
-  have hx0 : 0 ≤ x := indicatorConstLp_nonneg ht hμt_finite hc.le
-  have hy0 : 0 ≤ y := indicatorConstLp_nonneg hu hμu_finite hc.le
+  have hx0 : 0 ≤ x := Lp.indicatorConstLp_nonneg ht hμt_finite.ne hc.le
+  have hy0 : 0 ≤ y := Lp.indicatorConstLp_nonneg hu hμu_finite.ne hc.le
   have hxa : x ≤ a := indicatorConstLp_le_of_subset hs ht hμs hμt_finite hts hc.le
   have hya : y ≤ a := indicatorConstLp_le_of_subset hs hu hμs hμu_finite hus hc.le
   have htu : Disjoint t u := Set.disjoint_sdiff_right
@@ -347,3 +330,16 @@ theorem isVLAtom_iff_exists_isAtom
     exact ⟨s, hs_atom, hμs, d, hd, ha_indicator⟩
   · rintro ⟨s, hs, hμs, c, hc, rfl⟩
     exact Measure.IsAtom.isVLAtom_indicatorConstLp hs hμs hc
+
+/-- For `0 < p < ∞`, a finite measure `μ` is atomlessness iff `Lᵖ(μ)`
+has no lattice atoms. -/
+theorem MeasureTheory.Lp.hasNoAtoms_iff_forall_not_isVLAtom
+    [IsFiniteMeasure μ] [Fact (0 < p)] :
+    μ.HasNoAtoms ↔ ∀ a : Lp ℝ (p : ENNReal) μ, ¬ IsVLAtom a := by
+  constructor
+  · intro h a ha
+    obtain ⟨s, hs, _⟩ := isVLAtom_iff_exists_isAtom.mp ha
+    exact h hs.1 hs.2.1 hs
+  · intro h s _ _ hs
+    exact h _ (Measure.IsAtom.isVLAtom_indicatorConstLp
+      (p := p) hs (measure_lt_top μ s) zero_lt_one)
