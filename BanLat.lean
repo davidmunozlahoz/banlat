@@ -31,6 +31,7 @@ import BanLat.ComplexBanachLattice.Complexification
 import BanLat.ComplexBanachLattice.Modulus
 import BanLat.Convergences.Order
 import BanLat.Convergences.Uniform
+import BanLat.CountableSupProperty
 import BanLat.Disjoint
 import BanLat.Dual
 import BanLat.Examples.CofK.Basic
