@@ -2,27 +2,28 @@
 Authors: Jesús Illescas-Fiorito
 -/
 
+import BanLat.ComplexBanachLattice.Hom
 import BanLat.ComplexBanachLattice.Modulus.Basic
-import BanLat.Operators.Hom
-import Mathlib.LinearAlgebra.Complex.Module
 
 /-!
-# Complexification of a real Banach lattice
+# Complexification of a real vector lattice
 
-This file constructs the **complexification** of a real Banach lattice `E`, whose elements
-are pairs with real and imaginary components `z.re` and `z.im`. Addition, complex scalar
-multiplication and conjugation are defined in the usual way.
+This file constructs the **complexification** of a real vector lattice `E`, whose elements are
+pairs with real and imaginary components `z.re` and `z.im`. Addition, complex scalar multiplication
+and conjugation are defined in the usual way.
 
-Disclaimer: Mathlib provides abstract real and imaginary parts for any complex star module, but it
+When `E` is uniformly complete, the lattice-valued modulus `modulus z ∈ E₊` is defined as the
+supremum of the set `{cos(θ)·z.re + sin(θ)·z.im | θ : ℝ}`. This makes its complexification a
+complex vector lattice.
+
+When `E` is a Banach lattice, the norm is defined by `‖z‖ = ‖modulus z‖`, and its complexification
+becomes a complex Banach lattice. Moreover, every complex Banach lattice is shown to be
+isometrically equivalent to the complexification of its `selfAdjoint` part.
+
+*Disclaimer:* Mathlib provides abstract real and imaginary parts for any complex star module, but it
 does not provide the complexification constructed here. After equipping `Complexification E` with a
 complex module structure and conjugation, we identify its self-adjoint part with `E` and show that
 Mathlib's abstract real and imaginary parts agree with the concrete `re` and `im` coordinates.
-
-Moreover, the lattice-valued modulus `modulus z ∈ E₊` is defined as the supremum of the set
-`{cos(θ)·z.re + sin(θ)·z.im | θ : ℝ}`, and the norm is defined by means of
-`‖z‖ = ‖modulus z‖`.
-
-With all this structure, the complexification becomes a complete complex normed space
 -/
 
 /-- The complexification of a type `E`, represented as a pair of elements of `E`. -/
@@ -231,6 +232,18 @@ theorem selfAdjointEquiv_imaginaryPart (z : Complexification E) :
 
 end RealPart
 
+section Modulus
+
+variable {E : Type*} [AddCommGroup E] [Lattice E] [IsOrderedAddMonoid E]
+  [VectorLattice E] [IsUniformlyCompleteVectorLattice E]
+
+/-- The modulus of an element of the complexification of a uniformly complete real vector
+lattice. -/
+noncomputable def modulus (z : Complexification E) : E :=
+  VectorLattice.complexModulus z.re z.im
+
+end Modulus
+
 section Norm
 
 variable {E : Type*} [NormedAddCommGroup E] [Lattice E] [IsOrderedAddMonoid E]
@@ -238,10 +251,6 @@ variable {E : Type*} [NormedAddCommGroup E] [Lattice E] [IsOrderedAddMonoid E]
 
 local instance : IsUniformlyCompleteVectorLattice E :=
   isUniformlyCompleteVectorLattice_of_banachLattice E
-
-/-- The modulus of an element of the complexification of a real Banach lattice. -/
-noncomputable def modulus (z : Complexification E) : E :=
-  VectorLattice.complexModulus z.re z.im
 
 /-- The norm on the complexification of a real Banach lattice is induced by the complex modulus. -/
 noncomputable instance : Norm (Complexification E) where
@@ -296,18 +305,15 @@ noncomputable instance : NormedSpace ℂ (Complexification E) :=
 
 end Norm
 
-section SelfAdjointBanachLattice
+section SelfAdjointVectorLattice
 
 open scoped ComplexStarModule
 
-variable {E : Type*} [NormedAddCommGroup E] [Lattice E] [IsOrderedAddMonoid E]
-  [BanachLattice E]
-
-local instance : IsUniformlyCompleteVectorLattice E :=
-  isUniformlyCompleteVectorLattice_of_banachLattice E
+variable {E : Type*} [AddCommGroup E] [Lattice E] [IsOrderedAddMonoid E]
+  [VectorLattice E]
 
 /-- The self-adjoint part of a complexification inherits the lattice structure of the
-original real Banach lattice. -/
+original real vector lattice. -/
 noncomputable instance instLatticeSelfAdjoint :
     Lattice (selfAdjoint (Complexification E)) := by
   exact selfAdjointEquiv.toEquiv.lattice
@@ -329,6 +335,104 @@ private theorem selfAdjointEquiv_inf
     selfAdjointEquiv (x ⊓ y) = selfAdjointEquiv x ⊓ selfAdjointEquiv y := by
   exact selfAdjointEquiv.apply_symm_apply _
 
+end SelfAdjointVectorLattice
+
+section ComplexVectorLatticeStructure
+
+open scoped ComplexStarModule
+
+variable {E : Type*} [AddCommGroup E] [Lattice E] [IsOrderedAddMonoid E]
+  [VectorLattice E] [IsUniformlyCompleteVectorLattice E]
+
+/-- The complexification of a uniformly complete real vector lattice is a complex vector
+lattice. -/
+noncomputable instance instComplexVectorLattice :
+    ComplexVectorLattice (Complexification E) := by
+  refine
+    { smul_le_smul_of_nonneg_left := ?_
+      coe_smul := ?_
+      exists_isLUB_rotationRange := ?_ }
+  · intro a ha x y hxy
+    change selfAdjointEquiv (a • x) ≤ selfAdjointEquiv (a • y)
+    change selfAdjointEquiv x ≤ selfAdjointEquiv y at hxy
+    rw [map_smul, map_smul]
+    exact smul_le_smul_of_nonneg_left hxy ha
+  · intro r x
+    rfl
+  · intro x y
+    let u := selfAdjointEquiv.symm
+      (VectorLattice.complexModulus (selfAdjointEquiv x) (selfAdjointEquiv y))
+    refine ⟨u, ?_⟩
+    constructor
+    · rintro _ ⟨θ, rfl⟩
+      change selfAdjointEquiv (Real.cos θ • x + Real.sin θ • y) ≤
+        selfAdjointEquiv u
+      rw [map_add, map_smul, map_smul, LinearEquiv.apply_symm_apply]
+      exact (VectorLattice.complexModulus_isLUB
+        (selfAdjointEquiv x) (selfAdjointEquiv y)).1 ⟨θ, rfl⟩
+    · intro v hv
+      change selfAdjointEquiv u ≤ selfAdjointEquiv v
+      rw [LinearEquiv.apply_symm_apply]
+      apply (VectorLattice.complexModulus_isLUB
+        (selfAdjointEquiv x) (selfAdjointEquiv y)).2
+      rintro _ ⟨θ, rfl⟩
+      have h := hv ⟨θ, rfl⟩
+      change selfAdjointEquiv (Real.cos θ • x + Real.sin θ • y) ≤
+        selfAdjointEquiv v at h
+      rw [map_add, map_smul, map_smul] at h
+      exact h
+
+private theorem selfAdjointEquiv_modulus (z : Complexification E) :
+    selfAdjointEquiv (ComplexVectorLattice.modulus z) =
+      Complexification.modulus z := by
+  symm
+  apply (VectorLattice.complexModulus_isLUB z.re z.im).unique
+  constructor
+  · rintro _ ⟨θ, rfl⟩
+    have h := (ComplexVectorLattice.modulus_isLUB z).1 ⟨θ, rfl⟩
+    change selfAdjointEquiv (Real.cos θ • ℜ z + Real.sin θ • ℑ z) ≤
+      selfAdjointEquiv (ComplexVectorLattice.modulus z) at h
+    rw [map_add, map_smul, map_smul, selfAdjointEquiv_realPart,
+      selfAdjointEquiv_imaginaryPart] at h
+    exact h
+  · intro u hu
+    have h : ComplexVectorLattice.modulus z ≤ selfAdjointEquiv.symm u := by
+      apply (ComplexVectorLattice.modulus_isLUB z).2
+      rintro _ ⟨θ, rfl⟩
+      change selfAdjointEquiv (Real.cos θ • ℜ z + Real.sin θ • ℑ z) ≤ u
+      rw [map_add, map_smul, map_smul, selfAdjointEquiv_realPart,
+        selfAdjointEquiv_imaginaryPart]
+      exact hu ⟨θ, rfl⟩
+    change selfAdjointEquiv (ComplexVectorLattice.modulus z) ≤ u
+    change selfAdjointEquiv (ComplexVectorLattice.modulus z) ≤
+      selfAdjointEquiv (selfAdjointEquiv.symm u) at h
+    rw [LinearEquiv.apply_symm_apply] at h
+    exact h
+
+/-- The abstract lattice-valued modulus, viewed in the ambient complexification, has the
+concrete modulus as its real coordinate and zero imaginary coordinate. -/
+@[simp]
+theorem coe_modulus (z : Complexification E) :
+    ((ComplexVectorLattice.modulus z :
+      selfAdjoint (Complexification E)) : Complexification E) =
+      ⟨Complexification.modulus z, 0⟩ := by
+  ext
+  · exact selfAdjointEquiv_modulus z
+  · exact (isSelfAdjoint_iff_im_eq_zero _).mp
+      (ComplexVectorLattice.modulus z).property
+
+end ComplexVectorLatticeStructure
+
+section SelfAdjointBanachLattice
+
+open scoped ComplexStarModule
+
+variable {E : Type*} [NormedAddCommGroup E] [Lattice E] [IsOrderedAddMonoid E]
+  [BanachLattice E]
+
+local instance : IsUniformlyCompleteVectorLattice E :=
+  isUniformlyCompleteVectorLattice_of_banachLattice E
+
 /-- The equivalence between the self-adjoint part of a complexification and the original
 space preserves norms. -/
 theorem norm_selfAdjointEquiv (x : selfAdjoint (Complexification E)) :
@@ -337,33 +441,35 @@ theorem norm_selfAdjointEquiv (x : selfAdjoint (Complexification E)) :
   have him := (isSelfAdjoint_iff_im_eq_zero x.1).1 x.2
   rw [him, VectorLattice.complexModulus_zero_right, norm_abs_eq_norm]
 
-/-- The self-adjoint part of the complexification of a real Banach lattice is a Banach
-lattice. -/
-noncomputable instance instBanachLatticeSelfAdjoint :
-    BanachLattice (selfAdjoint (Complexification E)) := by
+/-- The complexification of a real Banach lattice becomes a **complex Banach lattice.** -/
+noncomputable instance instComplexBanachLattice :
+    ComplexBanachLattice (Complexification E) := by
   refine
-    { smul_le_smul_of_nonneg_left := by
-        intro a ha x y hxy
-        change selfAdjointEquiv (a • x) ≤ selfAdjointEquiv (a • y)
-        change selfAdjointEquiv x ≤ selfAdjointEquiv y at hxy
-        rw [map_smul, map_smul]
-        exact smul_le_smul_of_nonneg_left hxy ha
-      solid := by
-        intro x y hxy
-        rw [← norm_selfAdjointEquiv x, ← norm_selfAdjointEquiv y]
-        apply norm_le_norm_of_abs_le_abs
-        change selfAdjointEquiv |x| ≤ selfAdjointEquiv |y| at hxy
-        simpa only [abs, selfAdjointEquiv_sup, map_neg] using hxy
-      norm_smul := by
-        intro r x
-        rw [← norm_selfAdjointEquiv (r • x), ← norm_selfAdjointEquiv x, map_smul, norm_smul]
-      toCompleteSpace := ?_ }
-  exact
-    (completeSpace_congr (e := selfAdjointEquiv.toEquiv)
-      (AddMonoidHomClass.isometry_of_norm selfAdjointEquiv
-        norm_selfAdjointEquiv).isUniformEmbedding).mpr inferInstance
+    { solid := ?_
+      norm_smul := ?_
+      toCompleteSpace := ?_
+      norm_modulus := ?_ }
+  · intro x y hxy
+    rw [← norm_selfAdjointEquiv x, ← norm_selfAdjointEquiv y]
+    apply norm_le_norm_of_abs_le_abs
+    change selfAdjointEquiv |x| ≤ selfAdjointEquiv |y| at hxy
+    simpa only [abs, selfAdjointEquiv_sup, map_neg] using hxy
+  · intro r x
+    rw [← norm_selfAdjointEquiv (r • x), ← norm_selfAdjointEquiv x,
+      map_smul, norm_smul]
+  · exact
+      (completeSpace_congr (e := selfAdjointEquiv.toEquiv)
+        (AddMonoidHomClass.isometry_of_norm selfAdjointEquiv
+          norm_selfAdjointEquiv).isUniformEmbedding).mpr inferInstance
+  · intro z
+    rw [← norm_selfAdjointEquiv]
+    have h := congrArg Complexification.re (coe_modulus z)
+    change selfAdjointEquiv (ComplexVectorLattice.modulus z) =
+      Complexification.modulus z at h
+    rw [h]
+    exact (norm_eq z).symm
 
-/-- The self-adjoint part of a complexification is Banach-lattice isometrically
+/-- The self-adjoint part of a complexification is Banach lattice isometrically
 equivalent to the original real Banach lattice. -/
 noncomputable def selfAdjointBanachLatEquiv :
     BanachLatEquiv (selfAdjoint (Complexification E)) E := by
@@ -373,7 +479,7 @@ noncomputable def selfAdjointBanachLatEquiv :
       map_sup' := selfAdjointEquiv_sup
       map_inf' := selfAdjointEquiv_inf }
 
-/-- The Banach-lattice equivalence from the self-adjoint part agrees with
+/-- The Banach lattice equivalence from the self-adjoint part agrees with
 `selfAdjointEquiv`. -/
 @[simp]
 theorem selfAdjointBanachLatEquiv_apply
@@ -381,39 +487,113 @@ theorem selfAdjointBanachLatEquiv_apply
     selfAdjointBanachLatEquiv x = selfAdjointEquiv x := by
   rfl
 
-private noncomputable instance instComplexVectorLattice :
-    ComplexVectorLattice (Complexification E) :=
-  ComplexVectorLattice.ofSelfAdjointBanachLattice (fun _ _ ↦ rfl)
-
 /-- The abstract complex modulus corresponds to the modulus used to norm the
 complexification. -/
 theorem selfAdjointBanachLatEquiv_modulus (z : Complexification E) :
     selfAdjointBanachLatEquiv (ComplexVectorLattice.modulus z) =
       Complexification.modulus z := by
-  letI : IsUniformlyCompleteVectorLattice (selfAdjoint (Complexification E)) :=
-    isUniformlyCompleteVectorLattice_of_banachLattice _
-  rw [ComplexVectorLattice.modulus_eq_complexModulus]
-  change selfAdjointBanachLatEquiv.toVecLatEquiv
-      (VectorLattice.complexModulus (ℜ z) (ℑ z)) =
-    VectorLattice.complexModulus z.re z.im
-  rw [VecLatEquiv.map_complexModulus]
-  change VectorLattice.complexModulus (selfAdjointBanachLatEquiv (ℜ z))
-      (selfAdjointBanachLatEquiv (ℑ z)) =
-    VectorLattice.complexModulus z.re z.im
-  rw [selfAdjointBanachLatEquiv_apply, selfAdjointBanachLatEquiv_apply,
-    selfAdjointEquiv_realPart, selfAdjointEquiv_imaginaryPart]
-
-/-- The complexification of a real Banach lattice is a complex Banach lattice. -/
-noncomputable instance instComplexBanachLattice :
-    ComplexBanachLattice (Complexification E) := by
-  refine
-    { instComplexVectorLattice, instBanachLatticeSelfAdjoint with
-      norm_modulus := ?_ }
-  intro z
-  rw [← norm_selfAdjointEquiv]
-  rw [← selfAdjointBanachLatEquiv_apply, selfAdjointBanachLatEquiv_modulus,
-    ← norm_eq]
+  rw [selfAdjointBanachLatEquiv_apply, selfAdjointEquiv_modulus]
 
 end SelfAdjointBanachLattice
 
 end Complexification
+
+/-! ## Canonical equivalence with the complexification of the self-adjoint part -/
+
+open scoped ComplexStarModule
+
+namespace ComplexBanachLattice
+
+variable (Z : Type*)
+  [NormedAddCommGroup Z] [NormedSpace ℂ Z]
+  [StarAddMonoid Z] [StarModule ℂ Z]
+  [Lattice (selfAdjoint Z)] [IsOrderedAddMonoid (selfAdjoint Z)]
+  [ComplexBanachLattice Z]
+
+local instance : IsUniformlyCompleteVectorLattice (selfAdjoint Z) :=
+  isUniformlyCompleteVectorLattice_of_banachLattice (selfAdjoint Z)
+
+private theorem modulus_coe_add_I_smul_coe
+    (x y : selfAdjoint Z) :
+    ComplexVectorLattice.modulus ((x : Z) + Complex.I • (y : Z)) =
+      VectorLattice.complexModulus x y := by
+  rw [ComplexVectorLattice.modulus_eq_complexModulus]
+  simp only [map_add, realPart_I_smul, imaginaryPart_I_smul,
+    selfAdjoint.realPart_coe, selfAdjoint.imaginaryPart_coe,
+    neg_zero, add_zero, zero_add]
+
+/-- A complex Banach lattice is canonically equivalent to the complexification
+of its self-adjoint part. -/
+noncomputable def complexificationEquiv :
+    ComplexBanachLatEquiv (Complexification (selfAdjoint Z)) Z := by
+  let L : Complexification (selfAdjoint Z) →ₗ[ℂ] Z :=
+    { toFun := fun z ↦ (z.re : Z) + Complex.I • (z.im : Z)
+      map_add' := by
+        intro z w
+        simp only [Complexification.re_add, Complexification.im_add,
+          (selfAdjoint Z).coe_add]
+        module
+      map_smul' := by
+        intro c z
+        rw [Complexification.re_smul, Complexification.im_smul,
+          (selfAdjoint Z).coe_sub, (selfAdjoint Z).coe_add]
+        simp only [ComplexVectorLattice.coe_smul]
+        match_scalars <;> apply Complex.ext <;> simp_all }
+  let e : Complexification (selfAdjoint Z) ≃ₗ[ℂ] Z :=
+    { toFun := L
+      invFun := fun z ↦ ⟨ℜ z, ℑ z⟩
+      left_inv := by
+        intro z
+        change ⟨ℜ ((z.re : Z) + Complex.I • (z.im : Z)),
+          ℑ ((z.re : Z) + Complex.I • (z.im : Z))⟩ = z
+        ext <;> simp
+      right_inv := realPart_add_I_smul_imaginaryPart
+      map_add' := L.map_add
+      map_smul' := L.map_smul }
+  refine
+    { toLinearIsometryEquiv :=
+        { toLinearEquiv := e
+          norm_map' := ?_ }
+      map_modulus' := ?_ }
+  · intro z
+    calc
+      ‖L z‖ = ‖ComplexVectorLattice.modulus (L z)‖ :=
+        (norm_modulus (L z)).symm
+      _ = ‖Complexification.modulus z‖ := by
+        change ‖ComplexVectorLattice.modulus
+          ((z.re : Z) + Complex.I • (z.im : Z))‖ = _
+        rw [modulus_coe_add_I_smul_coe]
+        rfl
+      _ = ‖z‖ := (Complexification.norm_eq z).symm
+  · intro z
+    change L ((ComplexVectorLattice.modulus z : selfAdjoint
+      (Complexification (selfAdjoint Z))) :
+        Complexification (selfAdjoint Z)) =
+      ((ComplexVectorLattice.modulus (L z) : selfAdjoint Z) : Z)
+    rw [Complexification.coe_modulus]
+    simp only [L]
+    change ((Complexification.modulus z : selfAdjoint Z) : Z) +
+      Complex.I • (0 : Z) =
+      ((ComplexVectorLattice.modulus
+        ((z.re : Z) + Complex.I • (z.im : Z)) :
+        selfAdjoint Z) : Z)
+    rw [smul_zero, add_zero]
+    apply congrArg Subtype.val
+    rw [modulus_coe_add_I_smul_coe]
+    rfl
+
+/-- The canonical equivalence reconstructs an element from its two coordinates. -/
+@[simp]
+theorem complexificationEquiv_apply
+    (z : Complexification (selfAdjoint Z)) :
+    complexificationEquiv Z z =
+      (z.re : Z) + Complex.I • (z.im : Z) := by
+  rfl
+
+/-- The inverse canonical equivalence takes real and imaginary parts. -/
+@[simp]
+theorem complexificationEquiv_symm_apply (z : Z) :
+    (complexificationEquiv Z).symm z = ⟨ℜ z, ℑ z⟩ := by
+  rfl
+
+end ComplexBanachLattice
