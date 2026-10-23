@@ -8,6 +8,7 @@ import BanLat.ALSpace.Sublattice
 import BanLat.ALpSpace.Basic
 import BanLat.AMSpace.Basic
 import BanLat.AMSpace.Characters
+import BanLat.AMSpace.Complex.Basic
 import BanLat.AMSpace.Dual
 import BanLat.AMSpace.Kakutani
 import BanLat.AMSpace.Max
@@ -42,6 +43,7 @@ import BanLat.DedekindCompletion.ExistenceUniqueness
 import BanLat.Disjoint
 import BanLat.Dual
 import BanLat.Examples.CofK.Basic
+import BanLat.Examples.CofK.Complex
 import BanLat.Examples.CofK.Dual
 import BanLat.Examples.CofK.FunctionalCalculus
 import BanLat.Examples.Ellp.Sum
