@@ -9,6 +9,7 @@ import BanLat.ALpSpace.Basic
 import BanLat.AMSpace.Basic
 import BanLat.AMSpace.Characters
 import BanLat.AMSpace.Complex.Basic
+import BanLat.AMSpace.Complex.Kakutani
 import BanLat.AMSpace.Dual
 import BanLat.AMSpace.Kakutani
 import BanLat.AMSpace.Max
