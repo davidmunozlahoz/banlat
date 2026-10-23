@@ -69,12 +69,26 @@ def IsSigmaOrderContinuousOp (T : E →ₗ[ℝ] F) : Prop :=
   ∀ {x : ℕ → E}, Antitone x → IsGLB (Set.range x) 0 →
     Antitone (fun n ↦ T (x n)) ∧ IsGLB (Set.range fun n ↦ T (x n)) 0
 
-/-- A positive linear operator is order continuous if it preserves greatest lower bounds
+private lemma positive_of_isGLB_zero {T : E →ₗ[ℝ] F}
+    (h : ∀ {ι : Type u} [Preorder ι] [IsDirected ι (· ≤ ·)] [Nonempty ι]
+      {x : ι → E}, Antitone x → IsGLB (Set.range x) 0 →
+        IsGLB (Set.range fun i ↦ T (x i)) 0) : Positive T := by
+  intro a ha
+  let x : ℕ → E := fun n ↦ if n = 0 then a else 0
+  have hx : Antitone x := antitone_nat_of_succ_le (fun n ↦ by
+    simpa [x] using (ite_nonneg (p := n = 0) ha le_rfl))
+  have hglb : IsGLB (Set.range fun n : ULift.{u} ℕ ↦ x n.down) 0 :=
+    ⟨fun _ ⟨n, hn⟩ ↦ hn ▸ ite_nonneg ha le_rfl, fun _ hb ↦ hb ⟨⟨1⟩, rfl⟩⟩
+  exact (h (x := fun n : ULift.{u} ℕ ↦ x n.down) (fun _ _ hij ↦ hx hij) hglb).1
+    ⟨⟨0⟩, rfl⟩
+
+/-- A linear operator is order continuous if it preserves greatest lower bounds
 of decreasing nets with greatest lower bound zero. -/
-private lemma orderContinuous_of_isGLB_zero {T : E →ₗ[ℝ] F} (hT : Positive T)
+private lemma orderContinuous_of_isGLB_zero {T : E →ₗ[ℝ] F}
     (h : ∀ {ι : Type u} [Preorder ι] [IsDirected ι (· ≤ ·)] [Nonempty ι]
       {x : ι → E}, Antitone x → IsGLB (Set.range x) 0 →
         IsGLB (Set.range fun i ↦ T (x i)) 0) : IsOrderContinuousOp T := by
+  have hT : Positive T := positive_of_isGLB_zero h
   rintro ι _ _ _ x a ⟨κ, hκ, hdκ, hnκ, r, hr, hrpos, hrglb, hevent⟩
   letI := hκ
   letI := hdκ
@@ -103,7 +117,7 @@ theorem isOrderContinuousOp_iff_isGLB_zero (hT : Positive T) :
       ∀ {ι : Type u} [Preorder ι] [IsDirected ι (· ≤ ·)] [Nonempty ι]
         {x : ι → E}, Antitone x → IsGLB (Set.range x) 0 →
           IsGLB (Set.range fun i ↦ T (x i)) 0 := by
-  refine ⟨?_, orderContinuous_of_isGLB_zero hT⟩
+  refine ⟨?_, orderContinuous_of_isGLB_zero⟩
   intro h ι _ _ _ x hx hglb
   have hc := h (orderConvergesTo_of_antitone_isGLB hx hglb)
   exact ⟨fun y ⟨i, hi⟩ ↦ hi ▸ hT _ (hglb.1 ⟨i, rfl⟩),
