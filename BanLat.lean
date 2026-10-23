@@ -28,6 +28,7 @@ import BanLat.BooleanAlgebras.SigmaComplete
 import BanLat.BooleanAlgebras.Stone
 import BanLat.ComplexBanachLattice.Basic
 import BanLat.ComplexBanachLattice.Complexification
+import BanLat.ComplexBanachLattice.Hom
 import BanLat.ComplexBanachLattice.Modulus
 import BanLat.Convergences.Order
 import BanLat.Convergences.Uniform
