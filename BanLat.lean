@@ -29,7 +29,8 @@ import BanLat.BooleanAlgebras.Stone
 import BanLat.ComplexBanachLattice.Basic
 import BanLat.ComplexBanachLattice.Complexification
 import BanLat.ComplexBanachLattice.Hom
-import BanLat.ComplexBanachLattice.Modulus
+import BanLat.ComplexBanachLattice.Modulus.Basic
+import BanLat.ComplexBanachLattice.Modulus.FunctionalCalculus
 import BanLat.Convergences.Order
 import BanLat.Convergences.Uniform
 import BanLat.Disjoint
