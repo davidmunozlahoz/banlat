@@ -2,7 +2,7 @@
 Authors: Pedro Tradacete
 -/
 
-import BanLat.Operators.OrderContinuous
+import BanLat.Operators.SigmaOrderContinuous
 import BanLat.Substructures.Band.Generated
 import Mathlib.Analysis.Real.Cardinality
 import Mathlib.Data.Finsupp.Order
@@ -63,12 +63,6 @@ private lemma exists_seq_isGLB_zero (hE : HasCountableSupProperty E)
   obtain ⟨n, rfl⟩ := hf ▸ Set.mem_insert_of_mem (-x i₀) hy
   exact le_neg.mpr ((hz ⟨n + 1, rfl⟩).trans ((hx (hab n)).trans_eq (ha n)))
 
-/-- A linear operator is σ-order continuous if it preserves decreasing sequences with
-greatest lower bound zero. -/
-def IsSigmaOrderContinuousOp (T : E →ₗ[ℝ] F) : Prop :=
-  ∀ {x : ℕ → E}, Antitone x → IsGLB (Set.range x) 0 →
-    Antitone (fun n ↦ T (x n)) ∧ IsGLB (Set.range fun n ↦ T (x n)) 0
-
 private lemma positive_of_isGLB_zero {T : E →ₗ[ℝ] F}
     (h : ∀ {ι : Type u} [Preorder ι] [IsDirected ι (· ≤ ·)] [Nonempty ι]
       {x : ι → E}, Antitone x → IsGLB (Set.range x) 0 →
@@ -123,18 +117,6 @@ theorem isOrderContinuousOp_iff_isGLB_zero (hT : Positive T) :
   exact ⟨fun y ⟨i, hi⟩ ↦ hi ▸ hT _ (hglb.1 ⟨i, rfl⟩),
     fun z hz ↦ by simpa only [map_zero] using hc.forall_le (fun i ↦ hz ⟨i, rfl⟩)⟩
 
-/-- An order-continuous positive linear operator is σ-order continuous. -/
-theorem isSigmaOrderContinuousOp (hT : Positive T) (h : IsOrderContinuousOp T) :
-    IsSigmaOrderContinuousOp T := by
-  intro x hx hglb
-  have hrange : Set.range (fun n : ULift.{u} ℕ ↦ x n.down) = Set.range x :=
-    ULift.down_surjective.range_comp x
-  have hc := (hT.isOrderContinuousOp_iff_isGLB_zero.mp h)
-    (show Antitone (fun n : ULift.{u} ℕ ↦ x n.down) from fun _ _ h ↦ hx h)
-    (hrange.symm ▸ hglb)
-  exact ⟨(monotone_iff.mpr hT).comp_antitone hx,
-    (ULift.down_surjective.range_comp (fun n ↦ T (x n))) ▸ hc⟩
-
 /-- On a vector lattice with the countable supremum property, a positive linear operator
 is order continuous exactly when it is σ-order continuous. -/
 theorem isOrderContinuousOp_iff_isSigmaOrderContinuousOp (hT : Positive T)
@@ -143,7 +125,8 @@ theorem isOrderContinuousOp_iff_isSigmaOrderContinuousOp (hT : Positive T)
   intro ι _ _ _ x hx hglb
   obtain ⟨b, hb, hbglb⟩ := exists_seq_isGLB_zero hE hx hglb
   exact ⟨fun y ⟨i, hi⟩ ↦ hi ▸ hT _ (hglb.1 ⟨i, rfl⟩),
-    fun z hz ↦ (h (hx.comp_monotone hb) hbglb).2.2
+    fun z hz ↦ ((hT.isSigmaOrderContinuousOp_iff_isGLB_zero.mp h)
+      (hx.comp_monotone hb) hbglb).2
       (fun y ⟨n, hn⟩ ↦ hn ▸ hz ⟨b n, rfl⟩)⟩
 
 end Positive
