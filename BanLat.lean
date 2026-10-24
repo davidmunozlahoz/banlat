@@ -30,7 +30,9 @@ import BanLat.ComplexBanachLattice.Basic
 import BanLat.ComplexBanachLattice.Complexification
 import BanLat.ComplexBanachLattice.Modulus
 import BanLat.Convergences.Order
+import BanLat.Convergences.SigmaOrder
 import BanLat.Convergences.Uniform
+import BanLat.CountableSupProperty
 import BanLat.Disjoint
 import BanLat.Dual
 import BanLat.Examples.CofK.Basic
@@ -76,6 +78,7 @@ import BanLat.Operators.OrderContinuous
 import BanLat.Operators.Positive
 import BanLat.Operators.Regular
 import BanLat.Operators.RieszKantorovich
+import BanLat.Operators.SigmaOrderContinuous
 import BanLat.Operators.StrictlyPositive
 import BanLat.OrderComplete
 import BanLat.OrderContinuous.Ando
