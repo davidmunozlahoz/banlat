@@ -3,10 +3,14 @@ Authors: Pedro Tradacete
 -/
 
 import Mathlib.Order.BooleanSubalgebra
+import Mathlib.Order.Bounds.OrderIso
+import Mathlib.Order.CompleteBooleanAlgebra
+import Mathlib.Order.Hom.CompleteLattice
 import Mathlib.Order.PrimeSeparator
 import Mathlib.Topology.Bases
 import Mathlib.Topology.Compactness.Compact
 import Mathlib.Topology.Connected.Separation
+import Mathlib.Topology.ExtremallyDisconnected
 import Mathlib.Topology.Sets.Closeds
 
 /-!
@@ -14,10 +18,41 @@ import Mathlib.Topology.Sets.Closeds
 
 The Stone space of a Boolean algebra consists of its prime ideals. Each algebra element
 determines the clopen set of prime ideals that do not contain it. The space is compact and
-totally separated, and the algebra is isomorphic to its algebra of clopen subsets.
+totally disconnected, and the algebra is isomorphic to its algebra of clopen subsets.
+Completeness of the Boolean algebra is equivalent to extremal disconnectedness of its Stone
+space. The clopen subsets of any extremally disconnected topological space form a complete
+Boolean algebra.
 -/
 
 universe u
+
+namespace TopologicalSpace.Clopens
+
+variable {X : Type u} [TopologicalSpace X]
+
+/-- In an extremally disconnected space, every family of clopen sets has a least
+upper bound, obtained by taking the closure of its union. -/
+private lemma exists_isLUB (h : ExtremallyDisconnected X)
+    (s : Set (Clopens X)) : ∃ C, IsLUB s C := by
+  let C : Clopens X :=
+    ⟨closure (⋃ c ∈ s, (c : Set X)), isClosed_closure,
+      h.open_closure _ (isOpen_iUnion fun c ↦ isOpen_iUnion fun _ ↦ c.isOpen)⟩
+  refine ⟨C, ?_, ?_⟩
+  · exact fun c hc x hx ↦ subset_closure (Set.mem_iUnion₂.mpr ⟨c, hc, hx⟩)
+  · intro D hD
+    exact closure_minimal (Set.iUnion₂_subset fun c hc ↦ hD hc) D.isClosed
+
+/-- Clopen subsets of an extremally disconnected topological space form a complete Boolean
+algebra. -/
+noncomputable instance instCompleteBooleanAlgebra [ExtremallyDisconnected X] :
+    CompleteBooleanAlgebra (Clopens X) where
+  __ := (inferInstance : BooleanAlgebra (Clopens X))
+  sSup s := (exists_isLUB inferInstance s).choose
+  sInf s := (exists_isLUB inferInstance (lowerBounds s)).choose
+  isLUB_sSup s := (exists_isLUB inferInstance s).choose_spec
+  isGLB_sInf s := isLUB_lowerBounds.mp (exists_isLUB inferInstance (lowerBounds s)).choose_spec
+
+end TopologicalSpace.Clopens
 
 namespace BooleanAlgebra
 
@@ -352,5 +387,44 @@ instance instTotallySeparatedSpace : TotallySeparatedSpace (StoneSpace B) := by
     refine ⟨stoneSet a, isClopen_stoneSet a, ?_, ?_⟩
     · simpa [stoneSet] using haI
     · simpa [stoneSet] using haJ
+
+/-- If `a` is the supremum of `s`, its Stone set is the closure of the union of the
+Stone sets associated to elements of `s`. -/
+private lemma stoneSet_eq_closure_iUnion {s : Set B} {a : B} (ha : IsLUB s a) :
+    stoneSet a = closure (⋃ b ∈ s, stoneSet b) := by
+  apply Set.Subset.antisymm
+  · intro x hx
+    by_contra hx'
+    obtain ⟨_, ⟨b, rfl⟩, hxb, hb⟩ :=
+      stoneSet_isTopologicalBasis.exists_subset_of_mem_open hx' isClosed_closure.isOpen_compl
+    have hab : a ≤ bᶜ := ha.2 fun c hc ↦ (stoneSet_subset_iff c bᶜ).mp (by
+      rw [stoneSet_compl]
+      exact fun I hIc hIb ↦ hb hIb (subset_closure (Set.mem_iUnion₂.mpr ⟨c, hc, hIc⟩)))
+    exact ((stoneSet_compl b) ▸ (stoneSet_subset_iff a bᶜ).mpr hab hx) hxb
+  · exact closure_minimal
+      (Set.iUnion₂_subset fun b hb ↦ (stoneSet_subset_iff b a).mpr (ha.1 hb))
+      (isClopen_stoneSet a).isClosed
+
+/-- Every subset of the Boolean algebra has a least upper bound (and therefore it's complete)
+if and only if its Stone space is extremally disconnected. -/
+theorem extremallyDisconnected_stoneSpace_iff :
+    ExtremallyDisconnected (StoneSpace B) ↔ ∀ s : Set B, ∃ a : B, IsLUB s a := by
+  constructor
+  · intro h s
+    letI := h
+    exact ⟨stoneRepresentation.symm (sSup (stoneRepresentation '' s)),
+      stoneRepresentation.isLUB_image.mp (isLUB_sSup _)⟩
+  · intro h
+    refine ⟨fun U hU ↦ ?_⟩
+    obtain ⟨S, hS, rfl⟩ := stoneSet_isTopologicalBasis.open_eq_sUnion hU
+    obtain ⟨a, ha⟩ := h (stoneSet ⁻¹' S)
+    have heq := stoneSet_eq_closure_iUnion ha
+    simp only [← Set.sUnion_image, Set.image_preimage_eq_of_subset hS] at heq
+    exact heq ▸ isOpen_stoneSet a
+
+/-- The Stone space of a complete Boolean algebra is extremally disconnected. -/
+instance instExtremallyDisconnected {B : Type u} [CompleteBooleanAlgebra B] :
+    ExtremallyDisconnected (StoneSpace B) := by
+  exact extremallyDisconnected_stoneSpace_iff.mpr fun s ↦ ⟨sSup s, isLUB_sSup s⟩
 
 end BooleanAlgebra
