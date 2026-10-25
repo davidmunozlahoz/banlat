@@ -137,6 +137,13 @@ def IsPConvex (X : Type*) [NormedAddCommGroup X] [Lattice X]
     [IsOrderedAddMonoid X] [BanachLattice X] : Prop :=
   IsPConvexOp p (ContinuousLinearMap.id ℝ X)
 
+/-- A Banach lattice is p-convex iff the norm of every finite lattice p-sum is bounded
+by a fixed nonnegative constant times the ℓᵖ norm of the individual norms. -/
+theorem isPConvex_iff :
+    IsPConvex p X ↔ ∃ C : ℝ, 0 ≤ C ∧ ∀ (n : ℕ) (x : Fin n → X),
+      ‖latticePSum p x‖ ≤ C * ‖WithLp.toLp p (fun i ↦ ‖x i‖)‖ :=
+  Iff.rfl
+
 variable {p} {T : E →L[ℝ] X}
 
 /-- Increasing an admissible constant preserves the operator p-convexity estimate. -/
