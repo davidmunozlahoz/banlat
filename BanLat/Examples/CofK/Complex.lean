@@ -11,7 +11,8 @@ import BanLat.Examples.CofK.Basic
 
 This file shows that `C(K, ℂ)`, with `K` a compact topological space, is a
 complex Banach lattice that can be identified with the canonical complexification
-of `C(K, ℝ)`.
+of `C(K, ℝ)`. It also equips `C(K, ℂ)` with the structure of a complex AM-space
+with the constant-one function as distinguished unit.
 -/
 
 open scoped ComplexStarModule
