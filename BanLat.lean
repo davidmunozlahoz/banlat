@@ -89,6 +89,7 @@ import BanLat.OrderContinuous.MeyerNieberg
 import BanLat.OrderContinuous.Nakano
 import BanLat.OrderDense
 import BanLat.OrderUnit
+import BanLat.PConvexity
 import BanLat.Pi
 import BanLat.Preliminaries.DensityCharacter
 import BanLat.Preliminaries.EberleinSmulian
