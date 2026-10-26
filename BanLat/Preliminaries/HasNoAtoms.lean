@@ -737,6 +737,19 @@ theorem isContinuous (hμ : μ.HasNoAtoms) : μ.IsContinuous := by
   intro s hs r hr
   exact hμ.exists_measurable_subset_measure_eq_of_le hs hr
 
+/-- Restricting an atomless measure to a measurable set yields an atomless measure. -/
+theorem restrict (hμ : μ.HasNoAtoms) {s : Set α} (hs : MeasurableSet s) :
+    (μ.restrict s).HasNoAtoms := by
+  intro t ht ht_pos ht_atom
+  rw [Measure.restrict_apply' hs] at ht_pos
+  obtain ⟨u, hu, hut, hu_pos, hu_lt⟩ :=
+    exists_measurable_subset_measure_lt_self hμ (ht.inter hs) ht_pos
+  have hu_restrict : μ.restrict s u = μ u :=
+    Measure.restrict_eq_self μ (hut.trans inter_subset_right)
+  rcases ht_atom.2.2 hu (hut.trans inter_subset_left) with hzero | hfull
+  · exact hu_pos.ne' (hu_restrict.symm.trans hzero)
+  · exact hu_lt.ne (hu_restrict.symm.trans (hfull.trans (Measure.restrict_apply' hs)))
+
 end Measure.HasNoAtoms
 
 namespace Measure
