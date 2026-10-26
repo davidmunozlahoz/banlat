@@ -23,7 +23,12 @@ import BanLat.BooleanAlgebras.Functional.Hahn
 import BanLat.BooleanAlgebras.MeasureAlgebras.Atomless
 import BanLat.BooleanAlgebras.MeasureAlgebras.Basic
 import BanLat.BooleanAlgebras.MeasureAlgebras.ClosedSubalgebra
+import BanLat.BooleanAlgebras.MeasureAlgebras.Maharam.Classification
+import BanLat.BooleanAlgebras.MeasureAlgebras.Maharam.Extension
+import BanLat.BooleanAlgebras.MeasureAlgebras.Maharam.LebesgueCube
+import BanLat.BooleanAlgebras.MeasureAlgebras.Maharam.MaharamType
 import BanLat.BooleanAlgebras.MeasureAlgebras.Metric
+import BanLat.BooleanAlgebras.MeasureAlgebras.OfMeasure
 import BanLat.BooleanAlgebras.SigmaComplete
 import BanLat.BooleanAlgebras.Stone
 import BanLat.ComplexBanachLattice.Basic
