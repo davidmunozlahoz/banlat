@@ -33,6 +33,9 @@ import BanLat.Convergences.Order
 import BanLat.Convergences.SigmaOrder
 import BanLat.Convergences.Uniform
 import BanLat.CountableSupProperty
+import BanLat.DedekindCompletion.Banach
+import BanLat.DedekindCompletion.Construction
+import BanLat.DedekindCompletion.ExistenceUniqueness
 import BanLat.Disjoint
 import BanLat.Dual
 import BanLat.Examples.CofK.Basic
@@ -70,6 +73,7 @@ import BanLat.LocallySolid.Completion
 import BanLat.LocallySolid.Lebesgue
 import BanLat.LocallySolid.LocallyConvexSolid
 import BanLat.LocallySolid.WithSeminorms
+import BanLat.Majorizing
 import BanLat.Normed
 import BanLat.Operators.Carrier
 import BanLat.Operators.Hom
