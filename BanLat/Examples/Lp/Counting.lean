@@ -2,7 +2,7 @@
 Authors: Jesús Illescas-Fiorito
 -/
 
-import BanLat.Examples.Ellp.Basic
+import BanLat.Examples.Ellp.Sum
 import BanLat.Examples.Lp.Basic
 import Mathlib.MeasureTheory.Function.LpSeminorm.Count
 import Mathlib.MeasureTheory.Integral.Lebesgue.Countable
