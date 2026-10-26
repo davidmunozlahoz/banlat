@@ -51,7 +51,7 @@ theorem cubeMeasure_measureDense_measurableCylinders (κ : Cardinal.{u}) :
     MeasureTheory.isSetAlgebra_measurableCylinders
     MeasureTheory.generateFrom_measurableCylinders.symm
 
-/-- For each `i ∈ κ`, the event on which we have that `1 ≤ xᵢ ≤ 1/2` . -/
+/-- For each `i ∈ κ`, the event on which we have that `0 ≤ xᵢ ≤ 1/2` . -/
 def cubeHalfSpace (κ : Cardinal.{u}) (i : κ.out) :
     Set (κ.out → unitInterval) :=
   Function.eval i ⁻¹' Set.Iic ⟨1 / 2, by constructor <;> norm_num⟩
