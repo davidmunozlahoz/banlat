@@ -2,7 +2,8 @@
 Authors: Jesús Illescas-Fiorito
 -/
 
-import BanLat.ComplexBanachLattice.Basic
+import BanLat.ComplexBanachLattice.Modulus.Basic
+import BanLat.Operators.Hom
 import Mathlib.LinearAlgebra.Complex.Module
 
 /-!
@@ -235,9 +236,12 @@ section Norm
 variable {E : Type*} [NormedAddCommGroup E] [Lattice E] [IsOrderedAddMonoid E]
   [BanachLattice E]
 
+local instance : IsUniformlyCompleteVectorLattice E :=
+  isUniformlyCompleteVectorLattice_of_banachLattice E
+
 /-- The modulus of an element of the complexification of a real Banach lattice. -/
 noncomputable def modulus (z : Complexification E) : E :=
-  BanachLattice.complexModulus z.re z.im
+  VectorLattice.complexModulus z.re z.im
 
 /-- The norm on the complexification of a real Banach lattice is induced by the complex modulus. -/
 noncomputable instance : Norm (Complexification E) where
@@ -249,31 +253,31 @@ theorem norm_eq (z : Complexification E) :
     ‖z‖ = ‖modulus z‖ := rfl
 
 private theorem normedSpaceCore : NormedSpace.Core ℂ (Complexification E) where
-  norm_nonneg z := norm_nonneg (BanachLattice.complexModulus z.re z.im)
+  norm_nonneg z := norm_nonneg (VectorLattice.complexModulus z.re z.im)
   norm_smul c z := by
-    change ‖BanachLattice.complexModulus
+    change ‖VectorLattice.complexModulus
         (c.re • z.re - c.im • z.im) (c.im • z.re + c.re • z.im)‖ =
-      ‖c‖ * ‖BanachLattice.complexModulus z.re z.im‖
-    rw [BanachLattice.complexModulus_linear_transform, norm_smul]
+      ‖c‖ * ‖VectorLattice.complexModulus z.re z.im‖
+    rw [VectorLattice.complexModulus_linear_transform, norm_smul]
     simp only [Real.norm_eq_abs, abs_of_nonneg (Real.sqrt_nonneg _)]
     rw [Complex.norm_def]
     simp only [Complex.normSq_apply, pow_two]
   norm_triangle z w := by
-    change ‖BanachLattice.complexModulus (z.re + w.re) (z.im + w.im)‖ ≤
-      ‖BanachLattice.complexModulus z.re z.im‖ +
-        ‖BanachLattice.complexModulus w.re w.im‖
+    change ‖VectorLattice.complexModulus (z.re + w.re) (z.im + w.im)‖ ≤
+      ‖VectorLattice.complexModulus z.re z.im‖ +
+        ‖VectorLattice.complexModulus w.re w.im‖
     calc
-      _ ≤ ‖BanachLattice.complexModulus z.re z.im +
-          BanachLattice.complexModulus w.re w.im‖ := by
+      _ ≤ ‖VectorLattice.complexModulus z.re z.im +
+          VectorLattice.complexModulus w.re w.im‖ := by
         apply norm_le_norm_of_abs_le_abs
-        rw [abs_of_nonneg (BanachLattice.complexModulus_nonneg _ _),
-          abs_of_nonneg (add_nonneg (BanachLattice.complexModulus_nonneg _ _)
-            (BanachLattice.complexModulus_nonneg _ _))]
-        exact BanachLattice.complexModulus_add_le z.re z.im w.re w.im
+        rw [abs_of_nonneg (VectorLattice.complexModulus_nonneg _ _),
+          abs_of_nonneg (add_nonneg (VectorLattice.complexModulus_nonneg _ _)
+            (VectorLattice.complexModulus_nonneg _ _))]
+        exact VectorLattice.complexModulus_add_le z.re z.im w.re w.im
       _ ≤ _ := norm_add_le _ _
   norm_eq_zero_iff z := by
-    change ‖BanachLattice.complexModulus z.re z.im‖ = 0 ↔ z = 0
-    rw [norm_eq_zero, BanachLattice.complexModulus_eq_zero_iff]
+    change ‖VectorLattice.complexModulus z.re z.im‖ = 0 ↔ z = 0
+    rw [norm_eq_zero, VectorLattice.complexModulus_eq_zero_iff]
     constructor
     · rintro ⟨hre, him⟩
       ext <;> assumption
@@ -298,6 +302,9 @@ open scoped ComplexStarModule
 
 variable {E : Type*} [NormedAddCommGroup E] [Lattice E] [IsOrderedAddMonoid E]
   [BanachLattice E]
+
+local instance : IsUniformlyCompleteVectorLattice E :=
+  isUniformlyCompleteVectorLattice_of_banachLattice E
 
 /-- The self-adjoint part of a complexification inherits the lattice structure of the
 original real Banach lattice. -/
@@ -326,9 +333,9 @@ private theorem selfAdjointEquiv_inf
 space preserves norms. -/
 theorem norm_selfAdjointEquiv (x : selfAdjoint (Complexification E)) :
     ‖selfAdjointEquiv x‖ = ‖x‖ := by
-  change ‖x.1.re‖ = ‖BanachLattice.complexModulus x.1.re x.1.im‖
+  change ‖x.1.re‖ = ‖VectorLattice.complexModulus x.1.re x.1.im‖
   have him := (isSelfAdjoint_iff_im_eq_zero x.1).1 x.2
-  rw [him, BanachLattice.complexModulus_zero_right, norm_abs_eq_norm]
+  rw [him, VectorLattice.complexModulus_zero_right, norm_abs_eq_norm]
 
 /-- The self-adjoint part of the complexification of a real Banach lattice is a Banach
 lattice. -/
@@ -374,31 +381,38 @@ theorem selfAdjointBanachLatEquiv_apply
     selfAdjointBanachLatEquiv x = selfAdjointEquiv x := by
   rfl
 
+private noncomputable instance instComplexVectorLattice :
+    ComplexVectorLattice (Complexification E) :=
+  ComplexVectorLattice.ofSelfAdjointBanachLattice (fun _ _ ↦ rfl)
+
 /-- The abstract complex modulus corresponds to the modulus used to norm the
 complexification. -/
 theorem selfAdjointBanachLatEquiv_modulus (z : Complexification E) :
-    selfAdjointBanachLatEquiv (ComplexBanachLattice.modulus z) =
+    selfAdjointBanachLatEquiv (ComplexVectorLattice.modulus z) =
       Complexification.modulus z := by
+  letI : IsUniformlyCompleteVectorLattice (selfAdjoint (Complexification E)) :=
+    isUniformlyCompleteVectorLattice_of_banachLattice _
+  rw [ComplexVectorLattice.modulus_eq_complexModulus]
   change selfAdjointBanachLatEquiv.toVecLatEquiv
-      (BanachLattice.complexModulus (ℜ z) (ℑ z)) =
-    BanachLattice.complexModulus z.re z.im
+      (VectorLattice.complexModulus (ℜ z) (ℑ z)) =
+    VectorLattice.complexModulus z.re z.im
   rw [VecLatEquiv.map_complexModulus]
-  change BanachLattice.complexModulus (selfAdjointBanachLatEquiv (ℜ z))
+  change VectorLattice.complexModulus (selfAdjointBanachLatEquiv (ℜ z))
       (selfAdjointBanachLatEquiv (ℑ z)) =
-    BanachLattice.complexModulus z.re z.im
+    VectorLattice.complexModulus z.re z.im
   rw [selfAdjointBanachLatEquiv_apply, selfAdjointBanachLatEquiv_apply,
     selfAdjointEquiv_realPart, selfAdjointEquiv_imaginaryPart]
 
 /-- The complexification of a real Banach lattice is a complex Banach lattice. -/
 noncomputable instance instComplexBanachLattice :
     ComplexBanachLattice (Complexification E) := by
-  refine { coe_smul := ?_, norm_modulus := ?_ }
-  · intro r x
-    rfl
-  · intro z
-    rw [← norm_selfAdjointEquiv]
-    rw [← selfAdjointBanachLatEquiv_apply, selfAdjointBanachLatEquiv_modulus,
-      ← norm_eq]
+  refine
+    { instComplexVectorLattice, instBanachLatticeSelfAdjoint with
+      norm_modulus := ?_ }
+  intro z
+  rw [← norm_selfAdjointEquiv]
+  rw [← selfAdjointBanachLatEquiv_apply, selfAdjointBanachLatEquiv_modulus,
+    ← norm_eq]
 
 end SelfAdjointBanachLattice
 
