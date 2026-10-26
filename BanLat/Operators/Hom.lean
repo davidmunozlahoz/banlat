@@ -220,6 +220,17 @@ theorem symm_apply (f : VecLatHom X Y) (h : Function.Bijective f)
     change lineq.symm y = x ↔ y = f x
     apply LinearEquiv.symm_apply_eq
 
+/-- The range of a vector lattice homomorphism, as a vector sublattice of its codomain. -/
+def range (f : VecLatHom X Y) : VectorSublattice Y where
+  toSubmodule := LinearMap.range f.toLinearMap
+  sup_mem' := by
+    rintro _ _ ⟨a, rfl⟩ ⟨b, rfl⟩
+    exact ⟨a ⊔ b, map_sup f a b⟩
+
+/-- The underlying set of the range of a homomorphism is its set-theoretic range. -/
+@[simp]
+theorem coe_range (f : VecLatHom X Y) : (f.range : Set Y) = Set.range f := rfl
+
 end VecLatHom
 
 namespace VectorSublattice

@@ -2,16 +2,15 @@
 Authors: Pedro Tradacete
 -/
 
-import BanLat.DedekindCompletion.Existence
+import BanLat.DedekindCompletion.ExistenceUniqueness
 import BanLat.Normed
 import Mathlib.Analysis.Normed.Group.Completeness
 
 /-!
 # Banach lattice norm on a Dedekind completion
 
-The norm of a completion element is the infimum of the norms of its positive
-majorants from the original Banach lattice. This norm makes the inclusion
-isometric and the completion into a Banach lattice.
+We equip the Dedekind completion of a Banach lattice with a complete lattice norm which makes the
+canonical inclusion an isometric embedding.
 -/
 
 noncomputable section
@@ -37,7 +36,7 @@ def upperNorm (D : DedekindCompletion X) (y : D.carrier) : ℝ :=
 /-- Every completion element has a positive majorant from the original lattice. -/
 private lemma majorantNorms_nonempty (D : DedekindCompletion X) (y : D.carrier) :
     (majorantNorms D y).Nonempty := by
-  obtain ⟨x, hx⟩ := D.majorizing |y|
+  obtain ⟨_, ⟨x, rfl⟩, hx⟩ := D.majorizing |y|
   exact ⟨‖x⁺‖, x⁺, posPart_nonneg x,
     hx.trans (D.inclusion.monotone le_sup_left), rfl⟩
 
@@ -326,35 +325,4 @@ theorem inclusion_isometry (D : DedekindCompletion X) : Isometry D.inclusion := 
   intro x
   exact upperNorm_inclusion D x
 
-/-- The upper norm on the bounded-cut Dedekind completion. -/
-instance boundedCutNormedAddCommGroup : NormedAddCommGroup (BoundedCut X) :=
-  normedGroup (ofBoundedCuts (X := X))
-
-/-- The existing additive order law with the upper-norm additive group structure. -/
-instance boundedCutIsOrderedAddMonoidWithNorm :
-    @IsOrderedAddMonoid (BoundedCut X)
-      (boundedCutNormedAddCommGroup (X := X)).toAddCommMonoid
-      (inferInstance : Preorder (BoundedCut X)) :=
-  BoundedCut.instIsOrderedAddMonoid
-
-/-- Bounded cuts of a Banach lattice form a Banach lattice in the upper norm. -/
-instance boundedCutBanachLattice :
-    @BanachLattice (BoundedCut X) (boundedCutNormedAddCommGroup (X := X))
-      inferInstance (BoundedCut.instIsOrderedAddMonoid (X := X)) :=
-  banachLattice (ofBoundedCuts (X := X))
-
-namespace BoundedCut
-
-/-- The bounded-cut norm is the infimum of norms of principal majorants. -/
-theorem norm_eq_sInf_majorants (A : BoundedCut X) :
-    ‖A‖ = sInf {r : ℝ | ∃ x : X, |A| ≤ principal x ∧ ‖x‖ = r} :=
-  DedekindCompletion.norm_eq_sInf_majorants (ofBoundedCuts (X := X)) A
-
-/-- Principal cuts embed the original Banach lattice isometrically. -/
-theorem principal_isometry : Isometry (principal : X → BoundedCut X) :=
-  DedekindCompletion.inclusion_isometry (ofBoundedCuts (X := X))
-
-end BoundedCut
-
 end DedekindCompletion
-end
