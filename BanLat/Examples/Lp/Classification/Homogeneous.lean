@@ -13,8 +13,8 @@ Let `μ` be an atomless probability measure and let `1 ≤ p < ∞`.
 If every nontrivial order interval in `Lᵖ(μ)` has density character `κ`, then `Lᵖ(μ)`
 is lattice isometric to `Lᵖ([0, 1]^κ)`.
 
-Consequently, if `μ` and `ν` are two atomless probability measures `Lᵖ` spaces are homogeneous,
-`Lᵖ(μ)` and `Lᵖ(ν)` are lattice isometric exactly when their density characters agree.
+Consequently, if `μ` and `ν` are atomless probability measures whose `Lᵖ` spaces are homogeneous,
+then `Lᵖ(μ)` and `Lᵖ(ν)` are lattice isometric exactly when their density characters agree.
 -/
 
 open scoped ENNReal NNReal

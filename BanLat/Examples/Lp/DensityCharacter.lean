@@ -17,7 +17,7 @@ is the maximum between `ℵ₀` and the Maharam type of the induced measure alge
 of `μ`-measurable sets.
 
 The density character of an order interval `[f, g]` equals that of `Lᵖ(μ.restrict s)`,
-where `s` is the set on which `f` and `g` differ. Moreover, When `μ` is atomless, the
+where `s` is the set on which `f` and `g` differ. Moreover, when `μ` is atomless, the
 following are equivalent:
 * every nontrivial order interval has full density
 * the induced measure algebra is homogeneous.
