@@ -51,7 +51,7 @@ import BanLat.Examples.CofK.FunctionalCalculus
 import BanLat.Examples.Ellp.Sum
 import BanLat.Examples.Ellp.WeakUnit
 import BanLat.Examples.Lp.Atom
-import BanLat.Examples.Lp.AtomicClassification
+import BanLat.Examples.Lp.Classification.Atomic
 import BanLat.Examples.Lp.Basic
 import BanLat.Examples.Lp.ChangeDensity
 import BanLat.Examples.Lp.Counting
