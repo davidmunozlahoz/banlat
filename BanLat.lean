@@ -51,10 +51,13 @@ import BanLat.Examples.CofK.FunctionalCalculus
 import BanLat.Examples.Ellp.Sum
 import BanLat.Examples.Ellp.WeakUnit
 import BanLat.Examples.Lp.Atom
-import BanLat.Examples.Lp.Classification.Atomic
 import BanLat.Examples.Lp.Basic
 import BanLat.Examples.Lp.ChangeDensity
+import BanLat.Examples.Lp.Classification.Atomic
+import BanLat.Examples.Lp.Classification.Homogeneous
 import BanLat.Examples.Lp.Counting
+import BanLat.Examples.Lp.DensityCharacter
+import BanLat.Examples.Lp.MeasureAlgebra
 import BanLat.Examples.Lp.OrderContinuous
 import BanLat.Examples.Lp.Sublattice
 import BanLat.Examples.Lp.Subspaces.Gaussian
