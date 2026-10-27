@@ -531,7 +531,6 @@ noncomputable def extend :
     radialExtension_smul_of_nonneg g⟩
 
 /-- Radial extension has the prescribed values along nonnegative rays from the unit sphere. -/
-@[simp]
 theorem extend_apply (g : C(complexEllInfinityUnitSphere n, ℂ))
     (z : complexEllInfinityUnitSphere n) (r : ℝ) (hr : 0 ≤ r) :
     extend g (r • (z : Fin n → ℂ)) = r • g z := by
@@ -539,7 +538,6 @@ theorem extend_apply (g : C(complexEllInfinityUnitSphere n, ℂ))
   exact congrArg (fun w : ℂ ↦ r • w) (radialExtension_sphere g z)
 
 /-- Radial extension vanishes at the origin. -/
-@[simp]
 theorem extend_apply_zero (g : C(complexEllInfinityUnitSphere n, ℂ)) :
     extend g 0 = 0 := by
   exact map_zero (extend g)
@@ -1067,10 +1065,17 @@ variable {Z : Type*} [AddCommGroup Z] [Module ℂ Z]
   [Lattice (selfAdjoint Z)] [IsOrderedAddMonoid (selfAdjoint Z)]
   [ComplexVectorLattice Z]
 
--- The estimates use the real scalar action carried by the vector lattice.
-local instance : SMul ℝ (selfAdjoint Z) := VectorLattice.toModule.toSMul
-local instance : DistribSMul ℝ (selfAdjoint Z) := VectorLattice.toModule.toDistribSMul
-local instance : MulAction ℝ (selfAdjoint Z) := VectorLattice.toModule.toMulAction
+/-- The real scalar action supplied by the vector lattice structure. -/
+local instance instSMulSelfAdjoint : SMul ℝ (selfAdjoint Z) :=
+  VectorLattice.toModule.toSMul
+
+/-- Distributivity of the real scalar action supplied by the vector lattice structure. -/
+local instance instDistribSMulSelfAdjoint : DistribSMul ℝ (selfAdjoint Z) :=
+  VectorLattice.toModule.toDistribSMul
+
+/-- The real multiplicative action supplied by the vector lattice structure. -/
+local instance instMulActionSelfAdjoint : MulAction ℝ (selfAdjoint Z) :=
+  VectorLattice.toModule.toMulAction
 
 /-- The modulus of the image of a positively homogeneous function is bounded by its norm times
 the image of the modulus of the radial extension of the constant-one function. -/
