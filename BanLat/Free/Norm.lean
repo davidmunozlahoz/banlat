@@ -2,7 +2,8 @@
 Authors: Pedro Tradacete
 -/
 
-import BanLat.Free.FBL
+import BanLat.Dual
+import BanLat.Free.FVLv
 import BanLat.Pi
 
 /-!
@@ -255,7 +256,7 @@ def finiteNormSublattice (p : ℝ≥0∞) [Fact (1 ≤ p)] (E : Type u)
       (lt_top_iff_ne_top.mpr
         (ENNReal.add_ne_top.mpr ⟨ne_of_lt hf.2, ne_of_lt hg.2⟩))
 
-/-- The ambient space of positively homogeneous dual functions with finite free p-norm.
+/-- The ambient space of positively homogeneous functions on the dual with finite free p-norm.
 Its norm and topology are defined from `freeNormExt`, while its algebraic and lattice
 operations are pointwise. -/
 def FunctionSpace (p : ℝ≥0∞) [Fact (1 ≤ p)] (E : Type u)
