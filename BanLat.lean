@@ -36,6 +36,7 @@ import BanLat.BooleanAlgebras.Stone
 import BanLat.ComplexBanachLattice.Basic
 import BanLat.ComplexBanachLattice.Complexification.Basic
 import BanLat.ComplexBanachLattice.Complexification.Hom
+import BanLat.ComplexBanachLattice.FunctionalCalculus
 import BanLat.ComplexBanachLattice.Hom
 import BanLat.ComplexBanachLattice.Modulus.Basic
 import BanLat.ComplexBanachLattice.Modulus.FunctionalCalculus
@@ -139,6 +140,7 @@ import BanLat.Substructures.Band.Generated
 import BanLat.Substructures.Band.Lattice
 import BanLat.Substructures.Band.PPP
 import BanLat.Substructures.Band.Projection
+import BanLat.Substructures.ComplexSublattice
 import BanLat.Substructures.Ideal
 import BanLat.Substructures.Sublattice
 import BanLat.Tactic.LLexpr
