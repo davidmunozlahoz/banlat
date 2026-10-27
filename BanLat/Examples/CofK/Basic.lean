@@ -28,6 +28,7 @@ Mathlib provides `Lattice C(K, ℝ)` (pointwise, via
 
 /-! ### Vector lattice -/
 
+omit [CompactSpace K] in
 /-- `C(K, ℝ)` is a vector lattice: a real module whose positive cone is closed
 under scalar multiplication by non-negative reals. -/
 noncomputable instance instVectorLatticeCofK : VectorLattice C(K, ℝ) where
