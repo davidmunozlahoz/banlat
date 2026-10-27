@@ -70,8 +70,8 @@ noncomputable def selfAdjointRealEquiv :
         congrArg (fun g : C(K, ℂ) => g t) f.2.star_eq
     exact Complex.conj_eq_iff_im.mp (by simpa [Complex.star_def] using hf)
 
-/-- The equivalence from `selfAdjoint C(K, ℂ)` to `C(K, ℝ)` sends a
-self-adjoint function to its pointwise real part. -/
+/-- The equivalence between `selfAdjoint C(K, ℂ)` and `C(K, ℝ)` maps every
+self-adjoint function to its pointwise real part, that is, to itself. -/
 @[simp]
 theorem selfAdjointRealEquiv_apply_apply
     (f : selfAdjoint C(K, ℂ)) (t : K) :
