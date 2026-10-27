@@ -8,6 +8,8 @@ import BanLat.ALSpace.Sublattice
 import BanLat.ALpSpace.Basic
 import BanLat.AMSpace.Basic
 import BanLat.AMSpace.Characters
+import BanLat.AMSpace.Complex.Basic
+import BanLat.AMSpace.Complex.Kakutani
 import BanLat.AMSpace.Dual
 import BanLat.AMSpace.Kakutani
 import BanLat.AMSpace.Max
@@ -32,7 +34,8 @@ import BanLat.BooleanAlgebras.MeasureAlgebras.OfMeasure
 import BanLat.BooleanAlgebras.SigmaComplete
 import BanLat.BooleanAlgebras.Stone
 import BanLat.ComplexBanachLattice.Basic
-import BanLat.ComplexBanachLattice.Complexification
+import BanLat.ComplexBanachLattice.Complexification.Basic
+import BanLat.ComplexBanachLattice.Complexification.Hom
 import BanLat.ComplexBanachLattice.Hom
 import BanLat.ComplexBanachLattice.Modulus.Basic
 import BanLat.ComplexBanachLattice.Modulus.FunctionalCalculus
@@ -46,6 +49,7 @@ import BanLat.DedekindCompletion.ExistenceUniqueness
 import BanLat.Disjoint
 import BanLat.Dual
 import BanLat.Examples.CofK.Basic
+import BanLat.Examples.CofK.Complex
 import BanLat.Examples.CofK.Dual
 import BanLat.Examples.CofK.FunctionalCalculus
 import BanLat.Examples.Ellp.Sum
