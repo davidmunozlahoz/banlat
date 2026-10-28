@@ -239,7 +239,7 @@ end CanonicalModulus
 lattice-valued modulus to the pointwise complex norm. -/
 theorem selfAdjointRealEquiv_modulus_apply
     (f : C(K, ℂ)) (t : K) :
-    selfAdjointRealEquiv (ComplexVectorLattice.modulus f) t = ‖f t‖ := by
+    selfAdjointRealEquiv |f|_ℂ t = ‖f t‖ := by
   letI : IsUniformlyCompleteVectorLattice (selfAdjoint C(K, ℂ)) :=
     isUniformlyCompleteVectorLattice_of_banachLattice _
   rw [ComplexVectorLattice.modulus_eq_complexModulus]
@@ -250,9 +250,7 @@ pointwise norm. -/
 @[simp]
 theorem modulus_apply
     (f : C(K, ℂ)) (t : K) :
-    ((ComplexVectorLattice.modulus f :
-        selfAdjoint C(K, ℂ)) : C(K, ℂ)) t =
-      (‖f t‖ : ℂ) := by
+    (|f|_ℂ : C(K, ℂ)) t = (‖f t‖ : ℂ) := by
   apply Complex.ext
   · exact selfAdjointRealEquiv_modulus_apply f t
   · have hf := (ComplexVectorLattice.modulus f).2.star_eq

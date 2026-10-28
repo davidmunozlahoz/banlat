@@ -345,8 +345,7 @@ local instance : IsUniformlyCompleteVectorLattice (selfAdjoint Z) :=
 
 private theorem modulus_coe_add_I_smul_coe
     (x y : selfAdjoint Z) :
-    ComplexVectorLattice.modulus ((x : Z) + Complex.I • (y : Z)) =
-      VectorLattice.complexModulus x y := by
+    |(x : Z) + Complex.I • (y : Z)|_ℂ = VectorLattice.complexModulus x y := by
   rw [ComplexVectorLattice.modulus_eq_complexModulus]
   simp only [map_add, realPart_I_smul, imaginaryPart_I_smul,
     selfAdjoint.realPart_coe, selfAdjoint.imaginaryPart_coe,

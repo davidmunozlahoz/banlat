@@ -32,8 +32,7 @@ structure ComplexVecLatHom (Z W : Type*)
     [ComplexVectorLattice W]
     extends Z →ₗ[ℂ] W where
   map_modulus' (z : Z) :
-    toLinearMap ((ComplexVectorLattice.modulus z : selfAdjoint Z) : Z) =
-      ((ComplexVectorLattice.modulus (toLinearMap z) : selfAdjoint W) : W)
+    toLinearMap (|z|_ℂ : Z) = (|toLinearMap z|_ℂ : W)
 
 namespace ComplexVecLatHom
 
@@ -70,8 +69,7 @@ instance instLinearMapClass :
 /-- Complex vector lattice homomorphisms preserve the lattice-valued modulus. -/
 @[simp]
 theorem map_modulus (T : ComplexVecLatHom Z W) (z : Z) :
-    T ((ComplexVectorLattice.modulus z : selfAdjoint Z) : Z) =
-      ((ComplexVectorLattice.modulus (T z) : selfAdjoint W) : W) := by
+    T (|z|_ℂ : Z) = (|T z|_ℂ : W) := by
   exact T.map_modulus' z
 
 /-- Two complex vector lattice homomorphisms are equal if they agree pointwise. -/
@@ -338,8 +336,7 @@ structure ComplexBanachLatEquiv (Z W : Type*)
     [ComplexBanachLattice W]
     extends Z ≃ₗᵢ[ℂ] W where
   map_modulus' (z : Z) :
-    toLinearIsometryEquiv ((ComplexVectorLattice.modulus z : selfAdjoint Z) : Z) =
-      ((ComplexVectorLattice.modulus (toLinearIsometryEquiv z) : selfAdjoint W) : W)
+    toLinearIsometryEquiv (|z|_ℂ : Z) = (|toLinearIsometryEquiv z|_ℂ : W)
 
 namespace ComplexBanachLatEquiv
 
@@ -431,8 +428,7 @@ theorem coe_toContinuousLinearEquiv (e : ComplexBanachLatEquiv Z W) :
 /-- Complex Banach lattice isometric equivalences preserve the lattice-valued modulus. -/
 @[simp]
 theorem map_modulus (e : ComplexBanachLatEquiv Z W) (z : Z) :
-    e ((ComplexVectorLattice.modulus z : selfAdjoint Z) : Z) =
-      ((ComplexVectorLattice.modulus (e z) : selfAdjoint W) : W) := by
+    e (|z|_ℂ : Z) = (|e z|_ℂ : W) := by
   exact e.map_modulus' z
 
 /-- Two complex Banach lattice isometric equivalences are equal if they agree pointwise. -/
