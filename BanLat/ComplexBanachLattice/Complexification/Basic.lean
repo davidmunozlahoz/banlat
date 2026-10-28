@@ -382,8 +382,7 @@ noncomputable instance instComplexVectorLattice :
       exact h
 
 private theorem selfAdjointEquiv_modulus (z : Complexification E) :
-    selfAdjointEquiv (ComplexVectorLattice.modulus z) =
-      Complexification.modulus z := by
+    selfAdjointEquiv |z|_ℂ = Complexification.modulus z := by
   symm
   apply (VectorLattice.complexModulus_isLUB z.re z.im).unique
   constructor
@@ -412,9 +411,7 @@ private theorem selfAdjointEquiv_modulus (z : Complexification E) :
 concrete modulus as its real coordinate and zero imaginary coordinate. -/
 @[simp]
 theorem coe_modulus (z : Complexification E) :
-    ((ComplexVectorLattice.modulus z :
-      selfAdjoint (Complexification E)) : Complexification E) =
-      ⟨Complexification.modulus z, 0⟩ := by
+    (|z|_ℂ : Complexification E) = ⟨Complexification.modulus z, 0⟩ := by
   ext
   · exact selfAdjointEquiv_modulus z
   · exact (isSelfAdjoint_iff_im_eq_zero _).mp
@@ -489,8 +486,7 @@ theorem selfAdjointBanachLatEquiv_apply
 /-- The abstract complex modulus corresponds to the modulus used to norm the
 complexification. -/
 theorem selfAdjointBanachLatEquiv_modulus (z : Complexification E) :
-    selfAdjointBanachLatEquiv (ComplexVectorLattice.modulus z) =
-      Complexification.modulus z := by
+    selfAdjointBanachLatEquiv |z|_ℂ = Complexification.modulus z := by
   rw [selfAdjointBanachLatEquiv_apply, selfAdjointEquiv_modulus]
 
 end SelfAdjointBanachLattice
