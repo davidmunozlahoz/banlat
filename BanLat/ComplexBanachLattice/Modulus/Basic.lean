@@ -431,7 +431,7 @@ variable {Z : Type*} [AddCommGroup Z] [Module ℂ Z]
 /-- In a uniformly complete self-adjoint part, the modulus agrees with the canonical complex
 modulus of the real and imaginary parts. -/
 theorem modulus_eq_complexModulus [IsUniformlyCompleteVectorLattice (selfAdjoint Z)] (z : Z) :
-    modulus z = VectorLattice.complexModulus (ℜ z) (ℑ z) := by
+    |z|_ℂ = VectorLattice.complexModulus (ℜ z) (ℑ z) := by
   exact (modulus_isLUB z).unique
     (VectorLattice.complexModulus_isLUB (ℜ z) (ℑ z))
 

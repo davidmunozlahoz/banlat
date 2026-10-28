@@ -120,8 +120,7 @@ theorem imaginaryPart_apply_re
 pointwise norm. -/
 @[simp]
 theorem modulus_apply (f : C(K, ℂ)) (t : K) :
-    ((ComplexVectorLattice.modulus f : selfAdjoint C(K, ℂ)) : C(K, ℂ)) t =
-      (‖f t‖ : ℂ) := by
+    (|f|_ℂ : C(K, ℂ)) t = (‖f t‖ : ℂ) := by
   rw [ComplexVectorLattice.modulus_eq_of_isLUB
     (selfAdjoint_rotationRange_isLUB (ℜ f) (ℑ f))]
   change (Real.sqrt (((ℜ f : C(K, ℂ)) t).re ^ 2 +
@@ -228,7 +227,7 @@ noncomputable instance instComplexBanachLattice :
 lattice-valued modulus to the pointwise complex norm. -/
 theorem selfAdjointRealEquiv_modulus_apply
     (f : C(K, ℂ)) (t : K) :
-    selfAdjointRealEquiv (ComplexVectorLattice.modulus f) t = ‖f t‖ := by
+    selfAdjointRealEquiv |f|_ℂ t = ‖f t‖ := by
   change (((ComplexVectorLattice.modulus f : selfAdjoint C(K, ℂ)) : C(K, ℂ)) t).re =
     ‖f t‖
   rw [modulus_apply, Complex.ofReal_re]

@@ -24,7 +24,7 @@ structure ComplexVectorSublattice (Z : Type*)
     [ComplexVectorLattice Z] extends Submodule ℂ Z where
   star_mem' : ∀ {z : Z}, z ∈ carrier → star z ∈ carrier
   modulus_mem' : ∀ {z : Z}, z ∈ carrier →
-    ((ComplexVectorLattice.modulus z : selfAdjoint Z) : Z) ∈ carrier
+    (|z|_ℂ : Z) ∈ carrier
 
 namespace ComplexVectorSublattice
 
@@ -86,7 +86,7 @@ theorem star_mem {z : Z} (hz : z ∈ W) : star z ∈ W := by
 
 /-- A complex vector sublattice contains the modulus of each of its elements. -/
 theorem modulus_mem {z : Z} (hz : z ∈ W) :
-    ((ComplexVectorLattice.modulus z : selfAdjoint Z) : Z) ∈ W := by
+    (|z|_ℂ : Z) ∈ W := by
   exact W.modulus_mem' hz
 
 /-- A complex vector sublattice contains the real part of each of its elements. -/
@@ -243,8 +243,7 @@ noncomputable instance instComplexVectorLatticeCoe : ComplexVectorLattice W := b
 /-- The modulus in a complex vector sublattice agrees with the ambient modulus. -/
 @[simp, norm_cast]
 theorem coe_modulus (z : W) :
-    (((ComplexVectorLattice.modulus z : selfAdjoint W) : W) : Z) =
-      ((ComplexVectorLattice.modulus (z : Z) : selfAdjoint Z) : Z) := by
+    ((|z|_ℂ : W) : Z) = (|(z : Z)|_ℂ : Z) := by
   let m : ↥(W.selfAdjointSublattice) :=
     ⟨ComplexVectorLattice.modulus (z : Z), W.modulus_mem z.property⟩
   have h := ComplexVectorLattice.modulus_isLUB (z : Z)
