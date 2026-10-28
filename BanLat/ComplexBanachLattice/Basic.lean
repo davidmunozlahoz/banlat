@@ -222,9 +222,37 @@ noncomputable def modulus (z : Z) : selfAdjoint Z :=
   Classical.choose
     (ComplexVectorLattice.exists_isLUB_rotationRange (Z := Z) (ℜ z) (ℑ z))
 
+/-! ### Complex modulus notation
+
+The **global notation `|z|_ℂ`** denotes `modulus z : selfAdjoint Z`.
+
+Its parser uses the same whitespace restrictions as `|z|` to preserve subtype syntax.
+The unexpanders display moduli with this notation and insert parentheses where needed
+in nested absolute values.
+-/
+
+@[inherit_doc modulus]
+macro:max atomic("|" noWs) z:term noWs "|_ℂ" : term => `(ComplexVectorLattice.modulus $z)
+
+@[app_unexpander modulus]
+private meta def modulusUnexpander : Lean.PrettyPrinter.Unexpander
+  | `($_ $z) =>
+    match z with
+    | `(|$_|) | `(|$_|ₘ) | `(|$_|_ℂ) | `(-$_) => `(|($z)|_ℂ)
+    | _ => `(|$z|_ℂ)
+  | _ => throw ()
+
+@[app_unexpander abs]
+private meta def absModulusUnexpander : Lean.PrettyPrinter.Unexpander
+  | `($_ $z) =>
+    match z with
+    | `(|$w|_ℂ) => `(|(|$w|_ℂ)|)
+    | _ => throw ()
+  | _ => throw ()
+
 /-- The modulus is the least upper bound of the rotations of the real and imaginary parts. -/
 theorem modulus_isLUB (z : Z) :
-    IsLUB (VectorLattice.rotationRange (ℜ z) (ℑ z)) (modulus z) := by
+    IsLUB (VectorLattice.rotationRange (ℜ z) (ℑ z)) |z|_ℂ := by
   exact Classical.choose_spec
     (ComplexVectorLattice.exists_isLUB_rotationRange (Z := Z) (ℜ z) (ℑ z))
 
@@ -232,11 +260,11 @@ theorem modulus_isLUB (z : Z) :
 parts. -/
 theorem modulus_eq_of_isLUB {z : Z} {x : selfAdjoint Z}
     (hx : IsLUB (VectorLattice.rotationRange (ℜ z) (ℑ z)) x) :
-    modulus z = x := by
+    |z|_ℂ = x := by
   exact (modulus_isLUB z).unique hx
 
 private theorem rotation_le_modulus (z : Z) (θ : ℝ) :
-    Real.cos θ • ℜ z + Real.sin θ • ℑ z ≤ modulus z := by
+    Real.cos θ • ℜ z + Real.sin θ • ℑ z ≤ |z|_ℂ := by
   have h := (modulus_isLUB z).1 ⟨θ, rfl⟩
   convert h using 1
   ext
@@ -245,7 +273,7 @@ private theorem rotation_le_modulus (z : Z) (θ : ℝ) :
 /-- The modulus is bounded above by an element exactly when every rotation is bounded above by
 that element. -/
 theorem modulus_le_iff {z : Z} {x : selfAdjoint Z} :
-    modulus z ≤ x ↔
+    |z|_ℂ ≤ x ↔
       ∀ θ : ℝ, Real.cos θ • ℜ z + Real.sin θ • ℑ z ≤ x := by
   constructor
   · intro h θ
@@ -259,19 +287,19 @@ theorem modulus_le_iff {z : Z} {x : selfAdjoint Z} :
     simp
 
 private theorem sup_abs_parts_le_modulus (z : Z) :
-    |ℜ z| ⊔ |ℑ z| ≤ modulus z := by
+    |ℜ z| ⊔ |ℑ z| ≤ |z|_ℂ := by
   exact VectorLattice.sup_abs_le_of_mem_upperBounds_rotationRange
     (modulus_isLUB z).1
 
 /-- The modulus of an element is always nonnegative. -/
 theorem modulus_nonneg (z : Z) :
-    0 ≤ modulus z := by
+    0 ≤ |z|_ℂ := by
   exact (abs_nonneg (ℜ z)).trans (le_sup_left.trans (sup_abs_parts_le_modulus z))
 
 /-- The modulus of zero is zero. -/
 @[simp]
 theorem modulus_zero :
-    modulus (0 : Z) = 0 := by
+    |(0 : Z)|_ℂ = 0 := by
   apply le_antisymm
   · rw [modulus_le_iff]
     intro θ
@@ -281,7 +309,7 @@ theorem modulus_zero :
 /-- The modulus of an element is zero if and only if the element is zero. -/
 @[simp]
 theorem modulus_eq_zero_iff (z : Z) :
-    modulus z = 0 ↔ z = 0 := by
+    |z|_ℂ = 0 ↔ z = 0 := by
   constructor
   · intro h
     have hreabs : |ℜ z| = 0 := le_antisymm
@@ -298,7 +326,7 @@ theorem modulus_eq_zero_iff (z : Z) :
 /-- Conjugation preserves the lattice-valued modulus. -/
 @[simp]
 theorem modulus_star (z : Z) :
-    modulus (star z) = modulus z := by
+    |star z|_ℂ = |z|_ℂ := by
   apply modulus_eq_of_isLUB
   have hre : ℜ (star z) = ℜ z := by
     ext
@@ -313,7 +341,7 @@ theorem modulus_star (z : Z) :
 
 /-- Complex scalar multiplication scales the lattice-valued modulus by the norm of the scalar. -/
 theorem modulus_smul (c : ℂ) (z : Z) :
-    modulus (c • z) = ‖c‖ • modulus z := by
+    |c • z|_ℂ = ‖c‖ • |z|_ℂ := by
   apply (modulus_isLUB (c • z)).unique
   rw [realPart_smul, imaginaryPart_smul]
   have h := isLUB_smul_of_nonneg (Real.sqrt_nonneg (c.re ^ 2 + c.im ^ 2))
@@ -326,29 +354,29 @@ theorem modulus_smul (c : ℂ) (z : Z) :
 /-- Negation preserves the lattice-valued modulus. -/
 @[simp]
 theorem modulus_neg (z : Z) :
-    modulus (-z) = modulus z := by
+    |(-z)|_ℂ = |z|_ℂ := by
   simpa using modulus_smul (-1 : ℂ) z
 
 /-- The absolute value of the real part is bounded by the modulus. -/
 theorem abs_realPart_le_modulus (z : Z) :
-    |ℜ z| ≤ modulus z := by
+    |ℜ z| ≤ |z|_ℂ := by
   exact le_sup_left.trans (sup_abs_parts_le_modulus z)
 
 /-- The absolute value of the imaginary part is bounded by the modulus. -/
 theorem abs_imaginaryPart_le_modulus (z : Z) :
-    |ℑ z| ≤ modulus z := by
+    |ℑ z| ≤ |z|_ℂ := by
   exact le_sup_right.trans (sup_abs_parts_le_modulus z)
 
 /-- The modulus is bounded by the sum of the absolute values of its real and imaginary parts. -/
 theorem modulus_le_abs_realPart_add_abs_imaginaryPart (z : Z) :
-    modulus z ≤ |ℜ z| + |ℑ z| := by
+    |z|_ℂ ≤ |ℜ z| + |ℑ z| := by
   apply (modulus_isLUB z).2
   rintro _ ⟨θ, rfl⟩
   exact VectorLattice.rotation_le_abs_add_abs (ℜ z) (ℑ z) θ
 
 /-- The lattice-valued modulus satisfies the triangle inequality. -/
 theorem modulus_add_le (z w : Z) :
-    modulus (z + w) ≤ modulus z + modulus w := by
+    |z + w|_ℂ ≤ |z|_ℂ + |w|_ℂ := by
   rw [modulus_le_iff]
   intro θ
   rw [map_add, map_add]
@@ -362,14 +390,14 @@ theorem modulus_add_le (z w : Z) :
 /-- On self-adjoint elements, the complex modulus agrees with the lattice absolute value. -/
 @[simp]
 theorem modulus_coe (x : selfAdjoint Z) :
-    modulus (x : Z) = |x| := by
+    |(x : Z)|_ℂ = |x| := by
   apply le_antisymm
   · simpa using modulus_le_abs_realPart_add_abs_imaginaryPart (x : Z)
   · simpa using abs_realPart_le_modulus (x : Z)
 
 /-- The difference of two moduli is bounded in absolute value by the modulus of the difference. -/
 theorem abs_modulus_sub_modulus_le (z w : Z) :
-    |modulus z - modulus w| ≤ modulus (z - w) := by
+    |(|z|_ℂ - |w|_ℂ)| ≤ |z - w|_ℂ := by
   apply VectorLattice.abs_sub_le_of_isLUB_rotationRange
     (modulus_isLUB z) (modulus_isLUB w)
   simpa only [map_sub] using modulus_isLUB (z - w)
@@ -383,7 +411,7 @@ class ComplexBanachLattice (Z : Type*) [NormedAddCommGroup Z] [NormedSpace ℂ Z
     [Lattice (selfAdjoint Z)] [IsOrderedAddMonoid (selfAdjoint Z)]
     extends ComplexVectorLattice Z, BanachLattice (selfAdjoint Z) where
   /-- The norm is determined by the lattice-valued modulus. -/
-  norm_modulus (z : Z) : ‖ComplexVectorLattice.modulus z‖ = ‖z‖
+  norm_modulus (z : Z) : ‖|z|_ℂ‖ = ‖z‖
 
 namespace ComplexBanachLattice
 
@@ -394,7 +422,7 @@ variable {Z : Type*} [NormedAddCommGroup Z] [NormedSpace ℂ Z]
 
 /-- The lattice-valued modulus is Lipschitz with constant one. -/
 theorem norm_modulus_sub_modulus_le (z w : Z) :
-    ‖ComplexVectorLattice.modulus z - ComplexVectorLattice.modulus w‖ ≤ ‖z - w‖ := by
+    ‖|z|_ℂ - |w|_ℂ‖ ≤ ‖z - w‖ := by
   calc
     ‖ComplexVectorLattice.modulus z - ComplexVectorLattice.modulus w‖ ≤
         ‖ComplexVectorLattice.modulus (z - w)‖ :=
