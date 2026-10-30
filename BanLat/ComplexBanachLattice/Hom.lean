@@ -321,6 +321,154 @@ end Normed
 
 end ComplexVecLatHom
 
+/-! ## Complex vector lattice equivalences -/
+
+/-- A complex vector lattice equivalence is a complex-linear equivalence preserving
+the lattice-valued modulus. -/
+structure ComplexVecLatEquiv (Z W : Type*)
+    [AddCommGroup Z] [Module ℂ Z]
+    [StarAddMonoid Z] [StarModule ℂ Z]
+    [Lattice (selfAdjoint Z)] [IsOrderedAddMonoid (selfAdjoint Z)]
+    [ComplexVectorLattice Z]
+    [AddCommGroup W] [Module ℂ W]
+    [StarAddMonoid W] [StarModule ℂ W]
+    [Lattice (selfAdjoint W)] [IsOrderedAddMonoid (selfAdjoint W)]
+    [ComplexVectorLattice W]
+    extends Z ≃ₗ[ℂ] W where
+  map_modulus' (z : Z) :
+    toLinearEquiv (|z|_ℂ : Z) = (|toLinearEquiv z|_ℂ : W)
+
+namespace ComplexVecLatEquiv
+
+variable {Z : Type*} [AddCommGroup Z] [Module ℂ Z]
+  [StarAddMonoid Z] [StarModule ℂ Z]
+  [Lattice (selfAdjoint Z)] [IsOrderedAddMonoid (selfAdjoint Z)]
+  [ComplexVectorLattice Z]
+
+variable {W : Type*} [AddCommGroup W] [Module ℂ W]
+  [StarAddMonoid W] [StarModule ℂ W]
+  [Lattice (selfAdjoint W)] [IsOrderedAddMonoid (selfAdjoint W)]
+  [ComplexVectorLattice W]
+
+/-- The canonical `EquivLike` instance for complex vector lattice equivalences. -/
+instance instEquivLike : EquivLike (ComplexVecLatEquiv Z W) Z W := by
+  exact
+    { coe := fun e ↦ e.toLinearEquiv
+      inv := fun e ↦ e.toLinearEquiv.symm
+      left_inv := fun e ↦ e.toLinearEquiv.left_inv
+      right_inv := fun e ↦ e.toLinearEquiv.right_inv
+      coe_injective' := by
+        intro e f h _
+        cases e
+        cases f
+        congr
+        exact LinearEquiv.toEquiv_injective (Equiv.coe_inj.mp h) }
+
+/-- Complex vector lattice equivalences form a class of complex-linear equivalences. -/
+instance instLinearEquivClass : LinearEquivClass (ComplexVecLatEquiv Z W) ℂ Z W := by
+  exact
+    { map_add := fun e x y ↦ e.toLinearEquiv.map_add x y
+      map_smulₛₗ := fun e c x ↦ e.toLinearEquiv.map_smul c x }
+
+/-- The underlying linear equivalence has the same coercion to a function. -/
+@[simp]
+theorem coe_toLinearEquiv (e : ComplexVecLatEquiv Z W) :
+    ⇑e.toLinearEquiv = ⇑e := by
+  rfl
+
+/-- Evaluation of the underlying linear equivalence agrees with the original equivalence. -/
+@[simp]
+theorem toLinearEquiv_apply (e : ComplexVecLatEquiv Z W) (z : Z) :
+    e.toLinearEquiv z = e z := by
+  rfl
+
+/-- Complex vector lattice equivalences preserve the lattice-valued modulus. -/
+@[simp]
+theorem map_modulus (e : ComplexVecLatEquiv Z W) (z : Z) :
+    e (|z|_ℂ : Z) = (|e z|_ℂ : W) := by
+  exact e.map_modulus' z
+
+/-- Two complex vector lattice equivalences are equal if they agree pointwise. -/
+@[ext]
+theorem ext {e f : ComplexVecLatEquiv Z W} (h : ∀ z, e z = f z) :
+    e = f := by
+  exact DFunLike.coe_injective (funext h)
+
+/-- The complex vector lattice homomorphism underlying an equivalence. -/
+def toComplexVecLatHom (e : ComplexVecLatEquiv Z W) : ComplexVecLatHom Z W where
+  toLinearMap := e.toLinearEquiv.toLinearMap
+  map_modulus' := e.map_modulus'
+
+/-- The underlying complex vector lattice homomorphism has the expected value. -/
+@[simp]
+theorem toComplexVecLatHom_apply (e : ComplexVecLatEquiv Z W) (z : Z) :
+    e.toComplexVecLatHom z = e z := by
+  rfl
+
+/-- The underlying homomorphism has the same coercion to a function as the equivalence. -/
+@[simp]
+theorem coe_toComplexVecLatHom (e : ComplexVecLatEquiv Z W) :
+    ⇑e.toComplexVecLatHom = ⇑e := by
+  rfl
+
+/-- The identity complex vector lattice equivalence. -/
+def refl (Z : Type*) [AddCommGroup Z] [Module ℂ Z]
+    [StarAddMonoid Z] [StarModule ℂ Z]
+    [Lattice (selfAdjoint Z)] [IsOrderedAddMonoid (selfAdjoint Z)]
+    [ComplexVectorLattice Z] : ComplexVecLatEquiv Z Z where
+  toLinearEquiv := LinearEquiv.refl ℂ Z
+  map_modulus' _ := rfl
+
+/-- Evaluation of the identity complex vector lattice equivalence. -/
+@[simp]
+theorem refl_apply (z : Z) : refl Z z = z := by
+  rfl
+
+/-- The inverse of a complex vector lattice equivalence. -/
+def symm (e : ComplexVecLatEquiv Z W) : ComplexVecLatEquiv W Z := by
+  refine { toLinearEquiv := e.toLinearEquiv.symm, map_modulus' := ?_ }
+  intro w
+  apply e.toLinearEquiv.injective
+  simpa only [LinearEquiv.apply_symm_apply] using
+    (e.map_modulus' (e.toLinearEquiv.symm w)).symm
+
+/-- Applying an equivalence after its inverse is the identity. -/
+@[simp]
+theorem apply_symm_apply (e : ComplexVecLatEquiv Z W) (w : W) :
+    e (e.symm w) = w := by
+  exact e.toLinearEquiv.apply_symm_apply w
+
+/-- Applying the inverse after the equivalence is the identity. -/
+@[simp]
+theorem symm_apply_apply (e : ComplexVecLatEquiv Z W) (z : Z) :
+    e.symm (e z) = z := by
+  exact e.toLinearEquiv.symm_apply_apply z
+
+/-- The composition of two complex vector lattice equivalences. -/
+def trans {V : Type*} [AddCommGroup V] [Module ℂ V]
+    [StarAddMonoid V] [StarModule ℂ V]
+    [Lattice (selfAdjoint V)] [IsOrderedAddMonoid (selfAdjoint V)]
+    [ComplexVectorLattice V]
+    (e₁ : ComplexVecLatEquiv Z W) (e₂ : ComplexVecLatEquiv W V) :
+    ComplexVecLatEquiv Z V where
+  toLinearEquiv := e₁.toLinearEquiv.trans e₂.toLinearEquiv
+  map_modulus' z := by
+    change e₂ (e₁ ((ComplexVectorLattice.modulus z : selfAdjoint Z) : Z)) =
+      ((ComplexVectorLattice.modulus (e₂ (e₁ z)) : selfAdjoint V) : V)
+    rw [e₁.map_modulus, e₂.map_modulus]
+
+/-- Evaluation of a composition of complex vector lattice equivalences. -/
+@[simp]
+theorem trans_apply {V : Type*} [AddCommGroup V] [Module ℂ V]
+    [StarAddMonoid V] [StarModule ℂ V]
+    [Lattice (selfAdjoint V)] [IsOrderedAddMonoid (selfAdjoint V)]
+    [ComplexVectorLattice V]
+    (e₁ : ComplexVecLatEquiv Z W) (e₂ : ComplexVecLatEquiv W V) (z : Z) :
+    e₁.trans e₂ z = e₂ (e₁ z) := by
+  rfl
+
+end ComplexVecLatEquiv
+
 /-! ## Complex Banach lattice isometric equivalences -/
 
 /-- A **complex Banach lattice isometric equivalence** is a complex-linear isometric
@@ -679,6 +827,23 @@ isometric equivalence. -/
 theorem toSelfAdjointBanachLatEquiv_apply (e : ComplexBanachLatEquiv Z W)
     (x : selfAdjoint Z) :
     e.toSelfAdjointBanachLatEquiv x = e.toSelfAdjointLinearIsometryEquiv x := by
+  rfl
+
+/-- The complex vector lattice equivalence underlying a Banach lattice isometric equivalence. -/
+def toComplexVecLatEquiv (e : ComplexBanachLatEquiv Z W) : ComplexVecLatEquiv Z W where
+  toLinearEquiv := e.toLinearIsometryEquiv.toLinearEquiv
+  map_modulus' := e.map_modulus'
+
+/-- The underlying complex vector lattice equivalence has the expected value. -/
+@[simp]
+theorem toComplexVecLatEquiv_apply (e : ComplexBanachLatEquiv Z W) (z : Z) :
+    e.toComplexVecLatEquiv z = e z := by
+  rfl
+
+/-- The underlying complex vector lattice equivalence has the same coercion to a function. -/
+@[simp]
+theorem coe_toComplexVecLatEquiv (e : ComplexBanachLatEquiv Z W) :
+    ⇑e.toComplexVecLatEquiv = ⇑e := by
   rfl
 
 end ComplexBanachLatEquiv

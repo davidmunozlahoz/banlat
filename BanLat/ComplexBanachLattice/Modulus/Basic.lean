@@ -56,13 +56,13 @@ private theorem real_rotationRange_isLUB (a b : ℝ) :
     exact h
 
 /-- The pointwise Euclidean modulus of two real-valued continuous functions. -/
-private noncomputable def continuousMapModulus {K : Type*} [TopologicalSpace K]
+noncomputable def continuousMapModulus {K : Type*} [TopologicalSpace K]
     (f g : C(K, ℝ)) : C(K, ℝ) where
   toFun t := Real.sqrt (f t ^ 2 + g t ^ 2)
   continuous_toFun := Real.continuous_sqrt.comp ((f.continuous.pow 2).add (g.continuous.pow 2))
 
 /-- The pointwise modulus is the least upper bound of all rotations. -/
-private theorem continuousMapModulus_isLUB {K : Type*} [TopologicalSpace K]
+theorem continuousMapModulus_isLUB {K : Type*} [TopologicalSpace K]
     (f g : C(K, ℝ)) :
     IsLUB (Set.range fun θ : ℝ ↦ Real.cos θ • f + Real.sin θ • g)
       (continuousMapModulus f g) := by

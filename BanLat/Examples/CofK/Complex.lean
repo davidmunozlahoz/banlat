@@ -7,78 +7,93 @@ import BanLat.ComplexBanachLattice.Complexification.Hom
 import BanLat.Examples.CofK.Basic
 
 /-!
-# Complex-valued continuous functions as a complex Banach lattice
+# Complex-valued continuous functions as complex vector and Banach lattices
 
-This file shows that `C(K, ℂ)`, with `K` a compact topological space, is a
-complex Banach lattice that can be identified with the canonical complexification
-of `C(K, ℝ)`. It also equips `C(K, ℂ)` with the structure of a complex AM-space
-with the constant-one function as distinguished unit.
+For any topological space `K`, the space `C(K, ℂ)` is a complex vector lattice with pointwise
+modulus. When `K` is compact, it is a complex Banach lattice identified with the canonical
+complexification of `C(K, ℝ)` and a complex AM-space with the constant-one function as unit.
 -/
 
 open scoped ComplexStarModule
 
 namespace ContinuousMap
 
-variable {K : Type*} [TopologicalSpace K] [CompactSpace K]
+variable {K : Type*} [TopologicalSpace K]
 
-/-- The self-adjoint part of `C(K, ℂ)` is linearly isometric equivalent
-as normed space to `C(K, ℝ)`. -/
-noncomputable def selfAdjointRealEquiv :
-    selfAdjoint C(K, ℂ) ≃ₗᵢ[ℝ] C(K, ℝ) := by
-  refine
-    { toLinearEquiv :=
-        { toFun := fun f =>
-            ⟨fun t => (f.1 t).re, Complex.continuous_re.comp f.1.continuous⟩
-          invFun := fun f =>
-            ⟨⟨fun t => (f t : ℂ), Complex.continuous_ofReal.comp f.continuous⟩, ?_⟩
-          left_inv := ?_
-          right_inv := ?_
-          map_add' := ?_
-          map_smul' := ?_ }
-      norm_map' := ?_ }
-  · intro f g
-    ext t
-    simp
-  · intro r f
-    ext t
-    simp
-  · change IsSelfAdjoint (⟨fun t => (f t : ℂ),
-      Complex.continuous_ofReal.comp f.continuous⟩ : C(K, ℂ))
-    rw [isSelfAdjoint_iff]
-    ext t
-    simp [ContinuousMap.star_apply]
-  · intro f
-    apply Subtype.ext
-    ext t
-    have hf : star (f.1 t) = f.1 t := by
-      simpa only [ContinuousMap.star_apply] using
-        congrArg (fun g : C(K, ℂ) => g t) f.2.star_eq
-    exact Complex.conj_eq_iff_re.mp (by simpa [Complex.star_def] using hf)
-  · intro f
-    ext t
-    simp
-  · intro f
-    change ‖((⟨fun t => (f.1 t).re,
-      Complex.continuous_re.comp f.1.continuous⟩ : C(K, ℝ)))‖ = ‖(f.1 : C(K, ℂ))‖
-    rw [ContinuousMap.norm_eq_iSup_norm, ContinuousMap.norm_eq_iSup_norm]
-    apply iSup_congr
-    intro t
-    rw [Real.norm_eq_abs]
-    apply Complex.abs_re_eq_norm.mpr
-    have hf : star (f.1 t) = f.1 t := by
-      simpa only [ContinuousMap.star_apply] using
-        congrArg (fun g : C(K, ℂ) => g t) f.2.star_eq
-    exact Complex.conj_eq_iff_im.mp (by simpa [Complex.star_def] using hf)
+private theorem selfAdjoint_apply_re (f : selfAdjoint C(K, ℂ)) (t : K) :
+    ((f.1 t).re : ℂ) = f.1 t := by
+  have hf : star (f.1 t) = f.1 t := by
+    simpa only [ContinuousMap.star_apply] using
+      congrArg (fun g : C(K, ℂ) ↦ g t) f.property.star_eq
+  exact Complex.conj_eq_iff_re.mp (by simpa only [Complex.star_def] using hf)
 
-/-- The equivalence between `selfAdjoint C(K, ℂ)` and `C(K, ℝ)` maps every
-self-adjoint function to its pointwise real part, that is, to itself. -/
-@[simp]
-theorem selfAdjointRealEquiv_apply_apply
-    (f : selfAdjoint C(K, ℂ)) (t : K) :
-    selfAdjointRealEquiv f t = (f.1 t).re := by
-  rfl
+/-- The self-adjoint complex-valued continuous functions are real-linearly
+equivalent to the real-valued continuous functions. -/
+noncomputable def selfAdjointRealLinearEquiv :
+    selfAdjoint C(K, ℂ) ≃ₗ[ℝ] C(K, ℝ) := by
+  exact
+    { toFun := fun f ↦
+        ⟨fun t ↦ (f.1 t).re, Complex.continuous_re.comp f.1.continuous⟩
+      invFun := fun f ↦
+        ⟨⟨fun t ↦ (f t : ℂ), Complex.continuous_ofReal.comp f.continuous⟩,
+          isSelfAdjoint_iff.mpr (ContinuousMap.ext (fun t ↦ by
+            simp [ContinuousMap.star_apply]))⟩
+      left_inv := fun f ↦ Subtype.ext (ContinuousMap.ext (selfAdjoint_apply_re f))
+      right_inv := fun f ↦ ContinuousMap.ext (fun t ↦ Complex.ofReal_re (f t))
+      map_add' := fun f g ↦ ContinuousMap.ext (fun t ↦ Complex.add_re (f.1 t) (g.1 t))
+      map_smul' := fun r f ↦ ContinuousMap.ext (fun t ↦ by simp) }
 
-omit [CompactSpace K] in
+/-! ### The self-adjoint part as a real vector lattice -/
+
+/-- The lattice structure on self-adjoint continuous functions is transported
+through the equivalence with real-valued continuous functions. -/
+noncomputable instance instLatticeSelfAdjoint :
+    Lattice (selfAdjoint C(K, ℂ)) := by
+  exact selfAdjointRealLinearEquiv.toEquiv.lattice
+
+/-- Addition on self-adjoint continuous functions respects the transported order. -/
+instance instIsOrderedAddMonoidSelfAdjoint :
+    IsOrderedAddMonoid (selfAdjoint C(K, ℂ)) := by
+  exact Function.Injective.isOrderedAddMonoid selfAdjointRealLinearEquiv
+    selfAdjointRealLinearEquiv.map_add Iff.rfl
+
+/-- The self-adjoint continuous functions form a real vector lattice. -/
+noncomputable instance instVectorLatticeSelfAdjoint :
+    VectorLattice (selfAdjoint C(K, ℂ)) := by
+  exact
+    { smul_le_smul_of_nonneg_left := fun a ha x y hxy ↦ by
+        change selfAdjointRealLinearEquiv (a • x) ≤ selfAdjointRealLinearEquiv (a • y)
+        change selfAdjointRealLinearEquiv x ≤ selfAdjointRealLinearEquiv y at hxy
+        rw [map_smul, map_smul]
+        rw [ContinuousMap.le_def] at hxy ⊢
+        intro t
+        simp only [ContinuousMap.smul_apply]
+        exact smul_le_smul_of_nonneg_left (hxy t) ha }
+
+private theorem selfAdjoint_rotationRange_isLUB (x y : selfAdjoint C(K, ℂ)) :
+    IsLUB (VectorLattice.rotationRange x y)
+      (selfAdjointRealLinearEquiv.symm
+        (continuousMapModulus (selfAdjointRealLinearEquiv x)
+          (selfAdjointRealLinearEquiv y))) := by
+  let e : selfAdjoint C(K, ℂ) ≃o C(K, ℝ) :=
+    { selfAdjointRealLinearEquiv.toEquiv with map_rel_iff' := Iff.rfl }
+  apply e.isLUB_image.mp
+  change IsLUB (selfAdjointRealLinearEquiv '' VectorLattice.rotationRange x y)
+    (continuousMapModulus (selfAdjointRealLinearEquiv x) (selfAdjointRealLinearEquiv y))
+  simpa only [VectorLattice.rotationRange, ← Set.range_comp, Function.comp_def,
+    map_add, map_smul] using continuousMapModulus_isLUB
+      (selfAdjointRealLinearEquiv x) (selfAdjointRealLinearEquiv y)
+
+/-- Complex-valued continuous functions form a complex vector lattice. -/
+noncomputable instance instComplexVectorLattice : ComplexVectorLattice C(K, ℂ) := by
+  exact
+    { toVectorLattice := instVectorLatticeSelfAdjoint
+      coe_smul := fun _ _ ↦ rfl
+      exists_isLUB_rotationRange := fun x y ↦
+        ⟨selfAdjointRealLinearEquiv.symm
+          (continuousMapModulus (selfAdjointRealLinearEquiv x)
+            (selfAdjointRealLinearEquiv y)), selfAdjoint_rotationRange_isLUB x y⟩ }
+
 /-- The real coordinate of the abstract real part of a complex-valued function is its
 pointwise real part. -/
 @[simp]
@@ -90,7 +105,6 @@ theorem realPart_apply_re
     ContinuousMap.star_apply]
   ring
 
-omit [CompactSpace K] in
 /-- The real coordinate of the abstract imaginary part of a complex-valued function is its
 pointwise imaginary part. -/
 @[simp]
@@ -102,6 +116,38 @@ theorem imaginaryPart_apply_re
     ContinuousMap.star_apply, Complex.mul_re, Complex.mul_im]
   ring
 
+/-- The lattice-valued modulus of a complex-valued continuous function is its
+pointwise norm. -/
+@[simp]
+theorem modulus_apply (f : C(K, ℂ)) (t : K) :
+    (|f|_ℂ : C(K, ℂ)) t = (‖f t‖ : ℂ) := by
+  rw [ComplexVectorLattice.modulus_eq_of_isLUB
+    (selfAdjoint_rotationRange_isLUB (ℜ f) (ℑ f))]
+  change (Real.sqrt (((ℜ f : C(K, ℂ)) t).re ^ 2 +
+    ((ℑ f : C(K, ℂ)) t).re ^ 2) : ℂ) = (‖f t‖ : ℂ)
+  rw [realPart_apply_re, imaginaryPart_apply_re, ← Complex.norm_eq_sqrt_sq_add_sq]
+
+variable [CompactSpace K]
+
+/-- The self-adjoint part of `C(K, ℂ)` is linearly isometric equivalent
+as normed space to `C(K, ℝ)`. -/
+noncomputable def selfAdjointRealEquiv :
+    selfAdjoint C(K, ℂ) ≃ₗᵢ[ℝ] C(K, ℝ) := by
+  refine { toLinearEquiv := selfAdjointRealLinearEquiv, norm_map' := ?_ }
+  intro f
+  change ‖selfAdjointRealLinearEquiv f‖ = ‖(f.1 : C(K, ℂ))‖
+  rw [ContinuousMap.norm_eq_iSup_norm, ContinuousMap.norm_eq_iSup_norm]
+  exact iSup_congr (fun t ↦ (Complex.norm_real _).symm.trans
+    (congrArg norm (selfAdjoint_apply_re f t)))
+
+/-- The equivalence from `selfAdjoint C(K, ℂ)` to `C(K, ℝ)` sends a
+self-adjoint function to its pointwise real part. -/
+@[simp]
+theorem selfAdjointRealEquiv_apply_apply
+    (f : selfAdjoint C(K, ℂ)) (t : K) :
+    selfAdjointRealEquiv f t = (f.1 t).re := by
+  rfl
+
 /-- The inverse equivalence from `C(K, ℝ)` to `selfAdjoint C(K, ℂ)` sends a
 real-valued function to its pointwise inclusion into the complex numbers. -/
 @[simp]
@@ -112,19 +158,6 @@ theorem selfAdjointRealEquiv_symm_apply_apply
   rfl
 
 /-! ### `selfAdjoint C(K, ℂ)` as a real Banach lattice -/
-
-/-- The lattice structure on `selfAdjoint C(K, ℂ)` is transported through the
-equivalence with `C(K, ℝ)`. -/
-noncomputable instance instLatticeSelfAdjoint :
-    Lattice (selfAdjoint C(K, ℂ)) := by
-  exact selfAdjointRealEquiv.toEquiv.lattice
-
-/-- Addition on `selfAdjoint C(K, ℂ)` is compatible with the transported
-order. -/
-instance instIsOrderedAddMonoidSelfAdjoint :
-    IsOrderedAddMonoid (selfAdjoint C(K, ℂ)) := by
-  exact Function.Injective.isOrderedAddMonoid selfAdjointRealEquiv
-    selfAdjointRealEquiv.map_add Iff.rfl
 
 private theorem selfAdjointRealEquiv_sup
     (x y : selfAdjoint C(K, ℂ)) :
@@ -142,15 +175,7 @@ private theorem selfAdjointRealEquiv_inf
 noncomputable instance instBanachLatticeSelfAdjoint :
     BanachLattice (selfAdjoint C(K, ℂ)) := by
   refine
-    { smul_le_smul_of_nonneg_left := by
-        intro a ha x y hxy
-        change selfAdjointRealEquiv (a • x) ≤ selfAdjointRealEquiv (a • y)
-        change selfAdjointRealEquiv x ≤ selfAdjointRealEquiv y at hxy
-        rw [map_smul, map_smul]
-        rw [ContinuousMap.le_def] at hxy ⊢
-        intro t
-        simp only [ContinuousMap.smul_apply]
-        exact smul_le_smul_of_nonneg_left (hxy t) ha
+    { toVectorLattice := instVectorLatticeSelfAdjoint
       solid := by
         intro x y hxy
         rw [← selfAdjointRealEquiv.norm_map x, ← selfAdjointRealEquiv.norm_map y]
@@ -185,80 +210,27 @@ theorem selfAdjointBanachLatEquiv_apply_apply
 
 /-! ### Complex Banach lattice structures -/
 
-section CanonicalModulus
-
-local instance instIsUniformlyCompleteVectorLatticeSelfAdjointCofK :
-    IsUniformlyCompleteVectorLattice (selfAdjoint C(K, ℂ)) :=
-  isUniformlyCompleteVectorLattice_of_banachLattice _
-
-local instance instIsUniformlyCompleteVectorLatticeCofK :
-    IsUniformlyCompleteVectorLattice C(K, ℝ) :=
-  isUniformlyCompleteVectorLattice_of_banachLattice _
-
-/-- The equivalence from `selfAdjoint C(K, ℂ)` to `C(K, ℝ)` sends the
-canonical complex modulus to the pointwise complex norm. -/
-private theorem selfAdjointRealEquiv_complexModulus_apply
-    (f : C(K, ℂ)) (t : K) :
-    selfAdjointRealEquiv (VectorLattice.complexModulus (ℜ f) (ℑ f)) t = ‖f t‖ := by
-  change selfAdjointBanachLatEquiv.toVecLatEquiv
-      (VectorLattice.complexModulus (ℜ f) (ℑ f)) t = ‖f t‖
-  have h := congrArg (fun g : C(K, ℝ) => g t)
-    (VecLatEquiv.map_complexModulus selfAdjointBanachLatEquiv.toVecLatEquiv
-      (ℜ f) (ℑ f))
-  rw [h]
-  change VectorLattice.complexModulus (selfAdjointBanachLatEquiv (ℜ f))
-      (selfAdjointBanachLatEquiv (ℑ f)) t = ‖f t‖
-  rw [VectorLattice.complexModulus_apply,
-    selfAdjointBanachLatEquiv_apply_apply,
-    selfAdjointBanachLatEquiv_apply_apply,
-    realPart_apply_coe, imaginaryPart_apply_coe]
-  simp [ContinuousMap.smul_apply, ContinuousMap.add_apply,
-    ContinuousMap.sub_apply, ContinuousMap.star_apply, Complex.mul_re, Complex.mul_im]
-  ring_nf
-  rw [← Complex.norm_eq_sqrt_sq_add_sq (f t)]
-
 /-- `C(K, ℂ)` is a **complex Banach lattice.** -/
 noncomputable instance instComplexBanachLattice :
-    ComplexBanachLattice C(K, ℂ) :=
-  ComplexBanachLattice.ofSelfAdjointBanachLattice
-    (by
-      intro r x
-      simp)
-    (by
-      intro f
-      rw [← (selfAdjointRealEquiv (K := K)).norm_map]
-      rw [ContinuousMap.norm_eq_iSup_norm, ContinuousMap.norm_eq_iSup_norm]
-      apply iSup_congr
-      intro t
-      rw [selfAdjointRealEquiv_complexModulus_apply]
-      simp)
-
-end CanonicalModulus
+    ComplexBanachLattice C(K, ℂ) := by
+  refine
+    { instBanachLatticeSelfAdjoint (K := K), instComplexVectorLattice (K := K) with
+      norm_modulus := ?_ }
+  intro f
+  change ‖((ComplexVectorLattice.modulus f : selfAdjoint C(K, ℂ)) : C(K, ℂ))‖ = ‖f‖
+  rw [ContinuousMap.norm_eq_iSup_norm, ContinuousMap.norm_eq_iSup_norm]
+  apply iSup_congr
+  intro t
+  rw [modulus_apply, Complex.norm_real, norm_norm]
 
 /-- The equivalence from `selfAdjoint C(K, ℂ)` to `C(K, ℝ)` sends the
 lattice-valued modulus to the pointwise complex norm. -/
 theorem selfAdjointRealEquiv_modulus_apply
     (f : C(K, ℂ)) (t : K) :
     selfAdjointRealEquiv |f|_ℂ t = ‖f t‖ := by
-  letI : IsUniformlyCompleteVectorLattice (selfAdjoint C(K, ℂ)) :=
-    isUniformlyCompleteVectorLattice_of_banachLattice _
-  rw [ComplexVectorLattice.modulus_eq_complexModulus]
-  exact selfAdjointRealEquiv_complexModulus_apply f t
-
-/-- The lattice-valued modulus of a complex-valued continuous function is its
-pointwise norm. -/
-@[simp]
-theorem modulus_apply
-    (f : C(K, ℂ)) (t : K) :
-    (|f|_ℂ : C(K, ℂ)) t = (‖f t‖ : ℂ) := by
-  apply Complex.ext
-  · exact selfAdjointRealEquiv_modulus_apply f t
-  · have hf := (ComplexVectorLattice.modulus f).2.star_eq
-    have h := congrArg (fun g : C(K, ℂ) => g t) hf
-    apply Complex.conj_eq_iff_im.mp
-    change star ((ComplexVectorLattice.modulus f).1 t) =
-      (ComplexVectorLattice.modulus f).1 t at h
-    exact h
+  change (((ComplexVectorLattice.modulus f : selfAdjoint C(K, ℂ)) : C(K, ℂ)) t).re =
+    ‖f t‖
+  rw [modulus_apply, Complex.ofReal_re]
 
 /-! ### `C(K, ℂ) ≅ Complexification C(K, ℝ)` -/
 

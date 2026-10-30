@@ -3,6 +3,7 @@ Authors: Jesús Illescas-Fiorito
 -/
 
 import BanLat.Normed
+import BanLat.Convergences.Uniform
 import Mathlib.Analysis.SpecialFunctions.Complex.Arg
 import Mathlib.LinearAlgebra.Complex.Module
 
@@ -210,6 +211,14 @@ class ComplexVectorLattice (Z : Type*) [AddCommGroup Z] [Module ℂ Z]
 
 attribute [simp] ComplexVectorLattice.coe_smul
 
+/-- A complex vector lattice is **uniformly complete** when its self-adjoint
+part is uniformly complete. -/
+abbrev IsUniformlyCompleteComplexVectorLattice (Z : Type*)
+    [AddCommGroup Z] [Module ℂ Z] [StarAddMonoid Z] [StarModule ℂ Z]
+    [Lattice (selfAdjoint Z)] [IsOrderedAddMonoid (selfAdjoint Z)]
+    [ComplexVectorLattice Z] : Prop :=
+  IsUniformlyCompleteVectorLattice (selfAdjoint Z)
+
 namespace ComplexVectorLattice
 
 variable {Z : Type*} [AddCommGroup Z] [Module ℂ Z]
@@ -412,6 +421,14 @@ class ComplexBanachLattice (Z : Type*) [NormedAddCommGroup Z] [NormedSpace ℂ Z
     extends ComplexVectorLattice Z, BanachLattice (selfAdjoint Z) where
   /-- The norm is determined by the lattice-valued modulus. -/
   norm_modulus (z : Z) : ‖|z|_ℂ‖ = ‖z‖
+
+/-- Every complex Banach lattice is **uniformly complete.** -/
+theorem isUniformlyCompleteComplexVectorLattice_of_complexBanachLattice
+    (Z : Type*) [NormedAddCommGroup Z] [NormedSpace ℂ Z]
+    [StarAddMonoid Z] [StarModule ℂ Z]
+    [Lattice (selfAdjoint Z)] [IsOrderedAddMonoid (selfAdjoint Z)]
+    [ComplexBanachLattice Z] : IsUniformlyCompleteComplexVectorLattice Z := by
+  exact isUniformlyCompleteVectorLattice_of_banachLattice (selfAdjoint Z)
 
 namespace ComplexBanachLattice
 
