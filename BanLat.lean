@@ -74,9 +74,13 @@ import BanLat.Examples.MofK.Basic
 import BanLat.Examples.MofK.Decomposition
 import BanLat.Examples.MofK.L1space
 import BanLat.Examples.SignedMeasure.Basic
+import BanLat.Free.Comparison
 import BanLat.Free.FBL
+import BanLat.Free.FBLp
 import BanLat.Free.FVL
 import BanLat.Free.FVLv
+import BanLat.Free.Infinity
+import BanLat.Free.Norm
 import BanLat.FunctionalCalculus
 import BanLat.L1repr.Basic
 import BanLat.L1repr.HowItSeats
