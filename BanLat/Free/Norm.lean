@@ -10,8 +10,8 @@ import BanLat.Pi
 # The free p-norm on homogeneous dual functions
 
 For a real normed space `E` and `1 ≤ p ≤ ∞`, `freeNormExt p` defines the free p-convex norm
-on functions `f : StrongDual ℝ E → ℝ`, with `φ : StrongDual ℝ E` denoting an element of the dual.
-For finite `p`, it tests `f` on finite families `(φ i)` with weak p-norm at most one, taking the
+on functions `f : StrongDual ℝ E → ℝ`. With `φ : StrongDual ℝ E` denoting an element of the dual,
+for finite `p`, it tests `f` on finite families `(φ i)` with weak p-norm at most one, taking the
 supremum of the ℓᵖ evaluation norms; at `p = ∞`, it takes the supremum of `|f φ|` on
 the closed dual unit ball. The positively homogeneous functions with finite extended free norm
 form `FunctionSpace p E`, a Banach lattice with pointwise order and the free p-norm.
