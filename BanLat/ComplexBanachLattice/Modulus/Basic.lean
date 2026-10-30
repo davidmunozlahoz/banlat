@@ -108,12 +108,12 @@ private theorem exists_isLUB_rotationRange [IsUniformlyCompleteVectorLattice E]
     · intro u hu
       simpa using hu ⟨0, rfl⟩
   · have hepos : 0 < e := lt_of_le_of_ne he (Ne.symm hzero)
-    letI : NormedAddCommGroup ↥(OrderIdeal.principal e) :=
+    let : NormedAddCommGroup ↥(OrderIdeal.principal e) :=
       OrderIdeal.principalNormedAddCommGroup e
-    letI : Lattice ↥(OrderIdeal.principal e) := OrderIdeal.instLatticePrincipal e
-    letI : IsOrderedAddMonoid ↥(OrderIdeal.principal e) :=
+    let : Lattice ↥(OrderIdeal.principal e) := OrderIdeal.instLatticePrincipal e
+    let : IsOrderedAddMonoid ↥(OrderIdeal.principal e) :=
       OrderIdeal.instIsOrderedAddMonoidPrincipal e
-    letI : AMSpaceWithUnit ↥(OrderIdeal.principal e) :=
+    let : AMSpaceWithUnit ↥(OrderIdeal.principal e) :=
       OrderIdeal.principalAMSpaceWithUnit he
         (IsUniformlyCompleteVectorLattice.complete_principal e hepos)
     let T := OrderIdeal.principalKakutaniEquiv hepos

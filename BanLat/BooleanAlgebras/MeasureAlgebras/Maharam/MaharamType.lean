@@ -45,8 +45,8 @@ is at least `ℵ₀`. -/
 theorem aleph0_le_maharamType_of_isAtomless [Nontrivial B]
     (μ : MeasureAlgebra B) (hB : BooleanAlgebra.IsAtomless B) :
     Cardinal.aleph0 ≤ μ.maharamType := by
-  letI : Infinite B := BooleanAlgebra.infinite_of_isAtomless hB
-  letI := μ.toMetricSpace
+  let : Infinite B := BooleanAlgebra.infinite_of_isAtomless hB
+  let := μ.toMetricSpace
   unfold maharamType densityCharacter
   exact TopologicalSpace.aleph0_le_densityCharacter _
 
@@ -95,7 +95,7 @@ theorem maharamTypeBelow_eq_aleph0_of_isAtomless_of_densityCharacter_le
     (hμ : μ.densityCharacter ≤ Cardinal.aleph0)
     {b : B} (hb : b ≠ ⊥) :
     μ.maharamTypeBelow b = Cardinal.aleph0 := by
-  letI : Nontrivial (Set.Iic b) := ⟨⟨⊥, ⊤, fun h ↦ hb (congrArg Subtype.val h).symm⟩⟩
+  let : Nontrivial (Set.Iic b) := ⟨⟨⊥, ⊤, fun h ↦ hb (congrArg Subtype.val h).symm⟩⟩
   apply le_antisymm (μ.maharamTypeBelow_le_densityCharacter b |>.trans hμ)
   exact aleph0_le_densityCharacter_of_isAtomless
     (μ.restrict b) hB.iic
@@ -116,7 +116,7 @@ theorem isHomogeneous_of_isAtomless_of_densityCharacter_le
     (hμ : μ.densityCharacter ≤ Cardinal.aleph0) :
     μ.IsHomogeneous := by
   intro b hb
-  letI : Nontrivial B := ⟨⟨b, ⊥, hb⟩⟩
+  let : Nontrivial B := ⟨⟨b, ⊥, hb⟩⟩
   rw [μ.maharamTypeBelow_eq_aleph0_of_isAtomless_of_densityCharacter_le hB hμ hb]
   exact (le_antisymm hμ (aleph0_le_densityCharacter_of_isAtomless μ hB)).symm
 
@@ -129,8 +129,8 @@ theorem isHomogeneous_of_isAtomless_of_isSeparable
       letI := μ.toMetricSpace
       TopologicalSpace.SeparableSpace B) :
     μ.IsHomogeneous := by
-  letI := μ.toMetricSpace
-  letI : TopologicalSpace.SeparableSpace B := hμ
+  let := μ.toMetricSpace
+  let : TopologicalSpace.SeparableSpace B := hμ
   exact μ.isHomogeneous_of_isAtomless_of_densityCharacter_le hB
     (TopologicalSpace.densityCharacter_le_aleph0 B)
 

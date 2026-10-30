@@ -97,7 +97,7 @@ omit [Fact (1 ≤ p)] in
 /-- Extends a class in `Lᵖ(μ.restrict s)` by zero outside `s` to a class in `Lᵖ(μ)`. -/
 noncomputable def extendRestricted {s : Set α} (hs : MeasurableSet s)
     (g : Lp ℝ p (μ.restrict s)) : Lp ℝ p μ :=
-  ((memLp_indicator_iff_restrict hs).mpr (Lp.memLp g)).toLp (s.indicator g)
+  ((memLp_indicator_iff_restrict hs.nullMeasurableSet).mpr (Lp.memLp g)).toLp (s.indicator g)
 
 omit [Fact (1 ≤ p)] in
 /-- Extension by zero is represented almost everywhere by `s.indicator g`. -/
@@ -111,7 +111,7 @@ theorem isometry_extendRestricted {s : Set α} (hs : MeasurableSet s) :
     Isometry (extendRestricted (p := p) (μ := μ) hs) := by
   intro f g
   rw [extendRestricted, extendRestricted, Lp.edist_toLp_toLp, ← Set.indicator_sub',
-    eLpNorm_indicator_eq_eLpNorm_restrict hs, Lp.edist_def]
+    eLpNorm_indicator_eq_eLpNorm_restrict hs.nullMeasurableSet, Lp.edist_def]
 
 omit [Fact (1 ≤ p)] in
 /-- Extension by zero preserves and reflects the order on restricted `Lᵖ` classes. -/

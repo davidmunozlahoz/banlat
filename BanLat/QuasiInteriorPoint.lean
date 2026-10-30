@@ -268,12 +268,12 @@ of `ℵ₀` and the density character of the interval below it. -/
 private lemma densityCharacter_le_max_Icc {e : X} (he : QuasiInteriorPoint e) :
     TopologicalSpace.densityCharacter X ≤ max Cardinal.aleph0
       (TopologicalSpace.densityCharacter (Set.Icc (0 : X) e)) := by
-  letI := NormedSpace.restrictScalars ℚ ℝ X
-  letI : IsScalarTower ℚ ℝ X := IsScalarTower.restrictScalars ℚ ℝ X
-  letI : Nonempty (Set.Icc (0 : X) e) := ⟨⟨0, le_rfl, he.1⟩⟩
+  let := NormedSpace.restrictScalars ℚ ℝ X
+  let : IsScalarTower ℚ ℝ X := IsScalarTower.restrictScalars ℚ ℝ X
+  let : Nonempty (Set.Icc (0 : X) e) := ⟨⟨0, le_rfl, he.1⟩⟩
   obtain ⟨D, hD, hcard⟩ := TopologicalSpace.exists_dense_mk_eq_densityCharacter
     (Set.Icc (0 : X) e)
-  letI : Nonempty D := hD.nonempty.to_subtype
+  let : Nonempty D := hD.nonempty.to_subtype
   let g : D → X := fun a ↦ a.val.val
   have hdense : DenseRange (Finsupp.linearCombination ℚ g) := by
     change Dense (Set.range (Finsupp.linearCombination ℚ g))
@@ -288,7 +288,7 @@ of the ambient normed vector lattice. -/
 theorem QuasiInteriorPoint.densityCharacter_Icc {e : X} (he : QuasiInteriorPoint e) :
     TopologicalSpace.densityCharacter (Set.Icc (0 : X) e) =
       TopologicalSpace.densityCharacter X := by
-  letI : Nonempty (Set.Icc (0 : X) e) := ⟨⟨0, le_rfl, he.1⟩⟩
+  let : Nonempty (Set.Icc (0 : X) e) := ⟨⟨0, le_rfl, he.1⟩⟩
   refine le_antisymm (TopologicalSpace.densityCharacter_le_of_isEmbedding
     Topology.IsEmbedding.subtypeVal) ?_
   by_cases he0 : e = 0
@@ -300,8 +300,8 @@ theorem QuasiInteriorPoint.densityCharacter_Icc {e : X} (he : QuasiInteriorPoint
     exact TopologicalSpace.densityCharacter_le_of_continuous_surjective
       (continuous_const : Continuous (fun _ : Set.Icc (0 : X) e ↦ (0 : X)))
       (fun x ↦ ⟨⟨0, le_rfl, he.1⟩, (hzero x).symm⟩)
-  · letI : Infinite (Set.Icc (0 : ℝ) 1) := Set.Icc.infinite zero_lt_one
-    letI : Infinite (Set.Icc (0 : X) e) := Infinite.of_injective
+  · let : Infinite (Set.Icc (0 : ℝ) 1) := Set.Icc.infinite zero_lt_one
+    let : Infinite (Set.Icc (0 : X) e) := Infinite.of_injective
       (fun t : Set.Icc (0 : ℝ) 1 ↦ ⟨(t : ℝ) • e, smul_nonneg t.property.1 he.1,
         (smul_le_smul_of_nonneg_right t.property.2 he.1).trans_eq (one_smul ℝ e)⟩)
       (fun a b h ↦ Subtype.ext ((smul_left_injective ℝ he0) (congrArg Subtype.val h)))

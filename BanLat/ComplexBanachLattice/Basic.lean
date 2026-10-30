@@ -179,20 +179,8 @@ theorem rotationRange_linear_transform (a b : ℝ) (x y : E) :
       r • (Real.cos θ • x + Real.sin θ • y)
     rw [Real.cos_add, Real.sin_add, ← ha, ← hb]
     match_scalars
-    · calc
-        (Real.cos θ * Real.cos δ - Real.sin θ * Real.sin δ) *
-              (r * Real.cos δ * 1) +
-            (Real.sin θ * Real.cos δ + Real.cos θ * Real.sin δ) *
-              (r * Real.sin δ * 1) =
-          r * Real.cos θ * (Real.cos δ ^ 2 + Real.sin δ ^ 2) := by ring
-        _ = r * (Real.cos θ * 1) := by rw [Real.cos_sq_add_sin_sq]; ring
-    · calc
-        (Real.cos θ * Real.cos δ - Real.sin θ * Real.sin δ) *
-              -(r * Real.sin δ * 1) +
-            (Real.sin θ * Real.cos δ + Real.cos θ * Real.sin δ) *
-              (r * Real.cos δ * 1) =
-          r * Real.sin θ * (Real.cos δ ^ 2 + Real.sin δ ^ 2) := by ring
-        _ = r * (Real.sin θ * 1) := by rw [Real.cos_sq_add_sin_sq]; ring
+    · linear_combination (r * Real.cos θ) * Real.cos_sq_add_sin_sq δ
+    · linear_combination (r * Real.sin θ) * Real.cos_sq_add_sin_sq δ
 
 end VectorLattice
 
@@ -358,7 +346,7 @@ theorem modulus_smul (c : ℂ) (z : Z) :
   rw [← VectorLattice.rotationRange_linear_transform] at h
   simp only [Complex.norm_def, Complex.normSq_apply]
   convert h using 1
-  all_goals first | rfl | (congr 1 <;> (ext; simp [add_comm])) | (ext; simp [pow_two])
+  all_goals first | (congr 1 <;> (ext; simp [add_comm])) | (ext; simp [pow_two])
 
 /-- Negation preserves the lattice-valued modulus. -/
 @[simp]

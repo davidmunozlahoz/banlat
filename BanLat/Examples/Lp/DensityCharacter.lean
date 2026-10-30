@@ -35,7 +35,7 @@ variable {μ : Measure α} [IsFiniteMeasure μ] {p : ℝ≥0}
 private lemma maharamType_le_densityCharacter [Fact (1 ≤ p)] :
     (MeasureAlgebra.ofMeasure μ).maharamType ≤
       TopologicalSpace.densityCharacter (Lp ℝ (p : ENNReal) μ) := by
-  letI := (MeasureAlgebra.ofMeasure μ).toMetricSpace
+  let := (MeasureAlgebra.ofMeasure μ).toMetricSpace
   exact TopologicalSpace.densityCharacter_le_of_isEmbedding
     (isUniformEmbedding_algebraIndicator (μ := μ) (p := p)).isEmbedding
 
@@ -44,7 +44,7 @@ private lemma dense_span_algebraIndicator [Fact (1 ≤ p)]
     (hD : letI := (MeasureAlgebra.ofMeasure μ).toMetricSpace; Dense D) :
     Dense (Submodule.span ℚ (algebraIndicator (p := p) '' D) :
       Set (Lp ℝ (p : ENNReal) μ)) := by
-  letI := (MeasureAlgebra.ofMeasure μ).toMetricSpace
+  let := (MeasureAlgebra.ofMeasure μ).toMetricSpace
   let S := Submodule.span ℚ (algebraIndicator (p := p) '' D)
   have hcont := (isUniformEmbedding_algebraIndicator (μ := μ) (p := p)).isEmbedding.continuous
   have hI (a : MeasureAlgebra.InducedBooleanAlgebra μ) :
@@ -66,10 +66,10 @@ private lemma dense_span_algebraIndicator [Fact (1 ≤ p)]
 private lemma densityCharacter_le_max_maharamType [Fact (1 ≤ p)] :
     TopologicalSpace.densityCharacter (Lp ℝ (p : ENNReal) μ) ≤
       max Cardinal.aleph0 (MeasureAlgebra.ofMeasure μ).maharamType := by
-  letI := (MeasureAlgebra.ofMeasure μ).toMetricSpace
+  let := (MeasureAlgebra.ofMeasure μ).toMetricSpace
   obtain ⟨D, hD, hcard⟩ := TopologicalSpace.exists_dense_mk_eq_densityCharacter
     (MeasureAlgebra.InducedBooleanAlgebra μ)
-  letI : Nonempty D := hD.nonempty.to_subtype
+  let : Nonempty D := hD.nonempty.to_subtype
   let g : D → Lp ℝ (p : ENNReal) μ := fun a ↦ algebraIndicator a.val
   have hdense : DenseRange (Finsupp.linearCombination ℚ g) := by
     change Dense (Set.range (Finsupp.linearCombination ℚ g))
@@ -82,8 +82,8 @@ private lemma densityCharacter_le_max_maharamType [Fact (1 ≤ p)] :
 
 private lemma aleph0_le_densityCharacter [Fact (1 ≤ p)] (hμ : μ ≠ 0) :
     Cardinal.aleph0 ≤ TopologicalSpace.densityCharacter (Lp ℝ (p : ENNReal) μ) := by
-  letI : NeZero μ := ⟨hμ⟩
-  letI : Infinite (Lp ℝ (p : ENNReal) μ) :=
+  let : NeZero μ := ⟨hμ⟩
+  let : Infinite (Lp ℝ (p : ENNReal) μ) :=
     Infinite.of_injective (Lp.const (p : ENNReal) μ : ℝ → Lp ℝ (p : ENNReal) μ)
       fun c d h ↦ ((Lp.coeFn_const (p : ENNReal) μ c).symm.trans
         ((Lp.ext_iff.mp h).trans (Lp.coeFn_const (p : ENNReal) μ d))).exists.choose_spec
@@ -92,7 +92,7 @@ private lemma aleph0_le_densityCharacter [Fact (1 ≤ p)] (hμ : μ ≠ 0) :
 private lemma aleph0_le_maharamType
     (hμ : μ.HasNoAtoms) (hμ_ne_zero : μ ≠ 0) :
     Cardinal.aleph0 ≤ (MeasureAlgebra.ofMeasure μ).maharamType := by
-  letI : Nontrivial (MeasureAlgebra.InducedBooleanAlgebra μ) :=
+  let : Nontrivial (MeasureAlgebra.InducedBooleanAlgebra μ) :=
     MeasureAlgebra.InducedBooleanAlgebra.nontrivial_of_ne_zero μ hμ_ne_zero
   exact MeasureAlgebra.aleph0_le_maharamType_of_isAtomless (MeasureAlgebra.ofMeasure μ)
     (MeasureAlgebra.InducedBooleanAlgebra.isAtomless_of_hasNoAtoms μ hμ)

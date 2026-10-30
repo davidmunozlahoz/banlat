@@ -411,7 +411,7 @@ theorem extremallyDisconnected_stoneSpace_iff :
     ExtremallyDisconnected (StoneSpace B) ↔ ∀ s : Set B, ∃ a : B, IsLUB s a := by
   constructor
   · intro h s
-    letI := h
+    let := h
     exact ⟨stoneRepresentation.symm (sSup (stoneRepresentation '' s)),
       stoneRepresentation.isLUB_image.mp (isLUB_sSup _)⟩
   · intro h

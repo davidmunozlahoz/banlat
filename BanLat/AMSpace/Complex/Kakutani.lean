@@ -40,8 +40,8 @@ omit [Lattice (selfAdjoint Z)] [IsOrderedAddMonoid (selfAdjoint Z)]
 private theorem nontrivial_selfAdjoint : Nontrivial (selfAdjoint Z) := by
   rw [← not_subsingleton_iff_nontrivial]
   intro h
-  letI : Subsingleton (selfAdjoint Z) := h
-  letI : Subsingleton Z := ⟨fun z w ↦ by
+  let : Subsingleton (selfAdjoint Z) := h
+  let : Subsingleton Z := ⟨fun z w ↦ by
     rw [← realPart_add_I_smul_imaginaryPart z,
       ← realPart_add_I_smul_imaginaryPart w,
       Subsingleton.elim (ℜ z) (ℜ w),
@@ -134,10 +134,10 @@ theorem complexPrincipalKakutaniEquiv_apply_apply
       (φ : AMSpaceWithUnit.LatticeCharacter ↥(principal e)),
       complexPrincipalKakutaniEquiv he z φ =
         (φ z.re : ℂ) + Complex.I * (φ z.im : ℂ) := by
-  letI := principalNormedAddCommGroup e
-  letI : Lattice ↥(principal e) := instLatticePrincipal e
-  letI : IsOrderedAddMonoid ↥(principal e) := instIsOrderedAddMonoidPrincipal e
-  letI : AMSpaceWithUnit ↥(principal e) :=
+  let := principalNormedAddCommGroup e
+  let : Lattice ↥(principal e) := instLatticePrincipal e
+  let : IsOrderedAddMonoid ↥(principal e) := instIsOrderedAddMonoidPrincipal e
+  let : AMSpaceWithUnit ↥(principal e) :=
     principalAMSpaceWithUnit he.le
       (IsUniformlyCompleteVectorLattice.complete_principal e he)
   intro z φ

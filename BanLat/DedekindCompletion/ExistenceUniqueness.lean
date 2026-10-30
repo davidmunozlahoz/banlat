@@ -57,7 +57,7 @@ variable {X : Type u} [AddCommGroup X] [Lattice X] [IsOrderedAddMonoid X]
 
 /-- A vector lattice that admits a Dedekind completion is Archimedean. -/
 theorem isVLArchimedean (D : DedekindCompletion X) : IsVLArchimedean X := by
-  haveI : IsVLArchimedean D.carrier := IsVLArchimedean_of_sigmaConditionallyCompleteLattice
+  have : IsVLArchimedean D.carrier := IsVLArchimedean_of_sigmaConditionallyCompleteLattice
   refine ⟨fun {x y} h ↦ D.inclusion.le_of_map_le D.injective ?_⟩
   rw [map_zero]
   exact IsVLArchimedean.le_zero_of_forall_nsmul_le fun n ↦ by

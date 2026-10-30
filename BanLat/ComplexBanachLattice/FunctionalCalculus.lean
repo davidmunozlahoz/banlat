@@ -133,7 +133,8 @@ private noncomputable def functionalCalculusOfPosData
     { T : ComplexVecLatHom (complexLatticeLinearFunctions n) Z //
       ∀ i, T (coordinate i) = z i } := by
   let e := ∑ i, ComplexVectorLattice.modulus (z i)
-  letI := OrderIdeal.principalNormedAddCommGroup e
+  letI : NormedAddCommGroup ↥(OrderIdeal.principal e) :=
+    OrderIdeal.principalNormedAddCommGroup e
   letI : Lattice ↥(OrderIdeal.principal e) := OrderIdeal.instLatticePrincipal e
   letI : IsOrderedAddMonoid ↥(OrderIdeal.principal e) :=
     OrderIdeal.instIsOrderedAddMonoidPrincipal e
@@ -148,7 +149,8 @@ private noncomputable def functionalCalculusOfPosData
       ⟨ℑ (z i), (parts_mem_principal_sum_modulus z i).2⟩⟩
   let j := ComplexVecLatHom.ofSelfAdjointVecLatHom
     ((OrderIdeal.principal e).subtype.comp
-      Complexification.selfAdjointBanachLatEquiv.toVecLatEquiv.toVecLatHom)
+      (Complexification.selfAdjointBanachLatEquiv
+        (E := ↥(OrderIdeal.principal e))).toVecLatEquiv.toVecLatHom)
   let k := OrderIdeal.complexPrincipalKakutaniEquiv h
   refine ⟨j.comp (k.symm.toComplexVecLatHom.comp
     (continuousMapPullback (fun i ↦ k (u i)))), ?_⟩
@@ -422,7 +424,7 @@ origin. -/
 private theorem radialExtension_of_ne (g : C(complexEllInfinityUnitSphere n, ℂ))
     {z : Fin n → ℂ} (hz : z ≠ 0) :
     radialExtension g z = ‖z‖ • g (unitNormalize z hz) := by
-  rw [radialExtension, dif_neg hz]
+  rw [radialExtension, dite_eq_right hz]
 
 /-- The norm of a radial extension at `z` is bounded by `‖z‖` times the supremum norm of the
 original function on the unit sphere. -/
@@ -454,7 +456,7 @@ private theorem continuous_radialExtension (g : C(complexEllInfinityUnitSphere n
   · subst z
     exact continuousAt_radialExtension_zero g
   · have h : ContinuousOn (radialExtension g) ({0}ᶜ : Set (Fin n → ℂ)) := by
-      rw [continuousOn_iff_continuous_restrict]
+      rw [continuousOn_iff_continuous_domRestrict]
       change Continuous (fun w : {w : Fin n → ℂ // w ≠ 0} ↦ radialExtension g w)
       apply Continuous.congr
         ((continuous_norm.comp continuous_subtype_val).smul
@@ -749,7 +751,7 @@ private theorem selfAdjointLatticeLinearRestriction_apply
 -/
 private theorem restriction_modulus_coordinate (i : Fin n)
     (z : complexEllInfinityUnitSphere n) :
-    selfAdjointLatticeLinearRestriction
+    selfAdjointLatticeLinearRestriction (n := n)
       |ComplexLatticeLinearFunction.coordinate i|_ℂ z = ‖(z : Fin n → ℂ) i‖ := by
   rw [selfAdjointLatticeLinearRestriction_apply]
   change (((complexLatticeLinearFunctions n).subtype
@@ -763,7 +765,7 @@ private theorem restriction_modulus_coordinate (i : Fin n)
 part. -/
 private theorem restriction_realPart_coordinate (i : Fin n)
     (z : complexEllInfinityUnitSphere n) :
-    selfAdjointLatticeLinearRestriction (ℜ (ComplexLatticeLinearFunction.coordinate i)) z =
+    selfAdjointLatticeLinearRestriction (n := n) (ℜ (ComplexLatticeLinearFunction.coordinate i)) z =
       ((z : Fin n → ℂ) i).re := by
   rw [selfAdjointLatticeLinearRestriction_apply]
   change (((complexLatticeLinearFunctions n).subtype
@@ -776,7 +778,7 @@ private theorem restriction_realPart_coordinate (i : Fin n)
 imaginary part. -/
 private theorem restriction_imaginaryPart_coordinate (i : Fin n)
     (z : complexEllInfinityUnitSphere n) :
-    selfAdjointLatticeLinearRestriction (ℑ (ComplexLatticeLinearFunction.coordinate i)) z =
+    selfAdjointLatticeLinearRestriction (n := n) (ℑ (ComplexLatticeLinearFunction.coordinate i)) z =
       ((z : Fin n → ℂ) i).im := by
   rw [selfAdjointLatticeLinearRestriction_apply]
   change (((complexLatticeLinearFunctions n).subtype
@@ -789,7 +791,7 @@ private theorem restriction_imaginaryPart_coordinate (i : Fin n)
 private theorem isGreatest_coord_norm (z : complexEllInfinityUnitSphere n) :
     IsGreatest (Set.range fun i : Fin n ↦ ‖(z : Fin n → ℂ) i‖) 1 := by
   have hnorm := norm_coe_sphere z
-  haveI : Nonempty (Fin n) := by
+  have : Nonempty (Fin n) := by
     have hz : (z : Fin n → ℂ) ≠ 0 := norm_ne_zero_iff.mp (by
       rw [hnorm]
       exact one_ne_zero)
@@ -816,12 +818,12 @@ private theorem exists_latticeLinear_twoPointUnit
   let u := ComplexVectorLattice.modulus (ComplexLatticeLinearFunction.coordinate iy) ⊔
     ComplexVectorLattice.modulus (ComplexLatticeLinearFunction.coordinate iz)
   refine ⟨u, ?_, ?_⟩
-  · change selfAdjointLatticeLinearRestriction
+  · change selfAdjointLatticeLinearRestriction (n := n)
       (ComplexVectorLattice.modulus (ComplexLatticeLinearFunction.coordinate iy) ⊔
         ComplexVectorLattice.modulus (ComplexLatticeLinearFunction.coordinate iz)) y = 1
     rw [map_sup, ContinuousMap.sup_apply, restriction_modulus_coordinate,
       restriction_modulus_coordinate, hiy, max_eq_left (hy.2 ⟨iz, rfl⟩)]
-  · change selfAdjointLatticeLinearRestriction
+  · change selfAdjointLatticeLinearRestriction (n := n)
       (ComplexVectorLattice.modulus (ComplexLatticeLinearFunction.coordinate iy) ⊔
         ComplexVectorLattice.modulus (ComplexLatticeLinearFunction.coordinate iz)) z = 1
     rw [map_sup, ContinuousMap.sup_apply, restriction_modulus_coordinate,
@@ -993,7 +995,7 @@ private noncomputable def selfAdjointSphereRealEquiv :
 /-- The real-valued restriction of a modulus is the pointwise norm of the original function. -/
 private theorem selfAdjointSphereRealEquiv_modulus_apply
     (f : complexPosHomFunctions n) (x : complexEllInfinityUnitSphere n) :
-    selfAdjointSphereRealEquiv |f|_ℂ x = ‖f (x : Fin n → ℂ)‖ := by
+    selfAdjointSphereRealEquiv (n := n) |f|_ℂ x = ‖f (x : Fin n → ℂ)‖ := by
   change ((restrict ((ComplexVectorLattice.modulus f : selfAdjoint _) :
     complexPosHomFunctions n)) x).re = _
   rw [ComplexVecLatHom.map_modulus, ContinuousMap.modulus_apply, Complex.ofReal_re,
@@ -1003,7 +1005,7 @@ private theorem selfAdjointSphereRealEquiv_modulus_apply
 unit sphere. -/
 private theorem selfAdjointSphereRealEquiv_unit_apply
     (x : complexEllInfinityUnitSphere n) :
-    selfAdjointSphereRealEquiv
+    selfAdjointSphereRealEquiv (n := n)
       |extend (1 : C(complexEllInfinityUnitSphere n, ℂ))|_ℂ x = 1 := by
   rw [selfAdjointSphereRealEquiv_modulus_apply]
   have h : extend (1 : C(complexEllInfinityUnitSphere n, ℂ)) (x : Fin n → ℂ) = 1 := by
@@ -1022,8 +1024,8 @@ private theorem modulus_le_norm_smul_unit (f : complexPosHomFunctions n) :
   rw [map_smul, ContinuousMap.le_def]
   intro x
   rw [ContinuousMap.smul_apply]
-  change selfAdjointSphereRealEquiv (ComplexVectorLattice.modulus f) x ≤
-    ‖f‖ • selfAdjointSphereRealEquiv
+  change selfAdjointSphereRealEquiv (n := n) (ComplexVectorLattice.modulus f) x ≤
+    ‖f‖ • selfAdjointSphereRealEquiv (n := n)
       (ComplexVectorLattice.modulus (extend (1 : C(complexEllInfinityUnitSphere n, ℂ)))) x
   rw [selfAdjointSphereRealEquiv_modulus_apply, selfAdjointSphereRealEquiv_unit_apply,
     smul_eq_mul, mul_one]
@@ -1124,7 +1126,8 @@ private noncomputable def functionalCalculusOfPosData
     { T : ComplexVecLatHom (complexPosHomFunctions n) Z //
       ∀ i, T (coordinate i) = z i } := by
   let e := ∑ i, ComplexVectorLattice.modulus (z i)
-  letI := OrderIdeal.principalNormedAddCommGroup e
+  letI : NormedAddCommGroup ↥(OrderIdeal.principal e) :=
+    OrderIdeal.principalNormedAddCommGroup e
   letI : Lattice ↥(OrderIdeal.principal e) := OrderIdeal.instLatticePrincipal e
   letI : IsOrderedAddMonoid ↥(OrderIdeal.principal e) :=
     OrderIdeal.instIsOrderedAddMonoidPrincipal e
@@ -1139,7 +1142,8 @@ private noncomputable def functionalCalculusOfPosData
       ⟨ℑ (z i), (ComplexLatticeLinearFunction.parts_mem_principal_sum_modulus z i).2⟩⟩
   let j := ComplexVecLatHom.ofSelfAdjointVecLatHom
     ((OrderIdeal.principal e).subtype.comp
-      Complexification.selfAdjointBanachLatEquiv.toVecLatEquiv.toVecLatHom)
+      (Complexification.selfAdjointBanachLatEquiv
+        (E := ↥(OrderIdeal.principal e))).toVecLatEquiv.toVecLatHom)
   let k := OrderIdeal.complexPrincipalKakutaniEquiv h
   refine ⟨j.comp (k.symm.toComplexVecLatHom.comp
     (continuousMapPullback (fun i ↦ k (u i)))), ?_⟩
@@ -1343,7 +1347,7 @@ theorem functionalCalculus_comp (z : Fin n → Z)
     (g : Fin m → complexPosHomFunctions n) (f : complexPosHomFunctions m) :
     functionalCalculus (fun i ↦ functionalCalculus z (g i)) f =
       functionalCalculus z (comp f g) := by
-  letI : IsUniformlyCompleteComplexVectorLattice (complexPosHomFunctions n) :=
+  let : IsUniformlyCompleteComplexVectorLattice (complexPosHomFunctions n) :=
     isUniformlyCompleteComplexVectorLattice_of_complexBanachLattice _
   let V := compositionHom g
   have hV : ∀ i, V (coordinate i) = g i := by

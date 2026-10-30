@@ -337,8 +337,8 @@ variable {μ : MeasureAlgebra B} {ν : MeasureAlgebra C}
 theorem densityCharacter_eq (e : MeasureAlgebraEquiv μ ν) :
     Cardinal.lift.{u} ν.densityCharacter =
       Cardinal.lift.{v} μ.densityCharacter := by
-  letI := μ.toMetricSpace
-  letI := ν.toMetricSpace
+  let := μ.toMetricSpace
+  let := ν.toMetricSpace
   let h : B ≃ₜ C :=
     { toEquiv := e.toRelIso.toEquiv
       continuous_toFun := e.isometry.continuous
