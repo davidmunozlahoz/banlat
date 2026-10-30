@@ -38,11 +38,11 @@ theorem isRelativelyAtomless_of_isHomogeneous_of_densityCharacter_lt
   intro b hb
   by_contra hrel
   push Not at hrel
-  letI := hA.toSigmaCompleteBooleanAlgebra
+  let := hA.toSigmaCompleteBooleanAlgebra
   let ν := μ.restrictToSubalgebra A hA
   let f : A → Set.Iic b := fun a ↦ ⟨b ⊓ (a : B), inf_le_left⟩
-  letI := ν.toMetricSpace
-  letI := (μ.restrict b).toMetricSpace
+  let := ν.toMetricSpace
+  let := (μ.restrict b).toMetricSpace
   have hf : Continuous f := by
     apply Metric.continuous_iff.2
     intro a ε hε
@@ -89,8 +89,8 @@ theorem exists_targetElement_of_isRelativelyAtomless
     ∀ (e : MeasureAlgebraEquiv (μ.restrictToSubalgebra A hA)
         (η.restrictToSubalgebra D hD)) (b : B),
       ∃ c : C, ∀ d : D, η ((d : C) ⊓ c) = μ (((e.symm d : A) : B) ⊓ b) := by
-  letI := hA.toSigmaCompleteBooleanAlgebra
-  letI := hD.toSigmaCompleteBooleanAlgebra
+  let := hA.toSigmaCompleteBooleanAlgebra
+  let := hD.toSigmaCompleteBooleanAlgebra
   intro e b
   let ρ := CountablyAdditiveFunctional.pullbackFunctional e.symm.toRelIso
     (μ.infFunctional A hA b)
@@ -118,8 +118,8 @@ private lemma compl_inf_measure_eq_of_inf_measure_eq
         (η.restrictToSubalgebra D hD)) (b : B) (c : C),
       (∀ d : D, η ((d : C) ⊓ c) = μ (((e.symm d : A) : B) ⊓ b)) →
         ∀ d : D, η ((d : C) ⊓ cᶜ) = μ (((e.symm d : A) : B) ⊓ bᶜ) := by
-  letI := hA.toSigmaCompleteBooleanAlgebra
-  letI := hD.toSigmaCompleteBooleanAlgebra
+  let := hA.toSigmaCompleteBooleanAlgebra
+  let := hD.toSigmaCompleteBooleanAlgebra
   intro e b c hc d
   have hη : η ((d : C) ⊓ cᶜ) = η (d : C) - η ((d : C) ⊓ c) := by
     have hsum := η.measure_sdiff_add_inf (d : C) c
@@ -147,8 +147,8 @@ private lemma inf_le_inf_iff_of_inf_measure_eq
         ∀ a₁ a₂ : A,
           b ⊓ (a₁ : B) ≤ b ⊓ (a₂ : B) ↔
             c ⊓ ((e a₁ : D) : C) ≤ c ⊓ ((e a₂ : D) : C) := by
-  letI := hA.toSigmaCompleteBooleanAlgebra
-  letI := hD.toSigmaCompleteBooleanAlgebra
+  let := hA.toSigmaCompleteBooleanAlgebra
+  let := hD.toSigmaCompleteBooleanAlgebra
   intro e b c hc a₁ a₂
   have hm : η (c ⊓ (((e a₁ : D) : C) \ ((e a₂ : D) : C))) =
       μ (b ⊓ ((a₁ : B) \ (a₂ : B))) := by
@@ -184,8 +184,8 @@ private lemma measure_adjoinValue_eq_of_inf_measure_eq
         ∀ p : A × A,
           η (adjoinValue D c (Prod.map e.toRelIso e.toRelIso p)) =
             μ (adjoinValue A b p) := by
-  letI := hA.toSigmaCompleteBooleanAlgebra
-  letI := hD.toSigmaCompleteBooleanAlgebra
+  let := hA.toSigmaCompleteBooleanAlgebra
+  let := hD.toSigmaCompleteBooleanAlgebra
   intro e b c hc p
   have hc_compl :=
     compl_inf_measure_eq_of_inf_measure_eq μ η A D hA hD e b c hc
@@ -229,14 +229,14 @@ private theorem exists_adjoinEquiv_of_inf_measure_eq
           (∀ a : A,
             ((f ⟨a, A.le_adjoin b a.property⟩ : D.adjoin c) : C) = (e a : D)) ∧
           ((f ⟨b, A.mem_adjoin b⟩ : D.adjoin c) : C) = c := by
-  letI := hA.toSigmaCompleteBooleanAlgebra
-  letI := hD.toSigmaCompleteBooleanAlgebra
+  let := hA.toSigmaCompleteBooleanAlgebra
+  let := hD.toSigmaCompleteBooleanAlgebra
   intro e b c hc
   dsimp only
   let hAb := hA.adjoin b
   let hDc := hD.adjoin c
-  letI := hAb.toSigmaCompleteBooleanAlgebra
-  letI := hDc.toSigmaCompleteBooleanAlgebra
+  let := hAb.toSigmaCompleteBooleanAlgebra
+  let := hDc.toSigmaCompleteBooleanAlgebra
   have hc_compl : ∀ d : D,
       η ((d : C) ⊓ cᶜ) = μ (((e.symm d : A) : B) ⊓ bᶜ) :=
     compl_inf_measure_eq_of_inf_measure_eq μ η A D hA hD e b c hc
@@ -318,8 +318,8 @@ theorem exists_extension_of_isRelativelyAtomless
           (∀ a : A,
             ((f ⟨a, A.le_adjoin b a.property⟩ : D.adjoin c) : C) = (e a : D)) ∧
           ((f ⟨b, A.mem_adjoin b⟩ : D.adjoin c) : C) = c := by
-  letI := hA.toSigmaCompleteBooleanAlgebra
-  letI := hD.toSigmaCompleteBooleanAlgebra
+  let := hA.toSigmaCompleteBooleanAlgebra
+  let := hD.toSigmaCompleteBooleanAlgebra
   intro e b
   obtain ⟨c, hc⟩ := exists_targetElement_of_isRelativelyAtomless μ η A D hA hD hrel e b
   exact ⟨c, exists_adjoinEquiv_of_inf_measure_eq μ η A D hA hD e b c hc⟩
@@ -352,8 +352,8 @@ theorem exists_extension_both_of_isHomogeneous_of_densityCharacter_le
         η.subalgebraDensityCharacter f.target < η.maharamType ∧
         μ.subalgebraDensityCharacter f.source ≤ κB ∧
         η.subalgebraDensityCharacter f.target ≤ κC := by
-  letI := e.source_isSigmaComplete.toSigmaCompleteBooleanAlgebra
-  letI := e.target_isSigmaComplete.toSigmaCompleteBooleanAlgebra
+  let := e.source_isSigmaComplete.toSigmaCompleteBooleanAlgebra
+  let := e.target_isSigmaComplete.toSigmaCompleteBooleanAlgebra
   let e₀ := e.toMeasureAlgebraEquiv
   have hrelC : e.target.IsRelativelyAtomless :=
     isRelativelyAtomless_of_isHomogeneous_of_densityCharacter_lt
@@ -365,8 +365,8 @@ theorem exists_extension_both_of_isHomogeneous_of_densityCharacter_le
   let D₁ := e.target.adjoin c₁
   let hA₁ := e.source_isSigmaComplete.adjoin b
   let hD₁ := e.target_isSigmaComplete.adjoin c₁
-  letI := hA₁.toSigmaCompleteBooleanAlgebra
-  letI := hD₁.toSigmaCompleteBooleanAlgebra
+  let := hA₁.toSigmaCompleteBooleanAlgebra
+  let := hD₁.toSigmaCompleteBooleanAlgebra
   have hA₁_small :
       μ.subalgebraDensityCharacter A₁ < μ.maharamType :=
     subalgebraDensityCharacter_adjoin_lt μ e.source b hμ_inf he_source
@@ -387,8 +387,8 @@ theorem exists_extension_both_of_isHomogeneous_of_densityCharacter_le
   let D₂ := D₁.adjoin c
   let hA₂ := hA₁.adjoin b₁
   let hD₂ := hD₁.adjoin c
-  letI := hA₂.toSigmaCompleteBooleanAlgebra
-  letI := hD₂.toSigmaCompleteBooleanAlgebra
+  let := hA₂.toSigmaCompleteBooleanAlgebra
+  let := hD₂.toSigmaCompleteBooleanAlgebra
   let f : PartialEquiv μ η :=
     { source := A₂
       target := D₂

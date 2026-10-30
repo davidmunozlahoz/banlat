@@ -26,8 +26,8 @@ theorem band_of_isClosed_orderIdeal [IsOrderContinuousNorm X]
   refine ⟨Band.ofPosDirectedSSupMem J ?_, rfl⟩
   intro S hS hpos hdir hne x hx
   -- Index by `↥S` as a directed nonempty preorder.
-  haveI : Nonempty ↥S := hne.to_subtype
-  haveI : IsDirected ↥S (· ≤ ·) := ⟨fun a b => by
+  have : Nonempty ↥S := hne.to_subtype
+  have : IsDirected ↥S (· ≤ ·) := ⟨fun a b => by
     obtain ⟨c, hc, hac, hbc⟩ := hdir a.val a.2 b.val b.2
     exact ⟨⟨c, hc⟩, hac, hbc⟩⟩
   -- Antitone net `u s = x - s`, nonneg, with `IsGLB 0` since `x = sup S`.
@@ -221,7 +221,7 @@ theorem isOrderContinuousNorm_of_isClosed_ideal_isBand
     have hidx : ∀ z ∈ t, v (idx z) = z := by
       intro z hz
       dsimp [idx]
-      rw [dif_pos hz]
+      rw [dite_eq_left hz]
       exact (Set.mem_range.mp (hts z hz)).choose_spec
     refine Filter.eventually_atTop.mpr ⟨t.sup idx + 1, fun n hn => ?_⟩
     have hdis_sum : IsVLDisjoint (v n) (∑ z ∈ t, c z • |z|) := by

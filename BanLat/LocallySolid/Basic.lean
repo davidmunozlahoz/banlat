@@ -60,7 +60,7 @@ private lemma solid_abs_mem {S : Set E} (hS : LatticeOrderedAddCommGroup.IsSolid
 omit [ContinuousSMul ℝ E] in
 private lemma locallySolid_uniformContinuous_sup (hls : IsLocallySolidVectorLattice E) :
     UniformContinuous (fun p : E × E => p.1 ⊔ p.2) := by
-  letI : IsLocallySolidVectorLattice E := hls
+  let : IsLocallySolidVectorLattice E := hls
   refine uniformContinuous_of_nhds_zero ?_
   intro U hU
   rcases IsLocallySolidVectorLattice.hasBasis_solid.mem_iff.mp hU with ⟨T, hT, hTU⟩
@@ -237,18 +237,18 @@ theorem isLocallySolidVectorLattice_tfae :
 /-- A topological vector lattice is locally solid iff binary suprema are uniformly continuous. -/
 theorem isLocallySolidVectorLattice_iff_uniformContinuous_sup :
     IsLocallySolidVectorLattice E ↔ UniformContinuous (fun p : E × E => p.1 ⊔ p.2) := by
-  exact (isLocallySolidVectorLattice_tfae (E := E)).out 0 1
+  exact (isLocallySolidVectorLattice_tfae (E := E)).out 1 2
 
 /-- A topological vector lattice is locally solid iff binary infima are uniformly continuous. -/
 theorem isLocallySolidVectorLattice_iff_uniformContinuous_inf :
     IsLocallySolidVectorLattice E ↔ UniformContinuous (fun p : E × E => p.1 ⊓ p.2) := by
-  exact (isLocallySolidVectorLattice_tfae (E := E)).out 0 2
+  exact (isLocallySolidVectorLattice_tfae (E := E)).out 1 3
 
 /-- A topological vector lattice is locally solid iff the absolute-value map is uniformly
 continuous. -/
 theorem isLocallySolidVectorLattice_iff_uniformContinuous_abs :
     IsLocallySolidVectorLattice E ↔ UniformContinuous (|·| : E → E) := by
-  exact (isLocallySolidVectorLattice_tfae (E := E)).out 0 3
+  exact (isLocallySolidVectorLattice_tfae (E := E)).out 1 4
 
 end UniformContinuity
 
@@ -300,8 +300,8 @@ theorem LatticeOrderedAddCommGroup.IsSolid.closure {s : Set E}
     (hs : LatticeOrderedAddCommGroup.IsSolid s) :
     LatticeOrderedAddCommGroup.IsSolid (closure s) := by
   intro x hx y hy_abs
-  letI : UniformSpace E := IsTopologicalAddGroup.rightUniformSpace E
-  letI : IsUniformAddGroup E := isUniformAddGroup_of_addCommGroup
+  let : UniformSpace E := IsTopologicalAddGroup.rightUniformSpace E
+  let : IsUniformAddGroup E := isUniformAddGroup_of_addCommGroup
   let f : E → E := fun z => (y ⊔ -|z|) ⊓ |z|
   have hcont_abs : Continuous (|·| : E → E) :=
     ((isLocallySolidVectorLattice_iff_uniformContinuous_abs (E := E)).mp inferInstance).continuous
@@ -335,8 +335,8 @@ theorem LatticeOrderedAddCommGroup.IsSolid.closure {s : Set E}
 sublattice. -/
 theorem VectorSublattice.exists_coe_eq_closure (Y : VectorSublattice E) :
     ∃ Z : VectorSublattice E, (Z : Set E) = closure (Y : Set E) := by
-  letI : UniformSpace E := IsTopologicalAddGroup.rightUniformSpace E
-  letI : IsUniformAddGroup E := isUniformAddGroup_of_addCommGroup
+  let : UniformSpace E := IsTopologicalAddGroup.rightUniformSpace E
+  let : IsUniformAddGroup E := isUniformAddGroup_of_addCommGroup
   have hcont_sup : Continuous (fun p : E × E => p.1 ⊔ p.2) :=
     ((isLocallySolidVectorLattice_iff_uniformContinuous_sup (E := E)).mp inferInstance).continuous
   let Z : VectorSublattice E :=
@@ -423,8 +423,8 @@ theorem isVLArchimedean_of_t2_locallySolidVectorLattice : IsVLArchimedean E := b
 /-- In a Hausdorff locally solid vector lattice, the positive cone is closed. -/
 theorem isClosed_nonneg_cone_of_t2_locallySolidVectorLattice :
     IsClosed {x : E | 0 ≤ x} := by
-  letI : UniformSpace E := IsTopologicalAddGroup.rightUniformSpace E
-  letI : IsUniformAddGroup E := isUniformAddGroup_of_addCommGroup
+  let : UniformSpace E := IsTopologicalAddGroup.rightUniformSpace E
+  let : IsUniformAddGroup E := isUniformAddGroup_of_addCommGroup
   have hcont_sup : Continuous (fun p : E × E => p.1 ⊔ p.2) :=
     ((isLocallySolidVectorLattice_iff_uniformContinuous_sup (E := E)).mp inferInstance).continuous
   have hcont_negPart : Continuous (fun x : E => x⁻) := by
@@ -461,8 +461,8 @@ theorem isLUB_of_monotone_tendsto_of_t2_locallySolidVectorLattice {ι : Type*}
 
 private theorem isClosed_disjointComplement_of_t2_locallySolidVectorLattice (A : Set E) :
     IsClosed (Aᵈ : Set E) := by
-  letI : UniformSpace E := IsTopologicalAddGroup.rightUniformSpace E
-  letI : IsUniformAddGroup E := isUniformAddGroup_of_addCommGroup
+  let : UniformSpace E := IsTopologicalAddGroup.rightUniformSpace E
+  let : IsUniformAddGroup E := isUniformAddGroup_of_addCommGroup
   have hcont_abs : Continuous (|·| : E → E) :=
     ((isLocallySolidVectorLattice_iff_uniformContinuous_abs (E := E)).mp inferInstance).continuous
   have hcont_inf : Continuous (fun p : E × E => p.1 ⊓ p.2) :=
@@ -478,7 +478,7 @@ private theorem isClosed_disjointComplement_of_t2_locallySolidVectorLattice (A :
 /-- Every band in a Hausdorff locally solid vector lattice is closed. -/
 theorem Band.isClosed_coe_of_t2_locallySolidVectorLattice (B : Band E) :
     IsClosed (B : Set E) := by
-  haveI : IsVLArchimedean E := isVLArchimedean_of_t2_locallySolidVectorLattice (E := E)
+  have : IsVLArchimedean E := isVLArchimedean_of_t2_locallySolidVectorLattice (E := E)
   rw [← Band.eq_disjointComplement_disjointComplement B]
   exact isClosed_disjointComplement_of_t2_locallySolidVectorLattice (A := (B : Set E)ᵈ)
 

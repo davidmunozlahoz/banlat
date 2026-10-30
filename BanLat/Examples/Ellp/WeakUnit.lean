@@ -88,7 +88,7 @@ private lemma countable_nontrivial_of_weakOrderUnit (hp : p ≠ ∞)
   have hsupp : Function.support (fun i ↦ ‖x i‖ ^ p.toReal) =
       {i | Nontrivial (X i)} := by
     ext i
-    simp only [Function.mem_support, Set.mem_setOf_eq]
+    simp only [Function.mem_support, Set.mem_ofPred_eq]
     constructor
     · intro hi
       have hxi : x i ≠ 0 := by
@@ -97,7 +97,7 @@ private lemma countable_nontrivial_of_weakOrderUnit (hp : p ≠ ∞)
         simp [hxi, Real.zero_rpow hpR.ne']
       exact ⟨⟨x i, 0, hxi⟩⟩
     · intro hi
-      letI : Nontrivial (X i) := hi
+      let : Nontrivial (X i) := hi
       have hxi : x i ≠ 0 := by
         intro hxi
         obtain ⟨y, hy⟩ := exists_ne (0 : X i)
@@ -117,7 +117,7 @@ private lemma exists_weakOrderUnit_of_countable (hp : p ≠ ∞)
     ∃ x : lp X p, WeakOrderUnit x := by
   classical
   let S : Set ι := {i | Nontrivial (X i)}
-  letI : Countable S := hι.to_subtype
+  let : Countable S := hι.to_subtype
   choose e he using hcoord
   obtain ⟨g, hgpos, c, hgsum, -⟩ :=
     NNReal.exists_pos_sum_of_countable (ε := 1) one_ne_zero S
@@ -146,7 +146,7 @@ private lemma exists_weakOrderUnit_of_countable (hp : p ≠ ∞)
     convert hw_sum using 1
     funext i
     by_cases hi : Nontrivial (X i)
-    · letI : Nontrivial (X i) := hi
+    · let : Nontrivial (X i) := hi
       have he_ne : e i ≠ 0 := by
         intro hei
         obtain ⟨y, hy⟩ := exists_ne (0 : X i)
@@ -163,14 +163,14 @@ private lemma exists_weakOrderUnit_of_countable (hp : p ≠ ∞)
       simp only [NNReal.coe_rpow]
       rw [← Real.rpow_mul (NNReal.coe_nonneg _)]
       simp [r, hpR.ne']
-    · haveI : Subsingleton (X i) := not_nontrivial_iff_subsingleton.mp hi
+    · have : Subsingleton (X i) := not_nontrivial_iff_subsingleton.mp hi
       simpa [x₀, w, hi, Subsingleton.elim (e i) 0] using Real.zero_rpow hpR.ne'
   let x : lp X p := ⟨x₀, hxmem⟩
   refine ⟨x, weakOrderUnit_iff_forall.mpr ?_⟩
   intro i
   change WeakOrderUnit (x₀ i)
   by_cases hi : Nontrivial (X i)
-  · letI : Nontrivial (X i) := hi
+  · let : Nontrivial (X i) := hi
     have he_ne : e i ≠ 0 := by
       intro hei
       obtain ⟨y, hy⟩ := exists_ne (0 : X i)
@@ -234,7 +234,7 @@ theorem nonempty_weakOrderUnit_iff_countable (hp : p ≠ ∞) :
   rw [exists_weakOrderUnit_iff hp]
   have hset : {i : ι | Nontrivial ℝ} = Set.univ := by
     ext i
-    simp only [Set.mem_setOf_eq, Set.mem_univ, iff_true]
+    simp only [Set.mem_ofPred_eq, Set.mem_univ, iff_true]
     infer_instance
   rw [hset, Set.countable_univ_iff]
   constructor

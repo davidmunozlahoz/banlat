@@ -57,7 +57,7 @@ private theorem norm_principal_eq_gauge {X : Type*} [AddCommGroup X] [Lattice X]
     {e : X} (x : ↥(OrderIdeal.principalSubmodule e)) :
     letI := OrderIdeal.principalNormedAddCommGroup e
     ‖x‖ = OrderIdeal.gaugeNorm e (x : X) := by
-  letI := OrderIdeal.principalNormedAddCommGroup e
+  let := OrderIdeal.principalNormedAddCommGroup e
   rfl
 
 private theorem dist_principal_eq_gauge {X : Type*} [AddCommGroup X] [Lattice X]
@@ -69,8 +69,8 @@ private theorem dist_principal_eq_gauge {X : Type*} [AddCommGroup X] [Lattice X]
         (@NormedAddCommGroup.toSeminormedAddCommGroup _
           (OrderIdeal.principalNormedAddCommGroup e))
     dist x y = OrderIdeal.gaugeNorm e ((x : X) - (y : X)) := by
-  letI := OrderIdeal.principalNormedAddCommGroup e
-  letI : PseudoMetricSpace ↥(OrderIdeal.principalSubmodule e) :=
+  let := OrderIdeal.principalNormedAddCommGroup e
+  let : PseudoMetricSpace ↥(OrderIdeal.principalSubmodule e) :=
     @SeminormedAddCommGroup.toPseudoMetricSpace _
       (@NormedAddCommGroup.toSeminormedAddCommGroup _
         (OrderIdeal.principalNormedAddCommGroup e))
@@ -88,9 +88,9 @@ private theorem completeSpace_principal_of_banachLattice {X : Type*}
         (@SeminormedAddCommGroup.toPseudoMetricSpace _
           (@NormedAddCommGroup.toSeminormedAddCommGroup _
             (OrderIdeal.principalNormedAddCommGroup e)))) := by
-  letI := OrderIdeal.principalNormedAddCommGroup e
+  let := OrderIdeal.principalNormedAddCommGroup e
   let Y := ↥(OrderIdeal.principalSubmodule e)
-  letI : PseudoMetricSpace Y :=
+  let : PseudoMetricSpace Y :=
     @SeminormedAddCommGroup.toPseudoMetricSpace Y
       (@NormedAddCommGroup.toSeminormedAddCommGroup Y
         (OrderIdeal.principalNormedAddCommGroup e))
@@ -198,10 +198,10 @@ private theorem completeSpace_principal_of_sigmaConditionallyCompleteLattice {X 
         (@SeminormedAddCommGroup.toPseudoMetricSpace _
           (@NormedAddCommGroup.toSeminormedAddCommGroup _
             (OrderIdeal.principalNormedAddCommGroup e)))) := by
-  letI : IsVLArchimedean X := IsVLArchimedean_of_sigmaConditionallyCompleteLattice
-  letI := OrderIdeal.principalNormedAddCommGroup e
+  let : IsVLArchimedean X := IsVLArchimedean_of_sigmaConditionallyCompleteLattice
+  let := OrderIdeal.principalNormedAddCommGroup e
   let Y := ↥(OrderIdeal.principalSubmodule e)
-  letI : PseudoMetricSpace Y :=
+  let : PseudoMetricSpace Y :=
     @SeminormedAddCommGroup.toPseudoMetricSpace Y
       (@NormedAddCommGroup.toSeminormedAddCommGroup Y
         (OrderIdeal.principalNormedAddCommGroup e))
@@ -335,7 +335,7 @@ theorem isUniformlyCompleteVectorLattice_of_sigmaConditionallyCompleteLattice
     (X : Type*) [AddCommGroup X] [SigmaConditionallyCompleteLattice X]
     [IsOrderedAddMonoid X] [VectorLattice X] :
     IsUniformlyCompleteVectorLattice X := by
-  letI : IsVLArchimedean X := IsVLArchimedean_of_sigmaConditionallyCompleteLattice
+  let : IsVLArchimedean X := IsVLArchimedean_of_sigmaConditionallyCompleteLattice
   exact
     { complete_principal := fun e he =>
         completeSpace_principal_of_sigmaConditionallyCompleteLattice e he }

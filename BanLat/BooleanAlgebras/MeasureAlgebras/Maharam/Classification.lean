@@ -79,7 +79,7 @@ private theorem successorExtension_spec
     let f := successorExtension μ η hμ hη hμ_inf hη_inf κ hκ e b c
     e.Extends f ∧ b ∈ f.source ∧ c ∈ f.target ∧ IsDensityControlled μ η κ f := by
   dsimp only
-  rw [successorExtension, dif_pos he]
+  rw [successorExtension, dite_eq_left he]
   have hf := Classical.choose_spec
     (PartialEquiv.exists_extension_both_of_isHomogeneous_of_densityCharacter_le
       e hμ hη hμ_inf hη_inf he.1.1 he.2.1 hκ hκ he.1.2 he.2.2 b c)
@@ -120,7 +120,7 @@ private theorem limitExtension_spec
       μ.subalgebraDensityCharacter f.source ≤ κ ∧
       η.subalgebraDensityCharacter f.target ≤ κ := by
   dsimp only
-  rw [limitExtension, dif_pos ⟨hchain, hsource, htarget⟩]
+  rw [limitExtension, dite_eq_left ⟨hchain, hsource, htarget⟩]
   exact Classical.choose_spec
     (PartialEquiv.exists_extension_iUnion_of_densityCharacter_le
       E hchain hκ hι hsource htarget)
@@ -197,10 +197,10 @@ private theorem initial_isDensityControlled
     simpa only [Finset.coe_insert, Finset.coe_singleton] using
       ({⊥, ⊤} : Finset C).finite_toSet
   unfold IsDensityControlled subalgebraDensityCharacter
-  letI := μ.toMetricSpace
-  letI := η.toMetricSpace
-  letI : Finite e₀.source := hsource_finite.to_subtype
-  letI : Finite e₀.target := htarget_finite.to_subtype
+  let := μ.toMetricSpace
+  let := η.toMetricSpace
+  let : Finite e₀.source := hsource_finite.to_subtype
+  let : Finite e₀.target := htarget_finite.to_subtype
   have hsource : TopologicalSpace.densityCharacter e₀.source < Cardinal.aleph0 :=
     TopologicalSpace.densityCharacter_lt_aleph0 e₀.source
   have htarget : TopologicalSpace.densityCharacter e₀.target < Cardinal.aleph0 :=
@@ -294,7 +294,7 @@ private theorem isTransfiniteExtensionStage_add_one
       (stageBound (ξ + 1)) (le_max_left _ _) (E ξ)
       (b (Ordinal.ToType.mk ⟨ξ, hξκ⟩))
       (c (Ordinal.ToType.mk ⟨ξ, hξκ⟩)) := by
-    simp only [E, transfiniteExtension, Ordinal.limitRecOn_add_one, dif_pos hξκ]
+    simp only [E, transfiniteExtension, Ordinal.limitRecOn_add_one, dite_eq_left hξκ]
   rw [hE]
   refine ⟨?_, fun _ ↦ hs.2.2.2, ?_⟩
   · intro x hx
@@ -335,7 +335,7 @@ private theorem isTransfiniteExtensionStage_limit
     ∀ x (hx : x < ξ),
       b (Ordinal.ToType.mk ⟨x, hx.trans_le hξ⟩) ∈ (E ξ).source ∧
         c (Ordinal.ToType.mk ⟨x, hx.trans_le hξ⟩) ∈ (E ξ).target
-  letI : Nonempty ξ.ToType := Ordinal.nonempty_toType_iff.mpr hlim.bot_lt.ne'
+  let : Nonempty ξ.ToType := Ordinal.nonempty_toType_iff.mpr hlim.bot_lt.ne'
   let P : ξ.ToType → PartialEquiv μ η := fun i ↦ E i.toOrd
   have hchain : ∀ i j, i ≤ j → (P i).Extends (P j) := by
     intro i j hij
@@ -437,8 +437,8 @@ theorem nonempty_measureAlgebraEquiv_of_isHomogeneous_of_maharamType_eq_of_top_e
   have hηκ : η.maharamType = κ := hκ.symm
   have hμdensity : μ.densityCharacter = κ := rfl
   have hηdensity : η.densityCharacter = κ := hηκ
-  letI := μ.toMetricSpace
-  letI := η.toMetricSpace
+  let := μ.toMetricSpace
+  let := η.toMetricSpace
   obtain ⟨b, hb⟩ := TopologicalSpace.exists_denseRange_ord B κ hμdensity
   obtain ⟨c, hc⟩ := TopologicalSpace.exists_denseRange_ord C κ hηdensity
   let e₀ := PartialEquiv.ofMeasureTopEq htop
@@ -487,7 +487,7 @@ theorem nonempty_measureAlgebraEquiv_cube_of_isAtomless_of_isHomogeneous_of_top_
       (MeasureAlgebraEquiv μ
         (cubeMeasureAlgebra (μ.maharamType))) := by
   let κ := μ.maharamType
-  letI : Nontrivial B :=
+  let : Nontrivial B :=
     ⟨⟨⊥, ⊤, (top_ne_bot_of_measure_top_eq_one μ htop).symm⟩⟩
   have hκ : Cardinal.aleph0 ≤ κ :=
     aleph0_le_maharamType_of_isAtomless μ hB
@@ -515,9 +515,9 @@ theorem nonempty_measureAlgebraEquiv_lebesgue_of_isAtomless_of_isSeparable_of_to
     Nonempty (MeasureAlgebraEquiv μ LebesgueMeasureAlgebra.{u}) := by
   have hhom : μ.IsHomogeneous :=
     isHomogeneous_of_isAtomless_of_isSeparable μ hB hμ
-  letI := μ.toMetricSpace
-  letI : TopologicalSpace.SeparableSpace B := hμ
-  letI : Nontrivial B :=
+  let := μ.toMetricSpace
+  let : TopologicalSpace.SeparableSpace B := hμ
+  let : Nontrivial B :=
     ⟨⟨⊥, ⊤, (top_ne_bot_of_measure_top_eq_one μ htop).symm⟩⟩
   have hμκ : μ.maharamType = Cardinal.aleph0 :=
     μ.maharamType_eq_aleph0_of_isAtomless_of_densityCharacter_le hB

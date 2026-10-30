@@ -77,7 +77,7 @@ private lemma exists_linearMap_standardQStable {X : ℕ → Ω → ℝ}
       (∀ a, ‖G a‖ = ‖standardQStableToLp (hX 0) hp_pos hpq‖ * ‖a‖) ∧
       ∀ n, G (lp.single (ENNReal.ofReal q) n 1) =
         standardQStableToLp (hX n) hp_pos hpq := by
-  letI := h_indep.isProbabilityMeasure
+  let := h_indep.isProbabilityMeasure
   have hq_pos : 0 < q := (hX 0).isSymmetricStable_map.index_pos
   let hex (a : lp (fun _ : ℕ ↦ ℝ) (ENNReal.ofReal q)) :
       ∃ Y : Ω → ℝ,
@@ -145,10 +145,10 @@ private lemma exists_linearMap_standardQStable {X : ℕ → Ω → ℝ}
   have hstd_norm : lpNorm (X 0) p P = c := by
     change lpNorm (X 0) p P = ‖standardQStableToLp (hX 0) hp_pos hpq‖
     rw [standardQStableToLp, Lp.norm_toLp,
-      toReal_eLpNorm (hX 0).aemeasurable.aestronglyMeasurable]
+      toReal_eLpNorm]
   have hGnorm (a : lp (fun _ : ℕ ↦ ℝ) (ENNReal.ofReal q)) : ‖G a‖ = c * ‖a‖ := by
     change ‖(hYmem a).toLp (Y a)‖ = c * ‖a‖
-    rw [Lp.norm_toLp, toReal_eLpNorm (hYmem a).1,
+    rw [Lp.norm_toLp, toReal_eLpNorm,
       (hYspec a).2.2.2.2, rpow_tsum_nnnorm_rpow hq_pos, hstd_norm]
     exact mul_comm _ _
   have hGsingle (n : ℕ) :
@@ -256,7 +256,7 @@ private lemma range_linearIsometry_standardQStable {X : ℕ → Ω → ℝ}
       ‖standardQStableToLp (hX 0) hp_pos hpq‖⁻¹ <|
         Submodule.le_topologicalClosure _ <| Submodule.subset_span ⟨n, rfl⟩
   · have hclosed : IsClosed (T.range : Set (Lp ℝ p P)) := by
-      exact T.isometry.antilipschitz.isClosed_range T.isometry.uniformContinuous
+      exact T.isometry.antilipschitzWith.isClosed_range T.isometry.uniformContinuous
     refine Submodule.topologicalClosure_minimal _ (Submodule.span_le.2 ?_) hclosed
     rintro _ ⟨n, rfl⟩
     have hc := norm_standardQStableToLp_pos (hX 0) hp_pos hpq

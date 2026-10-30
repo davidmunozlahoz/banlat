@@ -21,11 +21,11 @@ open MeasureTheory Set
 /-- On a compact Hausdorff Borel space, if `μ + ν` is regular (with `μ`, `ν` finite),
 then `μ` itself is regular. -/
 private lemma MeasureTheory.Measure.Regular.of_add_right {K : Type*}
-    [TopologicalSpace K] [T2Space K] [CompactSpace K] [MeasurableSpace K] [BorelSpace K]
+    [TopologicalSpace K] [T2Space K] [MeasurableSpace K] [BorelSpace K]
     {μ ν : Measure K} [IsFiniteMeasure μ] [IsFiniteMeasure ν]
     (h : (μ + ν).Regular) : μ.Regular := by
-  haveI := h
-  haveI : Measure.InnerRegularCompactLTTop μ := by
+  have := h
+  have : Measure.InnerRegularCompactLTTop μ := by
     refine ⟨fun A hA r hr => ?_⟩
     obtain ⟨hA_meas, hA_fin⟩ := hA
     have hν_fin : ν A ≠ ⊤ := measure_ne_top _ _
@@ -47,10 +47,10 @@ private lemma MeasureTheory.Measure.Regular.of_add_right {K : Type*}
 
 /-- On a compact Hausdorff Borel space, if `μ` and `ν` are both regular, so is `μ - ν`. -/
 private lemma MeasureTheory.Measure.Regular.sub {K : Type*} [TopologicalSpace K] [T2Space K]
-    [CompactSpace K] [MeasurableSpace K] [BorelSpace K]
+    [MeasurableSpace K] [BorelSpace K]
     {μ ν : Measure K} [IsFiniteMeasure μ] [IsFiniteMeasure ν]
     (hμ : μ.Regular) (_hν : ν.Regular) : (μ - ν).Regular := by
-  haveI := hμ
+  have := hμ
   obtain ⟨s, hs⟩ := MeasureTheory.exists_isHahnDecomposition μ ν
   have hs_meas : MeasurableSet s := hs.measurableSet
   have h_subzero : (μ - ν).restrict s = 0 := by
@@ -66,9 +66,9 @@ private lemma MeasureTheory.Measure.Regular.sub {K : Type*} [TopologicalSpace K]
       conv_lhs =>
         rw [← Measure.restrict_add_restrict_compl (μ := μ - ν) hs_meas, h_subzero, zero_add]
     rw [hμν_eq]; exact h_sub_add
-  haveI : (μ.restrict sᶜ).Regular :=
+  have : (μ.restrict sᶜ).Regular :=
     Measure.Regular.restrict_of_measure_ne_top (measure_ne_top _ _)
-  haveI : ((μ - ν) + ν.restrict sᶜ).Regular := h_eq ▸ this
+  have : ((μ - ν) + ν.restrict sᶜ).Regular := h_eq ▸ this
   exact Measure.Regular.of_add_right this
 
 /-- If a finite non-negative measure can be uniformly approximated by regular
@@ -80,7 +80,7 @@ lemma MeasureTheory.Measure.Regular.of_uniform_approx {K : Type*}
       IsFiniteMeasure ν ∧ ν.Regular ∧
         ∀ E : Set K, MeasurableSet E → |(ν E).toReal - (μ E).toReal| < ε) :
     μ.Regular := by
-  haveI : Measure.InnerRegularCompactLTTop μ := by
+  have : Measure.InnerRegularCompactLTTop μ := by
     refine ⟨fun A hA r hr => ?_⟩
     obtain ⟨hA_meas, hA_fin⟩ := hA
     have hr_fin : r ≠ ⊤ := (hr.trans_le le_top).ne
@@ -89,7 +89,7 @@ lemma MeasureTheory.Measure.Regular.of_uniform_approx {K : Type*}
     set δ : ℝ := ((μ A).toReal - r.toReal) / 3 with hδ_def
     have hδ_pos : 0 < δ := div_pos (sub_pos.mpr hμA_lt) (by norm_num)
     obtain ⟨ν, _hν_fin, hν_reg, hν⟩ := h δ hδ_pos
-    haveI := hν_reg
+    have := hν_reg
     have hνA_close : |(ν A).toReal - (μ A).toReal| < δ := hν A hA_meas
     have hνA_lt : (ν A).toReal > r.toReal + 2 * δ := by
       have h := abs_lt.mp hνA_close
@@ -137,12 +137,14 @@ private theorem IsRegular.of_jordan_parts {s : SignedMeasure K}
   change (s.toJordanDecomposition.posPart + s.toJordanDecomposition.negPart).Regular
   infer_instance
 
+omit [CompactSpace K] in
 /-- The positive Jordan part of a regular signed measure is a regular
 measure. -/
 theorem IsRegular.posPart_regular {s : SignedMeasure K} (hs : s.IsRegular) :
     s.toJordanDecomposition.posPart.Regular :=
   Measure.Regular.of_add_right hs
 
+omit [CompactSpace K] in
 /-- The negative Jordan part of a regular signed measure is a regular
 measure. -/
 theorem IsRegular.negPart_regular {s : SignedMeasure K} (hs : s.IsRegular) :
@@ -168,10 +170,10 @@ theorem neg {s : SignedMeasure K} (hs : s.IsRegular) : (-s).IsRegular := by
 /-- The sum of two regular signed measures is regular. -/
 theorem add {s t : SignedMeasure K} (hs : s.IsRegular) (ht : t.IsRegular) :
     (s + t).IsRegular := by
-  haveI := hs.posPart_regular
-  haveI := hs.negPart_regular
-  haveI := ht.posPart_regular
-  haveI := ht.negPart_regular
+  have := hs.posPart_regular
+  have := hs.negPart_regular
+  have := ht.posPart_regular
+  have := ht.negPart_regular
   set μ := s.toJordanDecomposition.posPart + t.toJordanDecomposition.posPart
   set ν := s.toJordanDecomposition.negPart + t.toJordanDecomposition.negPart
   have hst_eq : s + t = μ.toSignedMeasure - ν.toSignedMeasure := by
@@ -190,32 +192,32 @@ theorem add {s t : SignedMeasure K} (hs : s.IsRegular) (ht : t.IsRegular) :
       Measure.jordanDecompositionOfToSignedMeasureSub μ ν := by
     refine toJordanDecomposition_eq ?_
     rw [Measure.jordanDecompositionOfToSignedMeasureSub_toSignedMeasure, ← hst_eq]
-  haveI : (s + t).toJordanDecomposition.posPart.Regular := by
+  have : (s + t).toJordanDecomposition.posPart.Regular := by
     rw [hJD]; exact Measure.Regular.sub inferInstance inferInstance
-  haveI : (s + t).toJordanDecomposition.negPart.Regular := by
+  have : (s + t).toJordanDecomposition.negPart.Regular := by
     rw [hJD]; exact Measure.Regular.sub inferInstance inferInstance
   exact of_jordan_parts
 
 /-- A scalar multiple of a regular signed measure is regular. -/
 theorem smul (c : ℝ) {s : SignedMeasure K} (hs : s.IsRegular) :
     (c • s).IsRegular := by
-  haveI := hs.posPart_regular
-  haveI := hs.negPart_regular
+  have := hs.posPart_regular
+  have := hs.negPart_regular
   rcases lt_or_ge c 0 with hc | hc
-  · haveI : (c • s).toJordanDecomposition.posPart.Regular := by
+  · have : (c • s).toJordanDecomposition.posPart.Regular := by
       rw [toJordanDecomposition_smul_real,
           JordanDecomposition.real_smul_posPart_neg _ _ hc]
       exact Measure.Regular.smul_nnreal _
-    haveI : (c • s).toJordanDecomposition.negPart.Regular := by
+    have : (c • s).toJordanDecomposition.negPart.Regular := by
       rw [toJordanDecomposition_smul_real,
           JordanDecomposition.real_smul_negPart_neg _ _ hc]
       exact Measure.Regular.smul_nnreal _
     exact of_jordan_parts
-  · haveI : (c • s).toJordanDecomposition.posPart.Regular := by
+  · have : (c • s).toJordanDecomposition.posPart.Regular := by
       rw [toJordanDecomposition_smul_real,
           JordanDecomposition.real_smul_posPart_nonneg _ _ hc]
       exact Measure.Regular.smul_nnreal _
-    haveI : (c • s).toJordanDecomposition.negPart.Regular := by
+    have : (c • s).toJordanDecomposition.negPart.Regular := by
       rw [toJordanDecomposition_smul_real,
           JordanDecomposition.real_smul_negPart_nonneg _ _ hc]
       exact Measure.Regular.smul_nnreal _

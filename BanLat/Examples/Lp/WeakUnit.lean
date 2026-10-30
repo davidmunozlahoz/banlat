@@ -78,7 +78,7 @@ theorem exists_ae_pos_iff_sigmaFinite (μ : Measure α) :
     have haes : ∀ᵐ x ∂μ, x ∈ s := ae_iff.mpr (by simpa [← Set.compl_def] using hμsc)
     rwa [Measure.restrict_eq_self_of_ae_mem haes] at hσ
   · intro hμ
-    letI : SigmaFinite μ := hμ
+    let : SigmaFinite μ := hμ
     have hpNN : 0 < p := lt_of_lt_of_le zero_lt_one Fact.out
     have hpR : 0 < (p : ℝ) := NNReal.coe_pos.mpr hpNN
     obtain ⟨g, hgpos, hgmeas, hgint⟩ :=
@@ -89,9 +89,9 @@ theorem exists_ae_pos_iff_sigmaFinite (μ : Measure α) :
     have hhmeas : Measurable h :=
       NNReal.continuous_rpow_const hq |>.measurable.comp hgmeas
     have hhmem : MemLp (fun x ↦ (h x : ℝ)) (p : ENNReal) μ := by
-      refine ⟨hhmeas.coe_nnreal_real.aestronglyMeasurable, ?_⟩
-      rw [eLpNorm_lt_top_iff_lintegral_rpow_enorm_lt_top
-        (ENNReal.coe_ne_zero.mpr hpNN.ne') ENNReal.coe_ne_top]
+      rw [memLp_iff, eLpNorm_lt_top_iff_lintegral_rpow_enorm_lt_top
+        (ENNReal.coe_ne_zero.mpr hpNN.ne') ENNReal.coe_ne_top
+        hhmeas.coe_nnreal_real.aestronglyMeasurable]
       calc
         (∫⁻ x, ‖(h x : ℝ)‖ₑ ^ (p : ℝ) ∂μ) = ∫⁻ x, (g x : ENNReal) ∂μ := by
           apply lintegral_congr

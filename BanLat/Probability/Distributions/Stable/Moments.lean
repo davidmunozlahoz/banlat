@@ -157,7 +157,7 @@ private lemma integrable_abs_rpow_iff_of_exponent_lt_two
     (hμ : IsSymmetricStable μ q c) (hc : 0 < c)
     {r : ℝ} (hr_pos : 0 < r) (hr_lt_two : r < 2) :
     Integrable (fun x : ℝ ↦ |x| ^ r) μ ↔ r < q := by
-  letI := hμ.isProbabilityMeasure
+  let := hμ.isProbabilityMeasure
   rw [integrable_abs_rpow_iff_integrableOn_charFun_kernel hr_pos hr_lt_two]
   have hkernel : Set.EqOn
       (fun t : ℝ ↦ (1 - (charFun μ t).re) / t ^ (r + 1))
@@ -175,7 +175,7 @@ lemma integrable_abs_rpow_iff_of_scale_pos_of_index_lt_two
     (hμ : IsSymmetricStable μ q c) (hc : 0 < c) (hq : q < 2)
     {r : ℝ} (hr_pos : 0 < r) :
     Integrable (fun x : ℝ ↦ |x| ^ r) μ ↔ r < q := by
-  letI := hμ.isProbabilityMeasure
+  let := hμ.isProbabilityMeasure
   by_cases hr_lt_two : r < 2
   · exact integrable_abs_rpow_iff_of_exponent_lt_two hμ hc hr_pos hr_lt_two
   · constructor

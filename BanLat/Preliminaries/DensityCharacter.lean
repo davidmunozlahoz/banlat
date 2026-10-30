@@ -171,9 +171,9 @@ theorem densityCharacter_le_of_isEmbedding
       else Classical.ofNonempty
     have hg (i : D × ℕ) (h : ∃ x, dist (f x) i.1.val < 1 / (i.2 + 1 : ℝ)) :
         dist (f (g i)) i.1.val < 1 / (i.2 + 1 : ℝ) := by
-      simpa only [g, dif_pos h] using h.choose_spec
+      simpa only [g, dite_eq_left h] using h.choose_spec
     suffices hdense : DenseRange g by
-      haveI : Infinite D := Set.infinite_coe_iff.mpr hfin
+      have : Infinite D := Set.infinite_coe_iff.mpr hfin
       exact ((densityCharacter_le_mk_of_dense hdense).trans
         Cardinal.mk_range_le).trans_eq
           (by simpa [Cardinal.mk_prod,
@@ -226,7 +226,7 @@ theorem separableSpace_iff_densityCharacter_le_aleph0
     SeparableSpace X ↔ densityCharacter X ≤ Cardinal.aleph0 := by
   constructor
   · intro hX
-    letI := hX
+    let := hX
     exact densityCharacter_le_aleph0 X
   · intro hX
     obtain ⟨D, hD, hDcard⟩ :=
@@ -240,7 +240,7 @@ theorem separableSpace_iff_exists_dense_seq
     SeparableSpace X ↔ ∃ u : ℕ → X, DenseRange u := by
   constructor
   · intro hX
-    letI := hX
+    let := hX
     exact exists_dense_seq X
   · rintro ⟨u, hu⟩
     exact SeparableSpace.of_denseRange u hu

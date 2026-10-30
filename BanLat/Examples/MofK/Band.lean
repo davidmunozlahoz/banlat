@@ -68,7 +68,7 @@ private theorem isClosed_absolutelyContinuous (μ : MofK K) :
         (_ : (μ : MeasureTheory.SignedMeasure K) E = 0),
           {ν : MofK K | (ν : MeasureTheory.SignedMeasure K) E = 0} := by
     ext ν
-    simp only [Set.mem_iInter, Set.mem_setOf_eq]
+    simp only [Set.mem_iInter, Set.mem_ofPred_eq]
     constructor
     · exact fun h E _ hμE => h hμE
     · intro h
@@ -84,8 +84,8 @@ private theorem band_of_isClosed_orderIdeal (J : OrderIdeal (MofK K))
     ∃ B : Band (MofK K), (B : Set (MofK K)) = (J : Set (MofK K)) := by
   refine ⟨Band.ofPosDirectedSSupMem J ?_, rfl⟩
   intro S hS hpos hdir hne x hx
-  haveI : Nonempty ↥S := hne.to_subtype
-  haveI : IsDirected ↥S (· ≤ ·) := ⟨fun a b => by
+  have : Nonempty ↥S := hne.to_subtype
+  have : IsDirected ↥S (· ≤ ·) := ⟨fun a b => by
     obtain ⟨c, hc, hac, hbc⟩ := hdir a.val a.2 b.val b.2
     exact ⟨⟨c, hc⟩, hac, hbc⟩⟩
   let u : ↥S → MofK K := fun s => x - s.val
@@ -135,7 +135,7 @@ private theorem generated_subset_absolutelyContinuous {μ : MofK K} (hμ : 0 ≤
   exact hB_eq ▸ hsub
 
 omit [TopologicalSpace K] [T2Space K] [CompactSpace K] [BorelSpace K] in
-private theorem norm_withDensityᵥ_eq (μ : Measure K) [IsFiniteMeasure μ]
+private theorem norm_withDensityᵥ_eq (μ : Measure K)
     {f : K → ℝ} (hf : Integrable f μ) :
     ‖μ.withDensityᵥ f‖ = ∫ x, |f x| ∂μ := by
   obtain ⟨g, hgm, hgae⟩ : ∃ g : K → ℝ, Measurable g ∧ f =ᵐ[μ] g :=
@@ -149,7 +149,7 @@ private theorem norm_withDensityᵥ_eq (μ : Measure K) [IsFiniteMeasure μ]
   rw [hx]
 
 omit [TopologicalSpace K] [T2Space K] [CompactSpace K] [BorelSpace K] in
-private theorem continuous_withDensityᵥ_L1 {μ : Measure K} [IsFiniteMeasure μ] :
+private theorem continuous_withDensityᵥ_L1 {μ : Measure K} :
     Continuous (fun f : Lp ℝ 1 μ =>
       (μ.withDensityᵥ (f : K → ℝ) : MeasureTheory.SignedMeasure K)) := by
   refine Metric.continuous_iff.mpr fun f ε hε => ⟨ε, hε, fun g hg => ?_⟩
@@ -224,7 +224,7 @@ private theorem withDensityᵥ_indicator_mem_generated
   let ν : MofK K :=
     ⟨(μm.restrict A).toSignedMeasure,
       (MeasureTheory.SignedMeasure.mem_regularSignedMeasureSublattice_iff).2 <| by
-        haveI : (μm.restrict A).Regular :=
+        have : (μm.restrict A).Regular :=
           Measure.Regular.restrict_of_measure_ne_top (measure_ne_top _ _)
         have hj := SignedMeasure.jordan_of_toSignedMeasure (μm.restrict A)
         change (μm.restrict A).toSignedMeasure.totalVariation.Regular

@@ -28,11 +28,11 @@ theorem exists_L1_representation_of_strictlyPositive
     ∃ (Ω : Type u) (_ : MeasurableSpace Ω) (μ : Measure Ω) (T : VecLatHom X (Lp ℝ 1 μ)),
       Function.Injective (T : X → Lp ℝ 1 μ) ∧ DenseRange (T : X → Lp ℝ 1 μ) ∧
         ∀ x : X, 0 ≤ x → h x = ∫ ω, T x ω ∂μ := by
-  letI : NormedAddCommGroup X := StrictlyPositive.associatedNormedAddCommGroup h hh
-  letI : NormedVectorLattice X := StrictlyPositive.associatedNormedVectorLattice h hh
+  let : NormedAddCommGroup X := StrictlyPositive.associatedNormedAddCommGroup h hh
+  let : NormedVectorLattice X := StrictlyPositive.associatedNormedVectorLattice h hh
   have hAL : ∀ x y : X, x ⊓ y = 0 → ‖x + y‖ = ‖x‖ + ‖y‖ :=
     fun x y hxy => StrictlyPositive.associatedNorm_add_eq_norm_add_of_inf_eq_zero h hh hxy
-  letI : ALSpace (UniformSpace.Completion X) := ALSpace.completion hAL
+  let : ALSpace (UniformSpace.Completion X) := ALSpace.completion hAL
   obtain ⟨Ω, mΩ, μ, ⟨e⟩⟩ := ALSpace.exists_L1_banachLatEquiv (X := UniformSpace.Completion X)
   have hTx : ∀ x : X, (e.toVecLatEquiv.toVecLatHom.comp toCompletionVecLatHom) x
       = e (↑x : UniformSpace.Completion X) := fun _ => rfl
@@ -182,13 +182,13 @@ private theorem banachLatEquiv_strongDual_completion_principal
         (IsUniformlyCompleteVectorLattice.complete_principal _ hĥ)
     Nonempty (BanachLatEquiv (StrongDual ℝ (UniformSpace.Completion X))
       ↥(OrderIdeal.principal ĥ)) := by
-  letI : IsUniformlyCompleteVectorLattice (OrderDualSpace X) :=
+  let : IsUniformlyCompleteVectorLattice (OrderDualSpace X) :=
     isUniformlyCompleteVectorLattice_of_sigmaConditionallyCompleteLattice (OrderDualSpace X)
-  letI := OrderIdeal.principalNormedAddCommGroup ĥ
-  letI : Lattice ↥(OrderIdeal.principal ĥ) := OrderIdeal.instLatticePrincipal _
-  letI : IsOrderedAddMonoid ↥(OrderIdeal.principal ĥ) :=
+  let := OrderIdeal.principalNormedAddCommGroup ĥ
+  let : Lattice ↥(OrderIdeal.principal ĥ) := OrderIdeal.instLatticePrincipal _
+  let : IsOrderedAddMonoid ↥(OrderIdeal.principal ĥ) :=
     OrderIdeal.instIsOrderedAddMonoidPrincipal _
-  letI : AMSpaceWithUnit ↥(OrderIdeal.principal ĥ) :=
+  let : AMSpaceWithUnit ↥(OrderIdeal.principal ĥ) :=
     OrderIdeal.principalAMSpaceWithUnit hĥ.le
       (IsUniformlyCompleteVectorLattice.complete_principal _ hĥ)
   have hĥ_nonneg : (0 : OrderDualSpace X) ≤ ĥ := hĥ.le
@@ -384,21 +384,21 @@ theorem banachLatEquiv_strongDual_of_L1_representation [Nontrivial X]
           (ofPositive_pos_of_strictlyPositive hh))
     Nonempty (BanachLatEquiv (StrongDual ℝ (Lp ℝ 1 μ))
       ↥(OrderIdeal.principal (OrderBoundedHom.ofPositive h hh.positive))) := by
-  letI : IsUniformlyCompleteVectorLattice (OrderDualSpace X) :=
+  let : IsUniformlyCompleteVectorLattice (OrderDualSpace X) :=
     isUniformlyCompleteVectorLattice_of_sigmaConditionallyCompleteLattice (OrderDualSpace X)
-  letI := OrderIdeal.principalNormedAddCommGroup (OrderBoundedHom.ofPositive h hh.positive)
-  letI : Lattice ↥(OrderIdeal.principal (OrderBoundedHom.ofPositive h hh.positive)) :=
+  let := OrderIdeal.principalNormedAddCommGroup (OrderBoundedHom.ofPositive h hh.positive)
+  let : Lattice ↥(OrderIdeal.principal (OrderBoundedHom.ofPositive h hh.positive)) :=
     OrderIdeal.instLatticePrincipal _
-  letI : IsOrderedAddMonoid ↥(OrderIdeal.principal (OrderBoundedHom.ofPositive h hh.positive)) :=
+  let : IsOrderedAddMonoid ↥(OrderIdeal.principal (OrderBoundedHom.ofPositive h hh.positive)) :=
     OrderIdeal.instIsOrderedAddMonoidPrincipal _
-  letI : AMSpaceWithUnit ↥(OrderIdeal.principal (OrderBoundedHom.ofPositive h hh.positive)) :=
+  let : AMSpaceWithUnit ↥(OrderIdeal.principal (OrderBoundedHom.ofPositive h hh.positive)) :=
     OrderIdeal.principalAMSpaceWithUnit (ofPositive_pos_of_strictlyPositive hh).le
       (IsUniformlyCompleteVectorLattice.complete_principal _
         (ofPositive_pos_of_strictlyPositive hh))
   -- Endow `X` with the AL-type norm `‖x‖ = h |x|` associated to `h`, so that its
   -- completion `X̂` is an AL-space into which `T` is an isometric dense embedding.
-  letI : NormedAddCommGroup X := StrictlyPositive.associatedNormedAddCommGroup h hh
-  letI : NormedVectorLattice X := StrictlyPositive.associatedNormedVectorLattice h hh
+  let : NormedAddCommGroup X := StrictlyPositive.associatedNormedAddCommGroup h hh
+  let : NormedVectorLattice X := StrictlyPositive.associatedNormedVectorLattice h hh
   -- Step 1: `L¹(μ)` is lattice-isometric to the completion `X̂`, hence so are their duals.
   have d1 : Nonempty (BanachLatEquiv (StrongDual ℝ (Lp ℝ 1 μ))
       (StrongDual ℝ (UniformSpace.Completion X))) := by

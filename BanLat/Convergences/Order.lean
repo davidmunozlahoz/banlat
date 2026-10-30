@@ -112,7 +112,7 @@ theorem orderConvergesTo_of_monotone_isLUB {ι : Type v} [Preorder ι]
     [IsDirected ι (· ≤ ·)] [Nonempty ι] {u : ι → X} {x : X}
     (hmono : Monotone u) (hlub : IsLUB (Set.range u) x) :
     OrderConvergesTo u x := by
-  letI : Nonempty (Set.range u) := by
+  let : Nonempty (Set.range u) := by
     obtain ⟨i⟩ := (inferInstance : Nonempty ι)
     exact ⟨⟨u i, ⟨i, rfl⟩⟩⟩
   refine ⟨Set.range u, inferInstance, isDirected_range_monotone hmono, inferInstance,
@@ -142,9 +142,9 @@ theorem orderConvergesTo_of_antitone_isGLB {ι : Type v} [Preorder ι]
     [IsDirected ι (· ≤ ·)] [Nonempty ι] {u : ι → X} {x : X}
     (hanti : Antitone u) (hglb : IsGLB (Set.range u) x) :
     OrderConvergesTo u x := by
-  letI : IsDirected (OrderDual (Set.range u)) (· ≤ ·) :=
+  let : IsDirected (OrderDual (Set.range u)) (· ≤ ·) :=
     isDirected_orderDual_range_antitone hanti
-  letI : Nonempty (OrderDual (Set.range u)) := by
+  let : Nonempty (OrderDual (Set.range u)) := by
     obtain ⟨i⟩ := (inferInstance : Nonempty ι)
     exact ⟨OrderDual.toDual (⟨u i, ⟨i, rfl⟩⟩ : Set.range u)⟩
   refine ⟨OrderDual (Set.range u), inferInstance, inferInstance, inferInstance,
@@ -179,9 +179,9 @@ theorem nonneg {ι : Type v} [Preorder ι] [IsDirected ι (· ≤ ·)] [Nonempty
     {u : ι → X} {x : X} (hu : OrderConvergesTo u x) (hnn : ∀ i, 0 ≤ u i) :
     0 ≤ x := by
   rcases hu with ⟨κ, hκpre, hκdir, hκnon, r, _hranti, _hrnn, hrglb, hrevent⟩
-  letI : Preorder κ := hκpre
-  letI : IsDirected κ (· ≤ ·) := hκdir
-  letI : Nonempty κ := hκnon
+  let : Preorder κ := hκpre
+  let : IsDirected κ (· ≤ ·) := hκdir
+  let : Nonempty κ := hκnon
   have hlb : -x ∈ lowerBounds (Set.range r) := by
     rintro _ ⟨k, rfl⟩
     rcases (hrevent k).exists with ⟨i, hi⟩
@@ -197,13 +197,13 @@ theorem add {ι : Type v} [Preorder ι]
     OrderConvergesTo (fun i => u i + v i) (x + y) := by
   rcases hu with ⟨κ, hκpre, hκdir, hκnon, r, hranti, hrnn, hrglb, hrevent⟩
   rcases hv with ⟨τ, hτpre, hτdir, hτnon, s, hsanti, hsnn, hsglb, hsevent⟩
-  letI : Preorder κ := hκpre
-  letI : IsDirected κ (· ≤ ·) := hκdir
-  letI : Nonempty κ := hκnon
-  letI : Preorder τ := hτpre
-  letI : IsDirected τ (· ≤ ·) := hτdir
-  letI : Nonempty τ := hτnon
-  letI : IsDirected (κ × τ) (· ≤ ·) := isDirected_prod
+  let : Preorder κ := hκpre
+  let : IsDirected κ (· ≤ ·) := hκdir
+  let : Nonempty κ := hκnon
+  let : Preorder τ := hτpre
+  let : IsDirected τ (· ≤ ·) := hτdir
+  let : Nonempty τ := hτnon
+  let : IsDirected (κ × τ) (· ≤ ·) := isDirected_prod
   refine ⟨κ × τ, inferInstance, inferInstance, inferInstance,
     fun p => r p.1 + s p.2, ?_, ?_, ?_, ?_⟩
   · intro p q hpq
@@ -225,9 +225,9 @@ theorem neg {ι : Type v} [Preorder ι]
     {u : ι → X} {x : X} (hu : OrderConvergesTo u x) :
     OrderConvergesTo (fun i => -u i) (-x) := by
   rcases hu with ⟨κ, hκpre, hκdir, hκnon, r, hranti, hrnn, hrglb, hrevent⟩
-  letI : Preorder κ := hκpre
-  letI : IsDirected κ (· ≤ ·) := hκdir
-  letI : Nonempty κ := hκnon
+  let : Preorder κ := hκpre
+  let : IsDirected κ (· ≤ ·) := hκdir
+  let : Nonempty κ := hκnon
   refine ⟨κ, inferInstance, inferInstance, inferInstance, r, hranti, hrnn, hrglb, ?_⟩
   intro k
   exact (hrevent k).mono fun i hi => by
@@ -272,9 +272,9 @@ theorem smul [VectorLattice X] (a : ℝ) {ι : Type v} [Preorder ι]
     {u : ι → X} {x : X} (hu : OrderConvergesTo u x) :
     OrderConvergesTo (fun i => a • u i) (a • x) := by
   rcases hu with ⟨κ, hκpre, hκdir, hκnon, r, hranti, hrnn, hrglb, hrevent⟩
-  letI : Preorder κ := hκpre
-  letI : IsDirected κ (· ≤ ·) := hκdir
-  letI : Nonempty κ := hκnon
+  let : Preorder κ := hκpre
+  let : IsDirected κ (· ≤ ·) := hκdir
+  let : Nonempty κ := hκnon
   refine ⟨κ, inferInstance, inferInstance, inferInstance, fun k => |a| • r k, ?_, ?_, ?_, ?_⟩
   · intro k l hkl
     exact smul_le_smul_of_nonneg_left (hranti hkl) (abs_nonneg a)
@@ -304,13 +304,13 @@ theorem sup {ι : Type v} [Preorder ι]
     OrderConvergesTo (fun i => u i ⊔ v i) (x ⊔ y) := by
   rcases hu with ⟨κ, hκpre, hκdir, hκnon, r, hranti, hrnn, hrglb, hrevent⟩
   rcases hv with ⟨τ, hτpre, hτdir, hτnon, s, hsanti, hsnn, hsglb, hsevent⟩
-  letI : Preorder κ := hκpre
-  letI : IsDirected κ (· ≤ ·) := hκdir
-  letI : Nonempty κ := hκnon
-  letI : Preorder τ := hτpre
-  letI : IsDirected τ (· ≤ ·) := hτdir
-  letI : Nonempty τ := hτnon
-  letI : IsDirected (κ × τ) (· ≤ ·) := isDirected_prod
+  let : Preorder κ := hκpre
+  let : IsDirected κ (· ≤ ·) := hκdir
+  let : Nonempty κ := hκnon
+  let : Preorder τ := hτpre
+  let : IsDirected τ (· ≤ ·) := hτdir
+  let : Nonempty τ := hτnon
+  let : IsDirected (κ × τ) (· ≤ ·) := isDirected_prod
   refine ⟨κ × τ, inferInstance, inferInstance, inferInstance,
     fun p => r p.1 + s p.2, ?_, ?_, ?_, ?_⟩
   · intro p q hpq

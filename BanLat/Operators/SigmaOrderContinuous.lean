@@ -212,7 +212,7 @@ theorem characterization (T : OrderBoundedHom X Y) :
 is σ-order continuous. -/
 theorem of_isOrderContinuousOp {T : OrderBoundedHom X Y}
     (hT : IsOrderContinuousOp T.toLinearMap) : IsSigmaOrderContinuousOp T.toLinearMap :=
-  ((characterization T).out 0 1 rfl rfl).mpr fun hx hglb ↦
+  ((characterization T).out 1 2 rfl rfl).mpr fun hx hglb ↦
     decreasing_abs_glb_zero_of_orderContinuous hT hx hglb
 
 /-- An order bounded map dominated in modulus by a σ-order continuous map is
@@ -220,7 +220,7 @@ theorem of_isOrderContinuousOp {T : OrderBoundedHom X Y}
 theorem of_abs_le_abs {S T : OrderBoundedHom X Y}
     (hT : IsSigmaOrderContinuousOp T.toLinearMap) (hST : |S| ≤ |T|) :
     IsSigmaOrderContinuousOp S.toLinearMap :=
-  sigmaOrderContinuous_of_abs_le (((characterization T).out 0 3 rfl rfl).mp @hT) fun x ↦
+  sigmaOrderContinuous_of_abs_le (((characterization T).out 1 4 rfl rfl).mp @hT) fun x ↦
     ((OrderBoundedHom.isLUB_abs_apply (f := S) (abs_nonneg x)).1 ⟨x, le_rfl, rfl⟩).trans
       (OrderBoundedHom.le_iff.mp hST _ (abs_nonneg x))
 
@@ -271,10 +271,10 @@ lattice form a projection band. -/
 theorem exists_projectionBand :
     ∃ B : ProjectionBand (OrderBoundedHom X Y),
       (B : Set (OrderBoundedHom X Y)) = SigmaOrderContinuousOperator := by
-  letI : ConditionallyCompleteLattice (OrderBoundedHom X Y) :=
+  let : ConditionallyCompleteLattice (OrderBoundedHom X Y) :=
     @conditionallyCompleteLatticeOfPosSet (OrderBoundedHom X Y) _ _ _
       (fun {S} _ hne hbdd ↦ OrderBoundedHom.exists_isLUB (S := S) hne hbdd)
-  haveI : HasProjectionProperty (OrderBoundedHom X Y) :=
+  have : HasProjectionProperty (OrderBoundedHom X Y) :=
     HasProjectionProperty.of_isOrderComplete
   exact HasProjectionProperty.exists_projectionBand (operatorBand (X := X) (Y := Y))
 
@@ -287,9 +287,9 @@ variable {X : Type u} [NormedAddCommGroup X] [Lattice X] [IsOrderedAddMonoid X]
 real-valued functional is σ-order continuous. -/
 theorem functional_sigmaOrderContinuous_of_sigmaOrderContinuousNorm
     (f : OrderBoundedHom X ℝ) : IsSigmaOrderContinuousOp f.toLinearMap := by
-  apply ((characterization f).out 0 1 rfl rfl).mpr
+  apply ((characterization f).out 1 2 rfl rfl).mpr
   intro x hx hglb
-  letI : BanachLattice X := {}
+  let : BanachLattice X := {}
   have ht : Filter.Tendsto (fun n ↦ |f (x n)|) Filter.atTop (nhds 0) := by
     simpa only [Function.comp_def, map_zero, abs_zero, OrderBoundedHom.toLinearMap_apply]
       using (((IsOrderBounded.continuous f.isOrderBounded').tendsto 0).comp

@@ -178,8 +178,8 @@ private noncomputable def countableSup (s : Set (InducedBooleanAlgebra μ)) :
 /-- For countable `s`, `countableSup μ s` is the least upper bound of `s` in the quotient order. -/
 private theorem isLUB_countableSup (s : Set (InducedBooleanAlgebra μ)) (hs : s.Countable) :
     IsLUB s (countableSup μ s) := by
-  rw [countableSup, dif_pos hs]
-  letI := hs.to_subtype
+  rw [countableSup, dite_eq_left hs]
+  let := hs.to_subtype
   constructor
   · rintro q hq
     have hq_out : mk μ (Quotient.out q : MeasuredSets μ) = q := by
@@ -263,7 +263,7 @@ theorem nontrivial_of_ne_zero (hμ : μ ≠ 0) : Nontrivial (InducedBooleanAlgeb
 @[simp]
 theorem mk_compl (s : MeasuredSets μ) :
     mk μ sᶜ = (mk μ s)ᶜ := by
-  letI := booleanRingInduced μ
+  let := booleanRingInduced μ
   change mk μ sᶜ = 1 + mk μ s
   change mk μ sᶜ = mk μ ((⊤ : MeasuredSets μ) ∆ s)
   exact congrArg (mk μ) (top_symmDiff s).symm
@@ -392,7 +392,7 @@ private theorem inducedMeasureFun_iSup (μ : Measure α)
     rw [← inducedMeasureFun_mk, InducedBooleanAlgebra.mk_inf, hs, hs]
     exact (inducedMeasureFun_eq_zero_iff μ _).2 (ha hij).eq_bot
   simp_rw [← hs]
-  rw [← InducedBooleanAlgebra.mk_iUnion, inducedMeasureFun_mk]
+  rw [← InducedBooleanAlgebra.mk_iUnion, inducedMeasureFun_mk μ ⟨_, _⟩]
   simp_rw [inducedMeasureFun_mk]
   exact measure_iUnion₀ had fun n ↦ (s n).property.nullMeasurableSet
 
@@ -437,7 +437,7 @@ private noncomputable def restrictClass (μ : Measure α) {s : Set α}
         InducedBooleanAlgebra.mk_le_mk_of_subset μ Set.inter_subset_right⟩) ?_
   intro t u h
   apply Subtype.ext
-  rw [InducedBooleanAlgebra.mk_eq_mk]
+  rw [InducedBooleanAlgebra.mk_eq_mk μ ⟨_, _⟩ ⟨_, _⟩]
   change μ (((t : Set α) ∩ s) ∆ ((u : Set α) ∩ s)) = 0
   rw [← Set.inter_symmDiff_distrib_right, ← Measure.restrict_apply' hs]
   exact (InducedBooleanAlgebra.mk_eq_mk (μ.restrict s) t u).mp (Quotient.sound h)
@@ -451,7 +451,7 @@ private lemma restrictClass_le_iff (μ : Measure α) {s : Set α} (hs : Measurab
   change InducedBooleanAlgebra.mk μ ⟨(t : Set α) ∩ s, t.property.inter hs⟩ ≤
       InducedBooleanAlgebra.mk μ ⟨(u : Set α) ∩ s, u.property.inter hs⟩ ↔
     InducedBooleanAlgebra.mk (μ.restrict s) t ≤ InducedBooleanAlgebra.mk (μ.restrict s) u
-  rw [InducedBooleanAlgebra.mk_le_mk_iff, InducedBooleanAlgebra.mk_le_mk_iff]
+  rw [InducedBooleanAlgebra.mk_le_mk_iff μ ⟨_, _⟩ ⟨_, _⟩, InducedBooleanAlgebra.mk_le_mk_iff]
   change μ (((t : Set α) ∩ s) \ ((u : Set α) ∩ s)) = 0 ↔
     μ.restrict s ((t : Set α) \ (u : Set α)) = 0
   rw [← Set.inter_sdiff_distrib_right, Measure.restrict_apply' hs]
@@ -477,7 +477,7 @@ noncomputable def ofMeasureRestrictEquiv (μ : Measure α) [IsFiniteMeasure μ]
   intro t
   change ofMeasure μ (InducedBooleanAlgebra.mk μ ⟨(t : Set α) ∩ s, t.property.inter hs⟩) =
     ofMeasure (μ.restrict s) (InducedBooleanAlgebra.mk (μ.restrict s) t)
-  rw [ofMeasure_mk, ofMeasure_mk, Measure.restrict_apply' hs]
+  rw [ofMeasure_mk μ ⟨_, _⟩, ofMeasure_mk, Measure.restrict_apply' hs]
   rfl
 
 /-- On measurable representatives, the restriction equivalence is intersection
@@ -499,7 +499,7 @@ theorem dense_range_mk_of_measureDense
     letI := (ofMeasure μ).toMetricSpace
     Dense (Set.range fun s : A ↦
       mk μ ⟨s, hA.measurable s s.property⟩) := by
-  letI := (ofMeasure μ).toMetricSpace
+  let := (ofMeasure μ).toMetricSpace
   rw [Metric.dense_iff]
   intro q r hr
   obtain ⟨s, rfl⟩ := mk_surjective μ q
@@ -509,7 +509,8 @@ theorem dense_range_mk_of_measureDense
   refine ⟨mk μ ⟨t, hA.measurable t htA⟩, ⟨?_, ⟨tA, ?_⟩⟩⟩
   · rw [Metric.mem_ball, dist_comm,
       (ofMeasure μ).dist_eq_measure_symmDiff, symmDiff_def,
-      ← mk_sdiff, ← mk_sdiff, ← mk_sup, ← symmDiff_def, ofMeasure_mk]
+      ← mk_sdiff μ s ⟨_, _⟩, ← mk_sdiff μ ⟨_, _⟩ s, ← mk_sup, ← symmDiff_def s ⟨_, _⟩,
+      ofMeasure_mk]
     have hreal :=
       (ENNReal.toReal_lt_toReal (ne_top_of_lt hst) ENNReal.ofReal_ne_top).2 hst
     change (μ ((s : Set α) ∆ t)).toReal < r
@@ -521,12 +522,12 @@ theorem separableSpace_of_isSeparableMeasure
     (μ : Measure α) [IsFiniteMeasure μ] [MeasureTheory.IsSeparable μ] :
     letI := (ofMeasure μ).toMetricSpace
     TopologicalSpace.SeparableSpace (InducedBooleanAlgebra μ) := by
-  letI := (ofMeasure μ).toMetricSpace
+  let := (ofMeasure μ).toMetricSpace
   obtain ⟨A, hA_countable, hA_dense⟩ := exists_countable_measureDense μ
   let f : A → InducedBooleanAlgebra μ := fun t ↦
     mk μ ⟨t.1, hA_dense.measurable t.1 t.2⟩
   let D : Set (InducedBooleanAlgebra μ) := Set.range f
-  letI := hA_countable.to_subtype
+  let := hA_countable.to_subtype
   refine ⟨⟨D, Set.countable_range f, ?_⟩⟩
   simpa [D, f] using dense_range_mk_of_measureDense μ hA_dense
 

@@ -245,7 +245,7 @@ noncomputable instance : ConditionallyCompleteLattice (BoundedCut X) :=
     intro S hb hne
     change IsLUB S (if h : S.Nonempty ∧ BddAbove S then boundedSup S h.1 h.2
       else principal (Classical.choice ‹Nonempty X›))
-    simp only [dif_pos (⟨hne, hb⟩ : S.Nonempty ∧ BddAbove S)]
+    simp only [dite_eq_left (⟨hne, hb⟩ : S.Nonempty ∧ BddAbove S)]
     exact boundedSup_isLUB S hne hb)
 
 end BoundedCut
@@ -657,14 +657,14 @@ omit [IsVLArchimedean X] in
 /-- The scalar action agrees with positive scaling for a positive scalar. -/
 private lemma smulCut_of_pos {r : ℝ} (hr : 0 < r) (A : BoundedCut X) :
     smulCut r A = posSmulCut r hr A := by
-  simp only [smulCut, dif_pos hr]
+  simp only [smulCut, dite_eq_left hr]
 
 omit [IsVLArchimedean X] in
 /-- A negative scalar acts by reflecting the cut scaled by its opposite. -/
 private lemma smulCut_of_neg {r : ℝ} (hr : r < 0) (A : BoundedCut X) :
     smulCut r A = -posSmulCut (-r) (neg_pos.mpr hr) A := by
   have hn : ¬ 0 < r := not_lt.mpr hr.le
-  simp only [smulCut, dif_neg hn, dif_pos hr]
+  simp only [smulCut, dite_eq_right hn, dite_eq_left hr]
 
 omit [IsVLArchimedean X] in
 /-- Zero scalar multiplication gives the zero cut. -/

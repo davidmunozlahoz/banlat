@@ -176,7 +176,7 @@ theorem cubeMeasureAlgebra_isAtomless
     BooleanAlgebra.IsAtomless
       (InducedBooleanAlgebra (cubeMeasure κ)) := by
   apply InducedBooleanAlgebra.isAtomless_of_hasNoAtoms
-  letI : Nonempty κ.out := Cardinal.mk_ne_zero_iff.mp (by
+  let : Nonempty κ.out := Cardinal.mk_ne_zero_iff.mp (by
     rw [Cardinal.mk_out]
     exact ne_of_gt hκ)
   let i : κ.out := Classical.choice inferInstance
@@ -193,10 +193,10 @@ theorem cubeMeasureAlgebra_isSeparable
     letI := (cubeMeasureAlgebra κ).toMetricSpace
     TopologicalSpace.SeparableSpace
       (InducedBooleanAlgebra (cubeMeasure κ)) := by
-  letI : Countable κ.out := Cardinal.mk_le_aleph0_iff.mp (by
+  let : Countable κ.out := Cardinal.mk_le_aleph0_iff.mp (by
     rw [Cardinal.mk_out]
     exact hκ)
-  letI := MeasureTheory.isSeparable_of_sigmaFinite (cubeMeasure κ)
+  let := MeasureTheory.isSeparable_of_sigmaFinite (cubeMeasure κ)
   exact InducedBooleanAlgebra.separableSpace_of_isSeparableMeasure (cubeMeasure κ)
 
 /-- An infinite Lebesgue cube has a measure-dense family of measurable sets
@@ -212,7 +212,7 @@ theorem exists_measureDense_cubeMeasure_mk_le
     apply MeasureTheory.isSeparable_of_sigmaFinite
   have hν_dense (s : Finset κ.out) :
       ∃ A : Set (Set (s → unitInterval)), A.Countable ∧ (ν s).MeasureDense A := by
-    letI := hν_sep s
+    let := hν_sep s
     exact MeasureTheory.exists_countable_measureDense (ν s)
   choose A hA_count hA_dense using hν_dense
   let J := Σ s : Finset κ.out, A s
@@ -220,7 +220,7 @@ theorem exists_measureDense_cubeMeasure_mk_le
     MeasureTheory.cylinder p.1 p.2
   let C : Set (Set (κ.out → unitInterval)) := Set.range rawCyl
   have hJ : Cardinal.mk J ≤ κ := by
-    letI : Infinite κ.out := Cardinal.aleph0_le_mk_iff.mp (by
+    let : Infinite κ.out := Cardinal.aleph0_le_mk_iff.mp (by
       rw [Cardinal.mk_out]
       exact hκ)
     change Cardinal.mk (Σ s : Finset κ.out, A s) ≤ κ
@@ -287,7 +287,7 @@ private theorem cubeMeasureAlgebra_densityCharacter_le_of_aleph0_le
   let D : Set (InducedBooleanAlgebra (cubeMeasure κ)) := Set.range fun S : C ↦
     InducedBooleanAlgebra.mk (cubeMeasure κ)
       ⟨S, hC_dense.measurable S S.property⟩
-  letI := (ofMeasure (cubeMeasure κ)).toMetricSpace
+  let := (ofMeasure (cubeMeasure κ)).toMetricSpace
   have hD : Dense D := by
     simpa [D] using
       InducedBooleanAlgebra.dense_range_mk_of_measureDense (cubeMeasure κ) hC_dense
@@ -302,8 +302,8 @@ theorem cubeMeasureAlgebra_densityCharacter_le (κ : Cardinal.{u}) :
   rcases le_total Cardinal.aleph0 κ with hκ | hκ
   · exact (cubeMeasureAlgebra_densityCharacter_le_of_aleph0_le κ hκ).trans
       (le_max_right _ _)
-  · letI := (cubeMeasureAlgebra κ).toMetricSpace
-    letI : TopologicalSpace.SeparableSpace
+  · let := (cubeMeasureAlgebra κ).toMetricSpace
+    let : TopologicalSpace.SeparableSpace
         (InducedBooleanAlgebra (cubeMeasure κ)) :=
       cubeMeasureAlgebra_isSeparable κ hκ
     exact (TopologicalSpace.densityCharacter_le_aleph0
@@ -417,7 +417,7 @@ private theorem cubeMeasureAlgebra_maharamTypeBelow_of_aleph0_le
     obtain ⟨s, hs⟩ := exists_finset_cubeHalfSpace_inter_symmDiff_ge
       κ S.property hS_ne_zero
     let I := {i : κ.out // i ∉ s}
-    letI : Infinite κ.out := Cardinal.aleph0_le_mk_iff.mp (by
+    let : Infinite κ.out := Cardinal.aleph0_le_mk_iff.mp (by
       rw [Cardinal.mk_out]
       exact hκ)
     have hI : Cardinal.mk I = κ := by
@@ -435,7 +435,7 @@ private theorem cubeMeasureAlgebra_maharamTypeBelow_of_aleph0_le
     have hbound : Cardinal.mk I ≤
         (cubeMeasureAlgebra κ).maharamTypeBelow (InducedBooleanAlgebra.mk μ S) := by
       unfold maharamTypeBelow densityCharacter
-      letI := ((cubeMeasureAlgebra κ).restrict
+      let := ((cubeMeasureAlgebra κ).restrict
         (InducedBooleanAlgebra.mk μ S)).toMetricSpace
       apply TopologicalSpace.mk_le_densityCharacter_of_pairwise_le_dist x
         (div_pos hm (by norm_num : (0 : ℝ) < 4))

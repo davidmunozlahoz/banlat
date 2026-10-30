@@ -66,7 +66,7 @@ theorem isLUB_principalBandProjection_of_isMaximalDisjoint
     (hΛ : IsMaximalDisjoint Λ) (hΛ_pos : ∀ a ∈ Λ, 0 < a)
     {x : X} (hx : 0 ≤ x) :
     IsLUB (Set.range fun a : Λ => Band.principalBandProjection (a : X) x) x := by
-  haveI : IsVLArchimedean X := isVLArchimedean_of_hasPrincipalProjectionProperty
+  have : IsVLArchimedean X := isVLArchimedean_of_hasPrincipalProjectionProperty
   refine ⟨?_, ?_⟩
   · rintro _ ⟨a, rfl⟩
     exact Positive.le_iff.mp
@@ -163,7 +163,7 @@ private lemma generated_singleton_subset_disjointComplement
     [HasPrincipalProjectionProperty X] {a b : X} (hdisj : IsVLDisjoint a b) :
     (Band.generated ({a} : Set X) : Set X) ⊆
       (Band.generated ({b} : Set X) : Set X)ᵈ := by
-  haveI : IsVLArchimedean X := isVLArchimedean_of_hasPrincipalProjectionProperty
+  have : IsVLArchimedean X := isVLArchimedean_of_hasPrincipalProjectionProperty
   -- Rewrite both sides via double/triple disjoint complement.
   rw [← Band.disjointComplement_disjointComplement_eq_generated ({a} : Set X),
       ← Band.disjointComplement_disjointComplement_eq_generated ({b} : Set X),
@@ -209,7 +209,7 @@ theorem exists_orderDense_lattice_embedding_of_isMaximalDisjoint
     ∃ T : VecLatHom X
         ((a : Λ) → (Band.generated ({(a : X)} : Set X)).toVectorSublattice),
       Function.Injective T ∧ IsOrderDense (Set.range T) := by
-  haveI : IsVLArchimedean X := isVLArchimedean_of_hasPrincipalProjectionProperty
+  have : IsVLArchimedean X := isVLArchimedean_of_hasPrincipalProjectionProperty
   refine ⟨decompositionMap Λ, ?_, ?_⟩
   · -- injectivity
     intro x y hxy

@@ -287,7 +287,7 @@ private lemma exists_nonzero_infFunctional_le_half
     ∀ {b : B}, b ≠ ⊥ →
       ∃ d : B, d ≠ ⊥ ∧ d ≤ b ∧
         ∀ a : A, μ.infFunctional A hA d a ≤ μ.infFunctional A hA b a / 2 := by
-  letI := hA.toSigmaCompleteBooleanAlgebra
+  let := hA.toSigmaCompleteBooleanAlgebra
   intro b hb
   obtain ⟨e, heb, he⟩ := hrel hb
   let α := μ.infFunctional A hA b
@@ -361,7 +361,7 @@ private lemma exists_nonzero_infFunctional_le_two_pow
       ∃ d : B, d ≠ ⊥ ∧ d ≤ b ∧
         ∀ a : A, μ.infFunctional A hA d a ≤
           μ.infFunctional A hA b a / (2 ^ n) := by
-  letI := hA.toSigmaCompleteBooleanAlgebra
+  let := hA.toSigmaCompleteBooleanAlgebra
   intro b hb n
   induction n with
   | zero =>
@@ -391,7 +391,7 @@ private lemma exists_nonzero_infFunctional_le
       (∀ a : A, ν a ≤ μ.infFunctional A hA b a) →
         ∃ d : B, d ≠ ⊥ ∧ d ≤ b ∧
           ∀ a : A, μ.infFunctional A hA d a ≤ ν a := by
-  letI := hA.toSigmaCompleteBooleanAlgebra
+  let := hA.toSigmaCompleteBooleanAlgebra
   intro b ν hν_top hν
   let α := μ.infFunctional A hA b
   have hα : α.IsFinite := μ.infFunctional_isFinite A hA b
@@ -450,7 +450,7 @@ private lemma exists_maximal_infFunctional_le :
     ∀ (ν : CountablyAdditiveFunctional A),
       ∃ b : B, (∀ a : A, μ.infFunctional A hA b a ≤ ν a) ∧
         ∀ c : B, b ≤ c → (∀ a : A, μ.infFunctional A hA c a ≤ ν a) → c = b := by
-  letI := hA.toSigmaCompleteBooleanAlgebra
+  let := hA.toSigmaCompleteBooleanAlgebra
   intro ν
   let S : Set B := {b | ∀ a : A, μ.infFunctional A hA b a ≤ ν a}
   have hbot : ⊥ ∈ S := by simp [S]
@@ -522,7 +522,7 @@ private theorem infFunctional_apply_eq_of_maximal
           (∀ c : B, b ≤ c →
             (∀ a : A, μ.infFunctional A hA c a ≤ ν a) → c = b) →
               ∀ a : A, μ.infFunctional A hA b a = ν a := by
-  letI := hA.toSigmaCompleteBooleanAlgebra
+  let := hA.toSigmaCompleteBooleanAlgebra
   intro ν hν b hb hbmax a
   apply le_antisymm (hb a)
   by_contra hle
@@ -566,7 +566,7 @@ theorem exists_infFunctional_apply_eq_of_isRelativelyAtomless
     ∀ (ν : CountablyAdditiveFunctional A),
       (∀ a : A, ν a ≤ μ (a : B)) →
         ∃ b : B, ∀ a : A, μ.infFunctional A hA b a = ν a := by
-  letI := hA.toSigmaCompleteBooleanAlgebra
+  let := hA.toSigmaCompleteBooleanAlgebra
   intro ν hν
   obtain ⟨b, hb, hbmax⟩ := exists_maximal_infFunctional_le μ A hA ν
   exact ⟨b, infFunctional_apply_eq_of_maximal μ A hA hrel ν hν b hb hbmax⟩

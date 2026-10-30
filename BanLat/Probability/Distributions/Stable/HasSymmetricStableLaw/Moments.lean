@@ -36,7 +36,7 @@ and therefore belongs to `Lᵖ` for every nonnegative real exponent `p`. -/
 lemma memLp_of_scale_eq_zero (hX : HasSymmetricStableLaw X q c P)
     (hc : c = 0) (p : ℝ≥0) :
     MemLp X p P := by
-  letI := hX.isProbabilityMeasure
+  let := hX.isProbabilityMeasure
   have hzero := (hX.scale_eq_zero_iff_ae_eq_zero).mp hc
   exact (memLp_const (0 : ℝ)).congr_norm hX.aemeasurable.aestronglyMeasurable
     (hzero.mono fun ω hω ↦ by simp [hω])
@@ -134,8 +134,8 @@ private lemma lpNorm_eq_rpow_mul_of_hasSymmetricStableLaw
   have hident := identDistrib_rpow_smul_of_hasSymmetricStableLaw hY hZ
   have hlpNorm : lpNorm Y p P =
       lpNorm (fun ω ↦ (A : ℝ) ^ q⁻¹ * Z ω) p Q := by
-    rw [← toReal_eLpNorm hident.aestronglyMeasurable_fst,
-      ← toReal_eLpNorm hident.aemeasurable_snd.aestronglyMeasurable,
+    rw [← toReal_eLpNorm,
+      ← toReal_eLpNorm,
       hident.eLpNorm_eq p]
   rw [hlpNorm]
   change lpNorm ((A : ℝ) ^ q⁻¹ • Z) p Q = _
@@ -198,8 +198,8 @@ lemma lpNorm_finset_sum_mul_of_hasSymmetricStableLaw
       lpNorm (fun ω ↦ ∑ i ∈ s, a i * X i ω) p P =
         lpNorm (fun ω ↦ ((↑(∑ i ∈ s, ‖a i‖₊ ^ q) : ℝ) ^ q⁻¹) * Z ω)
           p Q := by
-    rw [← toReal_eLpNorm hident.aestronglyMeasurable_fst]
-    rw [← toReal_eLpNorm hident.aemeasurable_snd.aestronglyMeasurable]
+    rw [← toReal_eLpNorm]
+    rw [← toReal_eLpNorm]
     rw [hident.eLpNorm_eq p]
   rw [hlpNorm]
   let r := (↑(∑ i ∈ s, ‖a i‖₊ ^ q) : ℝ) ^ q⁻¹

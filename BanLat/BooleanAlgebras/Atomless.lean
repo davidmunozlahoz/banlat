@@ -38,7 +38,7 @@ variable {B : Type u} [BooleanAlgebra B]
 theorem infinite_of_isAtomless [Nontrivial B] (hB : IsAtomless B) : Infinite B := by
   rw [← not_finite_iff_infinite]
   intro hfinite
-  letI : Finite B := hfinite
+  let : Finite B := hfinite
   obtain ⟨a, ha⟩ := IsAtomic.exists_atom (α := B)
   exact hB a ha
 
@@ -72,7 +72,7 @@ theorem isAtomless_iff_denselyOrdered :
     intro a b hab
     exact hB _ (isAtom_sdiff_of_covBy hab)
   · intro hB a ha
-    letI : DenselyOrdered B := hB
+    let : DenselyOrdered B := hB
     obtain ⟨x, hbotx, hxa⟩ := exists_between ha.bot_lt
     rw [ha.2 x hxa] at hbotx
     exact (lt_irrefl ⊥ hbotx).elim
@@ -81,7 +81,7 @@ theorem isAtomless_iff_denselyOrdered :
 smaller nonzero element. -/
 theorem IsAtomless.exists_nonzero_lt (hB : IsAtomless B) {b : B} (hb : b ≠ ⊥) :
     ∃ a : B, a < b ∧ a ≠ ⊥ := by
-  letI : DenselyOrdered B := isAtomless_iff_denselyOrdered.mp hB
+  let : DenselyOrdered B := isAtomless_iff_denselyOrdered.mp hB
   obtain ⟨a, ha_bot, ha_b⟩ := exists_between (bot_lt_iff_ne_bot.mpr hb)
   exact ⟨a, ha_b, ne_of_gt ha_bot⟩
 
@@ -132,8 +132,8 @@ private lemma exists_atom_inf_ne_bot_of_finite
     (b : B) (a : A) (hba : b ⊓ (a : B) ≠ ⊥) :
     ∃ p : A, IsAtom p ∧ p ≤ a ∧ b ⊓ (p : B) ≠ ⊥ := by
   classical
-  letI := hA.fintype
-  letI : CompleteAtomicBooleanAlgebra A :=
+  let := hA.fintype
+  let : CompleteAtomicBooleanAlgebra A :=
     Fintype.toCompleteAtomicBooleanAlgebra A
   let atoms : Finset A := Finset.univ.filter fun p ↦ IsAtom p ∧ p ≤ a
   have hatoms : atoms.sup id = a := by

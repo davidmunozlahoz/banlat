@@ -46,7 +46,7 @@ private lemma Measure.IsAtom.exists_ae_eq_const
       simp only [ν, Measure.smul_apply, Measure.map_apply hg ht,
         Measure.restrict_apply (hg ht), huts, smul_eq_mul]
       exact ENNReal.inv_mul_cancel hs.2.1.ne' hμs.ne
-  letI : IsZeroOneMeasure ν := ⟨fun {t} ht ↦ hν_zero_one t ht⟩
+  let : IsZeroOneMeasure ν := ⟨fun {t} ht ↦ hν_zero_one t ht⟩
   have hν_univ : ν Set.univ = 1 := by
     rw [show ν = (μ s)⁻¹ • (μ.restrict s).map g from rfl,
       Measure.smul_apply, Measure.map_apply hg MeasurableSet.univ]
@@ -54,7 +54,7 @@ private lemma Measure.IsAtom.exists_ae_eq_const
     rw [Measure.restrict_apply MeasurableSet.univ]
     simp only [Set.univ_inter, smul_eq_mul]
     exact ENNReal.inv_mul_cancel hs.2.1.ne' hμs.ne
-  letI : NeZero ν := ⟨fun hν ↦ by
+  let : NeZero ν := ⟨fun hν ↦ by
     rw [hν] at hν_univ
     exact zero_ne_one hν_univ⟩
   obtain ⟨c, hν⟩ := IsZeroOneMeasure.exists_eq_dirac (μ := ν)

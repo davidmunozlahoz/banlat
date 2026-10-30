@@ -59,7 +59,7 @@ theorem tendstoInMeasure_add_real
         {ω | ε / 2 ≤ dist (g n ω) (G ω)} := by
     intro ω hω
     by_contra hmem
-    simp only [Set.mem_union, Set.mem_setOf_eq, not_or, not_le] at hmem
+    simp only [Set.mem_union, Set.mem_ofPred_eq, not_or, not_le] at hmem
     exact (not_lt_of_ge hω) <|
       (dist_add_add_le (f n ω) (g n ω) (F ω) (G ω)).trans_lt <|
         (add_lt_add hmem.1 hmem.2).trans_eq (add_halves ε)
@@ -81,7 +81,7 @@ theorem tendstoInMeasure_const_mul_real
     funext n
     congr 1
     ext ω
-    simp only [Set.mem_setOf_eq]
+    simp only [Set.mem_ofPred_eq]
     rw [Real.dist_eq, Real.dist_eq, ← mul_sub, abs_mul, mul_comm |r|]
     exact (div_le_iff₀ hr_pos).symm
   rw [hfun]
@@ -170,7 +170,7 @@ private lemma exists_tendstoInMeasure_of_dyadic_cauchy
       exact hnotA j
     have hωconv := hconv ω hωevent
     have hωg : Tendsto (fun i ↦ f (ns i) ω) atTop (nhds (g ω)) := by
-      simpa only [g, dif_pos hωconv] using hωconv.choose_spec
+      simpa only [g, dite_eq_left hωconv] using hωconv.choose_spec
     have hshift : Tendsto (fun i ↦ f (ns (k + i)) ω) atTop (nhds (g ω)) := by
       simpa only [Nat.add_comm] using (Filter.tendsto_add_atTop_iff_nat k).2 hωg
     have hdist_real :
@@ -228,7 +228,7 @@ private lemma exists_tendstoInMeasure_of_dyadic_cauchy
       {ω | r ≤ edist (f n ω) (f (ns k) ω)} ∪ ⋃ i, A (k + i) := by
     intro ω hω
     by_contra hmem
-    simp only [Set.mem_union, Set.mem_setOf_eq, not_or, not_le] at hmem
+    simp only [Set.mem_union, Set.mem_ofPred_eq, not_or, not_le] at hmem
     have hsecond := hdist k ω hmem.2
     have hsecond_top : edist (f (ns k) ω) (g ω) ≠ ⊤ :=
       ne_top_of_le_ne_top (by finiteness) hsecond

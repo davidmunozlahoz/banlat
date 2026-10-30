@@ -377,7 +377,7 @@ private theorem containsLatticeCopy_linf_of_disjoint
     {w : X} (hw : ∀ n, x n ≤ w) {ε : ℝ} (hε : 0 < ε)
     (hx_norm : ∀ n, ε ≤ ‖x n‖) :
     ContainsLatticeCopy X (ℓ^∞(ℕ, ℝ)) := by
-  letI : IsVLArchimedean X := IsVLArchimedean_of_sigmaConditionallyCompleteLattice
+  let : IsVLArchimedean X := IsVLArchimedean_of_sigmaConditionallyCompleteLattice
   let T : VecLatHom (ℓ^∞(ℕ, ℝ)) X := linftyVecLatHom x hx hdisj hw
   have hnorm : ∀ a, ‖a‖ ≤ ε⁻¹ * ‖T a‖ := by
     intro a
@@ -476,7 +476,7 @@ private theorem not_containsLatticeCopy_linf_of_isOrderContinuousNorm
     [BanachLattice X] [IsOrderContinuousNorm X] :
     ¬ ContainsLatticeCopy X (ℓ^∞(ℕ, ℝ)) := by
   rintro ⟨Z, hZ_closed, ⟨e⟩⟩
-  letI : BanachLattice Z := Z.banachLatticeCoe hZ_closed
+  let : BanachLattice Z := Z.banachLatticeCoe hZ_closed
   let v : ℕ → X := fun n => (e (linftyBasis n)).1
   have hv_nonneg : ∀ n, 0 ≤ v n := fun n =>
     e.toVecLatHom.map_nonneg (linftyBasis_nonneg n)
@@ -527,7 +527,7 @@ theorem isOrderContinuousNorm_iff_not_containsLatticeCopy_linfty
     IsOrderContinuousNorm X ↔ ¬ ContainsLatticeCopy X (ℓ^∞(ℕ, ℝ)) := by
   constructor
   · intro hX
-    letI : IsOrderContinuousNorm X := hX
+    let : IsOrderContinuousNorm X := hX
     exact not_containsLatticeCopy_linf_of_isOrderContinuousNorm
   · intro hcopy
     by_contra hX

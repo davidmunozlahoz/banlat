@@ -49,12 +49,12 @@ private theorem complexModulus_eq_functionalCalculus
       fin_cases i <;> rfl
     rw [htuple, PosHomFunction.functionalCalculus_zero]
   · have hepos : 0 < e := lt_of_le_of_ne he (Ne.symm hzero)
-    letI : NormedAddCommGroup ↥(OrderIdeal.principal e) :=
+    let : NormedAddCommGroup ↥(OrderIdeal.principal e) :=
       OrderIdeal.principalNormedAddCommGroup e
-    letI : Lattice ↥(OrderIdeal.principal e) := OrderIdeal.instLatticePrincipal e
-    letI : IsOrderedAddMonoid ↥(OrderIdeal.principal e) :=
+    let : Lattice ↥(OrderIdeal.principal e) := OrderIdeal.instLatticePrincipal e
+    let : IsOrderedAddMonoid ↥(OrderIdeal.principal e) :=
       OrderIdeal.instIsOrderedAddMonoidPrincipal e
-    letI : AMSpaceWithUnit ↥(OrderIdeal.principal e) :=
+    let : AMSpaceWithUnit ↥(OrderIdeal.principal e) :=
       OrderIdeal.principalAMSpaceWithUnit he
         (IsUniformlyCompleteVectorLattice.complete_principal e hepos)
     have hx : x ∈ OrderIdeal.principal e := by
@@ -77,7 +77,7 @@ private theorem complexModulus_eq_functionalCalculus
       exact VectorLattice.complexModulus_le_abs_add_abs x y
     let m : ↥(OrderIdeal.principal e) :=
       ⟨VectorLattice.complexModulus x y, hm⟩
-    letI := isUniformlyCompleteVectorLattice_of_banachLattice
+    let := isUniformlyCompleteVectorLattice_of_banachLattice
       ↥(OrderIdeal.principal e)
     have hm_eq : VectorLattice.complexModulus x' y' = m := by
       apply (VectorLattice.complexModulus_isLUB x' y').unique
@@ -90,7 +90,7 @@ private theorem complexModulus_eq_functionalCalculus
         rintro _ ⟨θ, rfl⟩
         exact hu ⟨θ, rfl⟩
     let K := OrderIdeal.principalKakutaniEquiv hepos
-    letI := isUniformlyCompleteVectorLattice_of_banachLattice
+    let := isUniformlyCompleteVectorLattice_of_banachLattice
       C(AMSpaceWithUnit.LatticeCharacter ↥(OrderIdeal.principal e), ℝ)
     have hprincipal :
         VectorLattice.complexModulus x' y' =

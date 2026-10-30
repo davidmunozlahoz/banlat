@@ -217,7 +217,7 @@ theorem exists_strictlyPositiveFunctional_of_separable_banachLattice
     [BanachLattice X] [TopologicalSpace.SeparableSpace X] :
     ∃ φ : StrongDual ℝ X, StrictlyPositive φ.toLinearMap := by
   classical
-  haveI : Nonempty X := ⟨0⟩
+  have : Nonempty X := ⟨0⟩
   let u : ℕ → X := TopologicalSpace.denseSeq X
   have hu_dense : DenseRange u := TopologicalSpace.denseRange_denseSeq X
   have hnorming :
@@ -421,7 +421,7 @@ private lemma exists_apply_pos_of_isMaximalDisjoint_dual
       fun y hy => hprincipal_subset_null (hcarrier_g_subset_principal hy)
     have hdisj_order : IsVLDisjoint (StrongDual.toOrderDualSpace g) Tφ :=
       ((OrderBoundedHom.nakano_theorem
-        (StrongDual.toOrderDualSpace g) Tφ hg_oc hTφ_oc).out 1 0).mp hcarrier_subset_null
+        (StrongDual.toOrderDualSpace g) Tφ hg_oc hTφ_oc).out 2 1).mp hcarrier_subset_null
     unfold IsVLDisjoint at hdisj_order ⊢
     apply StrongDual.equivOrderDualSpace.injective
     change StrongDual.toOrderDualSpace (|g| ⊓ |φ|) =
@@ -446,9 +446,9 @@ private lemma countable_of_isDisjointSet_dual_of_weakOrderUnit
     (hΛ_pos : ∀ φ ∈ Λ, 0 < φ) :
     Λ.Countable := by
   classical
-  letI : ConditionallyCompleteLattice X :=
+  let : ConditionallyCompleteLattice X :=
     BanachLattice.conditionallyCompleteLatticeOfIsOrderContinuousNorm
-  haveI : HasProjectionProperty X := inferInstance
+  have : HasProjectionProperty X := inferInstance
   let T : Λ → OrderBoundedHom X ℝ := fun φ => StrongDual.toOrderDualSpace (φ : StrongDual ℝ X)
   let P : Λ → ProjectionBand X := fun φ =>
     (HasProjectionProperty.exists_projectionBand (OrderBoundedHom.carrier (T φ))).choose
@@ -522,7 +522,7 @@ private lemma countable_of_isDisjointSet_dual_of_weakOrderUnit
     have hcarrier_sub_dc :
         (OrderBoundedHom.carrier (T φ) : Set X) ⊆
           (OrderBoundedHom.carrier (T ψ) : Set X)ᵈ :=
-      ((OrderBoundedHom.nakano_theorem (T φ) (T ψ) (hT_oc φ) (hT_oc ψ)).out 0 3).mp
+      ((OrderBoundedHom.nakano_theorem (T φ) (T ψ) (hT_oc φ) (hT_oc ψ)).out 1 4).mp
         hdual_disj
     exact hcarrier_sub_dc (hu_carrier φ) (u ψ) (hu_carrier ψ)
   have hu_inj : Function.Injective u := by
@@ -549,12 +549,12 @@ private lemma countable_of_isDisjointSet_dual_of_weakOrderUnit
     exact hu_le_e φ
   have hU_count : U.Countable :=
     BanachLattice.countable_of_pairwise_disjoint_bddAbove hU0 hUdisj hUbd
-  haveI : Countable U := hU_count.to_subtype
+  have : Countable U := hU_count.to_subtype
   let f : Λ → U := fun φ => ⟨u φ, φ, rfl⟩
   have hf_inj : Function.Injective f := by
     intro φ ψ h
     exact hu_inj (congrArg Subtype.val h)
-  haveI : Countable Λ := hf_inj.countable
+  have : Countable Λ := hf_inj.countable
   exact Set.countable_coe_iff.mp (inferInstance : Countable Λ)
 
 /-- Every order-continuous Banach lattice with a weak unit admits a strictly positive
@@ -568,8 +568,8 @@ theorem exists_strictlyPositiveFunctional_of_orderContinuousNorm_of_exists_weakO
   obtain ⟨Λ, hΛ, hΛ_pos⟩ := exists_isMaximalDisjoint_pos (StrongDual ℝ X)
   have hΛ_count : Λ.Countable :=
     countable_of_isDisjointSet_dual_of_weakOrderUnit he hΛ.1 hΛ_pos
-  haveI : Countable Λ := hΛ_count.to_subtype
-  letI : Encodable Λ := Encodable.ofCountable Λ
+  have : Countable Λ := hΛ_count.to_subtype
+  let : Encodable Λ := Encodable.ofCountable Λ
   let c : Λ → ℝ := fun φ => (1 / 2 : ℝ) ^ Encodable.encode φ / ‖(φ : StrongDual ℝ X)‖
   let F : Λ → StrongDual ℝ X := fun φ => c φ • (φ : StrongDual ℝ X)
   have hweight_pos : ∀ φ : Λ, 0 < (1 / 2 : ℝ) ^ Encodable.encode φ := fun φ =>

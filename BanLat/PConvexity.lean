@@ -70,7 +70,7 @@ theorem latticePSum_fin_zero (x : Fin 0 → X) :
 /-- Each absolute value in a finite family is bounded by its lattice p-sum. -/
 theorem abs_le_latticePSum {n : ℕ} (x : Fin n → X) (i : Fin n) :
     |x i| ≤ latticePSum p x := by
-  letI := isUniformlyCompleteVectorLattice_of_banachLattice X
+  let := isUniformlyCompleteVectorLattice_of_banachLattice X
   have h : |PosHomFunction.coordinate i| ≤ pSumFunction p n :=
     fun a ↦ PiLp.norm_apply_le (WithLp.toLp p a) i
   simpa only [latticePSum, VecLatHom.map_abs, PosHomFunction.functionalCalculus_coordinate]
@@ -80,7 +80,7 @@ theorem abs_le_latticePSum {n : ℕ} (x : Fin n → X) (i : Fin n) :
 @[simp]
 theorem latticePSum_fin_one (x : Fin 1 → X) :
     latticePSum p x = |x 0| := by
-  letI := isUniformlyCompleteVectorLattice_of_banachLattice X
+  let := isUniformlyCompleteVectorLattice_of_banachLattice X
   have h : pSumFunction p 1 = |PosHomFunction.coordinate 0| := by
     ext a
     change ‖WithLp.toLp p a‖ = |a 0|
@@ -95,7 +95,7 @@ theorem latticePSum_fin_one (x : Fin 1 → X) :
 @[simp]
 theorem latticePSum_one {n : ℕ} (x : Fin n → X) :
     latticePSum 1 x = ∑ i, |x i| := by
-  letI := isUniformlyCompleteVectorLattice_of_banachLattice X
+  let := isUniformlyCompleteVectorLattice_of_banachLattice X
   have h : pSumFunction 1 n = ∑ i, |PosHomFunction.coordinate i| := by
     ext a
     simp [pSumFunction, PiLp.norm_eq_of_L1, Real.norm_eq_abs]
@@ -155,8 +155,9 @@ theorem ConvexWith.mono {C D : ℝ} (hC : ConvexWith p C T) (hCD : C ≤ D) :
 /-- Every admissible p-convexity constant bounds the operator norm. -/
 theorem ConvexWith.norm_le {C : ℝ} (hC : ConvexWith p C T) : ‖T‖ ≤ C := by
   refine T.opNorm_le_bound hC.1 fun x ↦ ?_
-  simpa [latticePSum_fin_one, norm_abs_eq_norm, PiLp.norm_toLp_const', Function.const_def]
-    using hC.2 1 (fun _ ↦ x)
+  have h := hC.2 1 (fun _ ↦ x)
+  rw [latticePSum_fin_one, norm_abs_eq_norm] at h
+  simpa [PiLp.norm_toLp_const', Function.const_def] using h
 
 private lemma bddBelow_convexWith :
     BddBelow {C | ConvexWith p C T} :=
@@ -174,7 +175,7 @@ theorem IsPConvexOp.convexityConstant_nonneg (hT : IsPConvexOp p T) :
 
 private lemma isClosed_convexWith :
     IsClosed {C | ConvexWith p C T} := by
-  simp only [ConvexWith, Set.setOf_and, Set.setOf_forall]
+  simp only [ConvexWith, Set.ofPred_and, Set.ofPred_forall]
   exact isClosed_Ici.inter (isClosed_iInter fun _ ↦ isClosed_iInter fun _ ↦
     isClosed_le continuous_const (continuous_id.mul continuous_const))
 
@@ -217,8 +218,8 @@ theorem ConvexWith.quotient {C : ℝ} (hC : ConvexWith p C T)
     letI := J.quotientNormedAddCommGroup hJ
     letI := J.quotientBanachLattice hJ
     ConvexWith p C (J.toSubmodule.mkQL.comp T) := by
-  letI := J.quotientNormedAddCommGroup hJ
-  letI := J.quotientBanachLattice hJ
+  let := J.quotientNormedAddCommGroup hJ
+  let := J.quotientBanachLattice hJ
   refine ⟨hC.1, fun n x ↦ ?_⟩
   have hmap := latticePSum_map p J.mkQVecLatHom (fun i ↦ T (x i))
   calc
@@ -331,7 +332,7 @@ private lemma latticePSum_le_of_scalar_bound {q : ℝ≥0∞} [Fact (1 ≤ q)]
     (h : ∀ a : Fin n → ℝ,
       ‖WithLp.toLp q a‖ ≤ K * ‖WithLp.toLp p (fun i ↦ w i * a i)‖) :
     latticePSum q x ≤ K • latticePSum p (fun i ↦ w i • x i) := by
-  letI := isUniformlyCompleteVectorLattice_of_banachLattice X
+  let := isUniformlyCompleteVectorLattice_of_banachLattice X
   have hfun : pSumFunction q n ≤ K • PosHomFunction.comp (pSumFunction p n)
       (fun i ↦ w i • PosHomFunction.coordinate i) := h
   have hcalc := (PosHomFunction.functionalCalculus x).monotone hfun
@@ -548,7 +549,7 @@ theorem ConvexWith.id_sublattice {C : ℝ}
     (Y : VectorSublattice X) (hY : IsClosed (Y : Set X)) :
     letI := Y.banachLatticeCoe hY
     ConvexWith p C (ContinuousLinearMap.id ℝ Y) := by
-  letI := Y.banachLatticeCoe hY
+  let := Y.banachLatticeCoe hY
   refine ⟨hC.1, fun n x ↦ ?_⟩
   have hmap := latticePSum_map p Y.subtype x
   change ‖((latticePSum p x : Y) : X)‖ ≤

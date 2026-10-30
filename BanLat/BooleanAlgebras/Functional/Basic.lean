@@ -66,7 +66,7 @@ theorem map_sup {a b : B} (h : Disjoint a b) :
     change Disjoint (c i) (c j)
     simp only [c]
     split_ifs
-    all_goals first | omega | exact h | exact h.symm | simp
+    all_goals first | omega | exact h.symm | simp
   have hiSup : (⨆ n, c n) = a ⊔ b := by
     apply le_antisymm
     · apply SigmaCompleteBooleanAlgebra.iSup_nat_le
@@ -80,7 +80,7 @@ theorem map_sup {a b : B} (h : Disjoint a b) :
     have hz (x : ℕ) : (if x = 1 then 0 else if x = 0 then 0 else ν (c x)) = 0 := by
       simp only [c]
       split_ifs <;> simp
-    simp only [hz, tsum_zero, add_zero, c, if_pos, if_false, Nat.one_ne_zero]
+    simp only [hz, tsum_zero, add_zero, c, ite_eq_left, ite_false, Nat.one_ne_zero]
   rw [← hiSup, ν.map_iSup hc, hsum]
 
 /-- A countably additive functional maps the supremum of a finite pairwise
@@ -191,7 +191,7 @@ theorem infFunctional_sup_apply (A : BooleanSubalgebra B)
     letI := hA.toSigmaCompleteBooleanAlgebra
     ν.infFunctional A hA (b ⊔ c) a =
       ν.infFunctional A hA b a + ν.infFunctional A hA c a := by
-  letI := hA.toSigmaCompleteBooleanAlgebra
+  let := hA.toSigmaCompleteBooleanAlgebra
   simp only [infFunctional_apply, inf_sup_left]
   exact ν.map_sup (hbc.mono inf_le_right inf_le_right)
 

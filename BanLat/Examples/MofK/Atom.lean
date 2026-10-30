@@ -21,12 +21,12 @@ universe u
 variable {K : Type u} [TopologicalSpace K] [T2Space K] [CompactSpace K]
   [MeasurableSpace K] [BorelSpace K]
 
-private noncomputable def signedDirac [MeasurableSingletonClass K] (x : K) :
+private noncomputable def signedDirac (x : K) :
     SignedMeasure K :=
   (Measure.dirac x).toSignedMeasure
 
 omit [TopologicalSpace K] [T2Space K] [CompactSpace K] [BorelSpace K] in
-private theorem signedDirac_apply_of_mem [MeasurableSingletonClass K] {x : K} {A : Set K}
+private theorem signedDirac_apply_of_mem {x : K} {A : Set K}
     (hA : MeasurableSet A) (hx : x ∈ A) :
     signedDirac x A = 1 := by
   unfold signedDirac
@@ -34,7 +34,7 @@ private theorem signedDirac_apply_of_mem [MeasurableSingletonClass K] {x : K} {A
     Measure.dirac_apply_of_mem hx, ENNReal.toReal_one]
 
 omit [TopologicalSpace K] [T2Space K] [CompactSpace K] [BorelSpace K] in
-private theorem signedDirac_apply_of_notMem [MeasurableSingletonClass K] {x : K} {A : Set K}
+private theorem signedDirac_apply_of_notMem {x : K} {A : Set K}
     (hA : MeasurableSet A) (hx : x ∉ A) :
     signedDirac x A = 0 := by
   unfold signedDirac
@@ -42,7 +42,7 @@ private theorem signedDirac_apply_of_notMem [MeasurableSingletonClass K] {x : K}
     Measure.dirac_apply' x hA, Set.indicator_of_notMem hx, ENNReal.toReal_zero]
 
 omit [TopologicalSpace K] [T2Space K] [CompactSpace K] [BorelSpace K] in
-private theorem zero_le_signedDirac [MeasurableSingletonClass K] (x : K) :
+private theorem zero_le_signedDirac (x : K) :
     (0 : SignedMeasure K) ≤ signedDirac x :=
   Measure.zero_le_toSignedMeasure _
 
@@ -56,7 +56,7 @@ private theorem signedDirac_ne_zero [MeasurableSingletonClass K] (x : K) :
   exact one_ne_zero h₁.symm
 
 omit [TopologicalSpace K] [T2Space K] [CompactSpace K] [BorelSpace K] in
-private theorem apply_eq_zero_of_notMem_of_le_signedDirac [MeasurableSingletonClass K] {x : K}
+private theorem apply_eq_zero_of_notMem_of_le_signedDirac {x : K}
     {y : SignedMeasure K} (hy0 : 0 ≤ y) (hyd : y ≤ signedDirac x) {A : Set K}
     (hA : MeasurableSet A) (hx : x ∉ A) :
     y A = 0 := by

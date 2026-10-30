@@ -43,8 +43,10 @@ noncomputable def indicatorSimpleFunc
     (fun s : MeasuredSets μ ↦
       Lp.simpleFunc.indicatorConst (p : ENNReal) s.property (measure_ne_top μ s) c) ?_
   exact fun s t h ↦ Subtype.ext <| MemLp.toLp_congr
-    (memLp_indicator_const (p : ENNReal) s.property c (Or.inr (measure_ne_top μ s)))
-    (memLp_indicator_const (p : ENNReal) t.property c (Or.inr (measure_ne_top μ t))) <|
+    (memLp_indicator_const (p : ENNReal) s.property.nullMeasurableSet c
+      (Or.inr (measure_ne_top μ s)))
+    (memLp_indicator_const (p : ENNReal) t.property.nullMeasurableSet c
+      (Or.inr (measure_ne_top μ t))) <|
     indicator_ae_eq_of_ae_eq_set <| measure_symmDiff_eq_zero_iff.mp <|
       (MeasureAlgebra.InducedBooleanAlgebra.mk_eq_mk μ s t).mp (Quotient.sound h)
 
@@ -126,7 +128,7 @@ theorem simpleFunc_sum_indicators (f : SimpleFunc α ℝ) :
     (∑ c ∈ f.range, (indicatorSimpleFunc (p := p)
       (MeasureAlgebra.InducedBooleanAlgebra.mk μ ⟨f ⁻¹' {c}, f.measurableSet_fiber c⟩) c :
         Lp ℝ (p : ENNReal) μ)) = (f.memLp_of_isFiniteMeasure (p : ENNReal) μ).toLp f := by
-  simpa only [indicatorSimpleFunc_mk, Lp.simpleFunc.coe_indicatorConst] using
+  simpa only [indicatorSimpleFunc_mk ⟨_, _⟩, Lp.simpleFunc.coe_indicatorConst] using
     Lp.sum_indicatorConstLp (p := (p : ENNReal)) (μ := μ) f
 
 /-! ## Uniform embedding into `Lᵖ` -/
@@ -162,7 +164,7 @@ theorem dist_algebraIndicator [Fact (1 ≤ p)]
 theorem isUniformEmbedding_algebraIndicator [Fact (1 ≤ p)] :
     letI := (MeasureAlgebra.ofMeasure μ).toMetricSpace
     IsUniformEmbedding (algebraIndicator (μ := μ) (p := p)) := by
-  letI := (MeasureAlgebra.ofMeasure μ).toMetricSpace
+  let := (MeasureAlgebra.ofMeasure μ).toMetricSpace
   have hp : 0 < (p : ℝ) := NNReal.coe_pos.mpr
     (lt_of_lt_of_le zero_lt_one (Fact.out : (1 : ℝ≥0) ≤ p))
   refine Metric.isUniformEmbedding_iff'.2 ⟨?_, ?_⟩
@@ -215,7 +217,7 @@ private theorem indicatorOperator_apply
     {s : Set α} (hs : MeasurableSet s) (c : ℝ) :
     indicatorOperator (p := p) e s c =
       indicatorSimpleFunc (e (MeasureAlgebra.InducedBooleanAlgebra.mk μ ⟨s, hs⟩)) c := by
-  simpa only [indicatorOperator, dif_pos hs, ContinuousLinearMap.smulRight_apply,
+  simpa only [indicatorOperator, dite_eq_left hs, ContinuousLinearMap.smulRight_apply,
     one_apply_eq_self] using
     (indicatorSimpleFunc_smul (p := p)
       (e (MeasureAlgebra.InducedBooleanAlgebra.mk μ ⟨s, hs⟩)) c).symm
@@ -546,6 +548,6 @@ theorem lpEquiv_indicatorConstLp
   have h := lpLinearIsometryEquiv_apply_simpleFunc e
     (indicatorSimpleFunc (p := p) (MeasureAlgebra.InducedBooleanAlgebra.mk μ ⟨s, hs⟩) c)
   rw [simpleFuncMap_indicatorSimpleFunc, hst] at h
-  simpa only [indicatorSimpleFunc_mk, Lp.simpleFunc.coe_indicatorConst] using h
+  simpa only [indicatorSimpleFunc_mk ⟨_, _⟩, Lp.simpleFunc.coe_indicatorConst] using h
 
 end MeasureAlgebraEquiv

@@ -119,7 +119,7 @@ private theorem range_coe_eq_inter :
     (⋂ p : X × X, {g : X → ℝ | g (p.1 ⊓ p.2) = min (g p.1) (g p.2)}) ∩
     {g : X → ℝ | g (AMSpaceWithUnit.unit : X) = 1} := by
   ext g
-  simp only [Set.mem_range, Set.mem_inter_iff, Set.mem_iInter, Set.mem_setOf_eq,
+  simp only [Set.mem_range, Set.mem_inter_iff, Set.mem_iInter, Set.mem_ofPred_eq,
     Prod.forall]
   constructor
   · rintro ⟨φ, rfl⟩
@@ -597,7 +597,7 @@ private theorem charValue_add (M : OrderIdeal X)
 private theorem charSetA_neg_eq (M : OrderIdeal X) (x : X) :
     charSetA M (-x) = -charSetB M x := by
   ext c
-  simp only [charSetA, charSetB, Set.mem_setOf_eq, Set.mem_neg]
+  simp only [charSetA, charSetB, Set.mem_ofPred_eq, Set.mem_neg]
   constructor
   · intro hc
     have : (c • (AMSpaceWithUnit.unit : X) - -x) =
@@ -625,7 +625,7 @@ private theorem charValue_neg (M : OrderIdeal X)
 private theorem charSetA_smul_pos (M : OrderIdeal X) {c : ℝ} (hc : 0 < c) (x : X) :
     charSetA M (c • x) = c • charSetA M x := by
   ext d
-  simp only [charSetA, Set.mem_setOf_eq, Set.mem_smul_set]
+  simp only [charSetA, Set.mem_ofPred_eq, Set.mem_smul_set]
   constructor
   · intro hd
     refine ⟨d / c, ?_, ?_⟩

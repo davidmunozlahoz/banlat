@@ -256,7 +256,7 @@ noncomputable def IsSigmaComplete.toSigmaCompleteBooleanAlgebra
       isLUB_sSup_of_countable := by
         intro s hs
         dsimp only [sup]
-        rw [dif_pos hs]
+        rw [dite_eq_left hs]
         constructor
         · intro a ha
           change (a : B) ≤ sSup ((↑) '' s)
@@ -280,7 +280,7 @@ theorem IsSigmaComplete.coe_sSup {A : BooleanSubalgebra B}
       (⟨sSup ((↑) '' s), hA.sSup_mem (h.image Subtype.val)
         (fun _ ⟨a, _, ha⟩ ↦ ha ▸ a.property)⟩ : A)
     else ⊥ : A) : B) = sSup ((↑) '' s)
-  rw [dif_pos hs]
+  rw [dite_eq_left hs]
 
 /-- Suprema of sequences in a `σ`-complete Boolean subalgebra are computed in
 the ambient Boolean algebra. -/

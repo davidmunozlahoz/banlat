@@ -349,7 +349,7 @@ private theorem gaugeNorm_one
   unfold OrderIdeal.gaugeNorm
   apply congrArg sInf
   ext c
-  simp only [Set.mem_setOf_eq]
+  simp only [Set.mem_ofPred_eq]
   have habs : e.toLinearIsometryEquiv |x| =
       |e.toLinearIsometryEquiv x| :=
     e.toVecLatEquiv.toVecLatHom.map_abs x

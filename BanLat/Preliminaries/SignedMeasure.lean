@@ -312,7 +312,7 @@ theorem exists_tv_limit_of_cauchy
     ∃ t : SignedMeasure α, ∀ ε > 0, ∃ N, ∀ n ≥ N,
       ((s n - t).totalVariation Set.univ).toReal < ε := by
   set μ := controlMeasure s
-  haveI : IsFiniteMeasure μ := instIsFiniteMeasure_controlMeasure s
+  have : IsFiniteMeasure μ := instIsFiniteMeasure_controlMeasure s
   have hsAC : ∀ n, s n ≪ᵥ μ.toENNRealVectorMeasure :=
     signedMeasure_absolutelyContinuous_controlMeasure s
   -- Densities of each `s n` w.r.t. μ

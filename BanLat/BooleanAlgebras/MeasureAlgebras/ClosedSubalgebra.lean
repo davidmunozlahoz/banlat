@@ -81,8 +81,8 @@ theorem isometry_subtype_restrictToSubalgebra (μ : MeasureAlgebra B)
       (@PseudoMetricSpace.toPseudoEMetricSpace B
         (@MetricSpace.toPseudoMetricSpace B μ.toMetricSpace))
       ((↑) : A → B) := by
-  letI := hA.toSigmaCompleteBooleanAlgebra
-  letI := μ.toMetricSpace
+  let := hA.toSigmaCompleteBooleanAlgebra
+  let := μ.toMetricSpace
   rw [μ.restrictToSubalgebra_metricSpace_eq_induced A hA]
   exact isometry_subtype_coe
 
@@ -119,8 +119,8 @@ theorem dense_restrictToSubalgebra_iff
       Dense S) ↔
     (letI := μ.toMetricSpace;
       Dense S) := by
-  letI := hA.toSigmaCompleteBooleanAlgebra
-  letI := μ.toMetricSpace
+  let := hA.toSigmaCompleteBooleanAlgebra
+  let := μ.toMetricSpace
   rw [μ.restrictToSubalgebra_metricSpace_eq_induced A hA]
 
 /-- A `σ`-complete Boolean subalgebra is complete for the metric induced by
@@ -131,8 +131,8 @@ theorem completeSpace_restrictToSubalgebra_induced
     letI := hA.toSigmaCompleteBooleanAlgebra
     letI := μ.toMetricSpace
     @CompleteSpace A (inferInstance : UniformSpace A) := by
-  letI := hA.toSigmaCompleteBooleanAlgebra
-  letI := μ.toMetricSpace
+  let := hA.toSigmaCompleteBooleanAlgebra
+  let := μ.toMetricSpace
   have hmetric := μ.restrictToSubalgebra_metricSpace_eq_induced A hA
   have huniform := congrArg
     (fun m : MetricSpace A ↦
@@ -154,7 +154,7 @@ theorem isClosedSubalgebra_iff_isSigmaComplete (μ : MeasureAlgebra B)
   · intro hA
     rw [BooleanSubalgebra.isSigmaComplete_iff_iSup_mem]
     intro a ha
-    letI := μ.toMetricSpace
+    let := μ.toMetricSpace
     change IsClosed (A : Set B) at hA
     apply hA.mem_of_tendsto (μ.tendsto_partialSups a)
     apply Filter.Eventually.of_forall
@@ -169,9 +169,9 @@ theorem isClosedSubalgebra_iff_isSigmaComplete (μ : MeasureAlgebra B)
       rw [partialSups_succ]
       exact A.sup_mem ih (ha _)
   · intro hA
-    letI := hA.toSigmaCompleteBooleanAlgebra
-    letI := μ.toMetricSpace
-    letI := μ.completeSpace_restrictToSubalgebra_induced A hA
+    let := hA.toSigmaCompleteBooleanAlgebra
+    let := μ.toMetricSpace
+    let := μ.completeSpace_restrictToSubalgebra_induced A hA
     change IsClosed (A : Set B)
     rw [← @Subtype.range_coe B (A : Set B)]
     exact isometry_subtype_coe.isUniformInducing.isComplete_range.isClosed
@@ -210,13 +210,13 @@ theorem coe_closure (μ : MeasureAlgebra B) (A : BooleanSubalgebra B) :
 /-- A Boolean subalgebra is contained in its closure for the measure metric. -/
 theorem le_closure (μ : MeasureAlgebra B) (A : BooleanSubalgebra B) :
     A ≤ μ.closure A := by
-  letI := μ.toMetricSpace
+  let := μ.toMetricSpace
   exact subset_closure
 
 /-- The closure of a Boolean subalgebra is closed in the measure metric. -/
 theorem isClosedSubalgebra_closure (μ : MeasureAlgebra B) (A : BooleanSubalgebra B) :
     μ.IsClosedSubalgebra (μ.closure A) := by
-  letI := μ.toMetricSpace
+  let := μ.toMetricSpace
   change IsClosed (μ.closure A : Set B)
   rw [μ.coe_closure A]
   exact isClosed_closure
@@ -225,7 +225,7 @@ theorem isClosedSubalgebra_closure (μ : MeasureAlgebra B) (A : BooleanSubalgebr
 theorem closure_eq_sigmaCompleteClosure (μ : MeasureAlgebra B) (A : BooleanSubalgebra B) :
     μ.closure A = BooleanSubalgebra.sigmaCompleteClosure (A : Set B) := by
   apply le_antisymm
-  · letI := μ.toMetricSpace
+  · let := μ.toMetricSpace
     change _root_.closure (A : Set B) ⊆
       (BooleanSubalgebra.sigmaCompleteClosure (A : Set B) : Set B)
     apply closure_minimal
@@ -246,7 +246,7 @@ theorem dense_iff_sigmaCompleteClosure_eq_top (μ : MeasureAlgebra B)
     letI := μ.toMetricSpace
     Dense (A : Set B) ↔
       BooleanSubalgebra.sigmaCompleteClosure (A : Set B) = ⊤ := by
-  letI := μ.toMetricSpace
+  let := μ.toMetricSpace
   rw [dense_iff_closure_eq, ← μ.coe_closure A, μ.closure_eq_sigmaCompleteClosure A]
   simp
 
@@ -278,7 +278,7 @@ private theorem subalgebraDensityCharacter_adjoin_le_mul
     μ.subalgebraDensityCharacter (A.adjoin b) ≤
       μ.subalgebraDensityCharacter A * μ.subalgebraDensityCharacter A := by
   unfold subalgebraDensityCharacter
-  letI := μ.toMetricSpace
+  let := μ.toMetricSpace
   have hinf : Continuous (fun p : B × B ↦ p.1 ⊓ p.2) := by
     have h := μ.isometry_compl.continuous.comp <|
       μ.lipschitzWith_sup.continuous.comp <|
@@ -340,13 +340,13 @@ private theorem subalgebraDensityCharacter_le_mk_of_le_closure
     (hDA : D ≤ A) (hAD : A ≤ μ.closure D) :
     μ.subalgebraDensityCharacter A ≤ Cardinal.mk D := by
   unfold subalgebraDensityCharacter
-  letI := μ.toMetricSpace
+  let := μ.toMetricSpace
   let D' := BooleanSubalgebra.comap A.subtype D
   have hD_dense : Dense (D' : Set A) := by
     rw [Metric.dense_iff]
     intro a r hr
     have ha := hAD a.property
-    letI := μ.toMetricSpace
+    let := μ.toMetricSpace
     change (a : B) ∈ _root_.closure (D : Set B) at ha
     rw [Metric.mem_closure_iff] at ha
     obtain ⟨d, hd, hda⟩ := ha r hr
@@ -379,7 +379,7 @@ theorem subalgebraDensityCharacter_sigmaCompleteClosure_iUnion_le
   classical
   dsimp only
   unfold subalgebraDensityCharacter at hden ⊢
-  letI := μ.toMetricSpace
+  let := μ.toMetricSpace
   have hex (i : ι) : ∃ S : Set (A i),
       Dense S ∧ Cardinal.mk S ≤ κ := by
     exact TopologicalSpace.densityCharacter_le_iff_exists_dense_mk_le.mp (hden i)
@@ -453,12 +453,12 @@ private theorem exists_measureAlgebraEquiv_closure_extends
     (μ.isClosedSubalgebra_closure A)
   let hD := (η.isClosedSubalgebra_iff_isSigmaComplete (η.closure D)).1
     (η.isClosedSubalgebra_closure D)
-  letI := hA.toSigmaCompleteBooleanAlgebra
-  letI := hD.toSigmaCompleteBooleanAlgebra
+  let := hA.toSigmaCompleteBooleanAlgebra
+  let := hD.toSigmaCompleteBooleanAlgebra
   let μA := μ.restrictToSubalgebra (μ.closure A) hA
   let ηD := η.restrictToSubalgebra (η.closure D) hD
-  letI := μ.toMetricSpace
-  letI := η.toMetricSpace
+  let := μ.toMetricSpace
+  let := η.toMetricSpace
   let A' := μ.subalgebraInClosure A
   let D' := η.subalgebraInClosure D
   have hA_dense : Dense (A' : Set (μ.closure A)) := by

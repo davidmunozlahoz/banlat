@@ -40,8 +40,8 @@ namespace IsSymmetricStable
 /-- If `μ` and `ν` are symmetric `q`-stable measures with the same scale parameter, then `μ = ν`. -/
 lemma eq (hμ : IsSymmetricStable μ q c)
     (hν : IsSymmetricStable ν q c) : μ = ν := by
-  letI := hμ.isProbabilityMeasure
-  letI := hν.isProbabilityMeasure
+  let := hμ.isProbabilityMeasure
+  let := hν.isProbabilityMeasure
   apply Measure.ext_of_charFun
   funext t
   rw [hμ.charFun_eq, hν.charFun_eq]
@@ -60,8 +60,8 @@ lemma scale_eq (hμc : IsSymmetricStable μ q c)
 lemma map_mul (hμ : IsSymmetricStable μ q c) (a : ℝ) :
     IsSymmetricStable (μ.map (a * ·)) q (c * ‖a‖₊ ^ q) := by
   refine ⟨hμ.index_pos, hμ.index_le_two, ?_, ?_⟩
-  · letI := hμ.isProbabilityMeasure
-    exact μ.isProbabilityMeasure_map (by fun_prop)
+  · let := hμ.isProbabilityMeasure
+    infer_instance
   · intro t
     rw [charFun_map_mul, hμ.charFun_eq]
     congr 2
@@ -84,8 +84,8 @@ lemma map_neg_eq_self (hμ : IsSymmetricStable μ q c) :
 their convolution is symmetric `q`-stable with scale parameter `c + d`. -/
 lemma conv (hμ : IsSymmetricStable μ q c) (hν : IsSymmetricStable ν q d) :
     IsSymmetricStable (μ ∗ ν) q (c + d) := by
-  letI := hμ.isProbabilityMeasure
-  letI := hν.isProbabilityMeasure
+  let := hμ.isProbabilityMeasure
+  let := hν.isProbabilityMeasure
   refine ⟨hμ.index_pos, hμ.index_le_two, inferInstance, ?_⟩
   intro t
   rw [charFun_conv, hμ.charFun_eq, hν.charFun_eq, ← Complex.exp_add]

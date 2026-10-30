@@ -31,7 +31,7 @@ theorem tendsto_of_monotone_bddAbove [IsOrderContinuousNorm X]
     ∃ x, IsLUB (Set.range u) x ∧ Filter.Tendsto u Filter.atTop (nhds x) := by
   -- Order continuity implies order completeness, hence σ-order completeness;
   -- σ-OC gives the LUB and σ-order continuity of the norm gives convergence.
-  letI : ConditionallyCompleteLattice X :=
+  let : ConditionallyCompleteLattice X :=
     conditionallyCompleteLatticeOfIsOrderContinuousNorm
   have hx : IsLUB (Set.range u) (sSup (Set.range u)) :=
     ⟨fun _ ha => le_csSup hbd ha,

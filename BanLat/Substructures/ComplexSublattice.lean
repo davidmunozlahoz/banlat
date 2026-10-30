@@ -293,7 +293,7 @@ theorem subtype_apply (z : W) : W.subtype z = (z : Z) := by
 
 /-- Complex vector sublattices are ordered by inclusion. -/
 instance instPartialOrder : PartialOrder (ComplexVectorSublattice Z) := by
-  exact .ofSetLike (ComplexVectorSublattice Z) Z
+  exact .ofSetLike (ComplexVectorSublattice Z)
 
 /-- An inclusion between complex vector sublattices is a complex lattice homomorphism. -/
 noncomputable def inclusion {W V : ComplexVectorSublattice Z} (h : W ≤ V) :

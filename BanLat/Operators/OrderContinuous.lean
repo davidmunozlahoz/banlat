@@ -93,9 +93,9 @@ private lemma isGLB_range_abs_of_orderConvergesTo_zero
     (hx : OrderConvergesTo x 0) :
     IsGLB (Set.range fun i => |x i|) 0 := by
   rcases hx with ⟨κ, hκpre, hκdir, hκnon, r, _hranti, _hrnn, hrglb, hrevent⟩
-  letI : Preorder κ := hκpre
-  letI : IsDirected κ (· ≤ ·) := hκdir
-  letI : Nonempty κ := hκnon
+  let : Preorder κ := hκpre
+  let : IsDirected κ (· ≤ ·) := hκdir
+  let : Nonempty κ := hκnon
   refine ⟨?_, ?_⟩
   · rintro _ ⟨i, rfl⟩
     exact abs_nonneg _
@@ -112,41 +112,41 @@ private lemma isGLB_range_abs_of_orderConvergesTo_zero
 
 private lemma orderConvergesTo_abs_sub_zero
     {Z : Type w} [AddCommGroup Z] [Lattice Z] [IsOrderedAddMonoid Z]
-    {ι : Type u} [Preorder ι] [IsDirected ι (· ≤ ·)] [Nonempty ι]
+    {ι : Type u} [Preorder ι]
     {x : ι → Z} {a : Z} (hx : OrderConvergesTo x a) :
     OrderConvergesTo (fun i => |x i - a|) 0 := by
   rcases hx with ⟨κ, hκpre, hκdir, hκnon, r, hranti, hrnn, hrglb, hrevent⟩
-  letI : Preorder κ := hκpre
-  letI : IsDirected κ (· ≤ ·) := hκdir
-  letI : Nonempty κ := hκnon
+  let : Preorder κ := hκpre
+  let : IsDirected κ (· ≤ ·) := hκdir
+  let : Nonempty κ := hκnon
   refine ⟨κ, inferInstance, inferInstance, inferInstance, r, hranti, hrnn, hrglb, ?_⟩
   intro k
   exact (hrevent k).mono fun i hi => by
     simpa [sub_zero, abs_abs] using hi
 
 private lemma orderConvergesTo_of_sub_zero
-    {Z : Type w} [AddCommGroup Z] [Lattice Z] [IsOrderedAddMonoid Z]
-    {ι : Type u} [Preorder ι] [IsDirected ι (· ≤ ·)] [Nonempty ι]
+    {Z : Type w} [AddCommGroup Z] [Lattice Z]
+    {ι : Type u} [Preorder ι]
     {x : ι → Z} {a : Z} (hx : OrderConvergesTo (fun i => x i - a) 0) :
     OrderConvergesTo x a := by
   rcases hx with ⟨κ, hκpre, hκdir, hκnon, r, hranti, hrnn, hrglb, hrevent⟩
-  letI : Preorder κ := hκpre
-  letI : IsDirected κ (· ≤ ·) := hκdir
-  letI : Nonempty κ := hκnon
+  let : Preorder κ := hκpre
+  let : IsDirected κ (· ≤ ·) := hκdir
+  let : Nonempty κ := hκnon
   refine ⟨κ, inferInstance, inferInstance, inferInstance, r, hranti, hrnn, hrglb, ?_⟩
   intro k
   exact (hrevent k).mono fun i hi => by
     simpa [sub_zero] using hi
 
 private lemma orderConvergesTo_zero_of_abs_le
-    {Z : Type w} [AddCommGroup Z] [Lattice Z] [IsOrderedAddMonoid Z]
-    {ι : Type u} [Preorder ι] [IsDirected ι (· ≤ ·)] [Nonempty ι] {x y : ι → Z}
+    {Z : Type w} [AddCommGroup Z] [Lattice Z]
+    {ι : Type u} [Preorder ι] {x y : ι → Z}
     (hy : OrderConvergesTo y 0) (hle : ∀ i, |x i| ≤ y i) :
     OrderConvergesTo x 0 := by
   rcases hy with ⟨κ, hκpre, hκdir, hκnon, r, hranti, hrnn, hrglb, hrevent⟩
-  letI : Preorder κ := hκpre
-  letI : IsDirected κ (· ≤ ·) := hκdir
-  letI : Nonempty κ := hκnon
+  let : Preorder κ := hκpre
+  let : IsDirected κ (· ≤ ·) := hκdir
+  let : Nonempty κ := hκnon
   refine ⟨κ, inferInstance, inferInstance, inferInstance, r, hranti, hrnn, hrglb, ?_⟩
   intro k
   exact (hrevent k).mono fun i hi => by
@@ -175,9 +175,9 @@ private lemma positive_orderContinuous_of_decreasing_abs_glb_zero {S : OrderBoun
     IsOrderContinuousOp S.toLinearMap := by
   intro ι _ _ _ x a hx
   rcases hx with ⟨κ, hκpre, hκdir, hκnon, r, hranti, hrnn, hrglb, hrevent⟩
-  letI : Preorder κ := hκpre
-  letI : IsDirected κ (· ≤ ·) := hκdir
-  letI : Nonempty κ := hκnon
+  let : Preorder κ := hκpre
+  let : IsDirected κ (· ≤ ·) := hκdir
+  let : Nonempty κ := hκnon
   have hSpos : Positive S.toLinearMap := fun y hy => by
     simpa only [OrderBoundedHom.zero_apply, OrderBoundedHom.toLinearMap_apply] using
       OrderBoundedHom.le_iff.mp hS y hy
@@ -195,7 +195,7 @@ private lemma positive_orderContinuous_of_decreasing_abs_glb_zero {S : OrderBoun
     rwa [hrange] at hglb_abs
   let rangeIdx : Type v := Set.range fun k => S (r k)
   let lambdaIdx : Type v := OrderDual rangeIdx
-  letI : IsDirected lambdaIdx (· ≤ ·) := ⟨fun a b => by
+  let : IsDirected lambdaIdx (· ≤ ·) := ⟨fun a b => by
     rcases (OrderDual.ofDual a : rangeIdx).2 with ⟨ka, hka⟩
     rcases (OrderDual.ofDual b : rangeIdx).2 with ⟨kb, hkb⟩
     obtain ⟨m, hkam, hkbm⟩ := directed_of (· ≤ ·) ka kb
@@ -208,7 +208,7 @@ private lemma positive_orderContinuous_of_decreasing_abs_glb_zero {S : OrderBoun
       change S (r m) ≤ ((OrderDual.ofDual b : rangeIdx) : Y)
       rw [← hkb]
       exact hSmono (hranti hkbm)⟩
-  letI : Nonempty lambdaIdx := by
+  let : Nonempty lambdaIdx := by
     obtain ⟨k⟩ := hκnon
     exact ⟨OrderDual.toDual (⟨S (r k), ⟨k, rfl⟩⟩ : rangeIdx)⟩
   have hglb_lift :
@@ -266,11 +266,11 @@ private lemma posPart_decreasing_abs_glb_zero (T : OrderBoundedHom X Y)
       have hz_le_sub : ∀ u : X, 0 ≤ u → u ≤ x0 → z ≤ T⁺ x0 - T u := by
         intro u hu0 hux
         let τ : Type u := {j : ι // i0 ≤ j}
-        letI : Preorder τ := inferInstance
-        letI : IsDirected τ (· ≤ ·) := ⟨fun a b => by
+        let : Preorder τ := inferInstance
+        let : IsDirected τ (· ≤ ·) := ⟨fun a b => by
           obtain ⟨k, hak, hbk⟩ := directed_of (· ≤ ·) a.1 b.1
           exact ⟨⟨k, le_trans a.2 hak⟩, hak, hbk⟩⟩
-        letI : Nonempty τ := ⟨⟨i0, le_rfl⟩⟩
+        let : Nonempty τ := ⟨⟨i0, le_rfl⟩⟩
         let y : τ → X := fun j => u ⊓ x j.1
         have hy_anti : Antitone y := fun a b hab => by
           exact inf_le_inf_left u (hanti hab)
@@ -446,13 +446,13 @@ variable {X : Type u} [NormedAddCommGroup X] [Lattice X] [IsOrderedAddMonoid X]
   [NormedVectorLattice X] [CompleteSpace X] [IsOrderContinuousNorm X]
 
 private lemma real_orderConvergesTo_of_tendsto
-    {ι : Type u} [Preorder ι] [IsDirected ι (· ≤ ·)] [Nonempty ι]
+    {ι : Type u} [Preorder ι]
     {x : ι → ℝ} {a : ℝ} (hx : Filter.Tendsto x Filter.atTop (nhds a)) :
     OrderConvergesTo x a := by
   let Pos : Type := {ε : ℝ // 0 < ε}
   let κ : Type := OrderDual Pos
-  haveI : Nonempty κ := ⟨OrderDual.toDual (⟨1, by norm_num⟩ : Pos)⟩
-  haveI : IsDirected κ (· ≤ ·) := by
+  have : Nonempty κ := ⟨OrderDual.toDual (⟨1, by norm_num⟩ : Pos)⟩
+  have : IsDirected κ (· ≤ ·) := by
     refine ⟨fun p q => ?_⟩
     let p' : Pos := OrderDual.ofDual p
     let q' : Pos := OrderDual.ofDual q
@@ -504,7 +504,7 @@ theorem functional_orderContinuous_of_orderContinuousNorm (f : OrderBoundedHom X
   intro ι _ _ _ x a hx
   have hx_tend : Filter.Tendsto x Filter.atTop (nhds a) :=
     tendsto_of_orderConvergesTo_of_isOrderContinuousNorm hx
-  letI : BanachLattice X := {}
+  let : BanachLattice X := {}
   have hf_cont : Continuous f.toLinearMap := IsOrderBounded.continuous f.isOrderBounded'
   have hf_tend : Filter.Tendsto (fun i => f.toLinearMap (x i)) Filter.atTop
       (nhds (f.toLinearMap a)) :=
@@ -700,10 +700,10 @@ private lemma decomposition_OrderContinuousOperator (T : OrderBoundedHom X Y) :
     ∃ S R : OrderBoundedHom X Y,
       S ∈ OrderContinuousOperator (X := X) (Y := Y) ∧
         R ∈ disjointComplement (OrderContinuousOperator (X := X) (Y := Y)) ∧ T = S + R := by
-  letI : ConditionallyCompleteLattice (OrderBoundedHom X Y) :=
+  let : ConditionallyCompleteLattice (OrderBoundedHom X Y) :=
     @conditionallyCompleteLatticeOfPosSet (OrderBoundedHom X Y) _ _ _
       (fun {S} _ hne hbdd => OrderBoundedHom.exists_isLUB (S := S) hne hbdd)
-  haveI : HasProjectionProperty (OrderBoundedHom X Y) :=
+  have : HasProjectionProperty (OrderBoundedHom X Y) :=
     HasProjectionProperty.of_isOrderComplete
   obtain ⟨B, hB⟩ := exists_band_coe_eq_OrderContinuousOperator (X := X) (Y := Y)
   obtain ⟨P, hP⟩ := HasProjectionProperty.exists_projectionBand B
@@ -721,10 +721,10 @@ theorem ogasawara_theorem
     [IsOrderedAddMonoid Y] [VectorLattice Y] :
     ∃ B : ProjectionBand (OrderBoundedHom X Y),
       (B : Set (OrderBoundedHom X Y)) = OrderContinuousOperator (X := X) (Y := Y) := by
-  letI : ConditionallyCompleteLattice (OrderBoundedHom X Y) :=
+  let : ConditionallyCompleteLattice (OrderBoundedHom X Y) :=
     @conditionallyCompleteLatticeOfPosSet (OrderBoundedHom X Y) _ _ _
       (fun {S} _ hne hbdd => OrderBoundedHom.exists_isLUB (S := S) hne hbdd)
-  haveI : HasProjectionProperty (OrderBoundedHom X Y) :=
+  have : HasProjectionProperty (OrderBoundedHom X Y) :=
     HasProjectionProperty.of_isOrderComplete
   obtain ⟨B, hB⟩ := exists_band_coe_eq_OrderContinuousOperator (X := X) (Y := Y)
   obtain ⟨P, hP⟩ := HasProjectionProperty.exists_projectionBand B

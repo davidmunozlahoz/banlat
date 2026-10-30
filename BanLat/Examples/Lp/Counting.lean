@@ -47,8 +47,8 @@ lemma memLp_count_iff_memℓp (f : α → ℝ) :
   · have hp0 : p ≠ 0 := ne_of_gt
       (lt_of_lt_of_le (by norm_num : (0 : ENNReal) < 1) Fact.out)
     have hpos : 0 < p.toReal := ENNReal.toReal_pos hp0 hp
-    rw [MemLp, and_iff_right hsm,
-      eLpNorm_lt_top_iff_lintegral_rpow_enorm_lt_top hp0 hp,
+    rw [MemLp,
+      eLpNorm_lt_top_iff_lintegral_rpow_enorm_lt_top hp0 hp hsm,
       memℓp_gen_iff hpos]
     simpa [hasFiniteIntegral_iff_enorm, Real.enorm_rpow_of_nonneg,
       Real.norm_eq_abs, abs_of_nonneg (Real.rpow_nonneg _ _)] using
@@ -68,14 +68,14 @@ private lemma norm_count_eq_lp
   rcases eq_or_ne p ∞ with hp | hp
   · -- For `p = ∞`, both norms are the supremum of the pointwise norms.
     subst hp
-    rw [Lp.norm_def, eLpNorm_exponent_top, eLpNormEssSup_count,
+    rw [Lp.norm_def, eLpNorm_exponent_top (Lp.aestronglyMeasurable f), eLpNormEssSup_count,
       ENNReal.toReal_iSup (fun _ => enorm_ne_top), lp.norm_eq_ciSup]
     simp
   · -- For finite `p`, integration against counting measure becomes summation.
     have hp0 : p ≠ 0 := ne_of_gt
       (lt_of_lt_of_le (by norm_num : (0 : ENNReal) < 1) Fact.out)
     have hpos : 0 < p.toReal := ENNReal.toReal_pos hp0 hp
-    rw [Lp.norm_def, eLpNorm_eq_lintegral_rpow_enorm_toReal hp0 hp,
+    rw [Lp.norm_def, eLpNorm_eq_lintegral_rpow_enorm_toReal hp0 hp (Lp.aestronglyMeasurable f),
       lintegral_count, lp.norm_eq_tsum_rpow hpos]
     simp_rw [← ofReal_norm,
       ENNReal.ofReal_rpow_of_nonneg (norm_nonneg _) hpos.le]

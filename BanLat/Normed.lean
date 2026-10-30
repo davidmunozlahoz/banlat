@@ -147,7 +147,7 @@ private theorem tendsto_of_monotone_weak_tendsto_aux
     (mem_closure_convexHull_tail_of_weak_tendsto hweak i₀) ε hε
   obtain ⟨κ, hκ, w, z, hw, hw_one, hz, hwy⟩ :=
     mem_convexHull_iff_exists_fintype.mp hy
-  letI : Fintype κ := hκ
+  let : Fintype κ := hκ
   let r : κ → ι := fun a => (hz a).choose
   have hzr (a : κ) : u (r a) = z a := (hz a).choose_spec.2
   obtain ⟨j, hj⟩ := Finite.exists_le r

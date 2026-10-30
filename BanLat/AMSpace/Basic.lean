@@ -98,10 +98,10 @@ private theorem principal_strongOrderUnit [IsVLArchimedean X] {e : X} (he : 0 �
     letI : IsOrderedAddMonoid ↥(principal e) := instIsOrderedAddMonoidPrincipal e
     letI : NormedVectorLattice ↥(principal e) := principalNormedVectorLattice e
     StrongOrderUnit (⟨e, self_mem_principal e⟩ : ↥(principal e)) := by
-  letI : NormedAddCommGroup ↥(principal e) := principalNormedAddCommGroup e
-  letI : Lattice ↥(principal e) := instLatticePrincipal e
-  letI : IsOrderedAddMonoid ↥(principal e) := instIsOrderedAddMonoidPrincipal e
-  letI : NormedVectorLattice ↥(principal e) := principalNormedVectorLattice e
+  let : NormedAddCommGroup ↥(principal e) := principalNormedAddCommGroup e
+  let : Lattice ↥(principal e) := instLatticePrincipal e
+  let : IsOrderedAddMonoid ↥(principal e) := instIsOrderedAddMonoidPrincipal e
+  let : NormedVectorLattice ↥(principal e) := principalNormedVectorLattice e
   refine ⟨he, ?_⟩
   intro x
   obtain ⟨c, hc, hcx⟩ := mem_principal.mp x.2
@@ -116,10 +116,10 @@ private theorem principal_norm_eq_gaugeNorm_unit [IsVLArchimedean X] {e : X} :
     letI : NormedVectorLattice ↥(principal e) := principalNormedVectorLattice e
     ∀ x : ↥(principal e),
       ‖x‖ = gaugeNorm (⟨e, self_mem_principal e⟩ : ↥(principal e)) x := by
-  letI : NormedAddCommGroup ↥(principal e) := principalNormedAddCommGroup e
-  letI : Lattice ↥(principal e) := instLatticePrincipal e
-  letI : IsOrderedAddMonoid ↥(principal e) := instIsOrderedAddMonoidPrincipal e
-  letI : NormedVectorLattice ↥(principal e) := principalNormedVectorLattice e
+  let : NormedAddCommGroup ↥(principal e) := principalNormedAddCommGroup e
+  let : Lattice ↥(principal e) := instLatticePrincipal e
+  let : IsOrderedAddMonoid ↥(principal e) := instIsOrderedAddMonoidPrincipal e
+  let : NormedVectorLattice ↥(principal e) := principalNormedVectorLattice e
   intro x
   change gaugeNorm e (x : X) = gaugeNorm (⟨e, self_mem_principal e⟩ : ↥(principal e)) x
   rfl
@@ -131,10 +131,10 @@ private theorem principal_norm_add_eq_max_of_inf_eq_zero [IsVLArchimedean X]
     letI : IsOrderedAddMonoid ↥(principal e) := instIsOrderedAddMonoidPrincipal e
     letI : NormedVectorLattice ↥(principal e) := principalNormedVectorLattice e
     ∀ {x y : ↥(principal e)}, x ⊓ y = 0 → ‖x + y‖ = max ‖x‖ ‖y‖ := by
-  letI : NormedAddCommGroup ↥(principal e) := principalNormedAddCommGroup e
-  letI : Lattice ↥(principal e) := instLatticePrincipal e
-  letI : IsOrderedAddMonoid ↥(principal e) := instIsOrderedAddMonoidPrincipal e
-  letI : NormedVectorLattice ↥(principal e) := principalNormedVectorLattice e
+  let : NormedAddCommGroup ↥(principal e) := principalNormedAddCommGroup e
+  let : Lattice ↥(principal e) := instLatticePrincipal e
+  let : IsOrderedAddMonoid ↥(principal e) := instIsOrderedAddMonoidPrincipal e
+  let : NormedVectorLattice ↥(principal e) := principalNormedVectorLattice e
   intro x y hxy
   have hx : 0 ≤ x := by rw [← hxy]; exact inf_le_left
   have hy : 0 ≤ y := by rw [← hxy]; exact inf_le_right

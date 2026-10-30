@@ -103,7 +103,7 @@ theorem isLUB_sSup (S : Set (OrderDualSpace X)) (hbdd : BddAbove S)
   change IsLUB S (if h : S.Nonempty ∧ BddAbove S then
       (OrderBoundedHom.exists_isLUB h.1 h.2).choose
     else 0)
-  rw [dif_pos ⟨hne, hbdd⟩]
+  rw [dite_eq_left ⟨hne, hbdd⟩]
   exact (OrderBoundedHom.exists_isLUB hne hbdd).choose_spec
 
 /-- The order dual is conditionally complete. -/

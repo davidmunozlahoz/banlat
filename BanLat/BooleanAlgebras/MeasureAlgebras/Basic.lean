@@ -374,8 +374,8 @@ preserves the measure. -/
 @[simp]
 theorem map_measure (e : PartialEquiv μ η) (a : e.source) :
     η (e.toOrderIso a : C) = μ (a : B) := by
-  letI := e.source_isSigmaComplete.toSigmaCompleteBooleanAlgebra
-  letI := e.target_isSigmaComplete.toSigmaCompleteBooleanAlgebra
+  let := e.source_isSigmaComplete.toSigmaCompleteBooleanAlgebra
+  let := e.target_isSigmaComplete.toSigmaCompleteBooleanAlgebra
   exact e.toMeasureAlgebraEquiv.map_measure a
 
 /-- Let `B`and `C` be Boolean algebra. Suppose that `B` is trivial iff so is `C`.

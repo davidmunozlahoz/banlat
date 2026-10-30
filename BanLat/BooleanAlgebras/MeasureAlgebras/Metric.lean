@@ -82,7 +82,7 @@ variable (μ : MeasureAlgebra B)
 theorem isometry_compl :
     letI := μ.toMetricSpace
     Isometry (fun a : B ↦ aᶜ) := by
-  letI := μ.toMetricSpace
+  let := μ.toMetricSpace
   rw [isometry_iff_dist_eq]
   intro a b
   simp only [dist_eq_measure_symmDiff, compl_symmDiff_compl]
@@ -101,8 +101,8 @@ theorem isometry (e : MeasureAlgebraEquiv μ ν) :
     letI := μ.toMetricSpace
     letI := ν.toMetricSpace
     Isometry e := by
-  letI := μ.toMetricSpace
-  letI := ν.toMetricSpace
+  let := μ.toMetricSpace
+  let := ν.toMetricSpace
   rw [isometry_iff_dist_eq]
   intro a b
   simp only [MeasureAlgebra.dist_eq_measure_symmDiff]
@@ -120,7 +120,7 @@ variable (μ : MeasureAlgebra B)
 theorem lipschitzWith_sup :
     letI := μ.toMetricSpace
     LipschitzWith 2 (fun p : B × B ↦ p.1 ⊔ p.2) := by
-  letI := μ.toMetricSpace
+  let := μ.toMetricSpace
   apply LipschitzWith.of_dist_le_mul
   intro p q
   rw [Prod.dist_eq]
@@ -155,8 +155,8 @@ noncomputable def IsSeparable : Prop :=
 theorem aleph0_le_densityCharacter_of_isAtomless [Nontrivial B]
     (μ : MeasureAlgebra B) (hB : BooleanAlgebra.IsAtomless B) :
     Cardinal.aleph0 ≤ μ.densityCharacter := by
-  letI := μ.toMetricSpace
-  letI : Infinite B := BooleanAlgebra.infinite_of_isAtomless hB
+  let := μ.toMetricSpace
+  let : Infinite B := BooleanAlgebra.infinite_of_isAtomless hB
   unfold densityCharacter
   exact TopologicalSpace.aleph0_le_densityCharacter B
 
@@ -166,7 +166,7 @@ countable supremum `⨆ n, a n`. -/
 theorem tendsto_partialSups (a : ℕ → B) :
     letI := μ.toMetricSpace
     Filter.Tendsto (partialSups a) Filter.atTop (nhds (⨆ n, a n)) := by
-  letI := μ.toMetricSpace
+  let := μ.toMetricSpace
   rw [tendsto_iff_dist_tendsto_zero]
   have hle : ∀ n, partialSups a n ≤ ⨆ n, a n := fun n ↦
     partialSups_le a n _ fun j _ ↦ SigmaCompleteBooleanAlgebra.le_iSup_nat a j
@@ -285,7 +285,7 @@ private theorem tendsto_symmDiffLimit (g : ℕ → B)
     (h : ∀ n, μ (g n ∆ g (n + 1)) ≤ (2⁻¹ : ℝ≥0∞) ^ (n + 1)) :
     (letI := μ.toMetricSpace
      Filter.Tendsto g Filter.atTop (nhds (symmDiffLimit g))) := by
-  letI := μ.toMetricSpace
+  let := μ.toMetricSpace
   rw [tendsto_iff_dist_tendsto_zero]
   have hdist : ∀ n, dist (g n) (symmDiffLimit g) ≤
       ((2⁻¹ : ℝ≥0∞) ^ n).toReal := by
@@ -305,7 +305,7 @@ private theorem tendsto_symmDiffLimit (g : ℕ → B)
 theorem completeSpace :
     letI := μ.toMetricSpace
     CompleteSpace B := by
-  letI := μ.toMetricSpace
+  let := μ.toMetricSpace
   apply Metric.complete_of_cauchySeq_tendsto
   intro u hu
   have hbound_pos : ∀ n, 0 < ((2⁻¹ : ℝ≥0∞) ^ (n + 1)).toReal := by
@@ -337,8 +337,8 @@ variable {μ : MeasureAlgebra B} {ν : MeasureAlgebra C}
 theorem densityCharacter_eq (e : MeasureAlgebraEquiv μ ν) :
     Cardinal.lift.{u} ν.densityCharacter =
       Cardinal.lift.{v} μ.densityCharacter := by
-  letI := μ.toMetricSpace
-  letI := ν.toMetricSpace
+  let := μ.toMetricSpace
+  let := ν.toMetricSpace
   let h : B ≃ₜ C :=
     { toEquiv := e.toRelIso.toEquiv
       continuous_toFun := e.isometry.continuous
@@ -363,8 +363,8 @@ private theorem isometry_coe_orderIso
     letI := μ.toMetricSpace
     letI := ν.toMetricSpace
     Isometry (fun a : A ↦ (e a : C)) := by
-  letI := μ.toMetricSpace
-  letI := ν.toMetricSpace
+  let := μ.toMetricSpace
+  let := ν.toMetricSpace
   rw [isometry_iff_dist_eq]
   intro a b
   change (ν (symmDiff (e a : C) (e b : C))).toReal =
@@ -389,9 +389,9 @@ private theorem isometry_extend
     letI := ν.toMetricSpace
     letI := ν.completeSpace
     Isometry (hA.extend f) := by
-  letI := μ.toMetricSpace
-  letI := ν.toMetricSpace
-  letI := ν.completeSpace
+  let := μ.toMetricSpace
+  let := ν.toMetricSpace
+  let := ν.completeSpace
   rw [isometry_iff_dist_eq]
   apply isClosed_property2
     (p := fun a b : B ↦ dist (hA.extend f a) (hA.extend f b) = dist a b)
@@ -424,9 +424,9 @@ private theorem extend_map_sup
     letI := ν.toMetricSpace
     letI := ν.completeSpace
     ∀ a b : B, hA.extend f (a ⊔ b) = hA.extend f a ⊔ hA.extend f b := by
-  letI := μ.toMetricSpace
-  letI := ν.toMetricSpace
-  letI := ν.completeSpace
+  let := μ.toMetricSpace
+  let := ν.toMetricSpace
+  let := ν.completeSpace
   apply isClosed_property2
     (p := fun a b : B ↦ hA.extend f (a ⊔ b) = hA.extend f a ⊔ hA.extend f b)
       hA.denseRange_val
@@ -455,10 +455,10 @@ theorem exists_measureAlgebraEquiv_of_dense_booleanSubalgebra_orderIso
     (he : ∀ a : A, ν (e a : C) = μ (a : B)) :
     ∃ f : MeasureAlgebraEquiv μ ν,
       ∀ a : A, f (a : B) = (e a : C) := by
-  letI := μ.toMetricSpace
-  letI := ν.toMetricSpace
-  letI := μ.completeSpace
-  letI := ν.completeSpace
+  let := μ.toMetricSpace
+  let := ν.toMetricSpace
+  let := μ.completeSpace
+  let := ν.completeSpace
   have h_iso : Isometry (fun a : A ↦ (e a : C)) := by
     exact isometry_coe_orderIso A D e he
   have he_symm (d : D) : μ (e.symm d : B) = ν (d : C) := by

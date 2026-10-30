@@ -98,7 +98,7 @@ theorem exists_L1_banachLatEquiv_of_principalBandModels [ALSpace X]
       (Band.principal (z : X)).toVectorSublattice
       (Lp ℝ 1 (μ z)) :=
     fun z => (hT z).some
-  letI : ∀ z : Λ, MeasurableSpace (Ω z) := mΩ
+  let : ∀ z : Λ, MeasurableSpace (Ω z) := mΩ
   refine ⟨(z : Λ) × Ω z, inferInstance,
     Measure.sum (fun z => (μ z).map (Sigma.mk z)), ?_⟩
   set ν := Measure.sum (fun z : Λ => (μ z).map (Sigma.mk z)) with hν_def
@@ -132,11 +132,13 @@ theorem exists_L1_banachLatEquiv_of_principalBandModels [ALSpace X]
     intro z; exact (Lp.stronglyMeasurable (fL z x)).measurable
   have heLpNorm : ∀ x, eLpNorm (φ x) 1 ν = ∑' z : Λ, ↑‖fL z x‖₊ := by
     intro x
-    rw [eLpNorm_one_eq_lintegral_enorm, hν_def, lintegral_sum_measure]
+    rw [eLpNorm_one_eq_lintegral_enorm (hφ_meas x).aestronglyMeasurable, hν_def,
+      lintegral_sum_measure]
     congr 1; ext z
     rw [(measurableEmbedding_sigma_mk z).lintegral_map,
       ← eLpNorm_one_eq_lintegral_enorm, Lp.nnnorm_def,
       ENNReal.coe_toNNReal (Lp.eLpNorm_ne_top _)]
+    exact Lp.aestronglyMeasurable (fL z x)
   have hfL_norm_eq : ∀ z x,
       ‖fL z x‖ = ‖Band.principalBandProjection (z : X) x‖ :=
     fun z x => (T z).toLinearIsometryEquiv.norm_map _
@@ -149,9 +151,8 @@ theorem exists_L1_banachLatEquiv_of_principalBandModels [ALSpace X]
       (by simp_rw [coe_nnnorm]; exact (hfL_hasSum x).summable)
   have hφ_memLp : ∀ x, MemLp (φ x) 1 ν := by
     intro x
-    exact ⟨(hφ_meas x).stronglyMeasurable.aestronglyMeasurable,
-      heLpNorm x ▸ (ENNReal.coe_tsum (hfL_nnsummable x)).symm ▸
-        ENNReal.coe_lt_top⟩
+    exact memLp_iff.2 <| heLpNorm x ▸ (ENNReal.coe_tsum (hfL_nnsummable x)).symm ▸
+      ENNReal.coe_lt_top
   let Φ (x : X) : Lp ℝ 1 ν := (hφ_memLp x).toLp (φ x)
   have hΦ_norm : ∀ x, ‖Φ x‖ = ‖x‖ := by
     intro x; rw [Lp.norm_toLp, heLpNorm x]
@@ -197,15 +198,17 @@ theorem exists_L1_banachLatEquiv_of_principalBandModels [ALSpace X]
         (measurableEmbedding_sigma_mk z).measurable
     have hg_fiber_memLp : ∀ z : Λ,
         MemLp (fun ω => (g : (z : Λ) × Ω z → ℝ) ⟨z, ω⟩) 1 (μ z) := by
-      intro z; refine ⟨(hg_fiber_sm z).aestronglyMeasurable, ?_⟩
+      intro z; refine memLp_iff.2 ?_
       calc eLpNorm (fun ω => (g : _ → ℝ) ⟨z, ω⟩) 1 (μ z)
-          = ∫⁻ ω, ‖(g : _ → ℝ) ⟨z, ω⟩‖ₑ ∂(μ z) := eLpNorm_one_eq_lintegral_enorm
+          = ∫⁻ ω, ‖(g : _ → ℝ) ⟨z, ω⟩‖ₑ ∂(μ z) :=
+            eLpNorm_one_eq_lintegral_enorm (hg_fiber_sm z).aestronglyMeasurable
         _ = ∫⁻ a, ‖(g : _ → ℝ) a‖ₑ ∂((μ z).map (Sigma.mk z)) :=
             ((measurableEmbedding_sigma_mk (β := Ω) z).lintegral_map
               fun a => ‖(g : _ → ℝ) a‖ₑ).symm
         _ ≤ ∫⁻ a, ‖(g : _ → ℝ) a‖ₑ ∂ν :=
-            lintegral_mono' (Measure.le_sum _ z) (le_refl _)
-        _ = eLpNorm (↑g) 1 ν := eLpNorm_one_eq_lintegral_enorm.symm
+            lintegral_mono' (Measure.le_sum (fun z => (μ z).map (Sigma.mk z)) z) le_rfl
+        _ = eLpNorm (↑g) 1 ν :=
+            (eLpNorm_one_eq_lintegral_enorm (Lp.aestronglyMeasurable g)).symm
         _ = ↑‖g‖₊ := by
               rw [Lp.nnnorm_def, ENNReal.coe_toNNReal (Lp.eLpNorm_ne_top _)]
         _ < ⊤ := ENNReal.coe_lt_top
@@ -218,7 +221,7 @@ theorem exists_L1_banachLatEquiv_of_principalBandModels [ALSpace X]
     have heLpNorm_decomp : eLpNorm (↑g) 1 ν =
         ∑' z : ↑Λ,
           eLpNorm (fun ω => (g : _ → ℝ) ⟨z, ω⟩) 1 (μ z) := by
-      rw [eLpNorm_one_eq_lintegral_enorm]
+      rw [eLpNorm_one_eq_lintegral_enorm (Lp.aestronglyMeasurable g)]
       change ∫⁻ x, ‖(g : _ → ℝ) x‖ₑ ∂Measure.sum
           (fun z : ↑Λ => Measure.map (Sigma.mk z) (μ z)) = _
       rw [lintegral_sum_measure]
@@ -226,6 +229,7 @@ theorem exists_L1_banachLatEquiv_of_principalBandModels [ALSpace X]
       rw [(measurableEmbedding_sigma_mk (β := Ω) z).lintegral_map
             (fun a => ‖(g : _ → ℝ) a‖ₑ),
           ← eLpNorm_one_eq_lintegral_enorm]
+      exact (hg_fiber_sm z).aestronglyMeasurable
     have hg_z_eLpNorm : ∀ z : ↑Λ,
         eLpNorm (fun ω => (g : _ → ℝ) ⟨z, ω⟩) 1 (μ z) =
           ↑‖g_z z‖₊ := by
@@ -368,8 +372,8 @@ theorem exists_L1_banachLatEquiv_of_principalBandModels [ALSpace X]
           (hφ_memLp y).coeFn_toLp.symm).trans
           (Lp.coeFn_inf _ _).symm))
   exact ⟨BanachLatEquiv.mk (LinearIsometryEquiv.ofSurjective li hΦ_surj)
-    (by intro a b; simp [LinearIsometryEquiv.ofSurjective, hΦ_sup a b])
-    (by intro a b; simp [LinearIsometryEquiv.ofSurjective, hΦ_inf a b])⟩
+    (by intro a b; simp [LinearIsometryEquiv.coe_ofSurjective, hΦ_sup a b])
+    (by intro a b; simp [LinearIsometryEquiv.coe_ofSurjective, hΦ_inf a b])⟩
 
 variable {K : Type u} [TopologicalSpace K] [T2Space K] [CompactSpace K]
   [MeasurableSpace K] [BorelSpace K]
