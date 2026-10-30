@@ -24,8 +24,7 @@ embeds as a norm dense sublattice. The resulting Banach lattice is p-convex with
 one. Its defining property, `universal_property`, extends every bounded linear map
 `S : E →L[ℝ] X` into a p-convex Banach lattice uniquely to a continuous lattice
 homomorphism from `FBLp p E` to `X`, with norm at most `‖S‖` times the optimal
-p-convexity constant of `X`. Every element is weak-star continuous on each closed dual
-norm ball. At `p = 1`, the universal property applies to every Banach lattice.
+p-convexity constant of `X`. At `p = 1`, the universal property applies to every Banach lattice.
 -/
 
 noncomputable section
