@@ -134,6 +134,7 @@ import BanLat.QuasiNormed.Topology
 import BanLat.Quotient
 import BanLat.RieszDec
 import BanLat.Substructures.Band.Basic
+import BanLat.Substructures.Band.Complete
 import BanLat.Substructures.Band.Decomposition
 import BanLat.Substructures.Band.DisjointComplement
 import BanLat.Substructures.Band.Generated
@@ -144,3 +145,5 @@ import BanLat.Substructures.ComplexSublattice
 import BanLat.Substructures.Ideal
 import BanLat.Substructures.Sublattice
 import BanLat.Tactic.LLexpr
+import BanLat.UniversalCompletion.Construction
+import BanLat.UniversalCompletion.Sections
