@@ -45,7 +45,7 @@ theorem normAdmissible_singleton (φ : StrongDual ℝ E) (hφ : ‖φ‖ ≤ 1) 
   change ‖WithLp.toLp p (Function.const (Fin 1) (φ x))‖ ≤ 1
   simpa only [PiLp.norm_toLp_const', Fintype.card_fin, Nat.cast_one, NNReal.coe_one,
     Real.one_rpow, one_mul]
-    using (φ.le_opNorm x).trans (mul_le_one₀ hφ (norm_nonneg _) hx)
+    using (φ.le_opNorm x).trans ((mul_le_of_le_one_left (norm_nonneg _) hφ).trans hx)
 
 /-- The unit-ball estimate defining admissibility extends to all vectors:
 the ℓᵖ norm of `(φ i x)` is at most `‖x‖`. -/
@@ -128,7 +128,7 @@ theorem freeNormExt_smul (c : ℝ) (f : StrongDual ℝ E → ℝ) :
 theorem freeNormExt_add_le (f g : StrongDual ℝ E → ℝ) :
     freeNormExt p (f + g) ≤ freeNormExt p f + freeNormExt p g := by
   by_cases htop : p = ⊤
-  · rw [freeNormExt, if_pos htop]
+  · rw [freeNormExt, ite_eq_left htop]
     refine iSup_le fun φ ↦ iSup_le fun hφ ↦ ?_
     calc
       ENNReal.ofReal |(f + g) φ| ≤ ENNReal.ofReal (|f φ| + |g φ|) := by
@@ -138,9 +138,9 @@ theorem freeNormExt_add_le (f g : StrongDual ℝ E → ℝ) :
         rw [ENNReal.ofReal_add (abs_nonneg _) (abs_nonneg _)]
       _ ≤ freeNormExt p f + freeNormExt p g := by
         apply add_le_add
-        all_goals rw [freeNormExt, if_pos htop]
+        all_goals rw [freeNormExt, ite_eq_left htop]
         all_goals exact le_iSup_of_le φ (le_iSup_of_le hφ le_rfl)
-  · rw [freeNormExt, if_neg htop]
+  · rw [freeNormExt, ite_eq_right htop]
     refine iSup_le fun n ↦ iSup_le fun φ ↦ iSup_le fun hφ ↦ ?_
     calc
       ENNReal.ofReal ‖WithLp.toLp p (fun i ↦ (f + g) (φ i))‖ ≤
@@ -155,7 +155,7 @@ theorem freeNormExt_add_le (f g : StrongDual ℝ E → ℝ) :
           (norm_nonneg (WithLp.toLp p (fun i ↦ g (φ i))))
       _ ≤ freeNormExt p f + freeNormExt p g := by
         apply add_le_add
-        all_goals rw [freeNormExt, if_neg htop]
+        all_goals rw [freeNormExt, ite_eq_right htop]
         all_goals exact le_iSup_of_le n (le_iSup_of_le φ (le_iSup_of_le hφ le_rfl))
 
 /-- If `|f φ| ≤ |g φ|` at every dual functional `φ`, then the extended free p-norm of
@@ -163,11 +163,11 @@ theorem freeNormExt_add_le (f g : StrongDual ℝ E → ℝ) :
 theorem freeNormExt_mono_abs (p : ℝ≥0∞) [Fact (1 ≤ p)] {f g : StrongDual ℝ E → ℝ}
     (h : ∀ φ, |f φ| ≤ |g φ|) : freeNormExt p f ≤ freeNormExt p g := by
   by_cases htop : p = ⊤
-  · rw [freeNormExt, if_pos htop, freeNormExt, if_pos htop]
+  · rw [freeNormExt, ite_eq_left htop, freeNormExt, ite_eq_left htop]
     refine iSup_le fun φ ↦ iSup_le fun hφ ↦ ?_
     exact (ENNReal.ofReal_le_ofReal (h φ)).trans
       (le_iSup_of_le φ (le_iSup_of_le hφ le_rfl))
-  · rw [freeNormExt, if_neg htop, freeNormExt, if_neg htop]
+  · rw [freeNormExt, ite_eq_right htop, freeNormExt, ite_eq_right htop]
     refine iSup_le fun n ↦ iSup_le fun φ ↦ iSup_le fun hφ ↦ ?_
     exact (ENNReal.ofReal_le_ofReal
       (norm_le_norm_of_abs_le_abs
@@ -422,7 +422,7 @@ theorem functionSpace_admissible_eval_le (hptop : p ≠ ⊤)
     (f : FunctionSpace p E) {n : ℕ} (φ : Fin n → StrongDual ℝ E) (hφ : NormAdmissible p φ) :
     ‖WithLp.toLp p (fun i ↦ f (φ i))‖ ≤ ‖f‖ := by
   have hle : ENNReal.ofReal (‖WithLp.toLp p (fun i ↦ f (φ i))‖) ≤ freeNormExt p f.1 := by
-    rw [freeNormExt, if_neg hptop]
+    rw [freeNormExt, ite_eq_right hptop]
     exact le_iSup_of_le n (le_iSup_of_le φ (le_iSup_of_le hφ le_rfl))
   exact (ENNReal.ofReal_le_iff_le_toReal (ne_of_lt f.2.2)).mp hle
 
@@ -431,7 +431,7 @@ private lemma functionSpace_limit_sub_bound (u : ℕ → FunctionSpace p E)
     (N : ℕ) (r : ℝ) (hN : ∀ᶠ m in atTop, ‖u m - u N‖ ≤ r) :
     freeNormExt p (g - (u N : StrongDual ℝ E → ℝ)) ≤ ENNReal.ofReal r := by
   by_cases hptop : p = ⊤
-  · rw [freeNormExt, if_pos hptop]
+  · rw [freeNormExt, ite_eq_left hptop]
     refine iSup_le fun φ ↦ iSup_le fun hφ ↦ ?_
     apply ENNReal.ofReal_le_ofReal
     have ht : Filter.Tendsto (fun m ↦ |(u m - u N) φ|) atTop
@@ -446,7 +446,7 @@ private lemma functionSpace_limit_sub_bound (u : ℕ → FunctionSpace p E)
       filter_upwards [hN] with m hm
       exact (functionSpace_unit_eval_le p (u m - u N) φ hφ).trans hm
     exact le_of_tendsto ht hbound
-  · rw [freeNormExt, if_neg hptop]
+  · rw [freeNormExt, ite_eq_right hptop]
     refine iSup_le fun n ↦ iSup_le fun φ ↦ iSup_le fun hφ ↦ ?_
     apply ENNReal.ofReal_le_ofReal
     have hcoords : Filter.Tendsto

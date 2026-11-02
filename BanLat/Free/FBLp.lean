@@ -417,8 +417,8 @@ free lattice. -/
 theorem latticePSum_apply (q : ℝ≥0∞) [Fact (1 ≤ q)] {n : ℕ}
     (f : Fin n → FBLp p E) (φ : StrongDual ℝ E) :
     latticePSum q f φ = ‖WithLp.toLp q (fun i ↦ f i φ)‖ := by
-  letI := isUniformlyCompleteVectorLattice_of_banachLattice (FBLp p E)
-  letI := isUniformlyCompleteVectorLattice_of_banachLattice ℝ
+  let := isUniformlyCompleteVectorLattice_of_banachLattice (FBLp p E)
+  let := isUniformlyCompleteVectorLattice_of_banachLattice ℝ
   change evalVecLatHom p φ (PosHomFunction.functionalCalculus f (pSumFunction q n)) = _
   calc
     evalVecLatHom p φ (PosHomFunction.functionalCalculus f (pSumFunction q n)) =
@@ -453,7 +453,7 @@ private lemma freeNormExt_latticePSum_le {n : ℕ}
     freeNormExt p (latticePSum p f : FBLp p E).1.1 ≤
       ENNReal.ofReal (‖WithLp.toLp p (fun i ↦ ‖f i‖)‖) := by
   by_cases htop : p = ⊤
-  · rw [freeNormExt, if_pos htop]
+  · rw [freeNormExt, ite_eq_left htop]
     refine iSup_le fun φ ↦ iSup_le fun hφ ↦ ?_
     apply ENNReal.ofReal_le_ofReal
     rw [latticePSum_apply, abs_of_nonneg (norm_nonneg _)]
@@ -463,7 +463,7 @@ private lemma freeNormExt_latticePSum_le {n : ℕ}
     have hnorm : ‖(f i).1‖ = ‖f i‖ := rfl
     simpa only [abs_of_nonneg (norm_nonneg (f i)), hnorm] using
       (functionSpace_unit_eval_le p (f i).1 φ hφ)
-  · rw [freeNormExt, if_neg htop]
+  · rw [freeNormExt, ite_eq_right htop]
     refine iSup_le fun m ↦ iSup_le fun φ ↦ iSup_le fun hφ ↦ ?_
     apply ENNReal.ofReal_le_ofReal
     simp_rw [latticePSum_apply]
@@ -532,7 +532,7 @@ private lemma freeNormExt_comp_le (T : F →L[ℝ] E)
     rw [hfun, freeNormExt_zero, hT0, ENNReal.ofReal_zero, zero_mul]
   · have hT : 0 < ‖T‖ := lt_of_le_of_ne (norm_nonneg T) (Ne.symm hT0)
     by_cases htop : p = ⊤
-    · rw [freeNormExt, if_pos htop]
+    · rw [freeNormExt, ite_eq_left htop]
       refine iSup_le fun φ ↦ iSup_le fun hφ ↦ ?_
       let ψ : StrongDual ℝ F := ‖T‖⁻¹ • φ.comp T
       have hcomp : ‖φ.comp T‖ ≤ ‖T‖ := by
@@ -560,7 +560,7 @@ private lemma freeNormExt_comp_le (T : F →L[ℝ] E)
             ENNReal.ofReal_mul (norm_nonneg T)]
         _ ≤ ENNReal.ofReal ‖T‖ * freeNormExt p f :=
           mul_le_mul_of_nonneg_left hle (by positivity)
-    · rw [freeNormExt, if_neg htop]
+    · rw [freeNormExt, ite_eq_right htop]
       refine iSup_le fun n ↦ iSup_le fun φ ↦ iSup_le fun hφ ↦ ?_
       let ψ : Fin n → StrongDual ℝ F := fun i ↦ ‖T‖⁻¹ • (φ i).comp T
       have hψ : NormAdmissible p ψ := normAdmissible_comp_scaled p T hT φ hφ
@@ -572,7 +572,7 @@ private lemma freeNormExt_comp_le (T : F →L[ℝ] E)
         rw [← hscaled i, hf ‖T‖ (le_of_lt hT) (ψ i)]
       have hle : ENNReal.ofReal (‖WithLp.toLp p (fun i ↦ f (ψ i))‖) ≤
           freeNormExt p f := by
-        rw [freeNormExt, if_neg htop]
+        rw [freeNormExt, ite_eq_right htop]
         exact le_iSup_of_le n (le_iSup_of_le ψ (le_iSup_of_le hψ le_rfl))
       calc
         ENNReal.ofReal (‖WithLp.toLp p (fun i ↦ f ((φ i).comp T))‖) =
@@ -754,7 +754,7 @@ variable {X : Type w} [NormedAddCommGroup X] [Lattice X]
 theorem positive_dual_scalarPSum_le {n : ℕ} (x : Fin n → X)
     (ψ : StrongDual ℝ X) (hψ : 0 ≤ ψ) :
     ‖WithLp.toLp p (fun i ↦ ψ (x i))‖ ≤ ψ (latticePSum p x) := by
-  letI := isUniformlyCompleteVectorLattice_of_banachLattice X
+  let := isUniformlyCompleteVectorLattice_of_banachLattice X
   let y : PiLp p (fun _ : Fin n ↦ ℝ) := WithLp.toLp p (fun i ↦ ψ (x i))
   obtain ⟨l, hl, hly⟩ := exists_dual_vector'' ℝ y
   let a : Fin n → ℝ := fun i ↦ l (PiLp.single p i 1)
@@ -869,7 +869,7 @@ private lemma exists_positive_diagonal_weights {n : ℕ} {r δ : ℝ}
   have hdg := HasFDerivAt.fun_sum (u := Finset.univ) (fun i _ ↦ hd i)
   refine ⟨a, ha, ?_⟩
   intro b hb
-  have hdir := hmax.localize.hasFDerivWithinAt_nonpos hdg.hasFDerivWithinAt
+  have hdir := hmax.isLocalMaxOn.hasFDerivWithinAt_nonpos hdg.hasFDerivWithinAt
     (sub_mem_posTangentConeAt_of_segment_subset (hconv.segment_subset ha hb))
   simp only [sum_apply, smul_apply,
     ContinuousLinearMap.proj_apply, Pi.sub_apply, smul_eq_mul] at hdir
@@ -990,7 +990,7 @@ private lemma free_positive_dual_sum_le_add (hp : (p < ∞)) {C δ : ℝ}
   by_cases hm : m = 0
   · subst m
     simp
-  haveI : Nonempty (Fin m) := ⟨⟨0, Nat.pos_of_ne_zero hm⟩⟩
+  have : Nonempty (Fin m) := ⟨⟨0, Nat.pos_of_ne_zero hm⟩⟩
   obtain ⟨a, ha, hsum, hdiag⟩ := positive_dual_diagonal_bound p hp hC hδ ψ hψ
   let r := 1 / p.toReal
   let d : Fin m → ℝ := fun i ↦ (a i + δ) ^ r
@@ -1380,7 +1380,7 @@ private lemma isClosed_inter_dualNormBall (s : Set (WeakDual ℝ E))
     convert WeakDual.isCompact_closedBall (0 : StrongDual ℝ E) R using 1
     ext φ
     simp [weakDualNormBall, Metric.mem_closedBall, dist_zero_right]
-  letI : CompactSpace (weakDualNormBall (E := E) R) :=
+  let : CompactSpace (weakDualNormBall (E := E) R) :=
     isCompact_iff_compactSpace.mp hBcompact
   let K : CompHaus.{u} := CompHaus.of (weakDualNormBall (E := E) R)
   let g : C(K, WeakDual ℝ E) := ⟨Subtype.val, continuous_subtype_val⟩
@@ -1447,7 +1447,7 @@ private lemma latticePSum_scalar_eval (T : VecLatHom X ℝ)
     {n : ℕ} (x : Fin n → X) :
     T (latticePSum p x) = ‖WithLp.toLp p (fun i ↦ T (x i))‖ := by
   rw [latticePSum_map]
-  letI := isUniformlyCompleteVectorLattice_of_banachLattice ℝ
+  let := isUniformlyCompleteVectorLattice_of_banachLattice ℝ
   exact realPosHomFunctionalCalculus _ (pSumFunction p _)
 
 private def piLpEvalVec (n : ℕ) (i : Fin n) :

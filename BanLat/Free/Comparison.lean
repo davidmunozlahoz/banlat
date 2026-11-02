@@ -130,7 +130,7 @@ theorem convexWith_infinity :
     1 * ‖WithLp.toLp p (fun i ↦ ‖f i‖)‖
   rw [one_mul]
   apply ENNReal.toReal_le_of_le_ofReal (norm_nonneg _)
-  rw [freeNormExt, if_pos rfl]
+  rw [freeNormExt, ite_eq_left rfl]
   refine iSup_le fun φ ↦ iSup_le fun hφ ↦ ENNReal.ofReal_le_ofReal ?_
   rw [latticePSum_apply, abs_of_nonneg (norm_nonneg _)]
   apply norm_le_norm_of_abs_le_abs
@@ -151,7 +151,7 @@ theorem convexWith_of_le {p q : ℝ≥0∞} [Fact (1 ≤ p)] [Fact (1 ≤ q)]
     1 * ‖WithLp.toLp p (fun i ↦ ‖f i‖)‖
   rw [one_mul]
   apply ENNReal.toReal_le_of_le_ofReal (norm_nonneg _)
-  rw [freeNormExt, if_neg hq]
+  rw [freeNormExt, ite_eq_right hq]
   refine iSup_le fun m ↦ iSup_le fun φ ↦ iSup_le fun hφ ↦ ENNReal.ofReal_le_ofReal ?_
   simp_rw [latticePSum_apply]
   refine (norm_mixed_le hpq (lt_top_iff_ne_top.mpr hq) _).trans ?_

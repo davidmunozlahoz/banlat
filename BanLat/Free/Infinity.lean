@@ -73,10 +73,9 @@ theorem weakStar_homogeneous_mem_finiteNormSublattice_infinity (f : StrongDual �
       change φ ∈ Metric.closedBall (0 : StrongDual ℝ E) 1
       simpa only [Metric.mem_closedBall, dist_zero_right] using hφ
     let ψ : FVLv.dualUnitBall E := ⟨StrongDual.toWeakDual φ, hm⟩
-    have h := ContinuousMap.norm_coe_le_norm g ψ
-    simpa [g, ψ, Real.norm_eq_abs] using h
+    exact ContinuousMap.norm_coe_le_norm g ψ
   have hle : freeNormExt ∞ f ≤ ENNReal.ofReal ‖g‖ := by
-    rw [freeNormExt, if_pos (show (∞ : ℝ≥0∞) = ⊤ by rfl)]
+    rw [freeNormExt, ite_eq_left (show (∞ : ℝ≥0∞) = ⊤ by rfl)]
     exact iSup_le fun φ ↦ iSup_le fun hφ ↦ ENNReal.ofReal_le_ofReal (hbound φ hφ)
   exact hle.trans_lt ENNReal.ofReal_lt_top
 
@@ -270,7 +269,7 @@ private def infinityRestriction : FBLp ∞ E →ₗᵢ[ℝ]
           (inFree_infinity_imp (fun φ ↦ g φ) ⟨g, fun _ ↦ rfl⟩).2⟩ :
             C(FVLv.dualUnitBall E, ℝ))‖
       apply ENNReal.toReal_le_of_le_ofReal (norm_nonneg _)
-      rw [freeNormExt, if_pos (show (∞ : ℝ≥0∞) = ⊤ by rfl)]
+      rw [freeNormExt, ite_eq_left (show (∞ : ℝ≥0∞) = ⊤ by rfl)]
       refine iSup_le fun φ ↦ iSup_le fun hφ ↦ ?_
       let ψ : FVLv.dualUnitBall E := ⟨StrongDual.toWeakDual φ, by
         change φ ∈ Metric.closedBall (0 : StrongDual ℝ E) 1
@@ -279,8 +278,7 @@ private def infinityRestriction : FBLp ∞ E →ₗᵢ[ℝ]
         (⟨fun ψ ↦ g (WeakDual.toStrongDual ψ.1),
           (inFree_infinity_imp (fun φ ↦ g φ) ⟨g, fun _ ↦ rfl⟩).2⟩ :
             C(FVLv.dualUnitBall E, ℝ)) ψ
-      exact ENNReal.ofReal_le_ofReal (by
-        simpa [ψ, Real.norm_eq_abs] using hval)
+      exact ENNReal.ofReal_le_ofReal hval
 
 private lemma exists_infinityRestriction_eq (f : StrongDual ℝ E → ℝ)
     (hhom : PosHomogeneous f) (hcont : WeakStarContinuousOnBall f) :
