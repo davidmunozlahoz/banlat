@@ -11,8 +11,9 @@ import BanLat.Examples.Lp.MeasureAlgebraMap
 # Amalgamation of measure-algebra identifications in `Lᵖ`
 
 An identification of sigma-complete subalgebras of two probability measure algebras
-can be realized by isometric lattice embeddings of their `Lᵖ` spaces into one
-Lebesgue cube, with agreement on the corresponding constant indicators.
+can be realized by isometric lattice embeddings of their `Lᵖ` spaces into an `Lᵖ` space over
+a Lebesgue cube (the product of `κ` copies of Lebesgue measure on the unit interval as a product
+measure).
 -/
 
 noncomputable section
@@ -109,7 +110,7 @@ private lemma hom_ext_indicators (R S : VecLatHom (Lp ℝ 1 μ) Y)
   intro f g hf hg _ hRf hRg
   simp only [map_add, hRf, hRg]
 
-/-- Isometric lattice embeddings of probability `L¹` spaces that preserve one
+/-- Isometric lattice embeddings of probability `L¹` spaces that preserve the constant one function
 admit a commuting amalgam by isometric lattice embeddings. -/
 theorem exists_isometric_amalgam_of_map_const
     {α₀ α₁ α₂ : Type u} [MeasurableSpace α₀] [MeasurableSpace α₁] [MeasurableSpace α₂]

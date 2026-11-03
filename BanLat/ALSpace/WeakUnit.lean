@@ -7,11 +7,10 @@ import BanLat.Examples.Lp.CountableChainCondition
 import BanLat.OrderUnit.CountableChainCondition
 
 /-!
-# Weak order units in sublattices of AL-spaces
+# Weak order units in non-closed sublattices of AL-spaces
 
-An AL-space with a weak order unit has a finite-measure representation.
-Its countable chain condition passes to injectively embedded Banach lattices,
-which consequently also admit weak order units.
+Every Banach lattice that admits an injective lattice homomorphism into an AL-space
+with a weak order unit also has a weak order unit.
 -/
 
 noncomputable section
@@ -37,8 +36,8 @@ private lemma countableChainCondition_of_injective (T : VecLatHom X Y)
       simpa only [IsVLDisjoint, map_inf, T.map_abs, map_zero] using hd
   exact Set.countable_of_injective_of_countable_image hT.injOn (hY _ hTD)
 
-/-- A Banach lattice that embeds injectively into an AL-space with a weak order unit
-also has a weak order unit. -/
+/-- A Banach lattice that admits an injective lattice homomorphism into an AL-space with
+a weak order unit also has a weak order unit. -/
 theorem exists_weakOrderUnit_of_injective (T : VecLatHom X Y)
     (hT : Function.Injective T) {e : Y} (he : WeakOrderUnit e) :
     ∃ u : X, WeakOrderUnit u := by

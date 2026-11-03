@@ -8,9 +8,11 @@ import BanLat.Examples.Lp.MeasureAlgebra
 /-!
 # Embeddings induced by partial measure-algebra equivalences
 
-A partial measure-algebra equivalence defined on its entire source induces a lattice
-isometry into the target `Lᵖ` space. The construction first identifies the image
-subalgebra with a sigma-algebra and then uses transport through measure-algebra equivalences.
+A measure-preserving isomorphism from the whole measure algebra of a finite measure `μ`
+onto a sigma-complete subalgebra of the measure algebra of a finite measure `ν`
+induces a linear isometric lattice embedding from real `Lᵖ(μ)` into real `Lᵖ(ν)`,
+for `1 ≤ p < ∞`. The embedding sends the indicator of each measure-algebra element
+to the indicator of its image under the isomorphism.
 -/
 
 noncomputable section
@@ -96,8 +98,9 @@ private def trimmedInclusion :
     ν (subalgebraMeasure e.target e.target_isSigmaComplete) (p : ℝ≥0∞) id
       (measurePreserving_id e)
 
-/-- A full-source partial measure-algebra equivalence induces a vector lattice
-homomorphism between the corresponding `Lᵖ` spaces. -/
+/-- The lattice homomorphism `Lᵖ(μ) → Lᵖ(ν)` induced by a partial measure-algebra
+equivalence `e` defined on the whole measure algebra of `μ`. It sends the indicator
+of each measure-algebra element to the indicator of its image under `e`. -/
 def lpHom : VecLatHom (Lp ℝ (p : ℝ≥0∞) μ) (Lp ℝ (p : ℝ≥0∞) ν) :=
   (trimmedInclusion e).comp
     (trimmedLpEquiv e he).toVecLatEquiv.toVecLatHom
@@ -141,7 +144,8 @@ private lemma trimmedEquiv_mk (s : MeasuredSets μ)
   exact ((subalgebraMeasureEquiv e.target e.target_isSigmaComplete).toRelIso.apply_symm_apply
     _).trans (Subtype.ext hst)
 
-/-- The lattice homomorphism induced by a full-source partial equivalence is isometric. -/
+/-- For `1 ≤ p < ∞`, `lpHom e he` is an isometric lattice embedding from `Lᵖ(μ)` into `Lᵖ(ν)`.
+Here `he` states that `e` is defined on the whole measure algebra of `μ`. -/
 theorem isometry_lpHom : Isometry (lpHom (p := p) e he) := by
   apply AddMonoidHomClass.isometry_of_norm (lpHom (p := p) e he).toLinearMap
   intro x
@@ -150,8 +154,8 @@ theorem isometry_lpHom : Isometry (lpHom (p := p) e he) := by
     (subalgebraMeasure e.target e.target_isSigmaComplete) id _ (measurePreserving_id e)).trans
     ((trimmedLpEquiv e he).toLinearIsometryEquiv.norm_map x)
 
-/-- The induced lattice embedding sends each constant indicator to the indicator
-of the image of its measure-algebra element. -/
+/-- For `1 ≤ p < ∞`, the induced lattice embedding `lpHom e he`  sends each constant indicator to
+the indicator of the image of its measure-algebra element. -/
 theorem lpHom_indicatorSimpleFunc (a : InducedBooleanAlgebra μ) (c : ℝ) :
     lpHom (p := p) e he (Lp.indicatorSimpleFunc (p := p) a c) =
       (Lp.indicatorSimpleFunc (p := p)

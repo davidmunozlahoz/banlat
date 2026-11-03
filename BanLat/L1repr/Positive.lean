@@ -8,10 +8,10 @@ import BanLat.Quotient
 /-!
 # `L¹` models of positive functionals
 
-A positive functional induces the lattice seminorm `x ↦ h |x|`. Quotienting
+A positive functional `h` induces the lattice seminorm `x ↦ h |x|`. Quotienting
 by its null ideal makes the induced functional strictly positive. Its existing
-`L¹` representation gives a dense lattice homomorphism realizing this seminorm.
-The map need not be injective when the original functional has a nontrivial null ideal.
+`L¹` representation allows to map the original lattice as a dense sublattice of the `L¹` space.
+This map need not be injective when the original functional has a nontrivial null ideal.
 -/
 
 noncomputable section
@@ -55,8 +55,7 @@ private lemma strictlyPositive_quotient (h : X →ₗ[ℝ] ℝ) (hh : Positive h
     (Submodule.Quotient.mk_eq_zero _).mpr hmem
   exact hq.ne' hqzero
 
-/-- Every positive functional has a dense `L¹` model whose norm realizes
-the associated lattice seminorm. -/
+/-- Every positive functional induces a lattice homomorphism with dense range into an `L¹` space. -/
 theorem exists_L1_representation_of_positive (h : X →ₗ[ℝ] ℝ) (hh : Positive h) :
     ∃ (Ω : Type u) (_ : MeasurableSpace Ω) (μ : Measure Ω) (T : VecLatHom X (Lp ℝ 1 μ)),
       DenseRange T ∧ ∀ x, ‖T x‖ = h |x| := by
