@@ -8,7 +8,7 @@ import BanLat.Examples.Lp.MeasureAlgebra
 # Indicators and components of the constant function
 
 For a finite measure, indicators of measure-algebra elements are exactly the
-components of the constant function one in `L¹`. This identifies the Boolean
+components of the constant one function in `L¹`. This identifies the Boolean
 structure needed to transport measure algebras through unital lattice isometries.
 -/
 
@@ -32,7 +32,7 @@ private lemma algebraIndicator_mk_ae (s : MeasuredSets μ) :
       s.val.indicator (fun _ ↦ (1 : ℝ)) :=
   indicatorConstLp_coeFn (hs := s.property) (hμs := measure_ne_top μ s)
 
-/-- Indicators carry Boolean suprema to pointwise suprema in `L¹`. -/
+/-- Indicators carry finite Boolean suprema to lattice suprema in `L¹`. -/
 theorem algebraIndicator_sup (a b : MeasureAlgebra.InducedBooleanAlgebra μ) :
     algebraIndicator (p := 1) (a ⊔ b) = algebraIndicator a ⊔ algebraIndicator b := by
   obtain ⟨s, rfl⟩ := MeasureAlgebra.InducedBooleanAlgebra.mk_surjective μ a
@@ -50,7 +50,7 @@ theorem algebraIndicator_sup (a b : MeasureAlgebra.InducedBooleanAlgebra μ) :
   by_cases hs : x ∈ s.val <;> by_cases ht : x ∈ t.val <;>
     simp [Set.indicator, hs, ht]
 
-/-- Indicators carry Boolean infima to pointwise infima in `L¹`. -/
+/-- Indicators carry finite Boolean infima to lattice infima in `L¹`. -/
 theorem algebraIndicator_inf (a b : MeasureAlgebra.InducedBooleanAlgebra μ) :
     algebraIndicator (p := 1) (a ⊓ b) = algebraIndicator a ⊓ algebraIndicator b := by
   apply add_left_cancel (a := algebraIndicator (p := 1) (a ⊔ b))
@@ -68,7 +68,7 @@ theorem algebraIndicator_bot : algebraIndicator (μ := μ) (p := 1) ⊥ = 0 :=
   congrArg (fun g : Lp.simpleFunc ℝ (1 : ℝ≥0∞) μ ↦ (g : Lp ℝ 1 μ))
     (indicatorSimpleFunc_bot (μ := μ) (p := 1) 1)
 
-/-- The indicator of the top element is the constant function one. -/
+/-- The indicator of the top element is the constant one function. -/
 @[simp]
 theorem algebraIndicator_top : algebraIndicator (μ := μ) (p := 1) ⊤ = Lp.const 1 μ (1 : ℝ) :=
   indicatorConstLp_univ 1 μ 1

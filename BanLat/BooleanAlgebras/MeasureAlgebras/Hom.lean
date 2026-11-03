@@ -75,7 +75,8 @@ def mapEquiv (A : BooleanSubalgebra B) (hA : A.IsSigmaComplete) :
     ⟨⟨a, ha⟩, Subtype.ext hac⟩
   exact { OrderIso.ofSurjective i hi with map_measure' := fun a ↦ hf a }
 
-/-- The equivalence with the image evaluates to the original Boolean homomorphism. -/
+/-- Applying the equivalence to an element of `A` and coercing the result to `C` gives its
+image under `f`. -/
 @[simp]
 theorem coe_mapEquiv (A : BooleanSubalgebra B) (hA : A.IsSigmaComplete) (a : A) :
     letI := hA.toSigmaCompleteBooleanAlgebra
@@ -85,7 +86,8 @@ theorem coe_mapEquiv (A : BooleanSubalgebra B) (hA : A.IsSigmaComplete) (a : A) 
   let := (isSigmaComplete_map f hf A hA).toSigmaCompleteBooleanAlgebra
   rfl
 
-/-- The inverse equivalence with the image recovers each original element. -/
+/-- Applying the inverse equivalence to the image of an element of `A` and coercing
+the result to `B` recovers the original element. -/
 @[simp]
 theorem coe_mapEquiv_symm_apply (A : BooleanSubalgebra B) (hA : A.IsSigmaComplete) (a : A) :
     letI := hA.toSigmaCompleteBooleanAlgebra

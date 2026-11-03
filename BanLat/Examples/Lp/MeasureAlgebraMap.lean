@@ -7,8 +7,8 @@ import BanLat.Examples.Lp.Indicators
 /-!
 # Measure-algebra maps induced by lattice homomorphisms
 
-A lattice homomorphism between finite-measure `L¹` spaces that preserves the constant
-function one induces a Boolean homomorphism on their measure algebras. If the original
+A lattice homomorphism between finite-measure `L¹` spaces that preserves the constant one
+function induces a Boolean homomorphism on their measure algebras. If the original
 map is isometric, the Boolean homomorphism also preserves measure.
 -/
 
@@ -39,7 +39,7 @@ private lemma algebraIndicator_indicatorMap (a : MeasureAlgebra.InducedBooleanAl
     algebraIndicator (p := 1) (indicatorMap T hT a) = T (algebraIndicator (p := 1) a) :=
   (exists_algebraIndicator_eq _ (map_indicator_component T hT a)).choose_spec
 
-/-- A lattice homomorphism preserving the constant function one induces a Boolean
+/-- A lattice homomorphism preserving the constant one function induces a Boolean
 homomorphism by its action on indicators. -/
 def toMeasureAlgebraHom :
     BoundedLatticeHom (MeasureAlgebra.InducedBooleanAlgebra μ)

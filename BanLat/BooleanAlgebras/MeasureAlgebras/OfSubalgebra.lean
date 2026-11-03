@@ -21,7 +21,8 @@ namespace MeasureAlgebra
 variable {α : Type*} [m : MeasurableSpace α] {μ : Measure α}
   (A : BooleanSubalgebra (InducedBooleanAlgebra μ)) (hA : A.IsSigmaComplete)
 
-/-- The sigma-algebra of measurable sets whose equivalence classes lie in `A`. -/
+/-- The sigma-algebra of measurable sets whose equivalence classes lie in the sigma-complete
+subalgebra `A`. -/
 @[instance_reducible]
 def subalgebraMeasurableSpace : MeasurableSpace α where
   MeasurableSet' s := ∃ hs : MeasurableSet s, InducedBooleanAlgebra.mk μ ⟨s, hs⟩ ∈ A

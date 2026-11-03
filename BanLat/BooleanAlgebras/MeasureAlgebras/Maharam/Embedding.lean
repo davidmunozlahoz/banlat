@@ -9,7 +9,7 @@ import BanLat.BooleanAlgebras.MeasureAlgebras.Maharam.Extension
 # Extending measure-algebra embeddings
 
 Partial measure-algebra equivalences extend to embeddings into a homogeneous measure
-algebra whose Maharam type exceeds the cardinality of the source. The extension
+algebra whose Maharam type is sufficiently large. The extension
 preserves the prescribed map on the initial subalgebra.
 -/
 
