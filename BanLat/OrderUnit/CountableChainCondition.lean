@@ -7,12 +7,30 @@ import BanLat.CountableSupProperty
 /-!
 # Weak order units and the countable chain condition
 
-A Banach lattice with the countable chain condition admits a weak order unit.
+A Banach lattice with the countable chain condition admits a weak order unit:
 A countable maximal disjoint family supplies positive vectors whose suitably
 scaled sum is disjoint only from zero.
+The countable chain condition is inherited through injective vector lattice homomorphisms.
 -/
 
 noncomputable section
+
+/-- The countable chain condition passes from the codomain to the domain of an injective
+vector lattice homomorphism. -/
+theorem countableChainCondition_of_injective
+    {X Y : Type*} [AddCommGroup X] [Lattice X] [IsOrderedAddMonoid X] [VectorLattice X]
+    [AddCommGroup Y] [Lattice Y] [IsOrderedAddMonoid Y] [VectorLattice Y]
+    (T : VecLatHom X Y) (hT : Function.Injective T) (hY : HasCountableChainCondition Y) :
+    HasCountableChainCondition X := by
+  intro D hD
+  have hTD : IsDisjointSet (T '' D) := by
+    refine ⟨?_, ?_⟩
+    · rintro ⟨x, hx, hx0⟩
+      exact hD.1 ((hT (hx0.trans (map_zero T).symm)) ▸ hx)
+    · rintro _ ⟨x, hx, rfl⟩ _ ⟨y, hy, rfl⟩ hxy
+      have hd := congrArg T (hD.2 hx hy (fun h ↦ hxy (congrArg T h)))
+      simpa only [IsVLDisjoint, map_inf, T.map_abs, map_zero] using hd
+  exact Set.countable_of_injective_of_countable_image hT.injOn (hY _ hTD)
 
 variable {X : Type*} [NormedAddCommGroup X] [Lattice X]
   [IsOrderedAddMonoid X] [BanachLattice X]
