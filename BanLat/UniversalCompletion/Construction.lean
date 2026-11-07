@@ -27,10 +27,10 @@ variable {D : Type*} [AddCommGroup D] [ConditionallyCompleteLattice D]
 /-! ### Germs of sections and their vector-lattice structure
 
 Operations are lifted from representatives of local sections restricted to a common
-covering domain. The algebraic laws below are checked on their coordinates.
+band domain. The algebraic laws below are checked on their coordinates.
 -/
 
-/-- A local section together with its covering domain. -/
+/-- A local section together with its band domain. -/
 abbrev RawSection (D : Type*) [AddCommGroup D] [ConditionallyCompleteLattice D]
     [IsOrderedAddMonoid D] [VectorLattice D] :=
   Σ A : BandDomain D, Section A

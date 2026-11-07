@@ -10,9 +10,10 @@ import BanLat.Substructures.Band.BandProjection.OrderContinuous
 
 For a Dedekind complete vector lattice, compatible sections on a downward closed
 covering family of projection bands form a Dedekind complete vector lattice under
-coordinatewise operations. A family is covering when its supremum is the whole space.
-Restriction to a smaller covering domain admits bounded extensions of nonnegative
-sections. These section spaces supply representatives for the universal completion.
+coordinatewise operations. A family is covering when its supremum is the whole space;
+such families, containing the zero band, are called band domains. Restriction to a
+smaller band domain admits bounded extensions of nonnegative sections. These section
+spaces supply representatives for the universal completion.
 -/
 
 noncomputable section
@@ -22,9 +23,10 @@ namespace UniversalCompletionConstruction
 variable {D : Type*} [AddCommGroup D] [ConditionallyCompleteLattice D]
   [IsOrderedAddMonoid D] [VectorLattice D]
 
-/-! ### Covering domains and compatible sections -/
+/-! ### Band domains and compatible sections -/
 
-/-- A downward closed covering family of projection bands containing the zero band. -/
+/-- A **band domain** is a downward closed covering family of projection bands containing
+the zero band. -/
 structure BandDomain (D : Type*) [AddCommGroup D] [ConditionallyCompleteLattice D]
     [IsOrderedAddMonoid D] [VectorLattice D] where
   /-- Projection bands in the domain. -/
