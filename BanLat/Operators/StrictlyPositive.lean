@@ -9,7 +9,7 @@ import BanLat.OrderContinuous.Basic
 import BanLat.OrderUnit
 import BanLat.Operators.Carrier
 import BanLat.Operators.Positive
-import BanLat.Substructures.Band.PPP
+import BanLat.Substructures.Band.BandProjection.PPP
 
 /-!
 # Strictly positive operators

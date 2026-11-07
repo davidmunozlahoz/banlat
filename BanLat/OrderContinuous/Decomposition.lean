@@ -3,7 +3,7 @@ Authors: David Muñoz-Lahoz
 -/
 
 import BanLat.OrderContinuous.Nakano
-import BanLat.Substructures.Band.Decomposition
+import BanLat.Substructures.Band.BandProjection.Decomposition
 
 /-!
 # Decomposition lemma

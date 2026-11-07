@@ -6,7 +6,7 @@ import BanLat.Operators.OrderBounded
 import BanLat.Operators.Regular
 import BanLat.OrderComplete
 import BanLat.RieszDec
-import BanLat.Substructures.Band.PPP
+import BanLat.Substructures.Band.BandProjection.PPP
 
 /-!
 # The Riesz-Kantorovich theorem

@@ -2,12 +2,12 @@
 Authors: David Muñoz-Lahoz, Jesús Illescas-Fiorito
 -/
 
-import BanLat.Substructures.Band.Projection
+import BanLat.Substructures.Band.BandProjection.Basic
 import BanLat.OrderDense
 import BanLat.Pi
 import BanLat.Normed
 import BanLat.Operators.Hom
-import BanLat.Substructures.Band.Decomposition
+import BanLat.Substructures.Band.BandProjection.Decomposition
 import Mathlib.LinearAlgebra.FiniteDimensional.Defs
 
 /-!

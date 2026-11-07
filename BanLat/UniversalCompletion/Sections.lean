@@ -2,7 +2,8 @@
 Authors: Pedro Tradacete
 -/
 
-import BanLat.Substructures.Band.Complete
+import BanLat.Substructures.Band.BandProjection.Complete
+import BanLat.Substructures.Band.BandProjection.OrderContinuous
 
 /-!
 # Compatible sections over covering families of projection bands
@@ -283,7 +284,8 @@ private theorem exists_isLUB_with_value (A : BandDomain D) (S : Set (Section A))
           exact ⟨x, hx, (x.compatible B C hBC).symm⟩
         · rintro ⟨x, hx, rfl⟩
           exact ⟨x.value C, ⟨x, hx, rfl⟩, x.compatible B C hBC⟩
-      rw [ProjectionBand.bandProjection_sSup B.1 (coord C) (hcoord_ne C) (hcoord_bdd C), hmap]
+      rw [← (B.1.isLUB_bandProjection_image (isLUB_csSup (hcoord_ne C) (hcoord_bdd C))).csSup_eq
+        ((hcoord_ne C).image _), hmap]
   }
   refine ⟨s, ?_, fun _ ↦ rfl⟩
   constructor
@@ -389,7 +391,7 @@ private def boundedExtend (x : Section C) (y : Section A)
   compatible b c hbc := by
     have hne := overlapSet_nonempty y c.1
     have hbdd := overlapSet_bddAbove x y hAC hxpos hyx c
-    rw [ProjectionBand.bandProjection_sSup b.1 (overlapSet y c.1) hne hbdd]
+    rw [← (b.1.isLUB_bandProjection_image (isLUB_csSup hne hbdd)).csSup_eq (hne.image _)]
     congr 1
     ext z
     constructor
