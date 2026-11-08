@@ -114,13 +114,13 @@ theorem norm_inl_le : ‖(inl T₁ T₂).toContinuousLinearMap‖ ≤ 1 := by
       (FBL.of (sumInl x))).trans_eq (FBL.norm_of (sumInl x))
 
 /-- The second canonical map is contractive. -/
-theorem norm_inr_le : ‖(inr T₁ T₂).toContinuousLinearMap‖ ≤ 1 :=
-  ContinuousLinearMap.opNorm_le_bound _ zero_le_one fun x ↦
-    show ‖(ideal T₁ T₂).toOrderIdeal.mkQ (FBL.of (sumInr x))‖ ≤ 1 * ‖x‖ from by
-      simpa [sumInr] using
-        (Submodule.Quotient.norm_mk_le
-          (S := (ideal T₁ T₂).toOrderIdeal.toSubmodule)
-          (FBL.of (sumInr x))).trans_eq (FBL.norm_of (sumInr x))
+theorem norm_inr_le : ‖(inr T₁ T₂).toContinuousLinearMap‖ ≤ 1 := by
+  refine ContinuousLinearMap.opNorm_le_bound _ zero_le_one (fun x ↦ ?_)
+  change ‖(ideal T₁ T₂).toOrderIdeal.mkQ (FBL.of (sumInr x))‖ ≤ 1 * ‖x‖
+  simpa [sumInr] using
+    (Submodule.Quotient.norm_mk_le
+      (S := (ideal T₁ T₂).toOrderIdeal.toSubmodule)
+      (FBL.of (sumInr x))).trans_eq (FBL.norm_of (sumInr x))
 
 variable {Y : Type v} [NormedAddCommGroup Y] [Lattice Y]
   [IsOrderedAddMonoid Y] [BanachLattice Y]

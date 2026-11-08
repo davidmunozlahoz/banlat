@@ -68,10 +68,9 @@ import BanLat.Examples.Lp.Classification.Homogeneous
 import BanLat.Examples.Lp.CountableChainCondition
 import BanLat.Examples.Lp.Counting
 import BanLat.Examples.Lp.DensityCharacter
-import BanLat.Examples.Lp.Indicators
-import BanLat.Examples.Lp.MeasureAlgebra
-import BanLat.Examples.Lp.MeasureAlgebraEmbedding
-import BanLat.Examples.Lp.MeasureAlgebraMap
+import BanLat.Examples.Lp.MeasureAlgebra.Indicators
+import BanLat.Examples.Lp.MeasureAlgebra.MeasureAlgebra
+import BanLat.Examples.Lp.MeasureAlgebra.MeasureAlgebraMap
 import BanLat.Examples.Lp.OrderContinuous
 import BanLat.Examples.Lp.Sublattice
 import BanLat.Examples.Lp.Subspaces.Gaussian

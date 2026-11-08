@@ -3,7 +3,7 @@ Authors: Jesús Illescas-Fiorito
 -/
 
 import BanLat.BooleanAlgebras.MeasureAlgebras.Maharam.MaharamType
-import BanLat.Examples.Lp.MeasureAlgebra
+import BanLat.Examples.Lp.MeasureAlgebra.MeasureAlgebra
 import BanLat.Examples.Lp.WeakUnit
 import Mathlib.MeasureTheory.Function.SimpleFuncDenseLp
 import Mathlib.SetTheory.Cardinal.Finsupp

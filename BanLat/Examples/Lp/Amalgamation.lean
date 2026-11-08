@@ -4,8 +4,8 @@ Authors: Pedro Tradacete
 
 import BanLat.BooleanAlgebras.MeasureAlgebras.Maharam.Embedding
 import BanLat.BooleanAlgebras.MeasureAlgebras.Maharam.LebesgueCube
-import BanLat.Examples.Lp.MeasureAlgebraEmbedding
-import BanLat.Examples.Lp.MeasureAlgebraMap
+import BanLat.Examples.Lp.MeasureAlgebra.MeasureAlgebra
+import BanLat.Examples.Lp.MeasureAlgebra.MeasureAlgebraMap
 
 /-!
 # Amalgamation of measure-algebra identifications in `Lᵖ`

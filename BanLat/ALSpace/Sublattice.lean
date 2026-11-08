@@ -1,15 +1,15 @@
 /-
-Authors: David Muñoz-Lahoz
+Authors: David Muñoz-Lahoz, Pedro Tradacete
 -/
 
 import BanLat.ALSpace.Basic
-import BanLat.Substructures.Sublattice
+import BanLat.Substructures.Band.Generated
 
 /-!
-# Closed sublattices of AL-spaces
+# Closed sublattices and bands of AL-spaces
 
-This file records that a closed vector sublattice of an AL-space is again an
-AL-space, with the induced lattice operations and subspace norm.
+Closed vector sublattices of an AL-space are AL-spaces with the induced lattice operations
+and subspace norm. In particular, every band inherits an AL-space structure.
 -/
 
 namespace ALSpace
@@ -32,3 +32,15 @@ noncomputable def ofClosedSublattice (Y : VectorSublattice X)
         (congrArg Subtype.val hxy)
 
 end ALSpace
+
+namespace Band
+
+variable {X : Type*} [NormedAddCommGroup X] [Lattice X]
+  [IsOrderedAddMonoid X] [ALSpace X]
+
+/-- A band of an AL-space, equipped with the induced lattice operations and subspace norm,
+is an AL-space because it is a closed vector sublattice. -/
+noncomputable instance instALSpaceCoe (B : Band X) : ALSpace B.toVectorSublattice :=
+  ALSpace.ofClosedSublattice B.toVectorSublattice B.isClosed_coe
+
+end Band
