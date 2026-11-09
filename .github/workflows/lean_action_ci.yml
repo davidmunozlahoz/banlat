@@ -11,12 +11,21 @@ jobs:
   build:
     name: Build, style, and lint
     runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      id-token: write
+      pages: write
 
     steps:
       - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
       - uses: leanprover/lean-action@v1
         with:
           build: true
           build-args: "--wfail"
           lint: true
           mk_all-check: true
+      - uses: leanprover-community/docgen-action@dacc1acc2a3f532cc577266979ba9c36c7593f7c # main
+        with:
+          build-page: false
