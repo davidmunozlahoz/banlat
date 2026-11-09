@@ -2,6 +2,7 @@
 Authors: Pedro Tradacete
 -/
 
+import BanLat.Bidual.Order
 import BanLat.Examples.Lp.WeakCompactness
 import BanLat.L1repr.Basic
 import BanLat.Quotient
@@ -70,17 +71,6 @@ private lemma positiveFunctional_kernel_projectionBand [IsOrderContinuousNorm X]
   obtain ⟨P, hP⟩ := projectionBand_of_isClosed_orderIdeal J hJ
   exact ⟨P, fun x ↦ (Set.ext_iff.mp hP x).trans (hmem x)⟩
 
-/-- A positive vector admits a positive norming functional of norm at most one,
-together with the projection band on which that functional annihilates moduli. -/
-private theorem exists_norming_null_projection [IsOrderContinuousNorm X]
-    (x : X) (hx : 0 ≤ x) :
-    ∃ (φ : StrongDual ℝ X) (P : ProjectionBand X),
-      0 ≤ φ ∧ ‖φ‖ ≤ 1 ∧ φ x = ‖x‖ ∧
-      (∀ y : X, y ∈ P ↔ φ |y| = 0) := by
-  obtain ⟨φ, hφ, hnorm, hval⟩ := StrongDual.exists_positive_dual_norming hx
-  obtain ⟨P, hP⟩ := positiveFunctional_kernel_projectionBand X φ hφ
-  exact ⟨φ, P, hφ, hnorm, hval, hP⟩
-
 /-- With order continuous norm, a decreasing positive sequence converges in norm to
 zero if each term has a positive norming functional of norm at most one that
 annihilates the next term. -/
@@ -90,32 +80,28 @@ private theorem norming_null_sequence_tendsto_zero [IsOrderContinuousNorm X]
     (hφpos : ∀ n, 0 ≤ φ n) (hφnorm : ∀ n, ‖φ n‖ ≤ 1)
     (hnorm : ∀ n, φ n (r n) = ‖r n‖)
     (hnull : ∀ n, φ n (r (n + 1)) = 0) : Tendsto r atTop (nhds 0) := by
-  obtain ⟨a, ha, ht⟩ := BanachLattice.tendsto_of_monotone_bddAbove
-    (fun i j hij ↦ sub_le_sub_left (hr hij) (r 0))
-    (show BddAbove (range (fun n ↦ r 0 - r n)) from
-      ⟨r 0, fun _ ⟨n, hn⟩ ↦ hn ▸ sub_le_self _ (hpos n)⟩)
-  have hl : Tendsto r atTop (nhds (r 0 - a)) := by
-    simpa only [sub_sub_cancel] using ht.const_sub (r 0)
-  have hglb : IsGLB (range r) (r 0 - a) := isGLB_of_tendsto_atTop hr hl
-  have hlpos : 0 ≤ r 0 - a := hglb.2 (fun _ ⟨n, hn⟩ ↦ hn ▸ hpos n)
-  have hφl (n : ℕ) : φ n (r 0 - a) = 0 :=
+  let : ConditionallyCompleteLattice X := conditionallyCompleteLatticeOfIsOrderContinuousNorm
+  let a := sInf (range r)
+  have hglb : IsGLB (range r) a :=
+    isGLB_csInf (range_nonempty _) ⟨0, fun _ ⟨n, hn⟩ ↦ hn ▸ hpos n⟩
+  have hl : Tendsto r atTop (nhds a) :=
+    IsSigmaOrderContinuousNorm.tendsto_of_antitone_isGLB hr hglb
+  have hlpos : 0 ≤ a := hglb.2 (fun _ ⟨n, hn⟩ ↦ hn ▸ hpos n)
+  have hφl (n : ℕ) : φ n a = 0 :=
     le_antisymm
       ((StrongDual.apply_le_apply_of_nonneg (hφpos n)
         (hglb.1 ⟨n + 1, rfl⟩)).trans_eq (hnull n))
       (StrongDual.apply_nonneg_of_nonneg (hφpos n) hlpos)
-  have hn (n : ℕ) : ‖r n‖ ≤ ‖r n - (r 0 - a)‖ := by
+  have hn (n : ℕ) : ‖r n‖ ≤ ‖r n - a‖ := by
     calc
-      ‖r n‖ = φ n (r n - (r 0 - a)) := by rw [map_sub, hφl, sub_zero, hnorm]
-      _ ≤ ‖φ n (r n - (r 0 - a))‖ := le_abs_self _
-      _ ≤ ‖φ n‖ * ‖r n - (r 0 - a)‖ := (φ n).le_opNorm _
-      _ ≤ ‖r n - (r 0 - a)‖ :=
+      ‖r n‖ = φ n (r n - a) := by rw [map_sub, hφl, sub_zero, hnorm]
+      _ ≤ ‖φ n (r n - a)‖ := le_abs_self _
+      _ ≤ ‖φ n‖ * ‖r n - a‖ := (φ n).le_opNorm _
+      _ ≤ ‖r n - a‖ :=
         mul_le_of_le_one_left (norm_nonneg _) (hφnorm n)
-  have hd : Tendsto (fun n ↦ ‖r n - (r 0 - a)‖) atTop (nhds 0) := by
-    simpa only [sub_self, norm_zero] using (hl.sub_const (r 0 - a)).norm
-  have hzero : r 0 - a = 0 :=
-    norm_eq_zero.mp (le_antisymm (le_of_tendsto_of_tendsto' hl.norm hd hn)
-      (norm_nonneg _))
-  simpa only [hzero] using hl
+  have hd : Tendsto (fun n ↦ ‖r n - a‖) atTop (nhds 0) := by
+    simpa only [sub_self, norm_zero] using (hl.sub_const a).norm
+  exact squeeze_zero_norm hn hd
 
 /-- In an order-continuous Banach lattice, countably many positive functionals of
 norm at most one jointly detect every nonzero vector in a fixed positive interval. -/
@@ -125,8 +111,9 @@ private theorem exists_positive_interval_separating_sequence
       (∀ n, 0 ≤ φ n) ∧ (∀ n, ‖φ n‖ ≤ 1) ∧
       ∀ y : X, 0 ≤ y → y ≤ e → (∀ n, φ n y = 0) → y = 0 := by
   classical
-  choose φ P hφpos hφnorm hφval hP using
-    (fun x : {x : X // 0 ≤ x} ↦ exists_norming_null_projection X x.val x.property)
+  choose φ hφpos hφnorm hφval using
+    (fun x : {x : X // 0 ≤ x} ↦ StrongDual.exists_positive_dual_norming x.property)
+  choose P hP using (fun x ↦ positiveFunctional_kernel_projectionBand X (φ x) (hφpos x))
   let q : ℕ → {x : X // 0 ≤ x} :=
     Nat.rec ⟨e, he⟩ (fun _ x ↦ ⟨(P x).bandProjection x.val,
       Positive.zero_le_iff.mp (P x).bandProjection_nonneg x.val x.property⟩)
@@ -218,20 +205,19 @@ private lemma positive_interval_tendsto_zero_of_summable
   have hrz (n : ℕ) : r n ≤ z n := (hz n).1 ⟨0, by simp⟩
   have hzpos (n : ℕ) : 0 ≤ z n := (hr n).trans (hrz n)
   have hze (n : ℕ) : z n ≤ e := (hz n).2 (fun _ ⟨k, hk⟩ ↦ hk ▸ hre (k + n))
-  let b := sSup (range (fun n ↦ -z n))
-  have hb : IsLUB (range (fun n ↦ -z n)) b :=
-    isLUB_csSup (range_nonempty _) ⟨0, fun _ ⟨n, hn⟩ ↦ hn ▸ neg_nonpos.mpr (hzpos n)⟩
-  have ht : Tendsto z atTop (nhds (-b)) := by
-    simpa only [neg_neg] using
-      (IsSigmaOrderContinuousNorm.tendsto_of_monotone_isLUB hanti.neg hb).neg
+  let b := sInf (range z)
+  have hb : IsGLB (range z) b :=
+    isGLB_csInf (range_nonempty _) ⟨0, fun _ ⟨n, hn⟩ ↦ hn ▸ hzpos n⟩
+  have ht : Tendsto z atTop (nhds b) :=
+    IsSigmaOrderContinuousNorm.tendsto_of_antitone_isGLB hanti hb
   have hφz (n : ℕ) : φ (z n) ≤ ∑' k, φ (r (k + n)) :=
     positive_functional_range_sup_le_tsum X φ hφ (fun k ↦ r (k + n))
       (fun k ↦ hr (k + n)) (hs.comp_injective (add_left_injective n)) (z n) (hz n)
-  have hble : φ (-b) ≤ 0 :=
-    le_of_tendsto_of_tendsto' (φ.continuous.tendsto (-b) |>.comp ht)
+  have hble : φ b ≤ 0 :=
+    le_of_tendsto_of_tendsto' (φ.continuous.tendsto b |>.comp ht)
       (tendsto_sum_nat_add (fun k ↦ φ (r k))) hφz
-  have hbpos : 0 ≤ -b := ge_of_tendsto' ht hzpos
-  have hbzero : -b = 0 := hsep (-b) hbpos (le_of_tendsto' ht hze)
+  have hbpos : 0 ≤ b := ge_of_tendsto' ht hzpos
+  have hbzero : b = 0 := hsep b hbpos (le_of_tendsto' ht hze)
     (le_antisymm hble (StrongDual.apply_nonneg_of_nonneg hφ hbpos))
   exact squeeze_zero_norm (a := fun n ↦ ‖z n‖) (fun n ↦ norm_le_norm_of_abs_le_abs
     (by simpa only [abs_of_nonneg (hr n), abs_of_nonneg (hzpos n)] using hrz n))
@@ -294,14 +280,10 @@ private lemma interval_norming_isClosed_image [IsOrderContinuousNorm X]
   have he : IsClosedEmbedding (fun y : Icc (0 : X) e ↦ j y.val) :=
     (isUniformEmbedding_iff_isUniformInducing.mpr hu).isClosedEmbedding
   have hc := he.isClosedMap (Subtype.val ⁻¹' C) (hC.preimage continuous_subtype_val)
-  have heq : (fun y : Icc (0 : X) e ↦ j y.val) '' (Subtype.val ⁻¹' C) = j '' C := by
-    ext z
-    constructor
-    · rintro ⟨y, hy, rfl⟩
-      exact ⟨y.val, hy, rfl⟩
-    · rintro ⟨y, hy, rfl⟩
-      exact ⟨⟨y, hs hy⟩, hy, rfl⟩
-  simpa only [heq] using hc
+  change IsClosed ((j ∘ (Subtype.val : Icc (0 : X) e → X)) '' (Subtype.val ⁻¹' C)) at hc
+  simpa only [image_comp, image_preimage_eq_of_subset
+    (show C ⊆ range (Subtype.val : Icc (0 : X) e → X) from
+      by simpa only [Subtype.range_coe_subtype, ofPred_mem_eq] using hs)] using hc
 
 /-- Under order continuity, a lattice map normed by a functional strictly positive
 on the interval sends closed convex subsets of that interval to weakly closed sets. -/

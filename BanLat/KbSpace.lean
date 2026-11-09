@@ -9,8 +9,8 @@ import BanLat.OrderContinuous.OrderIntervalCompactness
 
 A KB-space is a Banach lattice in which every increasing norm-bounded positive net
 converges in norm. Such a space has order continuous norm, and its canonical image
-in the bidual is a band. Conversely, a band canonical bidual image implies the KB
-property.
+in the bidual is a band. Conversely, if the image of the canonical embedding is a
+band in the bidual, then the KB property holds.
 -/
 
 noncomputable section
@@ -45,7 +45,7 @@ private lemma exists_tendsto_seq [IsKbSpace X] {f : ℕ → X}
   exact ⟨x, hx.comp (ULift.orderIso (α := ℕ)).symm.tendsto_atTop⟩
 
 /-- Every increasing order-bounded sequence in a KB-space converges in norm to its
-supremum, after translation by its first term to obtain a positive sequence. -/
+supremum. -/
 private lemma exists_tendsto_seq_of_bddAbove [IsKbSpace X] {f : ℕ → X}
     (hf : Monotone f) (hb : BddAbove (range f)) :
     ∃ x, IsLUB (range f) x ∧ Tendsto f atTop (𝓝 x) := by
@@ -73,7 +73,7 @@ instance (priority := 100) toIsOrderContinuousNorm [IsKbSpace X] :
   exact BanachLattice.isOrderContinuousNorm_of_isSigmaConditionallyCompleteLattice
 
 /-- In a KB-space, a norm-bounded increasing positive net has a supremum in the
-canonical bidual image. -/
+image under the canonical embedding in the bidual. -/
 theorem exists_isLUB_inclusion_range [IsKbSpace X]
     {ι : Type u} [Preorder ι] [IsDirected ι (· ≤ ·)] [Nonempty ι]
     {f : ι → X} (hf : Monotone f) (hpos : ∀ i, 0 ≤ f i)
@@ -84,22 +84,21 @@ theorem exists_isLUB_inclusion_range [IsKbSpace X]
     ((BidualSpace.inclusion (X := X)).continuous.tendsto x |>.comp hx)⟩
 
 /-- A norm-bounded directed set of positive vectors in a KB-space has a supremum
-in the canonical bidual image. -/
+in the image under the canonical embedding in the bidual. -/
 theorem exists_isLUB_image_inclusion [IsKbSpace X] {A : Set X}
     (hne : A.Nonempty) (hdir : DirectedOn (· ≤ ·) A) (hpos : ∀ x ∈ A, 0 ≤ x)
     (hb : Bornology.IsBounded A) :
     ∃ x : X, IsLUB (BidualSpace.inclusion '' A) (BidualSpace.inclusion x) := by
   have : Nonempty A := hne.to_subtype
-  have : IsDirected A (· ≤ ·) := ⟨fun a b ↦ by
-    obtain ⟨c, hc, hac, hbc⟩ := hdir a a.property b b.property
-    exact ⟨⟨c, hc⟩, hac, hbc⟩⟩
+  have : IsDirected A (· ≤ ·) := ⟨hdir.directed_val⟩
   obtain ⟨x, hx⟩ := exists_isLUB_inclusion_range (f := fun a : A ↦ (a : X))
     (fun _ _ h ↦ h) (fun a ↦ hpos a a.property)
     (by simpa only [Subtype.range_coe_subtype, ofPred_mem_eq] using hb)
   exact ⟨x, by simpa only [← image_eq_range] using hx⟩
 
-/-- The canonical bidual image of a KB-space contains every existing supremum of
-a nonempty upward directed set of positive vectors in that image. -/
+/-- The image under the canonical embedding in the bidual of a KB-space contains
+every existing supremum of a nonempty upward directed set of positive vectors in
+that image. -/
 private lemma mem_range_inclusion_of_isLUB [IsKbSpace X]
     {A : Set (BidualSpace X)} (hne : A.Nonempty) (hdir : DirectedOn (· ≤ ·) A)
     (hpos : ∀ a ∈ A, 0 ≤ a) (hsub : A ⊆ range BidualSpace.inclusion)
@@ -124,7 +123,7 @@ private lemma mem_range_inclusion_of_isLUB [IsKbSpace X]
   rw [image_preimage_eq_of_subset hsub] at hx
   exact ⟨x, hx.unique hz⟩
 
-/-- The canonical bidual image of a KB-space is a band. -/
+/-- The image under the canonical embedding in the bidual of a KB-space is a band. -/
 theorem exists_band_range_inclusion [IsKbSpace X] :
     ∃ B : Band (BidualSpace X), range BidualSpace.inclusion = (B : Set (BidualSpace X)) := by
   obtain ⟨J, hJ⟩ :=
@@ -142,19 +141,11 @@ private lemma exists_isLUB_dual_of_isBounded
     {A : Set (StrongDual ℝ X)} (hne : A.Nonempty) (hdir : DirectedOn (· ≤ ·) A)
     (hpos : ∀ φ ∈ A, 0 ≤ φ) (hb : Bornology.IsBounded A) :
     ∃ F : StrongDual ℝ X, IsLUB A F := by
-  obtain ⟨C, hC⟩ := hb.exists_norm_le
   let value (x : X) : Set ℝ := (fun f : StrongDual ℝ X ↦ f x) '' A
   let τ (x : X) : ℝ := sSup (value x)
-  have hvalue (x : X) : IsLUB (value x) (τ x) := by
-    have hne : (value x).Nonempty := hne.image _
-    have hbdd : BddAbove (value x) := by
-      refine ⟨C * ‖x‖, ?_⟩
-      rintro v ⟨f, hf, rfl⟩
-      calc
-        f x ≤ ‖f x‖ := le_abs_self _
-        _ ≤ ‖f‖ * ‖x‖ := f.le_opNorm x
-        _ ≤ C * ‖x‖ := mul_le_mul_of_nonneg_right (hC f hf) (norm_nonneg x)
-    exact isLUB_csSup hne hbdd
+  have hvalue (x : X) : IsLUB (value x) (τ x) :=
+    isLUB_csSup (hne.image _)
+      (((ContinuousLinearMap.apply ℝ ℝ x).lipschitzWith.isBounded_image hb).bddAbove)
   have hτ_nn : ∀ x : X, 0 ≤ x → 0 ≤ τ x := by
     intro x hx
     obtain ⟨f, hf⟩ := hne
@@ -206,8 +197,9 @@ private lemma exists_isLUB_dual_of_isBounded
     exact (StrongDual.le_iff.mp (hG hg)) x hx
   exact ⟨F, hFlub⟩
 
-/-- If the canonical bidual image is a band, every increasing norm-bounded positive
-net has a supremum in the original space, obtained from its bidual supremum. -/
+/-- If the image under the canonical embedding in the bidual is a band, then every
+increasing norm-bounded positive net has a supremum in the original space,
+obtained from its bidual supremum. -/
 private lemma exists_isLUB_of_range_inclusion_eq_band
     (B : Band (BidualSpace X))
     (hB : range BidualSpace.inclusion = (B : Set (BidualSpace X)))
@@ -218,8 +210,7 @@ private lemma exists_isLUB_of_range_inclusion_eq_band
   have hm : Monotone (fun i ↦ j (f i)) :=
     (BidualSpace.inclusionVecLatHom (X := X)).monotone.comp hf
   have hdir : DirectedOn (· ≤ ·) (range (fun i ↦ j (f i))) :=
-    directedOn_range.mpr fun i k ↦ (exists_ge_ge i k).imp
-      (fun l hl ↦ ⟨hm hl.1, hm hl.2⟩)
+    hm.directed_le.directedOn_range
   have hb' : Bornology.IsBounded (range (fun i ↦ j (f i))) := by
     simpa only [← range_comp, Function.comp_def] using j.lipschitzWith.isBounded_image hb
   obtain ⟨F, hF⟩ := exists_isLUB_dual_of_isBounded (range_nonempty _) hdir
@@ -233,7 +224,7 @@ private lemma exists_isLUB_of_range_inclusion_eq_band
   exact hF.2 fun _ ⟨i, hi⟩ ↦ hi ▸ BidualSpace.inclusion_le_inclusion_iff.mpr
     (hy (mem_range_self i))
 
-/-- A Banach lattice whose canonical bidual image is a band is a KB-space. -/
+/-- A Banach lattice whose canonical image in the bidual is a band is a KB-space. -/
 theorem of_range_inclusion_eq_band
     (h : ∃ B : Band (BidualSpace X),
       range BidualSpace.inclusion = (B : Set (BidualSpace X))) : IsKbSpace X := by
@@ -245,7 +236,7 @@ theorem of_range_inclusion_eq_band
   exact ⟨x, tendsto_of_orderConvergesTo_of_isOrderContinuousNorm
     (orderConvergesTo_of_monotone_isLUB hf hx)⟩
 
-/-- A Banach lattice is a KB-space exactly when its canonical bidual image is a band. -/
+/-- A Banach lattice is a KB-space exactly when its canonical image in the bidual is a band. -/
 theorem iff_range_inclusion_eq_band :
     IsKbSpace X ↔ ∃ B : Band (BidualSpace X),
       range BidualSpace.inclusion = (B : Set (BidualSpace X)) :=

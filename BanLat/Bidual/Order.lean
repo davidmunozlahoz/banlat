@@ -7,6 +7,7 @@ import BanLat.OrderContinuous.Basic
 import BanLat.Substructures.Ideal
 import Mathlib.Analysis.LocallyConvex.Separation
 import Mathlib.Analysis.LocallyConvex.WeakDual
+import Mathlib.Order.SupClosed
 
 /-!
 # Order properties of the canonical bidual embedding
@@ -27,58 +28,29 @@ namespace BidualSpace
 variable {X : Type u} [NormedAddCommGroup X] [Lattice X] [IsOrderedAddMonoid X]
   [BanachLattice X]
 
-omit [NormedAddCommGroup X] [IsOrderedAddMonoid X] [BanachLattice X] in
-/-- Finite suprema of elements of a set, each including a fixed member, have the same
-supremum as the original set. -/
-private lemma isLUB_range_sup_insert {A : Set X} [DecidableEq A] {a : X}
-    (a₀ : A) (ha : IsLUB A a) :
-    IsLUB (range (fun F : Finset A ↦
-      (insert a₀ F).sup' (Finset.insert_nonempty _ _) Subtype.val)) a := by
-  refine ⟨fun _ ⟨F, hF⟩ ↦ hF ▸
-    (Finset.sup'_le_iff _ _).mpr (fun b _ ↦ ha.1 b.property), ?_⟩
-  intro b hb
-  exact ha.2 fun x hx ↦
-    (Finset.le_sup' Subtype.val (Finset.mem_insert_of_mem
-      (Finset.mem_singleton_self (⟨x, hx⟩ : A)))).trans (hb ⟨{⟨x, hx⟩}, rfl⟩)
-
-/-- The canonical embedding preserves nonempty suprema when the norm is order continuous. -/
+/-- The canonical embedding of a Banach lattice in its bidual preserves nonempty arbitrary
+suprema when the norm is order continuous. -/
 theorem isLUB_image_inclusion [IsOrderContinuousNorm X]
     {A : Set X} {a : X} (hA : A.Nonempty) (ha : IsLUB A a) :
     IsLUB (inclusion '' A) (inclusion a) := by
-  change IsLUB (inclusionVecLatHom '' A) (inclusionVecLatHom a)
-  classical
-  obtain ⟨a₀, ha₀⟩ := hA
-  let f : Finset A → X := fun F ↦
-    (insert ⟨a₀, ha₀⟩ F).sup' (Finset.insert_nonempty _ _) Subtype.val
-  have hf : Monotone f := fun F G hFG ↦
-    Finset.sup'_mono Subtype.val (Finset.insert_subset_insert _ hFG) (Finset.insert_nonempty _ _)
-  have hfaLub : IsLUB (range f) a := isLUB_range_sup_insert ⟨a₀, ha₀⟩ ha
-  have hnet := isLUB_of_tendsto_atTop ((inclusionVecLatHom (X := X)).monotone.comp hf)
-    ((inclusion (X := X)).continuous.tendsto a |>.comp
-      (tendsto_of_orderConvergesTo_of_isOrderContinuousNorm
-        (orderConvergesTo_of_monotone_isLUB hf hfaLub)))
-  refine ⟨?_, ?_⟩
-  · exact fun _ ⟨x, hx, h⟩ ↦ h ▸ inclusionVecLatHom.monotone (ha.1 hx)
-  · intro b hb
-    apply hnet.2
-    rintro _ ⟨F, rfl⟩
-    simpa only [Function.comp_apply, f, map_finset_sup'] using
-      (Finset.sup'_le (Finset.insert_nonempty ⟨a₀, ha₀⟩ F)
-        (fun z : A ↦ inclusionVecLatHom z.val) (fun z _ ↦ hb ⟨z.val, z.property, rfl⟩))
+  let S := supClosure A
+  have : Nonempty S := (hA.mono subset_supClosure).to_subtype
+  have : IsDirected S (· ≤ ·) := ⟨supClosed_supClosure.directedOn.directed_val⟩
+  have hS : IsLUB (range (Subtype.val : S → X)) a := by
+    simpa only [Subtype.range_coe_subtype, ofPred_mem_eq] using isLUB_supClosure.mpr ha
+  have ht : Tendsto (Subtype.val : S → X) atTop (𝓝 a) :=
+    tendsto_of_orderConvergesTo_of_isOrderContinuousNorm
+      (orderConvergesTo_of_monotone_isLUB (fun ⦃x y : S⦄ h ↦ h) hS)
+  refine ⟨fun _ ⟨x, hx, h⟩ ↦ h ▸ inclusionVecLatHom.monotone (ha.1 hx), fun b hb ↦ ?_⟩
+  have hbound : S ⊆ inclusion ⁻¹' Iic b :=
+    supClosure_min (fun y hy ↦ hb ⟨y, hy, rfl⟩)
+      (fun y hy z hz ↦ by simpa only [mem_preimage, mem_Iic, inclusion_sup] using sup_le hy hz)
+  exact le_of_tendsto' ((inclusion (X := X)).continuous.tendsto a |>.comp ht)
+    (fun x ↦ hbound x.property)
 
-/-- At a positive vector `x`, the positive part of a functional equals the supremum
-of its values on the order interval `[0, x]`. -/
-private lemma isLUB_posPart_apply (φ : StrongDual ℝ X)
-    (x : X) (hx : 0 ≤ x) : IsLUB (φ '' Icc 0 x) (φ⁺ x) := by
-  convert OrderDualSpace.isLUB_posPart_apply (φ := StrongDual.toOrderDualSpace φ) hx using 1
-  · ext r
-    simp only [mem_image, mem_Icc, mem_ofPred_eq, StrongDual.toOrderDualSpace_apply]
-    aesop
-  · rfl
-
-/-- Every bidual vector between zero and `inclusion x` lies in the weak-star closure
+/-- Every vector in the bidual between zero and `inclusion x` lies in the weak-star closure
 of the canonical image of `[0, x]`. -/
-private lemma mem_closure_inclusion_Icc (x : X) (hx : 0 ≤ x)
+lemma mem_closure_inclusion_Icc (x : X) (hx : 0 ≤ x)
     (F : BidualSpace X) (hF0 : 0 ≤ F) (hFx : F ≤ inclusion x) :
     StrongDual.toWeakDual F ∈ closure
       ((fun y : X ↦ StrongDual.toWeakDual (inclusion y)) '' Icc 0 x) := by
@@ -93,11 +65,11 @@ private lemma mem_closure_inclusion_Icc (x : X) (hx : 0 ≤ x)
   obtain ⟨φ, hφ⟩ := LinearMap.dualEmbedding_surjective
     (topDualPairing ℝ (StrongDual ℝ X)) g
   have hφupper : φ⁺ x ≤ c :=
-    (isLUB_posPart_apply φ x hx).2
-      (fun _ ⟨y, hy, heq⟩ ↦ heq ▸ (show φ y < c from by
+    (OrderDualSpace.isLUB_posPart_apply (φ := StrongDual.toOrderDualSpace φ) hx).2
+      (fun _ ⟨y, hy0, hyx, heq⟩ ↦ heq.symm ▸ (show φ y < c from by
         change (WeakBilin.eval (topDualPairing ℝ (StrongDual ℝ X)) φ) (j y) < c
         exact (congrArg (fun l ↦ l (j y)) hφ).le.trans_lt
-          (hgc (j y) (subset_closure ⟨y, hy, rfl⟩))).le)
+          (hgc (j y) (subset_closure ⟨y, ⟨hy0, hyx⟩, rfl⟩))).le)
   have hFφ : (show StrongDual ℝ (StrongDual ℝ X) from F) φ ≤ φ⁺ x :=
     (StrongDual.apply_le_apply_of_nonneg hF0 le_sup_left).trans
       (StrongDual.le_iff.mp hFx φ⁺ (posPart_nonneg φ))
@@ -105,7 +77,7 @@ private lemma mem_closure_inclusion_Icc (x : X) (hx : 0 ≤ x)
     (hcF.trans_le (congrArg (fun l ↦ l (StrongDual.toWeakDual F)) hφ).symm.le)
 
 /-- Weak compactness of positive order intervals makes the canonical embedding
-interval preserving. -/
+into the bidual interval preserving. -/
 theorem image_inclusion_Icc_of_isCompact
     (h : ∀ x : X, 0 ≤ x → IsCompact ((toWeakSpace ℝ X) '' Icc 0 x)) :
     ∀ x : X, 0 ≤ x → inclusion '' Icc 0 x = Icc 0 (inclusion x) := by
@@ -124,8 +96,8 @@ theorem image_inclusion_Icc_of_isCompact
     rw [hc.isClosed.closure_eq] at hmem
     exact hmem.imp (fun y hy ↦ ⟨hy.1, StrongDual.toWeakDual.injective hy.2⟩)
 
-/-- If the canonical embedding preserves positive intervals, the weak-star closure
-of each such interval's image remains in the canonical bidual range. -/
+/-- If the canonical embedding in the bidual preserves positive intervals, the weak-star
+closure of the image of such intervals remains in the range of the canonical embedding. -/
 private lemma closure_inclusion_Icc_subset_range
     (hi : ∀ x : X, 0 ≤ x → inclusion '' Icc 0 x = Icc 0 (inclusion x))
     (x : X) (hx : 0 ≤ x) :
@@ -150,7 +122,8 @@ private lemma closure_inclusion_Icc_subset_range
   obtain ⟨y, _, hy⟩ := (hi x hx).symm ▸ hinterval
   exact ⟨toWeakSpace ℝ X y, congrArg StrongDual.toWeakDual hy⟩
 
-/-- Interval preservation by the canonical embedding implies weak compactness of order intervals. -/
+/-- If the canonical embedding in the bidual is interval preserving, then order
+intervals are weakly compact. -/
 theorem isCompact_Icc_of_image_inclusion_Icc
     (hi : ∀ x : X, 0 ≤ x → inclusion '' Icc 0 x = Icc 0 (inclusion x)) (x : X) (hx : 0 ≤ x) :
     IsCompact ((toWeakSpace ℝ X) '' Icc 0 x) := by
@@ -166,8 +139,8 @@ theorem isCompact_Icc_of_image_inclusion_Icc
       ((convex_Icc (0 : X) x).toWeakSpace_closure ℝ).symm
   simpa only [hW] using hc
 
-/-- Interval preservation makes the canonical bidual range solid: a vector whose
-modulus is bounded by that of an image vector also belongs to the range. -/
+/-- If the canonical embedding in the bidual is interval preserving, then the its range
+is solid. -/
 private lemma mem_range_inclusion_of_abs_le
     (h : ∀ x : X, 0 ≤ x → inclusion '' Icc 0 x = Icc 0 (inclusion x))
     {x : X} {y : BidualSpace X} (hy : |y| ≤ |inclusion x|) :
@@ -183,7 +156,7 @@ private lemma mem_range_inclusion_of_abs_le
   obtain ⟨b, _, hb⟩ := hn
   exact ⟨a - b, by rw [map_sub, ha, hb, posPart_sub_negPart]⟩
 
-/-- The canonical embedding preserves positive intervals exactly when
+/-- The canonical embedding in the bidual is interval preserving if and only if
 its range is an order ideal. -/
 theorem image_inclusion_Icc_iff_range_eq_orderIdeal :
     (∀ x : X, 0 ≤ x → inclusion '' Icc 0 x = Icc 0 (inclusion x)) ↔
@@ -214,20 +187,13 @@ private lemma isLUB_apply_of_directedOn (A : Set (StrongDual ℝ X))
     toEquiv := StrongDual.equivOrderDualSpace.toEquiv
     map_rel_iff' := by rfl }
   have hE : IsLUB (e '' A) (e F) :=
-    e.isLUB_image.mpr (by simpa only [OrderIso.symm_apply_apply] using hF)
-  have hdir' : DirectedOn (· ≤ ·) (e '' A) := by
-    rintro _ ⟨φ, hφ, rfl⟩ _ ⟨ψ, hψ, rfl⟩
-    obtain ⟨η, hη, hφη, hψη⟩ := hdir φ hφ ψ hψ
-    exact ⟨e η, ⟨η, hη, rfl⟩, e.monotone hφη, e.monotone hψη⟩
+    e.isLUB_image'.mpr hF
   obtain ⟨G, hG, hpoint⟩ := OrderBoundedHom.isLUB_of_directedOn
-    (hne.image e) hdir' ⟨e F, hE.1⟩
-  have heq : G = e F := hG.unique hE
-  have hp := hpoint hx
-  rw [heq, Set.image_image] at hp
-  exact hp
+    (hne.image e) (hdir.mono_comp e.monotone) ⟨e F, hE.1⟩
+  simpa only [hG.unique hE, Set.image_image] using! hpoint hx
 
-/-- If the canonical embedding preserves nonempty suprema, every decreasing net
-with infimum zero converges weakly to zero. -/
+/-- If the canonical embedding in the bidual preserves nonempty suprema, then every
+decreasing net with infimum zero converges weakly to zero. -/
 private lemma weak_tendsto_zero_of_isLUB_image_inclusion
     (hr : ∀ (A : Set X) (a : X), A.Nonempty → IsLUB A a →
       IsLUB (inclusion '' A) (inclusion a))
@@ -243,8 +209,7 @@ private lemma weak_tendsto_zero_of_isLUB_image_inclusion
   have hm : Monotone (fun i ↦ inclusion (-f i)) :=
     fun i j hij ↦ (inclusionVecLatHom (X := X)).monotone (neg_le_neg (hf hij))
   have hdir : DirectedOn (· ≤ ·) (range (fun i ↦ inclusion (X := X) (-f i))) :=
-    directedOn_range.mpr (fun i j ↦ (exists_ge_ge i j).imp
-      (fun k hk ↦ ⟨hm hk.1, hm hk.2⟩))
+    hm.directed_le.directedOn_range
   have hposTend (φ : StrongDual ℝ X) (hφ : 0 ≤ φ) :
       Tendsto (fun i ↦ φ (f i)) atTop (nhds 0) := by
     have hp := isLUB_apply_of_directedOn (X := StrongDual ℝ X) _ (range_nonempty _) hdir 0 hjn φ hφ
@@ -260,23 +225,20 @@ private lemma weak_tendsto_zero_of_isLUB_image_inclusion
     simpa only [← sub_apply, posPart_sub_negPart, sub_zero] using
       (hposTend φ⁺ (posPart_nonneg φ)).sub (hposTend φ⁻ (negPart_nonneg φ))
   have hb : Function.Injective ((topDualPairing ℝ X).flip) :=
-    fun x y hxy ↦ (SeparatingDual.eq_iff_forall_dual_eq (R := ℝ)).2
-      (fun φ ↦ DFunLike.congr_fun hxy φ)
-  have hw : Tendsto (fun i ↦ toWeakSpace ℝ X (f i)) atTop
-      (nhds (toWeakSpace ℝ X 0)) :=
-    (WeakBilin.tendsto_iff_forall_eval_tendsto (topDualPairing ℝ X).flip hb).2
-      (fun φ ↦ show Tendsto (fun i ↦ φ (f i)) atTop (nhds (φ 0)) from
-        by simpa only [map_zero] using hall φ)
-  exact hw
+    separatingDual_iff_injective.mp inferInstance
+  exact (WeakBilin.tendsto_iff_forall_eval_tendsto (topDualPairing ℝ X).flip hb).2
+    (fun φ ↦ show Tendsto (fun i ↦ φ (f i)) atTop (nhds (φ 0)) from
+      by simpa only [map_zero] using hall φ)
 
-/-- Preservation of nonempty suprema by the canonical embedding forces order continuity. -/
+/-- If the canonical embedding in the bidual preserves nonempty suprema, then
+the norm is order continuous. -/
 theorem isOrderContinuousNorm_of_isLUB_image_inclusion
     (h : ∀ (A : Set X) (a : X), A.Nonempty → IsLUB A a →
       IsLUB (inclusion '' A) (inclusion a)) : IsOrderContinuousNorm X :=
   ⟨fun hf _ hglb ↦ StrongDual.tendsto_of_monotone_weak_tendsto (Or.inr hf)
     (weak_tendsto_zero_of_isLUB_image_inclusion h hf hglb)⟩
 
-/-- The norm is order continuous exactly when the canonical embedding
+/-- The norm is order continuous exactly when the canonical embedding in the bidual
 preserves nonempty suprema. -/
 theorem isOrderContinuousNorm_iff_isLUB_image_inclusion :
     IsOrderContinuousNorm X ↔
@@ -285,7 +247,7 @@ theorem isOrderContinuousNorm_iff_isLUB_image_inclusion :
   ⟨fun _ _ _ hA ha ↦ isLUB_image_inclusion hA ha,
     isOrderContinuousNorm_of_isLUB_image_inclusion⟩
 
-/-- The canonical bidual image is an order ideal exactly when
+/-- The canonical image in the bidual is an order ideal exactly when
 positive intervals are weakly compact. -/
 theorem range_inclusion_eq_orderIdeal_iff_isCompact_Icc :
     (∃ J : OrderIdeal (BidualSpace X), range inclusion = (J : Set (BidualSpace X))) ↔
@@ -293,8 +255,8 @@ theorem range_inclusion_eq_orderIdeal_iff_isCompact_Icc :
   image_inclusion_Icc_iff_range_eq_orderIdeal.symm.trans
     ⟨isCompact_Icc_of_image_inclusion_Icc, image_inclusion_Icc_of_isCompact⟩
 
-/-- An order ideal canonical bidual image ensures that the embedding preserves
-all existing nonempty suprema. -/
+/-- If the image of the canonical embedding is an order ideal in the bidual, then
+the embedding preserves all existing nonempty suprema. -/
 private lemma isLUB_image_inclusion_of_range_eq_orderIdeal
     (J : OrderIdeal (BidualSpace X)) (hJ : range inclusion = (J : Set (BidualSpace X)))
     {A : Set X} {a : X} (hA : A.Nonempty) (ha : IsLUB A a) :
@@ -319,7 +281,8 @@ private lemma isLUB_image_inclusion_of_range_eq_orderIdeal
         le_inf (hb ⟨x, hx, rfl⟩) (inclusion_le_inclusion_iff.mpr (ha.1 hx)))
     exact (inclusion_le_inclusion_iff.mpr hub).trans (heq ▸ inf_le_left)
 
-/-- An ideal canonical bidual image forces order continuity of the norm. -/
+/-- If the image of the canonical embedding is an ideal in the bidual then the norm
+is order continuous. -/
 theorem isOrderContinuousNorm_of_range_inclusion_eq_orderIdeal
     (h : ∃ J : OrderIdeal (BidualSpace X), range inclusion = (J : Set (BidualSpace X))) :
     IsOrderContinuousNorm X :=
