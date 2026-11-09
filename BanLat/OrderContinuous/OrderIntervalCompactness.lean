@@ -103,8 +103,9 @@ private theorem norming_null_sequence_tendsto_zero [IsOrderContinuousNorm X]
     simpa only [sub_self, norm_zero] using (hl.sub_const a).norm
   exact squeeze_zero_norm hn hd
 
-/-- In an order-continuous Banach lattice, countably many positive functionals of
-norm at most one jointly detect every nonzero vector in a fixed positive interval. -/
+/-- Every positive order interval in a Banach lattice with order continuous norm
+admits a countable family of positive continuous linear functionals that separate
+the positive vectors in that interval from zero. -/
 private theorem exists_positive_interval_separating_sequence
    [IsOrderContinuousNorm X] (e : X) (he : 0 ≤ e) :
     ∃ φ : ℕ → StrongDual ℝ X,
@@ -223,8 +224,6 @@ private lemma positive_interval_tendsto_zero_of_summable
     (by simpa only [abs_of_nonneg (hr n), abs_of_nonneg (hzpos n)] using hrz n))
     (by simpa only [hbzero, norm_zero] using ht.norm)
 
-/-- Under order continuity, a functional strictly positive on `[0, e]` controls the
-norm uniformly there: sufficiently small evaluations imply small norms. -/
 private lemma positive_interval_uniform_norm_control
     [IsOrderContinuousNorm X] (e : X) (φ : StrongDual ℝ X) (hφ : 0 ≤ φ)
     (hsep : ∀ y : X, 0 ≤ y → y ≤ e → φ y = 0 → y = 0) :
@@ -268,7 +267,7 @@ private lemma interval_norming_isUniformInducing [IsOrderContinuousNorm X]
     hc |a.val - b.val| (abs_nonneg _) hb
       (by rw [← hj, map_sub]; simpa only [dist_eq_norm] using hab)
 
-/-- Under order continuity, a lattice map normed by a functional strictly positive
+/-- Under order continuity, a lattice map normed by a strictly positive functional
 on the interval sends closed subsets of that interval to norm-closed sets. -/
 private lemma interval_norming_isClosed_image [IsOrderContinuousNorm X]
     (e : X) (φ : StrongDual ℝ X) (hφ : 0 ≤ φ)
@@ -285,7 +284,7 @@ private lemma interval_norming_isClosed_image [IsOrderContinuousNorm X]
     (show C ⊆ range (Subtype.val : Icc (0 : X) e → X) from
       by simpa only [Subtype.range_coe_subtype, ofPred_mem_eq] using hs)] using hc
 
-/-- Under order continuity, a lattice map normed by a functional strictly positive
+/-- Under order continuity, a lattice map normed by a strictly positive functional
 on the interval sends closed convex subsets of that interval to weakly closed sets. -/
 private lemma interval_norming_isClosed_weak_image [IsOrderContinuousNorm X]
     (e : X) (φ : StrongDual ℝ X) (hφ : 0 ≤ φ)
@@ -297,7 +296,7 @@ private lemma interval_norming_isClosed_weak_image [IsOrderContinuousNorm X]
   have hv : Convex ℝ (j '' C) := hc.linear_image j.toLinearMap
   rw [← closure_eq_iff_isClosed, ← hv.toWeakSpace_closure ℝ, hcl.closure_eq]
 
-/-- Under order continuity, a lattice map normed by a functional strictly positive
+/-- Under order continuity, a lattice map normed by a strictly positive functional
 on the interval has a weakly continuous inverse on the image of that interval. -/
 private lemma interval_norming_inverse_weak_continuous [IsOrderContinuousNorm X]
     (e : X) (φ : StrongDual ℝ X) (hφ : 0 ≤ φ)
@@ -352,7 +351,7 @@ private lemma interval_norming_inverse_weak_continuous [IsOrderContinuousNorm X]
     by simpa only [hhi', compl_compl] using hhi.isOpen_compl⟩
 
 /-- Under order continuity, weak compactness of the target interval transfers back
-along a lattice map normed by a functional strictly positive on the source interval. -/
+along a lattice map normed by a strictly positive functional on the source interval. -/
 private lemma interval_norming_isCompact [IsOrderContinuousNorm X]
     (e : X) (φ : StrongDual ℝ X) (hφ : 0 ≤ φ)
     (hsep : ∀ y : X, 0 ≤ y → y ≤ e → φ y = 0 → y = 0)
