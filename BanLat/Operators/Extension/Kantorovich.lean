@@ -2,7 +2,7 @@
 Authors: Raúl Enrique Pariente-Martín
 -/
 
-import BanLat.Operators.HahnBanach
+import BanLat.Operators.Extension.HahnBanach
 import BanLat.Majorizing
 import BanLat.Operators.Positive
 

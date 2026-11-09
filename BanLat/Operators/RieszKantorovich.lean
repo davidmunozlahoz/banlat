@@ -1,5 +1,5 @@
 /-
-Authors: David Muñoz-Lahoz
+Authors: David Muñoz-Lahoz, Raúl Enrique Pariente-Martín
 -/
 
 import BanLat.Operators.OrderBounded
@@ -811,6 +811,18 @@ private lemma witOp_apply_disjoint {f : OrderBoundedHom X Y}
     (hy : 0 ≤ y) (hd : y ⊓ x₀ = 0) : witOp hf hx₀ y = 0 := by
   change witLin hf hx₀ y = 0
   rw [witLin_apply_nonneg hf hx₀ hy, witFun_zero_of_disjoint hf hx₀ hy hd]
+
+/-- Given a positive operator `f : X → Y` and `u ≥ 0`, there exists a positive
+operator `g` satisfying `g ≤ f` and `g u = f u`, with `g v = 0` for every
+`v ≥ 0` disjoint from `u`. -/
+theorem exists_positive_fragment {f : OrderBoundedHom X Y} (hf : 0 ≤ f)
+    {u : X} (hu : 0 ≤ u) :
+    ∃ g : OrderBoundedHom X Y, 0 ≤ g ∧ g ≤ f ∧ g u = f u ∧
+      ∀ v : X, 0 ≤ v → IsVLDisjoint v u → g v = 0 := by
+  refine ⟨witOp hf hu, witOp_nonneg hf hu, witOp_le_f hf hu,
+    witOp_apply_self hf hu, fun v hv hvu ↦ ?_⟩
+  exact witOp_apply_disjoint hf hu hv
+    (by simpa only [IsVLDisjoint, abs_of_nonneg hv, abs_of_nonneg hu] using hvu)
 
 /-- The witness operator at `x = x⁺ - x⁻` recovers `f x⁺`. -/
 private lemma witOp_apply_eq_posPart {f : OrderBoundedHom X Y}

@@ -79,6 +79,9 @@ import BanLat.Free.FBL
 import BanLat.Free.FVL
 import BanLat.Free.FVLv
 import BanLat.FunctionalCalculus
+import BanLat.Functionals.Positive.Separation
+import BanLat.Functionals.StrictlyPositive.QuasiInteriorPoint
+import BanLat.Functionals.StrictlyPositive.WeakOrderUnit
 import BanLat.L1repr.Basic
 import BanLat.L1repr.HowItSeats
 import BanLat.L1repr.OrderContinuous
@@ -91,13 +94,13 @@ import BanLat.LocallySolid.WithSeminorms
 import BanLat.Majorizing
 import BanLat.Normed
 import BanLat.Operators.Carrier
-import BanLat.Operators.Extension
-import BanLat.Operators.HahnBanach
+import BanLat.Operators.Extension.HahnBanach
+import BanLat.Operators.Extension.Kantorovich
+import BanLat.Operators.Extension.OrderContinuous
+import BanLat.Operators.Extension.PositiveFunctional
 import BanLat.Operators.Hom
-import BanLat.Operators.KantorovichExtension
 import BanLat.Operators.OrderBounded
 import BanLat.Operators.OrderContinuous
-import BanLat.Operators.OrderContinuousExtension
 import BanLat.Operators.Positive
 import BanLat.Operators.Regular
 import BanLat.Operators.RieszKantorovich
