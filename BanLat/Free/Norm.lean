@@ -159,7 +159,7 @@ theorem freeNormExt_add_le (f g : StrongDual ℝ E → ℝ) :
         all_goals exact le_iSup_of_le n (le_iSup_of_le φ (le_iSup_of_le hφ le_rfl))
 
 /-- If `|f φ| ≤ |g φ|` at every dual functional `φ`, then the extended free p-norm of
-`f` is at most that of `g`. The free p-norm is a lattice norm. -/
+`f` is at most that of `g`. In particular, the free p-norm will be a lattice norm. -/
 theorem freeNormExt_mono_abs (p : ℝ≥0∞) [Fact (1 ≤ p)] {f g : StrongDual ℝ E → ℝ}
     (h : ∀ φ, |f φ| ≤ |g φ|) : freeNormExt p f ≤ freeNormExt p g := by
   by_cases htop : p = ⊤

@@ -124,7 +124,7 @@ private lemma norm_mixed_le {p q : ℝ≥0∞} [Fact (1 ≤ p)] [Fact (1 ≤ q)]
 /-- The free lattice at infinity satisfies the p-convexity estimate with constant one
 for every `1 ≤ p ≤ ∞`, using its supremum norm on the closed dual unit ball. -/
 theorem convexWith_infinity :
-    ConvexWith p 1 (ContinuousLinearMap.id ℝ (FBLp ∞ E)) := by
+    IsPConvexWith p 1 (FBLp ∞ E) := by
   refine ⟨zero_le_one, fun n f ↦ ?_⟩
   change (freeNormExt ∞ (latticePSum p f : FBLp ∞ E).1.1).toReal ≤
     1 * ‖WithLp.toLp p (fun i ↦ ‖f i‖)‖
@@ -139,10 +139,10 @@ theorem convexWith_infinity :
   rw [abs_norm]
   exact functionSpace_unit_eval_le ∞ (f i).1 φ hφ
 
-/-- If `1 ≤ p ≤ q ≤ ∞`, the identity on `FBLp q E` satisfies the p-convexity estimate
+/-- If `1 ≤ p ≤ q ≤ ∞`, the free Banach lattice `FBLp q E` is p-convex
 with constant one. This allows the universal property at `p` to target the free lattice at `q`. -/
 theorem convexWith_of_le {p q : ℝ≥0∞} [Fact (1 ≤ p)] [Fact (1 ≤ q)]
-    (hpq : p ≤ q) : ConvexWith p 1 (ContinuousLinearMap.id ℝ (FBLp q E)) := by
+    (hpq : p ≤ q) : IsPConvexWith p 1 (FBLp q E) := by
   by_cases hq : q = ∞
   · subst q
     exact convexWith_infinity p

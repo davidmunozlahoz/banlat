@@ -9,11 +9,11 @@ import Mathlib.Topology.ContinuousMap.StoneWeierstrass
 # The function representation of the free infinity-convex Banach lattice
 
 For a real normed space `E`, `infinity_representation` identifies the elements of
-`FBLp ∞ E` with the positively homogeneous functions `f : E* → ℝ` whose restrictions
+`FBLp ∞ E` with the positively homogeneous functions `f : E^* → ℝ` whose restrictions
 to the closed dual unit ball are weak-star continuous. The free infinity-norm is the
 supremum norm on that ball. The proof uses two-point interpolation by algebraic free
 lattice elements and lattice approximation on the dual unit ball, followed by positive
-homogeneity to recover the function on all of `E*`. Completeness of `E` is not required.
+homogeneity to recover the function on all of `E^*`. Completeness of `E` is not required.
 -/
 
 noncomputable section
