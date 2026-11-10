@@ -28,6 +28,7 @@ attribute [local instance] IsQuasiSeminorm.topology
 structure QuasiIsometry (E F : Type*)
     [AddCommGroup E] [Norm E] [IsQuasiSeminorm E]
     [AddCommGroup F] [Norm F] [IsQuasiSeminorm F] where
+  /-- The underlying function of a quasi-isometry. -/
   toFun : E → F
   norm_sub_map' : ∀ x y, ‖toFun x - toFun y‖ = ‖x - y‖
 
