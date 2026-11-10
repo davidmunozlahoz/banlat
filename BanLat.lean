@@ -53,6 +53,7 @@ import BanLat.Examples.CofK.Basic
 import BanLat.Examples.CofK.Complex
 import BanLat.Examples.CofK.Dual
 import BanLat.Examples.CofK.FunctionalCalculus
+import BanLat.Examples.Ellp.Basic
 import BanLat.Examples.Ellp.Sum
 import BanLat.Examples.Ellp.WeakUnit
 import BanLat.Examples.Lp.Atom
@@ -132,6 +133,9 @@ import BanLat.QuasiInteriorPoint
 import BanLat.QuasiNormed.Basic
 import BanLat.QuasiNormed.Complete
 import BanLat.QuasiNormed.Lattice
+import BanLat.QuasiNormed.Maps.Basic
+import BanLat.QuasiNormed.Maps.Isometry
+import BanLat.QuasiNormed.Maps.LinearMap
 import BanLat.QuasiNormed.Topology
 import BanLat.Quotient
 import BanLat.RieszDec
