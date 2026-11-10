@@ -26,6 +26,14 @@ class QuasiBanachSpace (𝕜 E : Type*) [NormedField 𝕜] [AddCommGroup E] [Nor
     [IsQuasiNorm E] extends QuasiNormedSpace 𝕜 E,
       @CompleteSpace E (IsQuasiSeminorm.uniformSpace E)
 
+-- To infer completeness, Lean can try this projection and then search for a quasi-Banach
+-- structure. However, `NormedSpace.toQuasiBanachSpace` constructs that structure from completeness,
+-- so this route can lead back to the original search and time out.
+-- Priority 50 lets `instQuasiSeminormCompleteSpaceOfCompleteSpace` (priority 100) run first:
+-- it uses ordinary completeness directly. This projection remains available as a fallback
+-- when a quasi-Banach structure is already supplied.
+attribute [instance 50] QuasiBanachSpace.toCompleteSpace
+
 namespace IsQuasiSeminorm
 
 variable {E : Type*} [AddCommGroup E] [Norm E] [IsQuasiSeminorm E]
