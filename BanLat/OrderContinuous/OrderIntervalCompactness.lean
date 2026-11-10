@@ -14,10 +14,7 @@ import Mathlib.Order.PartialSups
 /-!
 # Weak compactness of order intervals
 
-Order intervals in a Banach lattice with order continuous norm are weakly compact.
-The proof uses a positive functional that separates a fixed interval and an `L¹`
-representation whose inverse on that interval is weakly continuous.
--/
+Order intervals in a Banach lattice with order continuous norm are weakly compact. -/
 
 noncomputable section
 
