@@ -362,7 +362,7 @@ private lemma exists_atom_full_preimage_side
 /-- Independence bounds the mass of a source atom by the probability of
 a finite pattern of events or their complements. -/
 private lemma measure_atom_le_pow_of_iid
-    {ν : Measure E} [IsProbabilityMeasure ν]
+    {ν : Measure E}
     {X : ℕ → Ω → E}
     (hXm : ∀ n, Measurable (X n))
     (hX : ∀ n, HasLaw (X n) ν P)
