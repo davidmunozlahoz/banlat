@@ -60,6 +60,7 @@ import BanLat.Examples.Lp.Basic
 import BanLat.Examples.Lp.ChangeDensity
 import BanLat.Examples.Lp.Classification.Atomic
 import BanLat.Examples.Lp.Classification.Homogeneous
+import BanLat.Examples.Lp.Convergence
 import BanLat.Examples.Lp.Counting
 import BanLat.Examples.Lp.DensityCharacter
 import BanLat.Examples.Lp.MeasureAlgebra
@@ -110,6 +111,7 @@ import BanLat.OrderDense
 import BanLat.OrderUnit
 import BanLat.PConvexity
 import BanLat.Pi
+import BanLat.Preliminaries.ContinuousLinearMap
 import BanLat.Preliminaries.DensityCharacter
 import BanLat.Preliminaries.EberleinSmulian
 import BanLat.Preliminaries.HasNoAtoms

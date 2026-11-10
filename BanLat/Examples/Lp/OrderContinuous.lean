@@ -2,9 +2,8 @@
 Authors: Jesús Illescas-Fiorito
 -/
 
-import BanLat.Examples.Lp.Basic
+import BanLat.Examples.Lp.Convergence
 import BanLat.OrderContinuous.MeyerNieberg
-import Mathlib.MeasureTheory.Integral.Lebesgue.DominatedConvergence
 
 /-!
 # Order continuity of `Lₚ` spaces, `1 ≤ p < ∞`
@@ -74,59 +73,22 @@ private lemma tendsto_zero_of_ae_tendsto_of_abs_le
     (hu : ∀ᵐ x ∂μ, Tendsto (fun n => u n x) atTop (nhds 0))
     (hug : ∀ n, |u n| ≤ g) :
     Tendsto u atTop (nhds 0) := by
-  have hp_pos : 0 < p := lt_of_lt_of_le zero_lt_one Fact.out
-  have hp_real_pos : 0 < (p : ℝ) := NNReal.coe_pos.mpr hp_pos
-  have hp_ne_zero : (p : ENNReal) ≠ 0 := (ENNReal.coe_pos.mpr hp_pos).ne'
-  have hp_ne_top : (p : ENNReal) ≠ ⊤ := by simp
-  have hpreal : (p : ENNReal).toReal = (p : ℝ) := by simp
-  have hnorm : ∀ n, ∀ᵐ x ∂μ, ‖u n x‖ₑ ≤ ‖g x‖ₑ := by
+  let : Fact (0 < (p : ENNReal)) :=
+    ⟨lt_of_lt_of_le zero_lt_one (Fact.out : 1 ≤ (p : ENNReal))⟩
+  have hnorm : ∀ n, ∀ᵐ x ∂μ, ‖u n x‖ ≤ g x := by
     intro n
     have hle := (Lp.coeFn_le |u n| g).2 (hug n)
     filter_upwards [hle, Lp.coeFn_abs (u n)] with x hx habs
-    rw [habs] at hx
-    rw [Real.enorm_eq_ofReal_abs,
-      Real.enorm_eq_ofReal ((abs_nonneg _).trans hx)]
-    exact ENNReal.ofReal_le_ofReal hx
-  have h_integral :
-      Tendsto (fun n ↦ ∫⁻ x, ‖u n x‖ₑ ^ (p : ℝ) ∂μ) atTop (nhds 0) := by
-    have hmeas : ∀ n, AEMeasurable (fun x ↦ ‖u n x‖ₑ ^ (p : ℝ)) μ := fun n =>
-      (Lp.aestronglyMeasurable (u n)).enorm.pow_const (p : ℝ)
-    have hbound : ∀ n, (fun x ↦ ‖u n x‖ₑ ^ (p : ℝ)) ≤ᵐ[μ]
-        fun x ↦ ‖g x‖ₑ ^ (p : ℝ) := fun n =>
-      (hnorm n).mono fun _ hx => ENNReal.rpow_le_rpow hx hp_real_pos.le
-    have hfin : ∫⁻ x, ‖g x‖ₑ ^ (p : ℝ) ∂μ ≠ ⊤ := by
-      have hfin' : ∫⁻ x, ‖g x‖ₑ ^ (p : ENNReal).toReal ∂μ ≠ ⊤ := by
-        exact (lintegral_rpow_enorm_lt_top_of_eLpNorm_lt_top
-          hp_ne_zero hp_ne_top
-          (Lp.eLpNorm_ne_top g).lt_top).ne
-      simpa only [hpreal] using hfin'
-    have hlim : ∀ᵐ x ∂μ, Tendsto (fun n ↦ ‖u n x‖ₑ ^ (p : ℝ)) atTop (nhds 0) := by
-      filter_upwards [hu] with x hx
-      have henorm : Tendsto (fun n ↦ ‖u n x‖ₑ) atTop (nhds 0) := by
-        have h := (continuous_enorm.tendsto 0).comp hx
-        have h' : Tendsto (fun n ↦ ‖u n x‖ₑ) atTop (nhds ‖(0 : ℝ)‖ₑ) :=
-          h.congr' <| Eventually.of_forall fun n ↦ by simp only [Function.comp_apply]
-        simpa only [enorm_zero] using h'
-      rw [← ENNReal.zero_rpow_of_pos hp_real_pos]
-      exact ((@ENNReal.continuous_rpow_const (p : ℝ)).tendsto 0).comp henorm
-    simpa using
-      tendsto_lintegral_of_dominated_convergence'
-        (fun x ↦ ‖g x‖ₑ ^ (p : ℝ)) hmeas hbound hfin hlim
-  have heLp : Tendsto (fun n ↦ eLpNorm (u n) (p : ENNReal) μ)
-      atTop (nhds 0) := by
-    have hroot : Tendsto
-        (fun n ↦ (∫⁻ x, ‖u n x‖ₑ ^ (p : ℝ) ∂μ) ^ (1 / (p : ℝ)))
-        atTop (nhds 0) := by
-      rw [← ENNReal.zero_rpow_of_pos (one_div_pos.mpr hp_real_pos)]
-      exact ((@ENNReal.continuous_rpow_const (1 / (p : ℝ))).tendsto 0).comp h_integral
-    simpa only [eLpNorm_eq_lintegral_rpow_enorm_toReal
-      hp_ne_zero hp_ne_top, Lp.aestronglyMeasurable, hpreal] using hroot
-  rw [Lp.tendsto_Lp_iff_tendsto_eLpNorm']
-  refine heLp.congr' (Eventually.of_forall fun n => ?_)
-  apply eLpNorm_congr_ae
-  filter_upwards [Lp.coeFn_zero ℝ (p : ENNReal) μ] with x hx
-  rw [Pi.sub_apply, hx]
-  simp
+    simpa only [Real.norm_eq_abs, habs] using hx
+  have hlim : ∀ᵐ x ∂μ,
+      Tendsto (fun n ↦ u n x) atTop
+        (nhds ((0 : Lp ℝ (p : ENNReal) μ) x)) := by
+    filter_upwards [hu, Lp.coeFn_zero ℝ (p : ENNReal) μ] with x hx hz
+    simpa only [hz, Pi.zero_apply] using hx
+  have hq := Lp.tendsto_quasiLp_of_dominated_convergence
+    (f := u) (f_lim := 0) ENNReal.coe_ne_top g hnorm hlim
+  exact (Lp.tendsto_Lp_iff_tendsto_eLpNorm' u 0).mpr
+    ((Lp.tendsto_quasiLp_iff_tendsto_eLpNorm u 0).mp hq)
 
 /-- Every order-bounded pairwise lattice-disjoint sequence in `Lₚ` converges
 to zero in `Lₚ`. -/

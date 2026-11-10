@@ -5,6 +5,7 @@ Authors: Jesús Illescas-Fiorito
 import BanLat.BooleanAlgebras.MeasureAlgebras.Maharam.MaharamType
 import BanLat.Examples.Lp.MeasureAlgebra
 import BanLat.Examples.Lp.WeakUnit
+import Mathlib.MeasureTheory.Function.LpSpace.Indicator
 import Mathlib.MeasureTheory.Function.SimpleFuncDenseLp
 import Mathlib.SetTheory.Cardinal.Finsupp
 import Mathlib.SetTheory.Cardinal.Rat
@@ -28,6 +29,68 @@ open scoped ENNReal NNReal
 universe u
 
 namespace MeasureTheory.Lp
+
+section ExtensionByZero
+
+variable {α : Type u} [MeasurableSpace α] {μ : Measure α} {p : ENNReal}
+
+/-! ### Extension by zero -/
+
+/-- Extends a class in `Lᵖ(μ.restrict s)` by zero outside `s` to a class in `Lᵖ(μ)`. -/
+noncomputable def extendRestricted {s : Set α} (hs : MeasurableSet s)
+    (g : Lp ℝ p (μ.restrict s)) : Lp ℝ p μ :=
+  ((memLp_indicator_iff_restrict hs.nullMeasurableSet).mpr (Lp.memLp g)).toLp (s.indicator g)
+
+/-- Extension by zero is represented almost everywhere by `s.indicator g`. -/
+theorem extendRestricted_coeFn {s : Set α} (hs : MeasurableSet s)
+    (g : Lp ℝ p (μ.restrict s)) :
+    ⇑(extendRestricted hs g) =ᵐ[μ] s.indicator g :=
+  MemLp.coeFn_toLp _
+
+/-- Extension by zero preserves and reflects the order on restricted `Lᵖ` classes. -/
+theorem extendRestricted_le_iff {s : Set α} (hs : MeasurableSet s)
+    (f g : Lp ℝ p (μ.restrict s)) :
+    extendRestricted hs f ≤ extendRestricted hs g ↔ f ≤ g := by
+  rw [← Lp.coeFn_le, ← Lp.coeFn_le]
+  change (∀ᵐ x ∂μ, extendRestricted hs f x ≤ extendRestricted hs g x) ↔
+    ∀ᵐ x ∂μ.restrict s, f x ≤ g x
+  rw [ae_restrict_iff' hs]
+  refine Filter.eventually_congr ?_
+  filter_upwards [extendRestricted_coeFn hs f, extendRestricted_coeFn hs g] with x hfx hgx
+  by_cases hx : x ∈ s <;> simp [hfx, hgx, hx]
+
+/-- Extension by zero sends the zero class to the zero class. -/
+theorem extendRestricted_zero {s : Set α} (hs : MeasurableSet s) :
+    extendRestricted (p := p) (μ := μ) hs 0 = 0 := by
+  apply Lp.ext
+  exact (extendRestricted_coeFn hs 0).trans
+    ((indicator_ae_eq_zero_of_restrict_ae_eq_zero hs (Lp.coeFn_zero ℝ p
+      (μ.restrict s))).trans (Lp.coeFn_zero ℝ p μ).symm)
+
+/-- Restricting a class that vanishes almost everywhere outside `s`, then extending
+it by zero, recovers the original class. -/
+theorem extendRestricted_restrict {s : Set α} (hs : MeasurableSet s)
+    (f : Lp ℝ p μ) (hf : s.indicator (f : α → ℝ) =ᵐ[μ] f) :
+    extendRestricted hs (((Lp.memLp f).restrict s).toLp f) = f := by
+  apply Lp.ext
+  exact (extendRestricted_coeFn hs _).trans
+    (((ae_eq_restrict_iff_indicator_ae_eq hs).mp
+      ((Lp.memLp f).restrict s).coeFn_toLp).trans hf)
+
+section Normed
+
+variable [Fact (1 ≤ p)]
+
+/-- Extending by zero preserves the distance between restricted `Lᵖ` classes. -/
+theorem isometry_extendRestricted {s : Set α} (hs : MeasurableSet s) :
+    Isometry (extendRestricted (p := p) (μ := μ) hs) := by
+  intro f g
+  rw [extendRestricted, extendRestricted, Lp.edist_toLp_toLp, ← Set.indicator_sub',
+    eLpNorm_indicator_eq_eLpNorm_restrict hs.nullMeasurableSet, Lp.edist_def]
+
+end Normed
+
+end ExtensionByZero
 
 variable {α : Type u} [MeasurableSpace α]
 variable {μ : Measure α} [IsFiniteMeasure μ] {p : ℝ≥0}

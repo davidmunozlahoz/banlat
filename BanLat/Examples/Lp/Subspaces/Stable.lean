@@ -2,7 +2,7 @@
 Authors: Jesús Illescas-Fiorito
 -/
 
-import BanLat.Examples.Lp.Basic
+import BanLat.Examples.Ellp.Basic
 import BanLat.Probability.ConvergenceInMeasure
 import BanLat.Probability.Distributions.Stable.HasSymmetricStableLaw.Moments
 
@@ -182,14 +182,14 @@ private lemma exists_linearMap_standardQStable {X : ℕ → Ω → ℝ}
     simpa [G, e, standardQStableToLp] using hleft.trans (huniqω.trans hright.symm)
   exact ⟨G, fun a ↦ by simpa [c] using hGnorm a, hGsingle⟩
 
-/-- Normalizing the stable map by `‖X₀‖ₚ⁻¹` gives a norm-preserving linear map
-sending `eₙ` to `‖X₀‖ₚ⁻¹Xₙ`. -/
-private lemma exists_linearMap_standardQStable_norm_eq {X : ℕ → Ω → ℝ}
+/-- For `0 < p < q < 2`, the normalized symmetric stable map is a linear quasi-norm isometry
+`T : ℓ^q(ℕ, ℝ) → Lᵖ(P)` satisfying `T(eₙ) = ‖X₀‖ₚ⁻¹Xₙ`. -/
+theorem exists_quasiLinearIsometry_standardQStable {X : ℕ → Ω → ℝ}
     (hX : ∀ n, HasSymmetricStableLaw (X n) q 1 P)
     (h_indep : iIndepFun X P) (hq_lt_two : q < 2)
+    [Fact (0 < (p : ℝ≥0∞))] [Fact (0 < ENNReal.ofReal q)]
     (hp_pos : 0 < p) (hpq : (p : ℝ) < q) :
-    ∃ T : lp (fun _ : ℕ ↦ ℝ) (ENNReal.ofReal q) →ₗ[ℝ] Lp ℝ p P,
-      (∀ a, ‖T a‖ = ‖a‖) ∧
+    ∃ T : QuasiLinearIsometry ℝ (ℓ^(ENNReal.ofReal q)(ℕ, ℝ)) (Lp ℝ p P),
       ∀ n, T (lp.single (ENNReal.ofReal q) n 1) =
         ‖standardQStableToLp (hX 0) hp_pos hpq‖⁻¹ •
           standardQStableToLp (hX n) hp_pos hpq := by
@@ -202,67 +202,42 @@ private lemma exists_linearMap_standardQStable_norm_eq {X : ℕ → Ω → ℝ}
     change ‖c⁻¹ • G a‖ = ‖a‖
     rw [Lp.norm_smul, hGnorm]
     simp [c, abs_of_pos hc, hc.ne']
-  refine ⟨T, hTnorm, ?_⟩
+  refine ⟨{ toLinearMap := T, norm_map' := hTnorm }, ?_⟩
   intro n
+  change T (lp.single (ENNReal.ofReal q) n 1) = _
   simpa [T, c] using congrArg (fun z ↦ c⁻¹ • z) (hG n)
 
-/-- For `1 ≤ p < q < 2`, the previous map `T : ℓ^q(ℕ, ℝ) → Lᵖ(P)` is a linear isometric
-embedding of `ℓ^q(ℕ, ℝ)` into `Lᵖ(P)`. -/
-private lemma exists_linearIsometry_standardQStable {X : ℕ → Ω → ℝ}
+private lemma range_quasiLinearIsometry_standardQStable {X : ℕ → Ω → ℝ}
     (hX : ∀ n, HasSymmetricStableLaw (X n) q 1 P)
-    (h_indep : iIndepFun X P) (hq_lt_two : q < 2)
-    [Fact (1 ≤ (p : ℝ≥0∞))] [Fact (1 ≤ ENNReal.ofReal q)]
-    (hp_pos : 0 < p) (hpq : (p : ℝ) < q) :
-    ∃ T : lp (fun _ : ℕ ↦ ℝ) (ENNReal.ofReal q) →ₗᵢ[ℝ] Lp ℝ p P,
-      ∀ n, T (lp.single (ENNReal.ofReal q) n 1) =
-        ‖standardQStableToLp (hX 0) hp_pos hpq‖⁻¹ •
-          standardQStableToLp (hX n) hp_pos hpq := by
-  obtain ⟨T, hTnorm, hT⟩ :=
-    exists_linearMap_standardQStable_norm_eq hX h_indep hq_lt_two hp_pos hpq
-  refine ⟨{ toLinearMap := T, norm_map' := hTnorm }, ?_⟩
-  exact hT
-
-/-- For `1 ≤ p < q < 2`, the range of the linear isometric embedding
-`T : ℓ^q(ℕ, ℝ) → Lᵖ(P)`, `eₙ ↦ ‖X₀‖ₚ⁻¹Xₙ`, is the closed linear span of
-the standard symmetric `q`-stable sequence. -/
-private lemma range_linearIsometry_standardQStable {X : ℕ → Ω → ℝ}
-    (hX : ∀ n, HasSymmetricStableLaw (X n) q 1 P)
-    [Fact (1 ≤ (p : ℝ≥0∞))] [Fact (1 ≤ ENNReal.ofReal q)]
+    [Fact (0 < (p : ℝ≥0∞))] [Fact (0 < ENNReal.ofReal q)]
     (hp_pos : 0 < p) (hpq : (p : ℝ) < q)
-    (T : lp (fun _ : ℕ ↦ ℝ) (ENNReal.ofReal q) →ₗᵢ[ℝ] Lp ℝ p P)
+    (T : QuasiLinearIsometry ℝ (ℓ^(ENNReal.ofReal q)(ℕ, ℝ)) (Lp ℝ p P))
     (hT : ∀ n, T (lp.single (ENNReal.ofReal q) n 1) =
       ‖standardQStableToLp (hX 0) hp_pos hpq‖⁻¹ •
         standardQStableToLp (hX n) hp_pos hpq) :
     LinearMap.range T.toLinearMap =
-      (Submodule.span ℝ
-        (Set.range fun n ↦ standardQStableToLp (hX n) hp_pos hpq)
-        |>.topologicalClosure) := by
-  apply le_antisymm
-  · rintro _ ⟨x, rfl⟩
-    have hx := lp.hasSum_single (p := ENNReal.ofReal q) ENNReal.ofReal_ne_top x
-    have hTx : HasSum
-        (fun n ↦ T (lp.single (ENNReal.ofReal q) n (x n))) (T x) := by
-      exact (hx.map T T.continuous).congr' <| Filter.Eventually.of_forall fun n ↦ by
-        simp only [Function.comp_apply]
-    refine (Submodule.isClosed_topologicalClosure _).mem_of_tendsto hTx ?_
-    filter_upwards with s
-    apply Submodule.sum_mem
-    intro n _
-    have hsingle : lp.single (E := fun _ : ℕ ↦ ℝ) (ENNReal.ofReal q) n (x n) =
-        (x n) • lp.single (E := fun _ : ℕ ↦ ℝ) (ENNReal.ofReal q) n (1 : ℝ) := by
-      rw [← lp.single_smul, smul_eq_mul, mul_one]
-    rw [hsingle, map_smul, hT n]
-    exact Submodule.smul_mem _ (x n) <| Submodule.smul_mem _
-      ‖standardQStableToLp (hX 0) hp_pos hpq‖⁻¹ <|
-        Submodule.le_topologicalClosure _ <| Submodule.subset_span ⟨n, rfl⟩
-  · have hclosed : IsClosed (T.range : Set (Lp ℝ p P)) := by
-      exact T.isometry.antilipschitzWith.isClosed_range T.isometry.uniformContinuous
-    refine Submodule.topologicalClosure_minimal _ (Submodule.span_le.2 ?_) hclosed
-    rintro _ ⟨n, rfl⟩
-    have hc := norm_standardQStableToLp_pos (hX 0) hp_pos hpq
-    refine ⟨‖standardQStableToLp (hX 0) hp_pos hpq‖ •
-      lp.single (ENNReal.ofReal q) n 1, ?_⟩
-    simp [map_smul, hT n, smul_smul, hc.ne']
+      (Submodule.span ℝ (Set.range fun n ↦ standardQStableToLp (hX n) hp_pos hpq)
+        |>.quasiTopologicalClosure) := by
+  have : Fact (ENNReal.ofReal q < ∞) := ⟨ENNReal.ofReal_lt_top⟩
+  refine T.range_eq_quasiTopologicalClosure_span_of_smul
+    (fun n ↦ lp.single (ENNReal.ofReal q) n 1) _ lp.dense_span_single_quasi _ ?_ hT
+  exact inv_ne_zero (norm_standardQStableToLp_pos (hX 0) hp_pos hpq).ne'
+
+open scoped QuasiNormedSubmodule in
+/-- For `0 < p < q < 2`, there is a linear quasi-norm isometric equivalence between `ℓ^q(ℕ, ℝ)`
+and the closed linear span of an independent standard symmetric `q`-stable sequence in `Lᵖ(P)`. -/
+theorem nonempty_quasiLinearIsometryEquiv_standardQStable_closedSpan
+    {X : ℕ → Ω → ℝ}
+    (hX : ∀ n, HasSymmetricStableLaw (X n) q 1 P)
+    (h_indep : iIndepFun X P) (hq_lt_two : q < 2)
+    [Fact (0 < (p : ℝ≥0∞))] [Fact (0 < ENNReal.ofReal q)]
+    (hp_pos : 0 < p) (hpq : (p : ℝ) < q) :
+    Nonempty (QuasiLinearIsometryEquiv ℝ (ℓ^(ENNReal.ofReal q)(ℕ, ℝ))
+      (Submodule.span ℝ (Set.range fun n ↦ standardQStableToLp (hX n) hp_pos hpq)
+        |>.quasiTopologicalClosure)) := by
+  obtain ⟨T, hT⟩ := exists_quasiLinearIsometry_standardQStable hX h_indep hq_lt_two hp_pos hpq
+  rw [← range_quasiLinearIsometry_standardQStable hX hp_pos hpq T hT]
+  exact ⟨T.equivRange⟩
 
 /-- For `1 ≤ p < q < 2`, the closed linear span in `Lᵖ` of an independent sequence of
 standard symmetric `q`-stable random variables is linearly isometric to `ℓ^q(ℕ, ℝ)`. -/
@@ -277,10 +252,13 @@ theorem nonempty_linearIsometryEquiv_standardQStable_closedSpan
         (Submodule.span ℝ
           (Set.range fun n ↦ standardQStableToLp (hX n) hp_pos hpq)
           |>.topologicalClosure)) := by
-  obtain ⟨T, hT⟩ :=
-    exists_linearIsometry_standardQStable hX h_indep hq_lt_two hp_pos hpq
-  have hRange := range_linearIsometry_standardQStable hX hp_pos hpq T hT
-  exact ⟨T.equivRange.trans (LinearIsometryEquiv.ofEq _ _ hRange)⟩
+  have : Fact (0 < (p : ℝ≥0∞)) := ⟨by exact_mod_cast hp_pos⟩
+  have : Fact (0 < ENNReal.ofReal q) :=
+    ⟨zero_lt_one.trans_le (Fact.out : 1 ≤ ENNReal.ofReal q)⟩
+  have h := nonempty_quasiLinearIsometryEquiv_standardQStable_closedSpan
+    hX h_indep hq_lt_two hp_pos hpq
+  rw [Submodule.quasiTopologicalClosure_eq_topologicalClosure] at h
+  exact ⟨h.some.toLinearIsometryEquiv⟩
 
 /-- For `0 < p < q < 2`, the normalized stable map embeds `ℓ^q(ℕ, ℝ)` linearly
 into `Lᵖ`, preserves the (quasi-)norm, and sends `eₙ ↦ ‖X₀‖ₚ⁻¹ · Xₙ`. -/
@@ -296,11 +274,8 @@ theorem exists_linearMap_standardQStable_preserving_quasiNorm
       ∀ n, T (lp.single (ENNReal.ofReal q) n 1) =
         ‖standardQStableToLp (hX 0) hp_pos hpq‖⁻¹ •
           standardQStableToLp (hX n) hp_pos hpq := by
-  obtain ⟨T, hTnorm, hT⟩ :=
-    exists_linearMap_standardQStable_norm_eq hX h_indep hq_lt_two hp_pos hpq
-  have hTinj : Function.Injective T := by
-    intro a b hab
-    apply sub_eq_zero.mp
-    apply lp.norm_eq_zero_iff.mp
-    rw [← hTnorm (a - b), map_sub, hab, sub_self, Lp.norm_zero]
-  exact ⟨T, hTinj, hTnorm, hT⟩
+  have : Fact (0 < (p : ℝ≥0∞)) := ⟨by exact_mod_cast hp_pos⟩
+  have : Fact (0 < ENNReal.ofReal q) :=
+    ⟨ENNReal.ofReal_pos.mpr (hX 0).isSymmetricStable_map.index_pos⟩
+  obtain ⟨T, hT⟩ := exists_quasiLinearIsometry_standardQStable hX h_indep hq_lt_two hp_pos hpq
+  exact ⟨T.toLinearMap, T.injective, T.norm_map, hT⟩
