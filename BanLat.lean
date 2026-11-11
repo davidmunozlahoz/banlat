@@ -136,6 +136,7 @@ import BanLat.Preliminaries.EberleinSmulian
 import BanLat.Preliminaries.HasNoAtoms
 import BanLat.Preliminaries.Regularity
 import BanLat.Preliminaries.SignedMeasure
+import BanLat.Probability.AtomlessRealization
 import BanLat.Probability.ConvergenceInMeasure
 import BanLat.Probability.Distributions.FractionalAbsMoments
 import BanLat.Probability.Distributions.Stable.Basic
