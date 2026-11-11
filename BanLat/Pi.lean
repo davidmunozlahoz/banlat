@@ -1,18 +1,18 @@
 /-
-Authors: David Muñoz-Lahoz
+Authors: David Muñoz-Lahoz, Pedro Tradacete
 -/
 
 import BanLat.Normed
+import Mathlib.Algebra.Order.Monoid.Prod
 import Mathlib.Analysis.Normed.Lp.PiLp
 
 /-!
 # Products of vector, normed and Banach lattices
 
-Given a family `(X i)` of vector lattices, the product `∀ i, X i` carries a
-pointwise vector lattice structure. When each `X i` is a normed (resp. Banach)
-lattice and the index set is finite, the ℓ^p product `PiLp p X` is again a
-normed (resp. Banach) lattice for `1 ≤ p ≤ ∞`. Moreover, the ℓ^∞ product of
-AM-spaces is an AM-space, and the ℓ^1 product of AL-spaces is an AL-space.
+Pointwise products of vector lattices carry a vector lattice structure. For a finite index
+set and `1 ≤ p ≤ ∞`, the product `PiLp p X` of normed (resp. Banach) lattices is again a normed
+(resp. Banach) lattice. Binary products `WithLp 1 (A × B)` have the coordinatewise lattice
+structure and the norm `‖(a, b)‖ = ‖a‖ + ‖b‖`, and are Banach lattices when both factors are.
 -/
 
 open scoped ENNReal
@@ -119,3 +119,56 @@ instance instBanachLattice [∀ i, BanachLattice (X i)] :
     BanachLattice (PiLp p X) where
 
 end PiLp
+
+/-! ### Binary products -/
+
+namespace WithLp
+
+variable {A B : Type*} {p : ℝ≥0∞}
+
+/-- The lattice operations on a binary `WithLp` product are computed coordinatewise. -/
+instance instProdLattice [Lattice A] [Lattice B] : Lattice (WithLp p (A × B)) :=
+  (WithLp.equiv p (A × B)).lattice
+
+section Algebra
+
+variable [AddCommGroup A] [AddCommGroup B] [Lattice A] [Lattice B]
+  [IsOrderedAddMonoid A] [IsOrderedAddMonoid B]
+
+/-- Addition respects the coordinatewise order on a binary `WithLp` product. -/
+instance instProdIsOrderedAddMonoid : IsOrderedAddMonoid (WithLp p (A × B)) :=
+  Function.Injective.isOrderedAddMonoid (α := A × B) (β := WithLp p (A × B))
+    WithLp.ofLp (fun _ _ ↦ rfl) Iff.rfl
+
+/-- A binary `WithLp` product of vector lattices is a vector lattice. -/
+instance instProdVectorLattice [VectorLattice A] [VectorLattice B] :
+    VectorLattice (WithLp p (A × B)) where
+  smul_le_smul_of_nonneg_left _ hr _ _ h :=
+    ⟨smul_le_smul_of_nonneg_left h.1 hr, smul_le_smul_of_nonneg_left h.2 hr⟩
+
+end Algebra
+
+section Norm
+
+variable [NormedAddCommGroup A] [NormedAddCommGroup B] [Lattice A] [Lattice B]
+  [IsOrderedAddMonoid A] [IsOrderedAddMonoid B]
+
+/-- The sum norm on a binary `ℓ¹` product is solid when both factor norms are solid. -/
+instance instProdHasSolidNormL1 [HasSolidNorm A] [HasSolidNorm B] :
+    HasSolidNorm (WithLp 1 (A × B)) where
+  solid x y h := by
+    change |x.fst| ≤ |y.fst| ∧ |x.snd| ≤ |y.snd| at h
+    simpa only [prod_norm_eq_of_L1] using
+      add_le_add (HasSolidNorm.solid (α := A) h.1) (HasSolidNorm.solid (α := B) h.2)
+
+/-- The binary `ℓ¹` product of normed vector lattices is a normed vector lattice. -/
+instance instProdNormedVectorLatticeL1 [NormedVectorLattice A] [NormedVectorLattice B] :
+    NormedVectorLattice (WithLp 1 (A × B)) where
+
+/-- The binary `ℓ¹` product of Banach lattices is a Banach lattice. -/
+instance instProdBanachLatticeL1 [BanachLattice A] [BanachLattice B] :
+    BanachLattice (WithLp 1 (A × B)) where
+
+end Norm
+
+end WithLp
