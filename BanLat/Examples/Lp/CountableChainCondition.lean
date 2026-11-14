@@ -28,7 +28,8 @@ private lemma support_measure_pos {f : Lp ℝ p μ} (hf : f ≠ 0) :
   exact (measure_eq_zero_iff_ae_notMem.mp hzero).mono fun x hx ↦ by
     simpa only [Function.mem_support, not_ne_iff, Pi.zero_apply] using hx
 
-private lemma support_aeDisjoint {f g : Lp ℝ p μ} (hfg : IsVLDisjoint f g) :
+/-- Disjoint elements of real `Lp` have almost-everywhere disjoint supports. -/
+lemma support_aeDisjoint {f g : Lp ℝ p μ} (hfg : IsVLDisjoint f g) :
     AEDisjoint μ (Function.support (f : Ω → ℝ)) (Function.support (g : Ω → ℝ)) := by
   change μ (Function.support (f : Ω → ℝ) ∩ Function.support (g : Ω → ℝ)) = 0
   rw [measure_eq_zero_iff_ae_notMem]
