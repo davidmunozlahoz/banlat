@@ -16,7 +16,7 @@ import BanLat.AMSpace.Max
 import BanLat.AMSpace.Maximal
 import BanLat.Atom
 import BanLat.Basic
-import BanLat.Bidual
+import BanLat.Bidual.Basic
 import BanLat.Bidual.Order
 import BanLat.BooleanAlgebras.Adjoin
 import BanLat.BooleanAlgebras.Atomless

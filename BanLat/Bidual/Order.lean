@@ -2,7 +2,7 @@
 Authors: Pedro Tradacete
 -/
 
-import BanLat.Bidual
+import BanLat.Bidual.Basic
 import BanLat.OrderContinuous.Basic
 import BanLat.Substructures.Ideal
 import Mathlib.Analysis.LocallyConvex.Separation
@@ -30,7 +30,7 @@ variable {X : Type u} [NormedAddCommGroup X] [Lattice X] [IsOrderedAddMonoid X]
 
 /-- The canonical embedding of a Banach lattice in its bidual preserves nonempty arbitrary
 suprema when the norm is order continuous. -/
-theorem isLUB_image_inclusion [IsOrderContinuousNorm X]
+private theorem isLUB_image_inclusion [IsOrderContinuousNorm X]
     {A : Set X} {a : X} (hA : A.Nonempty) (ha : IsLUB A a) :
     IsLUB (inclusion '' A) (inclusion a) := by
   let S := supClosure A
@@ -232,7 +232,7 @@ private lemma weak_tendsto_zero_of_isLUB_image_inclusion
 
 /-- If the canonical embedding in the bidual preserves nonempty suprema, then
 the norm is order continuous. -/
-theorem isOrderContinuousNorm_of_isLUB_image_inclusion
+private theorem isOrderContinuousNorm_of_isLUB_image_inclusion
     (h : ∀ (A : Set X) (a : X), A.Nonempty → IsLUB A a →
       IsLUB (inclusion '' A) (inclusion a)) : IsOrderContinuousNorm X :=
   ⟨fun hf _ hglb ↦ StrongDual.tendsto_of_monotone_weak_tendsto (Or.inr hf)

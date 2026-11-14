@@ -5,7 +5,7 @@ Authors: David Muñoz-Lahoz
 import BanLat.ALSpace.Dual
 import BanLat.ALSpace.OrderContinuous
 import BanLat.AMSpace.Kakutani
-import BanLat.Bidual
+import BanLat.Bidual.Basic
 import BanLat.Examples.CofK.Dual
 import BanLat.Examples.Lp.Sublattice
 import BanLat.Examples.MofK.L1space
