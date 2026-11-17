@@ -2,7 +2,7 @@
 Authors: Raúl Enrique Pariente-Martín
 -/
 
-import BanLat.Bidual
+import BanLat.Bidual.Basic
 import BanLat.Functionals.Positive.Separation
 import BanLat.Operators.StrictlyPositive
 import BanLat.QuasiInteriorPoint
