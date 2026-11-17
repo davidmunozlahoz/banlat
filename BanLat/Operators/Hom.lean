@@ -497,6 +497,27 @@ noncomputable def extensionEquiv
 
 end Positive
 
+/-! ### Continuous linear maps from Banach lattices -/
+
+namespace VecLatHom
+
+variable {X Y : Type*} [NormedAddCommGroup X] [NormedAddCommGroup Y]
+  [Lattice X] [Lattice Y] [IsOrderedAddMonoid X] [IsOrderedAddMonoid Y]
+  [BanachLattice X] [NormedVectorLattice Y]
+
+/-- A lattice homomorphism from a Banach lattice to a normed vector lattice is
+automatically continuous. -/
+noncomputable def toContinuousLinearMap (f : VecLatHom X Y) : X →L[ℝ] Y :=
+  { f.toLinearMap with
+    cont := Positive.continuous (Positive.monotone_iff.mp f.monotone) }
+
+/-- The continuous linear map has the same values as the lattice homomorphism. -/
+@[simp]
+theorem toContinuousLinearMap_apply (f : VecLatHom X Y) (x : X) :
+    f.toContinuousLinearMap x = f x := rfl
+
+end VecLatHom
+
 /-! ### Continuous linear equivalence between Banach lattices -/
 
 namespace VecLatEquiv

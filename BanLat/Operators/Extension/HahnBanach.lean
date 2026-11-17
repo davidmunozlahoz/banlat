@@ -3,6 +3,8 @@ Authors: Raúl Enrique Pariente-Martín
 -/
 
 import BanLat.Basic
+import BanLat.Operators.Positive
+import BanLat.Substructures.Sublattice
 import Mathlib.LinearAlgebra.LinearPMap
 
 /-!
@@ -141,3 +143,39 @@ theorem LinearMap.exists_extension_of_le_sublinear
   refine ⟨g.comp (LinearMap.id.codRestrict ⊤ fun _ ↦ trivial), ?_, ?_⟩
   · exact fun y ↦ (hTg rfl).symm
   · exact fun x ↦ hg ⟨x, trivial⟩
+
+variable {X : Type*} [AddCommGroup X] [Lattice X] [IsOrderedAddMonoid X]
+  [VectorLattice X]
+/-- If positive linear operators `S : Y → Z` and `T : X → Z` satisfy
+`S y ≤ T y` for every positive `y ∈ Y`, then `S` admits a linear extension
+`R : X → Z` satisfying `R x ≤ T (x⁺)` for every `x ∈ X`. -/
+private lemma exists_extension_le_posPart (Y : VectorSublattice X)
+    (T : X →ₗ[ℝ] Z) (S : Y →ₗ[ℝ] Z) (hT : Positive T) (hS : Positive S)
+    (hST : ∀ y : Y, 0 ≤ y → S y ≤ T y) :
+    ∃ R : X →ₗ[ℝ] Z, (∀ y : Y, R y = S y) ∧ ∀ x, R x ≤ T x⁺ := by
+  apply LinearMap.exists_extension_of_le_sublinear Y.toSubmodule S (fun x ↦ T x⁺)
+  · intro r hr x
+    rw [posPart_smul_nonneg hr.le, map_smul]
+  · intro x y
+    exact ((Positive.monotone_iff.mpr hT) (posPart_add_le x y)).trans_eq (T.map_add _ _)
+  · intro y
+    let z : Y := y
+    exact ((Positive.monotone_iff.mpr hS) (le_posPart z)).trans
+      (hST z⁺ (posPart_nonneg z))
+
+/-- **Hahn–Banach theorem for operators.** Let `Y` be a vector sublattice of `X` and
+`Z` a Dedekind complete vector lattice. If positive linear operators `S : Y → Z` and
+`T : X → Z` satisfy `S y ≤ T y` for every positive `y ∈ Y`, then `S` extends to
+a linear operator `R : X → Z` satisfying `0 ≤ R x ≤ T x` for every positive `x ∈ X`. -/
+theorem VectorSublattice.exists_positive_extension_le (Y : VectorSublattice X)
+    (T : X →ₗ[ℝ] Z) (S : Y →ₗ[ℝ] Z) (hT : Positive T) (hS : Positive S)
+    (hST : ∀ y : Y, 0 ≤ y → S y ≤ T y) :
+    ∃ R : X →ₗ[ℝ] Z, 0 ≤ R ∧ R ≤ T ∧ ∀ y : Y, R y = S y := by
+  obtain ⟨R, hext, hR⟩ := exists_extension_le_posPart Y T S hT hS hST
+  refine ⟨R, Positive.zero_le_iff.mpr ?_, Positive.le_iff.mpr ?_, hext⟩
+  · intro x hx
+    have h := hR (-x)
+    simpa only [map_neg, posPart_eq_zero.mpr (neg_nonpos.mpr hx), map_zero,
+      neg_nonpos] using h
+  · intro x hx
+    simpa only [posPart_of_nonneg hx] using hR x

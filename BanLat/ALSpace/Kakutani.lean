@@ -13,7 +13,9 @@ import BanLat.Examples.MofK.L1space
 /-!
 # Kakutani's representation theorem for AL-spaces
 
-Every AL-space is Banach-lattice isometrically isomorphic to an `L¹` space.
+Every AL-space is Banach-lattice isometrically isomorphic to an `L¹` space. A weak order unit
+can be represented by the constant function `1` for a finite measure. If the weak order unit
+has norm one, the measure is a probability measure.
 -/
 
 open MeasureTheory
@@ -574,6 +576,27 @@ theorem exists_L1_banachLatEquiv_isFiniteMeasure_of_weakOrderUnit [ALSpace X] {e
       exact banachLatEquiv_forall_isVLDisjoint_eq_zero φ_eq hband_wou w hw
     exact exists_L1_banachLatEquiv_of_embeds_in_L1_with_aePositive (X := X) ν T hT_sup
       hT_inf hT_closed e he.1 (lp_aePos_of_forall_isVLDisjoint_eq_zero hTe_nn hTe_wou)
+
+/-- An AL-space with a weak order unit `e` of norm one is Banach-lattice isometric to
+`L¹(μ)` for a probability measure `μ`, with `e` corresponding to the constant function `1`. -/
+theorem exists_L1_banachLatEquiv_isProbabilityMeasure_of_weakOrderUnit [ALSpace X] {e : X}
+    (he : WeakOrderUnit e) (hne : ‖e‖ = 1) :
+    ∃ (Ω : Type u) (_ : MeasurableSpace Ω) (μ : Measure Ω) (_ : IsProbabilityMeasure μ)
+      (φ : BanachLatEquiv X (Lp ℝ 1 μ)), φ e = Lp.const 1 μ (1 : ℝ) := by
+  obtain ⟨Ω, mΩ, μ, hμ, φ, hφ⟩ :=
+    exists_L1_banachLatEquiv_isFiniteMeasure_of_weakOrderUnit he
+  let := hμ
+  have hconst : φ e = Lp.const 1 μ (1 : ℝ) :=
+    Lp.ext (Filter.EventuallyEq.trans hφ
+      (Lp.coeFn_const (p := 1) (μ := μ) (c := (1 : ℝ))).symm)
+  have hnorm : (μ Set.univ).toReal = 1 := by
+    have hφnorm : ‖φ e‖ = 1 := (φ.toLinearIsometryEquiv.norm_map e).trans hne
+    simpa [hconst, Lp.norm_const' (μ := μ) (p := 1) (c := (1 : ℝ))
+      one_ne_zero ENNReal.one_ne_top, measureReal_def] using hφnorm
+  have hprob : IsProbabilityMeasure μ :=
+    ⟨(ENNReal.toReal_eq_toReal_iff' (measure_ne_top μ Set.univ) ENNReal.one_ne_top).mp
+      (hnorm.trans ENNReal.toReal_one.symm)⟩
+  exact ⟨Ω, mΩ, μ, hprob, φ, hconst⟩
 
 end ALSpace
 
