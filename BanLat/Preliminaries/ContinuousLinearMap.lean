@@ -8,7 +8,9 @@ import Mathlib.Topology.Algebra.Module.ContinuousLinearMap.Basic
 /-!
 # Closed spans and ranges of continuous linear maps
 
-For a continuous linear map `T : E → F` with closed range, the image of a family
+Let `E` and `F` be modules over a semiring `R`, equipped with topologies, and such that
+addition and scalar multiplication by fixed scalars are continuous on `F`.
+For a continuous `R`-linear map `T : E → F` with closed range, the image of a family
 whose linear span is dense in `E` has closed linear span equal to `range(T)`.
 The same conclusion holds for a family obtained by rescaling the image by a fixed unit.
 -/

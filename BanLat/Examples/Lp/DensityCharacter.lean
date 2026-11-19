@@ -47,7 +47,8 @@ theorem extendRestricted_coeFn {s : Set α} (hs : MeasurableSet s)
     ⇑(extendRestricted hs g) =ᵐ[μ] s.indicator g :=
   MemLp.coeFn_toLp _
 
-/-- Extension by zero preserves and reflects the order on restricted `Lᵖ` classes. -/
+/-- For `f, g ∈ Lᵖ(μ.restrict s)`, their extensions by zero satisfy
+`extendRestricted hs f ≤ extendRestricted hs g` if and only if `f ≤ g`. -/
 theorem extendRestricted_le_iff {s : Set α} (hs : MeasurableSet s)
     (f g : Lp ℝ p (μ.restrict s)) :
     extendRestricted hs f ≤ extendRestricted hs g ↔ f ≤ g := by

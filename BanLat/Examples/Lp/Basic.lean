@@ -281,7 +281,9 @@ private lemma one_le_toReal_LpAddConst :
     exact sub_nonneg.mpr ((one_le_inv₀ hp_real_pos).2 hp_real_le)
   · simp only [ENNReal.LpAddConst_of_one_le (le_of_not_gt hp), ENNReal.toReal_one, le_refl]
 
-/-- For `0 < p ≤ ∞`, the usual norm functional on `Lp E p μ` is a quasi-norm. -/
+/-- For `0 < p ≤ ∞`, the functional on `Lp E p μ` given by
+`(∫ x, ‖f x‖ ^ p ∂μ) ^ (1 / p)` for `p < ∞`, and by the essential supremum
+of `‖f x‖` for `p = ∞`, is a quasi-norm. -/
 instance instIsQuasiNorm : IsQuasiNorm (Lp E p μ) where
   norm_zero := MeasureTheory.Lp.norm_zero
   norm_nonneg := fun _ ↦ ENNReal.toReal_nonneg
@@ -290,7 +292,7 @@ instance instIsQuasiNorm : IsQuasiNorm (Lp E p μ) where
     ⟨(ENNReal.LpAddConst p).toReal, one_le_toReal_LpAddConst, norm_add_le_LpAddConst⟩
   eq_zero_of_norm_eq_zero := fun _ ↦ (norm_eq_zero_iff (Fact.out : 0 < p)).mp
 
-/-- For `0 < p ≤ ∞`, `Lp E p μ` is a quasi-normed space. -/
+/-- For `0 < p ≤ ∞`, `Lp E p μ` is a quasi-normed vector space over `𝕜`. -/
 noncomputable instance instQuasiNormedSpace
     [NormedField 𝕜] [NormedSpace 𝕜 E] :
     QuasiNormedSpace 𝕜 (Lp E p μ) where

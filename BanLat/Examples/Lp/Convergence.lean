@@ -66,7 +66,8 @@ theorem tendstoInMeasure_of_tendsto_quasiLp
 
 /-! ### Dominated convergence for `0 < p < ∞` -/
 
-/-- For `0 < p < ∞`, if `f n x → f_lim x` almost everywhere and
+/-- For `0 < p < ∞`, let `f n` and `f_lim` belong to `Lp E p μ`, where `E` is a
+normed additive commutative group. If `f n x → f_lim x` almost everywhere and
 `‖f n x‖ ≤ g x` almost everywhere for every `n`, with `g : Lp ℝ p μ`,
 then the integral of `‖f n x - f_lim x‖ ^ p` tends to zero. -/
 private lemma tendsto_lintegral_rpow_enorm_sub_of_dominated_convergence
@@ -101,7 +102,8 @@ private lemma tendsto_lintegral_rpow_enorm_sub_of_dominated_convergence
       ENNReal.zero_rpow_of_pos (ENNReal.toReal_pos (Fact.out : 0 < p).ne' hp)] using
       ((@ENNReal.continuous_rpow_const p.toReal).tendsto (0 : ℝ≥0∞)).comp hzero
 
-/-- For `0 < p < ∞`, if `f n x → f_lim x` almost everywhere and
+/-- For `0 < p < ∞`, let `f n` and `f_lim` belong to `Lp E p μ`, where `E` is a
+normed additive commutative group. If `f n x → f_lim x` almost everywhere and
 `‖f n x‖ ≤ g x` almost everywhere for every `n`, with `g : Lp ℝ p μ`,
 then `‖f n - f_lim‖ₚ → 0`. -/
 theorem tendsto_quasiLp_of_dominated_convergence

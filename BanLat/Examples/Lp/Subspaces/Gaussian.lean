@@ -61,7 +61,7 @@ private lemma sqrt_tsum_nnnorm_sq (a : ℓ²(ℕ, ℝ)) :
     simp [Real.norm_eq_abs, sq_abs]
   rw [Real.sqrt_eq_rpow, htsum, ← hnorm]
 
-/-- Scalar multiplication in `Lᵖ` is represented almost everywhere
+/-- Scalar multiplication of the standard Gaussian in `Lᵖ` is represented almost everywhere
 by pointwise multiplication of the underlying standard Gaussian. -/
 private lemma coeFn_smul_standardGaussianToLp {X : Ω → ℝ}
     (hX : HasLaw X (gaussianReal 0 1) P) (a : ℝ) :
@@ -301,12 +301,12 @@ private lemma exists_linearMap_standardGaussian {X : ℕ → Ω → ℝ}
     simpa [G, e, standardGaussianToLp] using hleft.trans (huniqω.trans hright.symm)
   exact ⟨G, fun a ↦ by simpa [c] using hGnorm a, hGsingle⟩
 
-/-- For `0 < p < ∞`, the normalized Gaussian map is a linear quasi-norm isometry
+/-- For `0 < p < ∞`, the normalized Gaussian map is a linear isometry
 `T : ℓ²(ℕ, ℝ) → Lᵖ(P)` satisfying `T(eₙ) = ‖N(0, 1)‖ₚ⁻¹Xₙ`. -/
-theorem exists_quasiLinearIsometry_standardGaussian {X : ℕ → Ω → ℝ}
+theorem exists_linearQuasiSeminormIsometry_standardGaussian {X : ℕ → Ω → ℝ}
     (hX : ∀ n, HasLaw (X n) (gaussianReal 0 1) P)
     (h_indep : iIndepFun X P) [Fact (0 < (p : ℝ≥0∞))] :
-    ∃ T : QuasiLinearIsometry ℝ (ℓ²(ℕ, ℝ)) (Lp ℝ p P),
+    ∃ T : LinearQuasiSeminormIsometry ℝ (ℓ²(ℕ, ℝ)) (Lp ℝ p P),
       ∀ n, T (lp.single 2 n 1) =
         ‖standardGaussianToLp p (hX 0)‖⁻¹ • standardGaussianToLp p (hX n) := by
   have hp_pos : 0 < p := by exact_mod_cast (Fact.out : 0 < (p : ℝ≥0∞))
@@ -323,10 +323,10 @@ theorem exists_quasiLinearIsometry_standardGaussian {X : ℕ → Ω → ℝ}
   change T (lp.single 2 n 1) = _
   simpa [T, c] using congrArg (fun z ↦ c⁻¹ • z) (hG n)
 
-private lemma range_quasiLinearIsometry_standardGaussian {X : ℕ → Ω → ℝ}
+private lemma range_linearQuasiSeminormIsometry_standardGaussian {X : ℕ → Ω → ℝ}
     (hX : ∀ n, HasLaw (X n) (gaussianReal 0 1) P)
     [Fact (0 < (p : ℝ≥0∞))]
-    (T : QuasiLinearIsometry ℝ (ℓ²(ℕ, ℝ)) (Lp ℝ p P))
+    (T : LinearQuasiSeminormIsometry ℝ (ℓ²(ℕ, ℝ)) (Lp ℝ p P))
     (hT : ∀ n, T (lp.single 2 n 1) =
       ‖standardGaussianToLp p (hX 0)‖⁻¹ • standardGaussianToLp p (hX n)) :
     LinearMap.range T.toLinearMap =
@@ -340,17 +340,17 @@ private lemma range_quasiLinearIsometry_standardGaussian {X : ℕ → Ω → ℝ
     (by exact_mod_cast (Fact.out : 0 < (p : ℝ≥0∞)))).ne'
 
 open scoped QuasiNormedSubmodule in
-/-- For `0 < p < ∞`, there is a linear quasi-norm isometric equivalence between `ℓ²(ℕ, ℝ)`
+/-- For `0 < p < ∞`, there is a linear isometric equivalence between `ℓ²(ℕ, ℝ)`
 and the closed linear span of an independent standard Gaussian sequence in `Lᵖ(P)`. -/
-theorem nonempty_quasiLinearIsometryEquiv_standardGaussian_closedSpan
+theorem nonempty_linearQuasiSeminormIsometryEquiv_standardGaussian_closedSpan
     {X : ℕ → Ω → ℝ}
     (hX : ∀ n, HasLaw (X n) (gaussianReal 0 1) P)
     (h_indep : iIndepFun X P) [Fact (0 < (p : ℝ≥0∞))] :
-    Nonempty (QuasiLinearIsometryEquiv ℝ (ℓ²(ℕ, ℝ))
+    Nonempty (LinearQuasiSeminormIsometryEquiv ℝ (ℓ²(ℕ, ℝ))
       (Submodule.span ℝ (Set.range fun n ↦ standardGaussianToLp p (hX n))
         |>.quasiTopologicalClosure)) := by
-  obtain ⟨T, hT⟩ := exists_quasiLinearIsometry_standardGaussian (p := p) hX h_indep
-  rw [← range_quasiLinearIsometry_standardGaussian hX T hT]
+  obtain ⟨T, hT⟩ := exists_linearQuasiSeminormIsometry_standardGaussian (p := p) hX h_indep
+  rw [← range_linearQuasiSeminormIsometry_standardGaussian hX T hT]
   exact ⟨T.equivRange⟩
 
 /-- For `1 ≤ p < ∞`, the closed linear span in `Lᵖ` of an independent sequence of standard
@@ -365,7 +365,8 @@ theorem nonempty_linearIsometryEquiv_standardGaussian_closedSpan
           |>.topologicalClosure)) := by
   have : Fact (0 < (p : ℝ≥0∞)) :=
     ⟨zero_lt_one.trans_le (Fact.out : 1 ≤ (p : ℝ≥0∞))⟩
-  have h := nonempty_quasiLinearIsometryEquiv_standardGaussian_closedSpan (p := p) hX h_indep
+  have h :=
+    nonempty_linearQuasiSeminormIsometryEquiv_standardGaussian_closedSpan (p := p) hX h_indep
   rw [Submodule.quasiTopologicalClosure_eq_topologicalClosure] at h
   exact ⟨h.some.toLinearIsometryEquiv⟩
 
@@ -382,5 +383,5 @@ theorem exists_linearMap_standardGaussian_preserving_quasiNorm
       ∀ n, T (lp.single 2 n 1) =
         ‖standardGaussianToLp p (hX 0)‖⁻¹ • standardGaussianToLp p (hX n) := by
   have : Fact (0 < (p : ℝ≥0∞)) := ⟨by exact_mod_cast hp_pos⟩
-  obtain ⟨T, hT⟩ := exists_quasiLinearIsometry_standardGaussian (p := p) hX h_indep
+  obtain ⟨T, hT⟩ := exists_linearQuasiSeminormIsometry_standardGaussian (p := p) hX h_indep
   exact ⟨T.toLinearMap, T.injective, T.norm_map, hT⟩

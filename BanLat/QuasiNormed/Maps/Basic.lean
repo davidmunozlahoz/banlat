@@ -113,7 +113,7 @@ variable [AddCommGroup E] [Norm E] [IsQuasiNorm E]
 /-! ### Uniform embeddings -/
 
 /-- Upper and positive lower bounds on differences give a uniform embedding
-when the source quasi-norm separates points. -/
+when the source quasi-seminorm is a quasi-norm. -/
 theorem isUniformEmbedding_of_le_norm_sub_of_norm_sub_le
     {c C : ℝ} (hc : 0 < c) (hC : 0 ≤ C)
     (hlower : ∀ x y, c * ‖x - y‖ ≤ ‖f x - f y‖)
@@ -163,7 +163,7 @@ variable [AddCommGroup E] [Norm E] [IsQuasiSeminorm E]
 /-! ### Closed ranges -/
 
 /-- A map inducing the quasi-seminorm uniformity of a complete source has
-closed range when the target quasi-norm separates points. -/
+closed range when the target quasi-seminorm is a quasi-norm. -/
 theorem isClosed_range_of_isUniformInducing
     (hf : @IsUniformInducing E F (uniformSpace E) (uniformSpace F) f) :
     @IsClosed F (topology F) (Set.range f) := by
@@ -171,7 +171,7 @@ theorem isClosed_range_of_isUniformInducing
   exact (isComplete_range_of_isUniformInducing hf).isClosed
 
 /-- A map from a complete source satisfying upper and positive lower bounds
-on differences has closed range when the target quasi-norm separates points. -/
+on differences has closed range when the target quasi-seminorm is a quasi-norm. -/
 theorem isClosed_range_of_le_norm_sub_of_norm_sub_le
     {c C : ℝ} (hc : 0 < c) (hC : 0 ≤ C)
     (hlower : ∀ x y, c * ‖x - y‖ ≤ ‖f x - f y‖)
@@ -260,8 +260,8 @@ variable [AddCommGroup E] [Norm E] [IsQuasiNorm E]
   [AddCommGroup F] [Norm F] [IsQuasiSeminorm F]
   [FunLike 𝓕 E F] [AddMonoidHomClass 𝓕 E F] (T : 𝓕)
 
-/-- Upper and positive lower quasi-norm bounds on an additive map give a uniform
-embedding when the source quasi-norm separates points. -/
+/-- Upper and positive lower quasi-seminorm bounds on an additive map give a uniform
+embedding when the source quasi-seminorm is a quasi-norm. -/
 theorem isUniformEmbedding_of_le_quasiNorm_of_quasiNorm_le
     {c C : ℝ} (hc : 0 < c) (hC : 0 ≤ C)
     (hlower : ∀ x, c * ‖x‖ ≤ ‖T x‖)
@@ -280,7 +280,7 @@ variable [AddCommGroup E] [Norm E] [IsQuasiSeminorm E]
   [FunLike 𝓕 E F] [AddMonoidHomClass 𝓕 E F] (T : 𝓕)
 
 /-- An additive map from a complete source satisfying upper and positive lower
-bounds has closed range when the target quasi-norm separates points. -/
+quasi-seminorm bounds has closed range when the target quasi-seminorm is a quasi-norm. -/
 theorem isClosed_range_of_le_quasiNorm_of_quasiNorm_le
     [QuasiSeminormCompleteSpace E]
     {c C : ℝ} (hc : 0 < c) (hC : 0 ≤ C)

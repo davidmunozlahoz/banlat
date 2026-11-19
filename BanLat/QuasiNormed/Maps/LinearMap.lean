@@ -129,8 +129,8 @@ variable [AddCommGroup E] [Norm E] [IsQuasiNorm E]
 
 /-! ### Uniform embeddings -/
 
-/-- Upper and positive lower quasi-norm bounds on a linear map give a uniform
-embedding when the source quasi-norm separates points. -/
+/-- Upper and positive lower quasi-seminorm bounds on a linear map give a uniform
+embedding when the source quasi-seminorm is a quasi-norm. -/
 theorem isUniformEmbedding_of_le_quasiNorm_of_quasiNorm_le
     {c C : ℝ} (hc : 0 < c) (hC : 0 ≤ C)
     (hlower : ∀ x, c * ‖x‖ ≤ ‖T x‖)
@@ -148,7 +148,7 @@ variable [AddCommGroup E] [Norm E] [IsQuasiSeminorm E]
   (T : E →ₗ[R] F)
 
 /-- A linear map from a complete source satisfying upper and positive lower
-bounds has closed range when the target quasi-norm separates points. -/
+quasi-seminorm bounds has closed range when the target quasi-seminorm is a quasi-norm. -/
 theorem isClosed_range_of_le_quasiNorm_of_quasiNorm_le
     [QuasiSeminormCompleteSpace E]
     {c C : ℝ} (hc : 0 < c) (hC : 0 ≤ C)
@@ -200,7 +200,7 @@ private lemma bound_of_quasiNorm_ball {ε : ℝ} (hε : 0 < ε)
 
 /-- Over a nontrivially normed field, a continuous linear map admits a
 positive global quasi-seminorm bound. -/
-theorem exists_pos_quasiNorm_bound_of_continuous
+private lemma exists_pos_quasiNorm_bound_of_continuous
     (hT : Continuous T) :
     ∃ C : ℝ, 0 < C ∧ ∀ x, ‖T x‖ ≤ C * ‖x‖ := by
   obtain ⟨ε, hε, hball⟩ :=
@@ -229,10 +229,10 @@ variable {𝕜 E F : Type*} [NontriviallyNormedField 𝕜]
   [AddCommGroup F] [Norm F] [IsQuasiSeminorm F]
   [QuasiNormedSpace 𝕜 E] [QuasiNormedSpace 𝕜 F]
 
-/-- A continuous linear map between quasi-seminormed spaces over a nontrivially
+/-- A continuous linear map between quasi-seminormed vector spaces over a nontrivially
 normed field admits a positive global quasi-seminorm bound. -/
 theorem exists_pos_quasiNorm_bound (T : E →L[𝕜] F) :
     ∃ C : ℝ, 0 < C ∧ ∀ x, ‖T x‖ ≤ C * ‖x‖ := by
-  exact LinearMap.exists_pos_quasiNorm_bound_of_continuous T T.continuous
+  exact (LinearMap.continuous_iff_exists_pos_quasiNorm_bound T).mp T.continuous
 
 end ContinuousLinearMap

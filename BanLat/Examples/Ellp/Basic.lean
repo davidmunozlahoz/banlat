@@ -12,7 +12,7 @@ import Mathlib.MeasureTheory.Integral.Lebesgue.Countable
 # Real-valued `ℓᵖ` spaces for `0 < p ≤ ∞`
 
 For `0 < p ≤ ∞`, the correspondence between `ℓᵖ(α, ℝ)` and `Lᵖ` for counting measure
-is a linear quasi-norm isometric equivalence. This correspondence equips `ℓᵖ(α, ℝ)`
+is a linear isometric equivalence. This correspondence equips `ℓᵖ(α, ℝ)`
 with a quasi-Banach space structure, extending the usual Banach space treatment
 for `1 ≤ p ≤ ∞`.
 -/
@@ -144,7 +144,9 @@ private lemma exists_quasi_triangle_constant_lp :
   refine ⟨K, hK.one_le, fun f g ↦ ?_⟩
   simpa only [← map_add, hnorm] using hK.norm_add_le (e.symm f) (e.symm g)
 
-/-- For `0 < p ≤ ∞`, the usual functional on real-valued `ℓᵖ` is a quasi-norm. -/
+/-- For `0 < p ≤ ∞`, the functional on real-valued `ℓᵖ` given by
+`(∑' i, |f i| ^ p) ^ (1 / p)` for `p < ∞`, and by `⨆ i, |f i|` for `p = ∞`,
+is a quasi-norm. -/
 instance (priority := 100) instIsQuasiNorm : IsQuasiNorm (ℓ^p(α, ℝ)) where
   norm_zero := lp.norm_zero
   norm_nonneg := lp.norm_nonneg'
@@ -165,10 +167,10 @@ namespace MeasureTheory.Lp
 variable {α : Type*} [MeasurableSpace α] [DiscreteMeasurableSpace α]
   {p : ENNReal} [Fact (0 < p)]
 
-/-- For `0 < p ≤ ∞`, the counting-measure correspondence is a quasi-linear
-isometric equivalence. -/
-noncomputable def lpCountQuasiLinearIsometryEquiv :
-    QuasiLinearIsometryEquiv ℝ
+/-- For `0 < p ≤ ∞`, `Lᵖ(α, count; ℝ)` and `ℓᵖ(α, ℝ)` are linearly isometrically
+equivalent as quasi-seminormed spaces, where `count` is the counting measure on `α`. -/
+noncomputable def lpCountLinearQuasiSeminormIsometryEquiv :
+    LinearQuasiSeminormIsometryEquiv ℝ
       (Lp ℝ p (Measure.count : Measure α)) (ℓ^p(α, ℝ)) where
   toLinearEquiv := lpCountLinearEquiv
   norm_map' := norm_lpCountLinearEquiv
@@ -184,8 +186,8 @@ noncomputable instance (priority := 100) instQuasiSeminormCompleteSpace :
     QuasiSeminormCompleteSpace (ℓ^p(α, ℝ)) := by
   let : MeasurableSpace α := ⊤
   let : DiscreteMeasurableSpace α := inferInstance
-  let e := Lp.lpCountQuasiLinearIsometryEquiv (α := α) (p := p)
-  exact e.toQuasiIsometryEquiv.quasiSeminormCompleteSpace_iff.mp inferInstance
+  let e := Lp.lpCountLinearQuasiSeminormIsometryEquiv (α := α) (p := p)
+  exact e.toQuasiSeminormIsometryEquiv.quasiSeminormCompleteSpace_iff.mp inferInstance
 
 /-- For `0 < p ≤ ∞`, real-valued `ℓᵖ` is a quasi-Banach real vector space. -/
 noncomputable instance (priority := 100) instQuasiBanachSpace :

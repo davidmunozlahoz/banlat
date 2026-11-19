@@ -9,14 +9,11 @@ import BanLat.Probability.Distributions.Stable.HasSymmetricStableLaw.Moments
 /-!
 # Symmetric stable sequences in `Lᵖ(P)` spaces
 
-## Main theorems
+## Main theorem:
 
 • Let `(Ω, Σ, P)` be a probability space and `(Xₖ)ₖ` a sequence of independent, identically
-distributed, standard symmetric `q`-stable real random variables. For `1 ≤ p < q < 2`, the
+distributed, standard symmetric `q`-stable real random variables. For `0 < p < q < 2`, the
 closure of their linear span in `Lᵖ(P)` is linearly isometric to `ℓ^q(ℕ, ℝ)`.
-
-• For `0 < p < 1` and `p < q < 2`, the normalized stable map defines an injective linear map
-`ℓ^q(ℕ, ℝ) ↦ Lᵖ(P)` which preserves the quasi-norm.
 -/
 
 open MeasureTheory ProbabilityTheory ProbabilityTheory.iIndepFun
@@ -182,14 +179,14 @@ private lemma exists_linearMap_standardQStable {X : ℕ → Ω → ℝ}
     simpa [G, e, standardQStableToLp] using hleft.trans (huniqω.trans hright.symm)
   exact ⟨G, fun a ↦ by simpa [c] using hGnorm a, hGsingle⟩
 
-/-- For `0 < p < q < 2`, the normalized symmetric stable map is a linear quasi-norm isometry
+/-- For `0 < p < q < 2`, the normalized symmetric stable map is a linear isometry
 `T : ℓ^q(ℕ, ℝ) → Lᵖ(P)` satisfying `T(eₙ) = ‖X₀‖ₚ⁻¹Xₙ`. -/
-theorem exists_quasiLinearIsometry_standardQStable {X : ℕ → Ω → ℝ}
+theorem exists_linearQuasiSeminormIsometry_standardQStable {X : ℕ → Ω → ℝ}
     (hX : ∀ n, HasSymmetricStableLaw (X n) q 1 P)
     (h_indep : iIndepFun X P) (hq_lt_two : q < 2)
     [Fact (0 < (p : ℝ≥0∞))] [Fact (0 < ENNReal.ofReal q)]
     (hp_pos : 0 < p) (hpq : (p : ℝ) < q) :
-    ∃ T : QuasiLinearIsometry ℝ (ℓ^(ENNReal.ofReal q)(ℕ, ℝ)) (Lp ℝ p P),
+    ∃ T : LinearQuasiSeminormIsometry ℝ (ℓ^(ENNReal.ofReal q)(ℕ, ℝ)) (Lp ℝ p P),
       ∀ n, T (lp.single (ENNReal.ofReal q) n 1) =
         ‖standardQStableToLp (hX 0) hp_pos hpq‖⁻¹ •
           standardQStableToLp (hX n) hp_pos hpq := by
@@ -207,11 +204,11 @@ theorem exists_quasiLinearIsometry_standardQStable {X : ℕ → Ω → ℝ}
   change T (lp.single (ENNReal.ofReal q) n 1) = _
   simpa [T, c] using congrArg (fun z ↦ c⁻¹ • z) (hG n)
 
-private lemma range_quasiLinearIsometry_standardQStable {X : ℕ → Ω → ℝ}
+private lemma range_linearQuasiSeminormIsometry_standardQStable {X : ℕ → Ω → ℝ}
     (hX : ∀ n, HasSymmetricStableLaw (X n) q 1 P)
     [Fact (0 < (p : ℝ≥0∞))] [Fact (0 < ENNReal.ofReal q)]
     (hp_pos : 0 < p) (hpq : (p : ℝ) < q)
-    (T : QuasiLinearIsometry ℝ (ℓ^(ENNReal.ofReal q)(ℕ, ℝ)) (Lp ℝ p P))
+    (T : LinearQuasiSeminormIsometry ℝ (ℓ^(ENNReal.ofReal q)(ℕ, ℝ)) (Lp ℝ p P))
     (hT : ∀ n, T (lp.single (ENNReal.ofReal q) n 1) =
       ‖standardQStableToLp (hX 0) hp_pos hpq‖⁻¹ •
         standardQStableToLp (hX n) hp_pos hpq) :
@@ -224,19 +221,20 @@ private lemma range_quasiLinearIsometry_standardQStable {X : ℕ → Ω → ℝ}
   exact inv_ne_zero (norm_standardQStableToLp_pos (hX 0) hp_pos hpq).ne'
 
 open scoped QuasiNormedSubmodule in
-/-- For `0 < p < q < 2`, there is a linear quasi-norm isometric equivalence between `ℓ^q(ℕ, ℝ)`
+/-- For `0 < p < q < 2`, there is a linear isometric equivalence between `ℓ^q(ℕ, ℝ)`
 and the closed linear span of an independent standard symmetric `q`-stable sequence in `Lᵖ(P)`. -/
-theorem nonempty_quasiLinearIsometryEquiv_standardQStable_closedSpan
+theorem nonempty_linearQuasiSeminormIsometryEquiv_standardQStable_closedSpan
     {X : ℕ → Ω → ℝ}
     (hX : ∀ n, HasSymmetricStableLaw (X n) q 1 P)
     (h_indep : iIndepFun X P) (hq_lt_two : q < 2)
     [Fact (0 < (p : ℝ≥0∞))] [Fact (0 < ENNReal.ofReal q)]
     (hp_pos : 0 < p) (hpq : (p : ℝ) < q) :
-    Nonempty (QuasiLinearIsometryEquiv ℝ (ℓ^(ENNReal.ofReal q)(ℕ, ℝ))
+    Nonempty (LinearQuasiSeminormIsometryEquiv ℝ (ℓ^(ENNReal.ofReal q)(ℕ, ℝ))
       (Submodule.span ℝ (Set.range fun n ↦ standardQStableToLp (hX n) hp_pos hpq)
         |>.quasiTopologicalClosure)) := by
-  obtain ⟨T, hT⟩ := exists_quasiLinearIsometry_standardQStable hX h_indep hq_lt_two hp_pos hpq
-  rw [← range_quasiLinearIsometry_standardQStable hX hp_pos hpq T hT]
+  obtain ⟨T, hT⟩ :=
+    exists_linearQuasiSeminormIsometry_standardQStable hX h_indep hq_lt_two hp_pos hpq
+  rw [← range_linearQuasiSeminormIsometry_standardQStable hX hp_pos hpq T hT]
   exact ⟨T.equivRange⟩
 
 /-- For `1 ≤ p < q < 2`, the closed linear span in `Lᵖ` of an independent sequence of
@@ -255,7 +253,7 @@ theorem nonempty_linearIsometryEquiv_standardQStable_closedSpan
   have : Fact (0 < (p : ℝ≥0∞)) := ⟨by exact_mod_cast hp_pos⟩
   have : Fact (0 < ENNReal.ofReal q) :=
     ⟨zero_lt_one.trans_le (Fact.out : 1 ≤ ENNReal.ofReal q)⟩
-  have h := nonempty_quasiLinearIsometryEquiv_standardQStable_closedSpan
+  have h := nonempty_linearQuasiSeminormIsometryEquiv_standardQStable_closedSpan
     hX h_indep hq_lt_two hp_pos hpq
   rw [Submodule.quasiTopologicalClosure_eq_topologicalClosure] at h
   exact ⟨h.some.toLinearIsometryEquiv⟩
@@ -277,5 +275,6 @@ theorem exists_linearMap_standardQStable_preserving_quasiNorm
   have : Fact (0 < (p : ℝ≥0∞)) := ⟨by exact_mod_cast hp_pos⟩
   have : Fact (0 < ENNReal.ofReal q) :=
     ⟨ENNReal.ofReal_pos.mpr (hX 0).isSymmetricStable_map.index_pos⟩
-  obtain ⟨T, hT⟩ := exists_quasiLinearIsometry_standardQStable hX h_indep hq_lt_two hp_pos hpq
+  obtain ⟨T, hT⟩ :=
+    exists_linearQuasiSeminormIsometry_standardQStable hX h_indep hq_lt_two hp_pos hpq
   exact ⟨T.toLinearMap, T.injective, T.norm_map, hT⟩

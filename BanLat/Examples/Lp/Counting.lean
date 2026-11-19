@@ -29,7 +29,7 @@ namespace Lp
 private noncomputable def lpCountLinearIsometryEquiv :
     Lp ℝ p (Measure.count : Measure α) ≃ₗᵢ[ℝ] ℓ^p(α, ℝ) := by
   let : Fact (0 < p) := ⟨zero_lt_one.trans_le (Fact.out : 1 ≤ p)⟩
-  exact (lpCountQuasiLinearIsometryEquiv (α := α) (p := p)).toLinearIsometryEquiv
+  exact (lpCountLinearQuasiSeminormIsometryEquiv (α := α) (p := p)).toLinearIsometryEquiv
 
 private lemma lpCountLinearIsometryEquiv_map_sup
     (f g : Lp ℝ p (Measure.count : Measure α)) :
