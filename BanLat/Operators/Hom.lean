@@ -544,8 +544,8 @@ def ContainsLatticeCopy (X Y : Type*)
   ∃ Z : VectorSublattice X,
     IsClosed (Z : Set X) ∧ Nonempty (VecLatEquiv Y Z)
 
-/-- A lattice homomorphism bounded below identifies its Banach domain with a closed
-vector sublattice of its codomain. -/
+/-- If a lattice homomorphism between Banach lattices is bounded below,
+then the codomain contains a lattice copy of the domain. -/
 theorem BanachLattice.containsLatticeCopy_of_norm_lower_bound {X Y : Type*}
     [NormedAddCommGroup X] [NormedAddCommGroup Y]
     [Lattice X] [Lattice Y] [IsOrderedAddMonoid X] [IsOrderedAddMonoid Y]
