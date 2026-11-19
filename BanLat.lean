@@ -54,6 +54,7 @@ import BanLat.DedekindCompletion.Construction
 import BanLat.DedekindCompletion.ExistenceUniqueness
 import BanLat.Disjoint
 import BanLat.Dual
+import BanLat.Examples.C0.Basic
 import BanLat.Examples.CofK.Basic
 import BanLat.Examples.CofK.Complex
 import BanLat.Examples.CofK.Dual
@@ -96,7 +97,8 @@ import BanLat.FunctionalCalculus
 import BanLat.Functionals.Positive.Separation
 import BanLat.Functionals.StrictlyPositive.QuasiInteriorPoint
 import BanLat.Functionals.StrictlyPositive.WeakOrderUnit
-import BanLat.KBSpace
+import BanLat.KBSpace.Basic
+import BanLat.KBSpace.C0
 import BanLat.L1repr.Basic
 import BanLat.L1repr.HowItSeats
 import BanLat.L1repr.OrderContinuous
@@ -161,6 +163,11 @@ import BanLat.QuasiNormed.Complete
 import BanLat.QuasiNormed.Lattice
 import BanLat.QuasiNormed.Topology
 import BanLat.Quotient
+import BanLat.Reflexive
+import BanLat.Reflexive.Basic
+import BanLat.Reflexive.DualOrderContinuous
+import BanLat.Reflexive.SequenceCopies
+import BanLat.Reflexive.SequenceSpaces
 import BanLat.RieszDec
 import BanLat.Substructures.Band.BandProjection.Basic
 import BanLat.Substructures.Band.BandProjection.Complete

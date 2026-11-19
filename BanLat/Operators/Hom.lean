@@ -544,6 +544,21 @@ def ContainsLatticeCopy (X Y : Type*)
   ∃ Z : VectorSublattice X,
     IsClosed (Z : Set X) ∧ Nonempty (VecLatEquiv Y Z)
 
+/-- A lattice homomorphism bounded below identifies its Banach domain with a closed
+vector sublattice of its codomain. -/
+theorem BanachLattice.containsLatticeCopy_of_norm_lower_bound {X Y : Type*}
+    [NormedAddCommGroup X] [NormedAddCommGroup Y]
+    [Lattice X] [Lattice Y] [IsOrderedAddMonoid X] [IsOrderedAddMonoid Y]
+    [BanachLattice X] [BanachLattice Y]
+    (T : VecLatHom Y X) (K : NNReal) (hT : ∀ y, ‖y‖ ≤ K * ‖T y‖) :
+    ContainsLatticeCopy X Y := by
+  have ha : AntilipschitzWith K T := AddMonoidHomClass.antilipschitz_of_bound T hT
+  let e : VecLatEquiv Y T.range :=
+    { LinearEquiv.ofInjective T.toLinearMap ha.injective with
+      map_sup' := fun a b ↦ Subtype.ext (map_sup T a b)
+      map_inf' := fun a b ↦ Subtype.ext (map_inf T a b) }
+  exact ⟨T.range, ha.isClosed_range T.toContinuousLinearMap.uniformContinuous, ⟨e⟩⟩
+
 /-! ## Banach lattice isometries -/
 
 /-- A **Banach lattice isometry** between two Banach lattices: a real linear
