@@ -67,7 +67,7 @@ private lemma one_le_dist_c0PartialSum (n : ℕ) :
 theorem ZeroAtInftyContinuousMap.not_isReflexiveBanachSpace :
     ¬ IsReflexiveBanachSpace ℝ C₀(ℕ, ℝ) := by
   intro h
-  let := IsKbSpace.of_surjective_inclusion h
+  let := IsKbSpace.of_isReflexiveBanachSpace h
   have hb : Bornology.IsBounded (range c0PartialSum) :=
     (isBounded_iff_forall_norm_le).mpr ⟨1, fun _ ⟨n, hn⟩ ↦ hn ▸ norm_c0PartialSum_le n⟩
   obtain ⟨x, hx⟩ := IsKbSpace.tendsto_of_monotone_of_isBounded
@@ -118,7 +118,7 @@ private lemma one_le_dist_ell1PartialSum (n : ℕ) :
 /-- Real `ℓ¹` is not a reflexive Banach space. -/
 theorem lp.not_isReflexiveBanachSpace_ell1 : ¬ IsReflexiveBanachSpace ℝ ℓ¹(ℕ, ℝ) := by
   intro h
-  let := IsKbSpace.of_surjective_inclusion h.dual
+  let := IsKbSpace.of_isReflexiveBanachSpace h.dual
   have hb : Bornology.IsBounded (range ell1PartialSum) :=
     isBounded_iff_forall_norm_le.mpr ⟨1, fun _ ⟨n, hn⟩ ↦ hn ▸ norm_ell1PartialSum_le n⟩
   obtain ⟨x, hx⟩ := IsKbSpace.tendsto_of_monotone_of_isBounded

@@ -3,6 +3,7 @@ Authors: Pedro Tradacete
 -/
 
 import BanLat.OrderContinuous.OrderIntervalCompactness
+import BanLat.Reflexive.Basic
 
 /-!
 # KB-spaces and their canonical bidual images
@@ -72,8 +73,8 @@ instance (priority := 100) toIsOrderContinuousNorm [IsKbSpace X] :
       exists_tendsto_seq_of_bddAbove
   exact BanachLattice.isOrderContinuousNorm_of_isSigmaConditionallyCompleteLattice
 
-/-- In a KB-space, a norm-bounded increasing positive net has a supremum in the
-image under the canonical embedding in the bidual. -/
+/-- In a KB-space, a norm-bounded increasing positive net has a supremum when
+represented in the bidual. Moreover, this supremum comes from the original space. -/
 theorem exists_isLUB_inclusion_range [IsKbSpace X]
     {ι : Type u} [Preorder ι] [IsDirected ι (· ≤ ·)] [Nonempty ι]
     {f : ι → X} (hf : Monotone f) (hpos : ∀ i, 0 ≤ f i)
@@ -83,8 +84,8 @@ theorem exists_isLUB_inclusion_range [IsKbSpace X]
   exact ⟨x, isLUB_of_tendsto_atTop ((BidualSpace.inclusionVecLatHom (X := X)).monotone.comp hf)
     ((BidualSpace.inclusion (X := X)).continuous.tendsto x |>.comp hx)⟩
 
-/-- A norm-bounded directed set of positive vectors in a KB-space has a supremum
-in the image under the canonical embedding in the bidual. -/
+/-- In a KB-space, a norm-bounded directed set of positive elements has a supremum when
+represented in the bidual. Moreover, this supremum comes from the original space. -/
 theorem exists_isLUB_image_inclusion [IsKbSpace X] {A : Set X}
     (hne : A.Nonempty) (hdir : DirectedOn (· ≤ ·) A) (hpos : ∀ x ∈ A, 0 ≤ x)
     (hb : Bornology.IsBounded A) :
@@ -242,9 +243,8 @@ theorem iff_range_inclusion_eq_band :
       range BidualSpace.inclusion = (B : Set (BidualSpace X)) :=
   ⟨fun _ ↦ exists_band_range_inclusion, of_range_inclusion_eq_band⟩
 
-/-- A Banach lattice with surjective canonical bidual embedding is a KB-space. -/
-theorem of_surjective_inclusion (h : Function.Surjective (BidualSpace.inclusion (X := X))) :
-    IsKbSpace X :=
+/-- A reflexive Banach lattice is a KB-space. -/
+theorem of_isReflexiveBanachSpace (h : IsReflexiveBanachSpace ℝ X) : IsKbSpace X :=
   of_range_inclusion_eq_band ⟨⊤, Set.range_eq_univ.mpr h⟩
 
 end IsKbSpace
