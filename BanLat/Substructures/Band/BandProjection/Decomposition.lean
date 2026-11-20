@@ -2,7 +2,7 @@
 Authors: David Muñoz-Lahoz
 -/
 
-import BanLat.Substructures.Band.PPP
+import BanLat.Substructures.Band.BandProjection.PPP
 import BanLat.Pi
 import BanLat.OrderDense
 import BanLat.Operators.Hom

@@ -14,6 +14,8 @@ For `1 ≤ p ≤ ∞`, a bounded linear operator into a Banach lattice is p-conv
 finite lattice p-sums of its images are norm bounded by the ℓᵖ norms of the inputs.
 Admissible constants are nonnegative, and their infimum is attained for p-convex
 operators. A Banach lattice is p-convex when its identity operator is p-convex.
+The predicate `IsPConvexWith p C X` records a specified constant, and `pConvexityConstant p X`
+is the optimal constant when `X` is p-convex.
 Quotients by closed order ideals preserve the operator and lattice estimates.
 Closed vector sublattices inherit lattice p-convexity, and decreasing the exponent
 preserves every admissible operator constant. Every bounded linear operator is
@@ -136,6 +138,18 @@ def convexityConstant (T : E →L[ℝ] X) : ℝ :=
 def IsPConvex (X : Type*) [NormedAddCommGroup X] [Lattice X]
     [IsOrderedAddMonoid X] [BanachLattice X] : Prop :=
   IsPConvexOp p (ContinuousLinearMap.id ℝ X)
+
+/-- A Banach lattice is p-convex with constant `C ≥ 0` when the norm of each finite lattice
+p-sum is at most `C` times the ℓᵖ norm of the individual norms. -/
+abbrev IsPConvexWith (C : ℝ) (X : Type*) [NormedAddCommGroup X] [Lattice X]
+    [IsOrderedAddMonoid X] [BanachLattice X] : Prop :=
+  ConvexWith p C (ContinuousLinearMap.id ℝ X)
+
+/-- The p-convexity constant of a Banach lattice, defined as that of its identity operator.
+When `IsPConvex p X` holds, this is the least `C` satisfying `IsPConvexWith p C X`. -/
+abbrev pConvexityConstant (X : Type*) [NormedAddCommGroup X] [Lattice X]
+    [IsOrderedAddMonoid X] [BanachLattice X] : ℝ :=
+  convexityConstant p (ContinuousLinearMap.id ℝ X)
 
 /-- A Banach lattice is p-convex iff the norm of every finite lattice p-sum is bounded
 by a fixed nonnegative constant times the ℓᵖ norm of the individual norms. -/
@@ -284,14 +298,14 @@ private lemma convexWith_of_quotient {C : ℝ}
   choose y hy hbound using fun i ↦ hlift (x i) δ hδ
   exact norm_latticePSum_le_of_lifts S q hC x y hy hδ.le (fun i ↦ (hbound i).le)
 
-/-- The identity on a quotient by a closed order ideal retains each p-convexity
-constant of the original identity operator. -/
+/-- A quotient by a closed order ideal inherits every p-convexity constant
+of the ambient Banach lattice. -/
 theorem ConvexWith.id_quotient {C : ℝ}
-    (hC : ConvexWith p C (ContinuousLinearMap.id ℝ X))
+    (hC : IsPConvexWith p C X)
     (J : OrderIdeal X) (hJ : IsClosed (J : Set X)) :
     letI := J.quotientNormedAddCommGroup hJ
     letI := J.quotientBanachLattice hJ
-    ConvexWith p C (ContinuousLinearMap.id ℝ (X ⧸ J.toSubmodule)) :=
+    IsPConvexWith p C (X ⧸ J.toSubmodule) :=
   letI := J.quotientNormedAddCommGroup hJ
   letI := J.quotientBanachLattice hJ
   convexWith_of_quotient (ContinuousLinearMap.id ℝ (X ⧸ J.toSubmodule))
@@ -308,21 +322,20 @@ theorem IsPConvex.quotient (hX : IsPConvex p X)
   letI := J.quotientBanachLattice hJ
   hX.elim fun C hC ↦ ⟨C, hC.id_quotient J hJ⟩
 
-/-- The optimal p-convexity constant of the identity on a nontrivial
-p-convex Banach lattice is at least one. -/
+/-- The optimal p-convexity constant of a nontrivial p-convex Banach lattice
+is at least one. -/
 theorem IsPConvex.one_le_convexityConstant [Nontrivial X] (hX : IsPConvex p X) :
-    1 ≤ convexityConstant p (ContinuousLinearMap.id ℝ X) := by
+    1 ≤ pConvexityConstant p X := by
   simpa only [ContinuousLinearMap.norm_id] using
     IsPConvexOp.norm_le_convexityConstant hX
 
 /-- Taking a quotient by a closed order ideal cannot increase the optimal
-p-convexity constant of a Banach lattice's identity operator. -/
+p-convexity constant of a Banach lattice. -/
 theorem IsPConvex.convexityConstant_quotient_le (hX : IsPConvex p X)
     (J : OrderIdeal X) (hJ : IsClosed (J : Set X)) :
     letI := J.quotientNormedAddCommGroup hJ
     letI := J.quotientBanachLattice hJ
-    convexityConstant p (ContinuousLinearMap.id ℝ (X ⧸ J.toSubmodule)) ≤
-      convexityConstant p (ContinuousLinearMap.id ℝ X) :=
+    pConvexityConstant p (X ⧸ J.toSubmodule) ≤ pConvexityConstant p X :=
   letI := J.quotientNormedAddCommGroup hJ
   letI := J.quotientBanachLattice hJ
   ((IsPConvexOp.convexityConstant_spec hX).id_quotient J hJ).convexityConstant_le
@@ -532,9 +545,9 @@ theorem convexityConstant_one (T : E →L[ℝ] X) : convexityConstant 1 T = ‖T
   le_antisymm (convexWith_one T).convexityConstant_le
     (isPConvexOp_one T).norm_le_convexityConstant
 
-/-- The identity on any Banach lattice satisfies the 1-convexity estimate
-with constant one, by the triangle inequality and the lattice norm identity. -/
-theorem convexWith_one_id : ConvexWith 1 1 (ContinuousLinearMap.id ℝ X) :=
+/-- Every Banach lattice is 1-convex with constant one, by the triangle inequality
+and the lattice norm identity. -/
+theorem convexWith_one_id : IsPConvexWith 1 1 X :=
   (convexWith_one _).mono ContinuousLinearMap.norm_id_le
 
 /-- Every Banach lattice is 1-convex.
@@ -543,12 +556,12 @@ theorem isPConvex_one : IsPConvex 1 X :=
   ⟨1, convexWith_one_id⟩
 
 /-- A closed vector sublattice inherits every p-convexity constant
-of the identity on the ambient Banach lattice. -/
+of the ambient Banach lattice. -/
 theorem ConvexWith.id_sublattice {C : ℝ}
-    (hC : ConvexWith p C (ContinuousLinearMap.id ℝ X))
+    (hC : IsPConvexWith p C X)
     (Y : VectorSublattice X) (hY : IsClosed (Y : Set X)) :
     letI := Y.banachLatticeCoe hY
-    ConvexWith p C (ContinuousLinearMap.id ℝ Y) := by
+    IsPConvexWith p C Y := by
   let := Y.banachLatticeCoe hY
   refine ⟨hC.1, fun n x ↦ ?_⟩
   have hmap := latticePSum_map p Y.subtype x

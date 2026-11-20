@@ -41,6 +41,13 @@ instance : SetLike (ProjectionBand X) X where
     cases p; cases q; congr
     exact SetLike.ext' h
 
+/-- A projection band is determined by its underlying band. -/
+theorem toBand_injective :
+    Function.Injective (ProjectionBand.toBand : ProjectionBand X → Band X) := by
+  intro P Q h
+  apply SetLike.ext'
+  exact congrArg (fun C : Band X ↦ (C : Set X)) h
+
 variable (B : ProjectionBand X)
 
 /-- Every element of `X` decomposes as `y + z` with `y ∈ B` and `z ∈ Bᵈ`. -/
@@ -826,6 +833,14 @@ theorem bandProjection_comm (B₁ B₂ : ProjectionBand X) :
       = B₂.bandProjection ∘ₗ B₁.bandProjection := by
   rw [← bandProjection_inf B₁ B₂, ← bandProjection_inf B₂ B₁,
       show (B₁ ⊓ B₂ : ProjectionBand X) = B₂ ⊓ B₁ from inf_comm _ _]
+
+/-- Projecting first onto a larger band does not change projection onto a smaller band. -/
+theorem bandProjection_comp_of_le (B C : ProjectionBand X) (hBC : B ≤ C)
+    (z : X) : B.bandProjection (C.bandProjection z) = B.bandProjection z := by
+  have h := congrArg (fun f : X →ₗ[ℝ] X ↦ f z)
+    (ProjectionBand.bandProjection_inf B C)
+  rw [inf_eq_left.mpr hBC] at h
+  exact h.symm
 
 /-- The band projection onto `B₁ ⊔ B₂` equals `P₁ + P₂ - P₁ ∘ P₂`. -/
 theorem bandProjection_sup (B₁ B₂ : ProjectionBand X) :

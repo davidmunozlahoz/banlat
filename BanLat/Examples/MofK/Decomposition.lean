@@ -4,7 +4,7 @@ Authors: David Muñoz-Lahoz
 
 import BanLat.Examples.MofK.Atom
 import BanLat.Examples.MofK.ALspace
-import BanLat.Substructures.Band.PPP
+import BanLat.Substructures.Band.BandProjection.PPP
 
 /-!
 # Atomic decompositions in `M(K)`

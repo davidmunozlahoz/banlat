@@ -168,6 +168,25 @@ variable {ι : Type*} {p : ENNReal}
 -- Banach lattice instance for `ℓᵖ`-sums.
 noncomputable example [Fact (1 ≤ p)] : BanachLattice (ℓ^p(ι, ℝ)) := inferInstance
 
+noncomputable section
+
+open Filter
+open scoped Topology lp
+
+/-- The projection onto the first `N` coordinates of `x`. It agrees with `x`
+at indices `i < N` and is zero at indices `i ≥ N`. -/
+def headProjection (N : ℕ) (x : ℓ¹(ℕ, ℝ)) : ℓ¹(ℕ, ℝ) :=
+  ∑ i ∈ Finset.range N, lp.single 1 i (x i)
+
+/-- For every `x ∈ ℓ¹(ℕ, ℝ)`, the projection of `x` onto its first `N`
+coordinates converges to `x` in `ℓ¹` norm as `N → ∞`. -/
+lemma tendsto_headProjection (x : ℓ¹(ℕ, ℝ)) :
+    Tendsto (fun N ↦ headProjection N x) atTop (𝓝 x) := by
+  simpa only [headProjection] using
+    (lp.hasSum_single (p := 1) (by simp) x).tendsto_sum_nat
+
+end
+
 end lp
 
 /-! ### Banach lattice isometries between `ℓᵖ`-sums -/

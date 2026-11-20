@@ -3,8 +3,8 @@ Authors: David Muñoz-Lahoz
 -/
 
 import BanLat.AMSpace.Dual
-import BanLat.Bidual
-import BanLat.Substructures.Band.PPP
+import BanLat.Bidual.Basic
+import BanLat.Substructures.Band.BandProjection.PPP
 
 /-!
 # The maximum formula in AM-spaces

@@ -497,6 +497,27 @@ noncomputable def extensionEquiv
 
 end Positive
 
+/-! ### Continuous linear maps from Banach lattices -/
+
+namespace VecLatHom
+
+variable {X Y : Type*} [NormedAddCommGroup X] [NormedAddCommGroup Y]
+  [Lattice X] [Lattice Y] [IsOrderedAddMonoid X] [IsOrderedAddMonoid Y]
+  [BanachLattice X] [NormedVectorLattice Y]
+
+/-- A lattice homomorphism from a Banach lattice to a normed vector lattice is
+automatically continuous. -/
+noncomputable def toContinuousLinearMap (f : VecLatHom X Y) : X →L[ℝ] Y :=
+  { f.toLinearMap with
+    cont := Positive.continuous (Positive.monotone_iff.mp f.monotone) }
+
+/-- The continuous linear map has the same values as the lattice homomorphism. -/
+@[simp]
+theorem toContinuousLinearMap_apply (f : VecLatHom X Y) (x : X) :
+    f.toContinuousLinearMap x = f x := rfl
+
+end VecLatHom
+
 /-! ### Continuous linear equivalence between Banach lattices -/
 
 namespace VecLatEquiv
@@ -522,6 +543,21 @@ def ContainsLatticeCopy (X Y : Type*)
     [BanachLattice X] [BanachLattice Y] : Prop :=
   ∃ Z : VectorSublattice X,
     IsClosed (Z : Set X) ∧ Nonempty (VecLatEquiv Y Z)
+
+/-- If a lattice homomorphism between Banach lattices is bounded below,
+then the codomain contains a lattice copy of the domain. -/
+theorem BanachLattice.containsLatticeCopy_of_norm_lower_bound {X Y : Type*}
+    [NormedAddCommGroup X] [NormedAddCommGroup Y]
+    [Lattice X] [Lattice Y] [IsOrderedAddMonoid X] [IsOrderedAddMonoid Y]
+    [BanachLattice X] [BanachLattice Y]
+    (T : VecLatHom Y X) (K : NNReal) (hT : ∀ y, ‖y‖ ≤ K * ‖T y‖) :
+    ContainsLatticeCopy X Y := by
+  have ha : AntilipschitzWith K T := AddMonoidHomClass.antilipschitz_of_bound T hT
+  let e : VecLatEquiv Y T.range :=
+    { LinearEquiv.ofInjective T.toLinearMap ha.injective with
+      map_sup' := fun a b ↦ Subtype.ext (map_sup T a b)
+      map_inf' := fun a b ↦ Subtype.ext (map_inf T a b) }
+  exact ⟨T.range, ha.isClosed_range T.toContinuousLinearMap.uniformContinuous, ⟨e⟩⟩
 
 /-! ## Banach lattice isometries -/
 

@@ -18,6 +18,9 @@ real scalar multiplication (`VectorLattice`) and proves that positive scalars di
 `⊔` and `⊓`, culminating in `abs_smul'`. The Archimedean case is treated at the end.
 -/
 
+/-- The closed order interval consisting of all `x` such that `a ≤ x ≤ b`. -/
+notation "[" a ", " b "]_o" => Set.Icc a b
+
 /-- A real vector lattice is a real module whose scalar multiplication is monotone for
 non-negative scalars and is compatible with the lattice-ordered additive structure. -/
 class VectorLattice (X : Type*) [AddCommGroup X] [Lattice X] [IsOrderedAddMonoid X] extends

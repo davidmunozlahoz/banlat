@@ -2,7 +2,7 @@
 Authors: David Muñoz-Lahoz
 -/
 
-import BanLat.Substructures.Band.Projection
+import BanLat.Substructures.Band.BandProjection.Basic
 import BanLat.OrderComplete
 
 /-!
