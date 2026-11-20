@@ -128,6 +128,7 @@ import BanLat.OrderComplete
 import BanLat.OrderContinuous.Ando
 import BanLat.OrderContinuous.Basic
 import BanLat.OrderContinuous.Decomposition
+import BanLat.OrderContinuous.DualOrderContinuous
 import BanLat.OrderContinuous.Linf
 import BanLat.OrderContinuous.MeyerNieberg
 import BanLat.OrderContinuous.Nakano
@@ -163,12 +164,11 @@ import BanLat.QuasiNormed.Complete
 import BanLat.QuasiNormed.Lattice
 import BanLat.QuasiNormed.Topology
 import BanLat.Quotient
-import BanLat.Reflexive
 import BanLat.Reflexive.Basic
-import BanLat.Reflexive.DualOrderContinuous
-import BanLat.Reflexive.SequenceCopies
 import BanLat.Reflexive.SequenceSpaces
+import BanLat.Reflexive.c0ell1Characterization
 import BanLat.RieszDec
+import BanLat.SequenceCopies
 import BanLat.Substructures.Band.BandProjection.Basic
 import BanLat.Substructures.Band.BandProjection.Complete
 import BanLat.Substructures.Band.BandProjection.Decomposition

@@ -5,7 +5,6 @@ Authors: Pedro Tradacete
 import BanLat.Examples.C0.Basic
 import BanLat.Examples.Ellp.Sum
 import BanLat.Operators.Hom
-import BanLat.OrderContinuous.MeyerNieberg
 import Mathlib.Analysis.Normed.Operator.Extend
 import Mathlib.LinearAlgebra.Finsupp.LSum
 
@@ -240,24 +239,5 @@ theorem containsLatticeCopy_ell1_of_disjoint {v : ℕ → X} (hv : ∀ n, 0 ≤ 
   change ‖ell1OfFinsupp a‖ ≤ (ε⁻¹ * ‖φ‖) * ‖ell1Combination v (ell1OfFinsupp a)‖
   rw [ell1Combination_ofFinsupp hb]
   exact ell1_norm_le_norm_linearCombination hv hd φ hε hφ a
-
-/-- Failure of order continuity produces an order-bounded disjoint positive
-sequence whose norms have a common strictly positive lower bound. -/
-theorem exists_disjoint_norm_ge_of_not_isOrderContinuousNorm
-    (hX : ¬ IsOrderContinuousNorm X) :
-    ∃ (v : ℕ → X) (w : X) (ε : ℝ), 0 < ε ∧ (∀ n, 0 ≤ v n) ∧
-      Pairwise (fun n m ↦ IsVLDisjoint (v n) (v m)) ∧
-      (∀ n, v n ≤ w) ∧ ∀ n, ε ≤ ‖v n‖ := by
-  have hfail := mt isOrderContinuousNorm_iff_disjoint_tendsto_zero.mpr hX
-  push Not at hfail
-  obtain ⟨u, hd, ⟨w, hw⟩, hn⟩ := hfail
-  rw [Metric.tendsto_nhds] at hn
-  push Not at hn
-  obtain ⟨ε, hε, hf⟩ := hn
-  obtain ⟨φ, hφ, hnorm⟩ := Filter.extraction_of_frequently_atTop hf
-  refine ⟨fun n ↦ |u (φ n)|, w, ε, hε, fun n ↦ abs_nonneg _, ?_,
-    fun n ↦ hw (mem_range_self (φ n)), ?_⟩
-  · exact fun _ _ h ↦ by simpa only [IsVLDisjoint, abs_abs] using hd (hφ.injective.ne h)
-  · exact fun n ↦ by simpa only [norm_abs_eq_norm, dist_zero_right] using hnorm n
 
 end BanachLattice

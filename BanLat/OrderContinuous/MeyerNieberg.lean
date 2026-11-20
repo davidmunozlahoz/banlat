@@ -1,5 +1,5 @@
 /-
-Authors: David Muñoz-Lahoz
+Authors: David Muñoz-Lahoz, Pedro Tradacete
 -/
 
 import BanLat.OrderContinuous.Nakano
@@ -886,5 +886,24 @@ theorem countable_of_pairwise_disjoint_bddAbove [IsOrderContinuousNorm X]
     exact Set.mem_iUnion.mpr ⟨n, hx, le_of_lt hn⟩
   refine (Set.Countable.mono hcover ?_)
   exact Set.countable_iUnion (fun n => (hTfin n).countable)
+
+/-- Failure of order continuity produces an order-bounded disjoint positive
+sequence whose norms have a common strictly positive lower bound. -/
+theorem exists_disjoint_norm_ge_of_not_isOrderContinuousNorm
+    (hX : ¬ IsOrderContinuousNorm X) :
+    ∃ (v : ℕ → X) (w : X) (ε : ℝ), 0 < ε ∧ (∀ n, 0 ≤ v n) ∧
+      Pairwise (fun n m ↦ IsVLDisjoint (v n) (v m)) ∧
+      (∀ n, v n ≤ w) ∧ ∀ n, ε ≤ ‖v n‖ := by
+  have hfail := mt isOrderContinuousNorm_iff_disjoint_tendsto_zero.mpr hX
+  push Not at hfail
+  obtain ⟨u, hd, ⟨w, hw⟩, hn⟩ := hfail
+  rw [Metric.tendsto_nhds] at hn
+  push Not at hn
+  obtain ⟨ε, hε, hf⟩ := hn
+  obtain ⟨φ, hφ, hnorm⟩ := Filter.extraction_of_frequently_atTop hf
+  refine ⟨fun n ↦ |u (φ n)|, w, ε, hε, fun n ↦ abs_nonneg _, ?_,
+    fun n ↦ hw (Set.mem_range_self (φ n)), ?_⟩
+  · exact fun _ _ h ↦ by simpa only [IsVLDisjoint, abs_abs] using hd (hφ.injective.ne h)
+  · exact fun n ↦ by simpa only [norm_abs_eq_norm, dist_zero_right] using hnorm n
 
 end BanachLattice

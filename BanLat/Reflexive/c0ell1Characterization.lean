@@ -3,7 +3,7 @@ Authors: Pedro Tradacete
 -/
 
 import BanLat.KBSpace.C0
-import BanLat.Reflexive.DualOrderContinuous
+import BanLat.OrderContinuous.DualOrderContinuous
 import BanLat.Reflexive.SequenceSpaces
 
 /-!

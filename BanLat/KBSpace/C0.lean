@@ -3,7 +3,8 @@ Authors: Pedro Tradacete
 -/
 
 import BanLat.KBSpace.Basic
-import BanLat.Reflexive.SequenceCopies
+import BanLat.OrderContinuous.MeyerNieberg
+import BanLat.SequenceCopies
 import BanLat.Tactic.LLexpr
 
 /-!

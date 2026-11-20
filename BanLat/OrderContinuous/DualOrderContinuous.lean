@@ -3,7 +3,8 @@ Authors: Pedro Tradacete
 -/
 
 import BanLat.Dual
-import BanLat.Reflexive.SequenceCopies
+import BanLat.OrderContinuous.MeyerNieberg
+import BanLat.SequenceCopies
 import BanLat.Operators.Carrier
 import BanLat.Substructures.Band.BandProjection.Complete
 
