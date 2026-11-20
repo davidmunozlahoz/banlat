@@ -332,6 +332,54 @@ theorem isLUB_sup_apply
     exact hu ⟨y, x - y, hy, sub_nonneg.mpr hyx, by abel, rfl⟩
 
 
+/-- A common upper bound for evaluations on positive finite decompositions also bounds
+the finite supremum of the operators evaluated at their sum. -/
+private lemma finset_sup_apply_le {ι : Type*} {s : Finset ι} (hs : s.Nonempty)
+    (f : ι → OrderBoundedHom X Y) {x : X} (hx : 0 ≤ x) {u : Y}
+    (hu : ∀ y : ι → X, (∀ i ∈ s, 0 ≤ y i) → ∑ i ∈ s, y i = x →
+      ∑ i ∈ s, f i (y i) ≤ u) : (s.sup' hs f) x ≤ u := by
+  classical
+  induction hs using Finset.Nonempty.cons_induction generalizing x u with
+  | singleton a =>
+    simpa using hu (fun _ ↦ x) (by simpa using hx) (by simp)
+  | cons a t ha ht ih =>
+    rw [Finset.sup'_cons ht f]
+    apply (isLUB_sup_apply hx).2
+    rintro _ ⟨y, z, hy, hz, hyz, rfl⟩
+    rw [← le_sub_iff_add_le']
+    apply ih hz
+    intro v hv hsum
+    have hne : ∀ i ∈ t, i ≠ a := fun i hi h ↦ ha (h ▸ hi)
+    have heval : ∑ i ∈ t, f i (if i = a then y else v i) = ∑ i ∈ t, f i (v i) :=
+      Finset.sum_congr rfl fun i hi ↦ by rw [ite_eq_right (hne i hi)]
+    have hfull := hu (fun i ↦ if i = a then y else v i) ?_ ?_
+    · simpa [ha, heval, le_sub_iff_add_le'] using hfull
+    · exact fun i hi ↦ by
+        split_ifs with h
+        · exact hy
+        · exact hv i ((Finset.mem_cons.mp hi).resolve_left h)
+    · have heq : ∑ i ∈ t, (if i = a then y else v i) = ∑ i ∈ t, v i :=
+        Finset.sum_congr rfl fun i hi ↦ ite_eq_right (hne i hi)
+      simpa only [Finset.sum_cons, ite_eq_left rfl, ite_true, heq, hsum] using hyz
+
+/-- A finite supremum of order bounded operators, evaluated at a positive vector, is the
+supremum of the sums obtained by splitting that vector into positive summands. -/
+theorem isLUB_finset_sup_apply {ι : Type*} {s : Finset ι} (hs : s.Nonempty)
+    (f : ι → OrderBoundedHom X Y) {x : X} (hx : 0 ≤ x) :
+    IsLUB {w | ∃ y : ι → X, (∀ i ∈ s, 0 ≤ y i) ∧
+      (∑ i ∈ s, y i = x) ∧ w = ∑ i ∈ s, f i (y i)}
+      ((s.sup' hs f) x) := by
+  refine ⟨?_, fun u hu ↦ finset_sup_apply_le hs f hx
+    (fun y hy hsum ↦ hu ⟨y, hy, hsum, rfl⟩)⟩
+  rintro _ ⟨y, hy, hsum, rfl⟩
+  calc
+    _ ≤ ∑ i ∈ s, (s.sup' hs f) (y i) :=
+      Finset.sum_le_sum fun i hi ↦ le_iff.mp (Finset.le_sup' f hi) _ (hy i hi)
+    _ = _ := by
+      change ∑ i ∈ s, (s.sup' hs f).toLinearMap (y i) = _
+      rw [← map_sum, hsum]
+      rfl
+
 private lemma map_add_val (f : OrderBoundedHom X Y) (a b : X) :
     f (a + b) = f a + f b :=
   show f.toLinearMap _ = _ from map_add f.toLinearMap a b

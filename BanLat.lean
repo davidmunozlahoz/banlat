@@ -143,11 +143,15 @@ import BanLat.OrderDense
 import BanLat.OrderUnit
 import BanLat.OrderUnit.CountableChainCondition
 import BanLat.PConvexity
+import BanLat.PConvexity.Dual
+import BanLat.PConvexity.Holder
 import BanLat.Pi
 import BanLat.Preliminaries.ContinuousLinearMap
 import BanLat.Preliminaries.DensityCharacter
 import BanLat.Preliminaries.EberleinSmulian
 import BanLat.Preliminaries.HasNoAtoms
+import BanLat.Preliminaries.PiLpDualPairing
+import BanLat.Preliminaries.PiLpDuality
 import BanLat.Preliminaries.Regularity
 import BanLat.Preliminaries.SignedMeasure
 import BanLat.Probability.AtomlessRealization
@@ -165,6 +169,10 @@ import BanLat.Probability.Distributions.Stable.Moments
 import BanLat.Pushout.Amalgamation
 import BanLat.Pushout.Basic
 import BanLat.Pushout.Construction
+import BanLat.QConcavity
+import BanLat.QConcavity.Duality
+import BanLat.QConcavity.Monotonicity
+import BanLat.QConcavity.Quotient
 import BanLat.QuasiInteriorPoint
 import BanLat.QuasiNormed.Basic
 import BanLat.QuasiNormed.Complete
