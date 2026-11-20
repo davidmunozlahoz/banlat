@@ -66,6 +66,7 @@ import BanLat.Examples.Ellp.WeakUnit
 import BanLat.Examples.Lp.AlmostOrderBounded
 import BanLat.Examples.Lp.Amalgamation
 import BanLat.Examples.Lp.Atom
+import BanLat.Examples.Lp.Bands
 import BanLat.Examples.Lp.Basic
 import BanLat.Examples.Lp.ChangeDensity
 import BanLat.Examples.Lp.Classification.Atomic
