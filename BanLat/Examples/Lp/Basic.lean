@@ -58,7 +58,7 @@ variable {E : Type*} [NormedAddCommGroup E]
 
 attribute [local instance] Lp.simpleFunc.smul Lp.simpleFunc.module
 
-/-- For `0 ≤ p ≤ ∞`, the norm functional on `Lp E p μ` satisfies
+/-- For `0 ≤ p ≤ ∞`, the quasi-seminorm functional on `Lp E p μ` satisfies
 Mathlib's quasi-triangle estimate. -/
 private lemma norm_add_le_LpAddConst (f g : Lp E p μ) :
     ‖f + g‖ ≤ (ENNReal.LpAddConst p).toReal * (‖f‖ + ‖g‖) := by
@@ -202,13 +202,13 @@ theorem simpleFunc.toLp_isVLDisjoint {f g : SimpleFunc α ℝ}
 
 end MeasureTheory.Lp
 
-/-! ### Norm identities for positive finite exponents -/
+/-! ### Norm and quasi-norm identities for positive finite exponents -/
 
 namespace MeasureTheory.Lp
 
 variable {E : Type*} [NormedAddCommGroup E]
 
-/-- For `0 < p < ∞`, the `p`-th power of the `L^p`-norm equals the integral of the
+/-- For `0 < p < ∞`, the `p`-th power of the `L^p` quasi-norm equals the integral of the
 `p`-th power of the pointwise norm. -/
 lemma norm_rpow_eq_integral_norm_rpow
     {p : ℝ≥0} (hp : p ≠ 0) (f : Lp E (p : ENNReal) μ) :

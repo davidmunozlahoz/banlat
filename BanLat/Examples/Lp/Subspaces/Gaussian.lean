@@ -25,7 +25,7 @@ noncomputable def standardGaussianToLp (p : ℝ≥0) {X : Ω → ℝ}
     (hX : HasLaw X (gaussianReal 0 1) P) : Lp ℝ p P :=
   (hX.hasGaussianLaw.memLp ENNReal.coe_ne_top).toLp X
 
-/-- A standard Gaussian has positive `Lᵖ` norm, so
+/-- A standard Gaussian has positive `Lᵖ` quasi-norm, so
 its almost-everywhere class is non-zero. -/
 private lemma norm_standardGaussianToLp_pos {X : Ω → ℝ}
     (hX : HasLaw X (gaussianReal 0 1) P) (hp_pos : 0 < p) :
@@ -92,8 +92,8 @@ private lemma coeFn_sum_standardGaussianToLp {X : ℕ → Ω → ℝ}
         with ω hadd hsmul hsum
       rw [hadd, Pi.add_apply, hsmul, hsum]
 
-/-- The `Lᵖ` norm of a finite Gaussian sum is the standard Gaussian
-`Lᵖ` norm multiplied by the Euclidean norm of its coefficient vector. -/
+/-- The `Lᵖ` quasi-norm of a finite Gaussian sum is the standard Gaussian
+`Lᵖ` quasi-norm multiplied by the Euclidean norm of its coefficient vector. -/
 private lemma norm_sum_standardGaussianToLp {X : ℕ → Ω → ℝ}
     (hX : ∀ n, HasLaw (X n) (gaussianReal 0 1) P)
     (h_indep : iIndepFun X P)

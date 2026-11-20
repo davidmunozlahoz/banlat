@@ -31,7 +31,7 @@ noncomputable def standardQStableToLp {X : Ω → ℝ}
     Lp ℝ p P := by
   exact ((hX.memLp_iff hp_pos).2 (Or.inr (Or.inr hpq))).toLp X
 
-/-- A standard symmetric `q`-stable random variable has positive `Lᵖ` norm, so
+/-- A standard symmetric `q`-stable random variable has positive `Lᵖ` quasi-norm, so
 its almost-everywhere class is non-zero. -/
 private lemma norm_standardQStableToLp_pos {X : Ω → ℝ}
     (hX : HasSymmetricStableLaw X q 1 P)
@@ -55,7 +55,7 @@ private lemma summable_nnnorm_rpow (hq_pos : 0 < q)
   simpa [NNReal.coe_rpow, ENNReal.toReal_ofReal hq_pos.le] using
     (lp.memℓp a).summable (by simpa [ENNReal.toReal_ofReal hq_pos.le] using hq_pos)
 
-/-- The `q`-th root of the sum of the `q`-th powers of the coordinates is the `ℓ^q` norm. -/
+/-- The `q`-th root of the sum of the `q`-th powers of the coordinates is the `ℓ^q` quasi-norm. -/
 private lemma rpow_tsum_nnnorm_rpow (hq_pos : 0 < q)
     (a : lp (fun _ : ℕ ↦ ℝ) (ENNReal.ofReal q)) :
     (↑(∑' n, ‖a n‖₊ ^ q) : ℝ) ^ q⁻¹ = ‖a‖ := by

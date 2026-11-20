@@ -117,7 +117,8 @@ theorem lpCountLinearEquiv_apply
     lpCountLinearEquiv f i = f i := by
   rfl
 
-/-- For `0 < p ≤ ∞`, the counting-measure linear equivalence preserves the norm functional. -/
+/-- For `0 < p ≤ ∞`, the counting-measure linear equivalence preserves
+the quasi-norm functional. -/
 @[simp]
 theorem norm_lpCountLinearEquiv (f : Lp ℝ p (Measure.count : Measure α)) :
     ‖lpCountLinearEquiv f‖ = ‖f‖ := by

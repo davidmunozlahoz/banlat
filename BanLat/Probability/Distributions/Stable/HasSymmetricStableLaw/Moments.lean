@@ -17,7 +17,7 @@ the exponents `p` for which its absolute `p`-moment, `E∣X∣ᵖ`, is finite:
   • If `c > 0`, then:
     - If `q = 2`, `E∣X∣^p < ∞, ∀ 0 < p < ∞`.
     - If `q < 2`, `E∣X∣^p < ∞ ↔ 0 < p < q`.
-The file also expresses the absolute moments and `Lᵖ` norms of finite and infinite linear
+The file also expresses the absolute moments and `Lᵖ` quasi-norms of finite and infinite linear
 combinations of independent symmetric `q`-stable random variables with a common scale parameter.
 -/
 
