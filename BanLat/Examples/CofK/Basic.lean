@@ -4,6 +4,7 @@ Authors: David Muñoz-Lahoz
 
 import BanLat.AMSpace.Basic
 import BanLat.Normed
+import BanLat.Operators.Positive
 import Mathlib.Topology.ContinuousMap.Compact
 import Mathlib.Topology.ContinuousMap.Lattice
 
@@ -115,3 +116,49 @@ noncomputable instance instAMSpaceWithUnitCofK : AMSpaceWithUnit C(K, ℝ) where
   unit := 1
   strongOrderUnit_unit := one_strongOrderUnit
   norm_eq_gaugeNorm := norm_eq_gaugeNorm_one
+
+namespace ContinuousMap
+
+/-! ## Positive unital operators -/
+
+section
+
+variable {K L : Type*} [TopologicalSpace K] [TopologicalSpace L]
+  [CompactSpace K] [CompactSpace L]
+
+omit [CompactSpace L] in
+/-- If T is a positive unital operator between real C(K)-spaces, then |Tf| ≤ ||f||·1. -/
+private lemma abs_apply_le_norm_smul_one {T : C(K, ℝ) →L[ℝ] C(L, ℝ)}
+    (hT : Positive T.toLinearMap) (hOne : T 1 = 1) (f : C(K, ℝ)) :
+    |T f| ≤ ‖f‖ • (1 : C(L, ℝ)) :=
+  calc
+    |T f| ≤ T |f| := hT.abs_le_map_abs f
+    _ ≤ T (‖f‖ • 1) := (Positive.monotone_iff.mpr hT)
+      (ContinuousMap.le_def.mpr fun x ↦ by
+        simpa only [ContinuousMap.abs_apply, ContinuousMap.smul_apply,
+          ContinuousMap.one_apply, smul_eq_mul, mul_one, Real.norm_eq_abs] using
+          f.norm_coe_le_norm x)
+    _ = ‖f‖ • 1 := (map_smul T _ _).trans (congrArg (‖f‖ • ·) hOne)
+
+/-- A positive unital operator between real C(K)-spaces is a contraction.
+This includes when either underlying compact space is empty. -/
+theorem norm_le_one_of_positive_of_map_one
+    {T : C(K, ℝ) →L[ℝ] C(L, ℝ)} (hT : Positive T.toLinearMap) (hOne : T 1 = 1) :
+    ‖T‖ ≤ 1 :=
+  T.opNorm_le_bound zero_le_one fun f ↦
+    (ContinuousMap.norm_le _ (mul_nonneg zero_le_one (norm_nonneg f))).mpr fun x ↦ by
+      simpa only [one_mul, Real.norm_eq_abs, ContinuousMap.abs_apply,
+        ContinuousMap.smul_apply, ContinuousMap.one_apply, smul_eq_mul, mul_one] using
+        ContinuousMap.le_def.mp (abs_apply_le_norm_smul_one hT hOne f) x
+
+/-- A positive unital operator between nonempty real continuous-function spaces
+has norm exactly 1. -/
+theorem norm_eq_one_of_positive_of_map_one [Nonempty K] [Nonempty L]
+    {T : C(K, ℝ) →L[ℝ] C(L, ℝ)} (hT : Positive T.toLinearMap) (hOne : T 1 = 1) :
+    ‖T‖ = 1 :=
+  le_antisymm (norm_le_one_of_positive_of_map_one hT hOne) (by
+    simpa only [hOne, norm_one, mul_one] using T.le_opNorm (1 : C(K, ℝ)))
+
+end
+
+end ContinuousMap
