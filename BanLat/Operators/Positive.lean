@@ -4,6 +4,7 @@ Authors: David Muñoz-Lahoz
 
 import BanLat.Normed
 import Mathlib.Algebra.Order.Module.Basic
+import Mathlib.Analysis.Normed.Operator.Basic
 import Mathlib.Topology.Algebra.Module.Equiv.Basic
 
 /-!
@@ -330,5 +331,23 @@ theorem continuous {f : X →ₗ[ℝ] Y} (hf : Positive f) : Continuous f := by
   obtain ⟨N, hN⟩ := exists_nat_gt ‖f y‖
   exact absurd (lt_of_lt_of_le (hxf N) (norm_map_le_of_abs_le hf (hle N)))
     (not_lt.mpr hN.le)
+
+/-! ## Positive projections -/
+
+section
+
+variable {X Y : Type*} [NormedAddCommGroup X] [NormedAddCommGroup Y]
+  [Lattice X] [Lattice Y] [IsOrderedAddMonoid X] [IsOrderedAddMonoid Y]
+  [BanachLattice X] [BanachLattice Y]
+
+/-- The map `J` witnesses that `X` is positively 1-complemented in `Y` if
+it is a positive contraction with a positive contractive left inverse.
+These conditions make `J` an isometric embedding. -/
+def IsPositiveContractiveRetract (J : X →L[ℝ] Y) : Prop :=
+  ∃ Q : Y →L[ℝ] X,
+    Positive J.toLinearMap ∧ Positive Q.toLinearMap ∧ Function.LeftInverse Q J ∧
+      ‖J‖ ≤ 1 ∧ ‖Q‖ ≤ 1
+
+end
 
 end Positive

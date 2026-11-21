@@ -55,6 +55,7 @@ import BanLat.DedekindCompletion.ExistenceUniqueness
 import BanLat.Disjoint
 import BanLat.Dual
 import BanLat.Examples.CofK.Basic
+import BanLat.Examples.CofK.Borsuk
 import BanLat.Examples.CofK.Complex
 import BanLat.Examples.CofK.Dual
 import BanLat.Examples.CofK.FunctionalCalculus
