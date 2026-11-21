@@ -71,8 +71,8 @@ private def extensionValue (a : ↥(sᶜ) → s)
 open scoped Classical in
 /- For any `f` continuous on `s`, the `extensionValue` `Ef` is continuous at points of `s`.
 Given a point `x` in `s` and a close point `z` in `K \ s`, the difference `|Ef(x)-Ef(z)|`
-is a convex combination of `|f(x)-f(a i)|` for various `i`. The *distance lemma* shows
-that such values are close. -/
+is bounded by a convex combination of `|f(x)-f(a i)|` for various `i`.
+The *distance lemma* shows that such values are close. -/
 private lemma extensionValue_continuousAt_mem (a : ↥(sᶜ) → s)
     (ρ : PartitionOfUnity ↥(sᶜ) ↥(sᶜ) univ)
     (hnear : ∀ i z : ↥(sᶜ), ρ i z ≠ 0 → ∀ x : s,
