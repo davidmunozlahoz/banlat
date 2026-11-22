@@ -35,8 +35,8 @@ variable {X : Type*} [NormedAddCommGroup X] [Lattice X]
 variable {E : Type*} [NormedAddCommGroup E] [NormedSpace ℝ E]
 variable {q r : ℝ≥0∞} [Fact (1 ≤ q)] [Fact (1 ≤ r)] {T : X →L[ℝ] E}
 
-/-- Increasing the exponent preserves every admissible operator concavity constant.
-The exponents may include infinity and satisfy `1 ≤ q ≤ r`. -/
+/-- If an operator is q-concave with constant `C`, and `1 ≤ q ≤ r`, then it is also r-concave with
+constant `C`. -/
 theorem ConcaveWith.of_le {C : ℝ} (hC : ConcaveWith q C T) (hqr : q ≤ r) :
     ConcaveWith r C T := by
   obtain ⟨p, s, hp, hs, hsp⟩ := exists_holderConjugate_antitone (Fact.out : 1 ≤ q) hqr
@@ -49,18 +49,16 @@ theorem ConcaveWith.of_le {C : ℝ} (hC : ConcaveWith q C T) (hqr : q ≤ r) :
   exact (concaveWith_iff_convexWith_precomp (p := s) (q := r) (T := T) (C := C)).mpr
     (hdual.of_le hsp)
 
-/-- A q-concave operator is r-concave whenever `1 ≤ q ≤ r`.
-This includes every larger finite exponent and the exponent infinity. -/
+/-- A q-concave operator is r-concave whenever `1 ≤ q ≤ r`. -/
 theorem IsQConcaveOp.of_le (hT : IsQConcaveOp q T) (hqr : q ≤ r) : IsQConcaveOp r T :=
   hT.elim fun C hC ↦ ⟨C, hC.of_le hqr⟩
 
-/-- A q-concave Banach lattice is r-concave whenever `1 ≤ q ≤ r`.
-The result follows by applying operator monotonicity to its identity. -/
+/-- A q-concave Banach lattice is r-concave whenever `1 ≤ q ≤ r`. -/
 theorem IsQConcave.of_le (hX : IsQConcave q X) (hqr : q ≤ r) : IsQConcave r X :=
   IsQConcaveOp.of_le hX hqr
 
-/-- Increasing the exponent cannot increase the optimal concavity constant
-of an operator already concave at the smaller exponent. -/
+/-- If an operator is q-concave, then its optimal r-concavity constant is less than or equal to
+the q-concavity constant whenever `1 ≤ q ≤ r`. -/
 theorem IsQConcaveOp.concavityConstant_le_of_le (hT : IsQConcaveOp q T) (hqr : q ≤ r) :
     concavityConstant r T ≤ concavityConstant q T :=
   (hT.concavityConstant_spec.of_le hqr).concavityConstant_le

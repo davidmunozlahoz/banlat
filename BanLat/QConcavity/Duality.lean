@@ -10,9 +10,9 @@ import BanLat.Preliminaries.PiLpDualPairing
 /-!
 # Duality between convexity and concavity
 
-For conjugate exponents, an operator is convex exactly when its adjoint is concave,
-and an operator is concave exactly when its adjoint is convex. The admissible and
-optimal constants agree. Applying these equivalences to identity operators relates
+For conjugate exponents p and q, an operator is p-convex exactly when its adjoint is q-concave,
+and an operator is q-concave exactly when its adjoint is p-convex. The admissible and
+optimal constants coincide. Applying these equivalences to identity operators relates
 convexity and concavity of a Banach lattice to those of its dual, including the endpoint exponents.
 -/
 
@@ -26,8 +26,6 @@ variable {p q : ℝ≥0∞} [Fact (1 ≤ p)] [Fact (1 ≤ q)] [p.HolderConjugate
 variable {E : Type*} [NormedAddCommGroup E] [NormedSpace ℝ E]
 
 omit [Fact (1 ≤ q)] in
-/-- Coordinatewise norming functionals and a scalar norming family recover the
-scalar q-sum of vector norms using a dual family whose scalar p-sum is at most one. -/
 private lemma exists_norming_dual_family {n : ℕ} (x : Fin n → E) :
     ∃ φ : Fin n → StrongDual ℝ E,
       ‖WithLp.toLp p (fun i ↦ ‖φ i‖)‖ ≤ 1 ∧
@@ -44,8 +42,6 @@ private lemma exists_norming_dual_family {n : ℕ} (x : Fin n → E) :
     exact (mul_le_mul_of_nonneg_left (hψnorm i) (ha i)).trans_eq (mul_one _)
   · simpa [hψx, mul_comm] using hax
 
-/-- Convexity of the adjoint bounds a norming dual family for the images of any
-finite vector family, giving the concavity estimate for the original operator. -/
 private lemma concaveWith_of_convexWith_precomp {T : X →L[ℝ] E} {C : ℝ}
     (hT : ConvexWith p C (T.precomp ℝ : StrongDual ℝ E →L[ℝ] StrongDual ℝ X)) :
     ConcaveWith q C T := by
@@ -59,8 +55,6 @@ private lemma concaveWith_of_convexWith_precomp {T : X →L[ℝ] E} {C : ℝ}
       x (fun i ↦ (φ i).comp T)).trans
         ((mul_le_mul_of_nonneg_left hbound (norm_nonneg _)).trans_eq (mul_comm _ _)))
 
-/-- The concavity estimate bounds each finite pairing of operator images with
-functionals by the scalar p-sum of their norms and the lattice q-sum of the vectors. -/
 private lemma pairing_le_of_concaveWith {T : X →L[ℝ] E} {C : ℝ}
     (hT : ConcaveWith q C T) {n : ℕ} (φ : Fin n → StrongDual ℝ E) (x : Fin n → X) :
     ∑ i, φ i (T (x i)) ≤
@@ -74,8 +68,6 @@ private lemma pairing_le_of_concaveWith {T : X →L[ℝ] E} {C : ℝ}
       mul_le_mul_of_nonneg_left (hT.2 n x) (norm_nonneg _)
     _ = _ := by ring
 
-/-- The canonical bidual embeddings preserve norms, and the lattice embedding of
-the codomain transfers the convexity estimate for the second adjoint back to the operator. -/
 private lemma convexWith_of_convexWith_precomp_precomp {T : E →L[ℝ] X} {C : ℝ}
     (hT : ConvexWith p C
       (((T.precomp ℝ : StrongDual ℝ X →L[ℝ] StrongDual ℝ E)).precomp ℝ :
@@ -89,8 +81,6 @@ private lemma convexWith_of_convexWith_precomp_precomp {T : E →L[ℝ] X} {C : 
   change ‖BidualSpace.inclusionLi (latticePSum p (fun i ↦ T (x i)))‖ ≤ _ at h
   simpa only [LinearIsometry.norm_map] using h
 
-/-- Convexity bounds the pairing of an operator image family with dual functionals;
-the scalar dual norm formula converts this bound into concavity of the adjoint. -/
 private lemma concaveWith_precomp_of_convexWith {T : E →L[ℝ] X} {C : ℝ}
     (hT : ConvexWith p C T) :
     ConcaveWith q C (T.precomp ℝ : StrongDual ℝ X →L[ℝ] StrongDual ℝ E) := by
@@ -144,7 +134,7 @@ theorem isPConvexOp_iff_isQConcaveOp_precomp {T : E →L[ℝ] X} :
   exists_congr fun _ ↦ convexWith_iff_concaveWith_precomp
 
 /-- The optimal q-concavity constant of an operator equals the optimal p-convexity
-constant of its adjoint, since their admissible constants coincide. -/
+constant of its adjoint. -/
 theorem concavityConstant_eq_convexityConstant_precomp (T : X →L[ℝ] E) :
     concavityConstant q T =
       convexityConstant p (T.precomp ℝ : StrongDual ℝ E →L[ℝ] StrongDual ℝ X) := by
@@ -153,7 +143,7 @@ theorem concavityConstant_eq_convexityConstant_precomp (T : X →L[ℝ] E) :
   exact Set.ext fun _ ↦ concaveWith_iff_convexWith_precomp
 
 /-- The optimal p-convexity constant of an operator equals the optimal q-concavity
-constant of its adjoint, since their admissible constants coincide. -/
+constant of its adjoint. -/
 theorem convexityConstant_eq_concavityConstant_precomp (T : E →L[ℝ] X) :
     convexityConstant p T =
       concavityConstant q (T.precomp ℝ : StrongDual ℝ X →L[ℝ] StrongDual ℝ E) := by

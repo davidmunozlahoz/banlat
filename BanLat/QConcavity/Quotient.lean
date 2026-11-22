@@ -20,8 +20,6 @@ variable {q : ℝ≥0∞} [Fact (1 ≤ q)]
 variable {X : Type*} [NormedAddCommGroup X] [Lattice X]
   [IsOrderedAddMonoid X] [BanachLattice X]
 
-/-- Below a common upper bound, subtracting a nonnegative threshold decreases
-each positive part at least as much as the corresponding radial contraction. -/
 private lemma posPart_sub_le_scaled_abs {a u r : ℝ} (hu : 0 ≤ u) (hur : u < r)
     (ha : |a| ≤ r) : (a - u)⁺ ≤ ((r - u) / r) * |a| := by
   rw [posPart_def, sup_le_iff]
@@ -31,8 +29,6 @@ private lemma posPart_sub_le_scaled_abs {a u r : ℝ} (hu : 0 ≤ u) (hur : u < 
   nlinarith [mul_nonneg (hu.trans hur.le) (sub_nonneg.mpr (le_abs_self a)),
     mul_nonneg hu (sub_nonneg.mpr ha)]
 
-/-- After subtracting a common nonnegative threshold and taking positive parts,
-the ℓᑫ norm is bounded by the positive part of the original norm minus that threshold. -/
 private lemma norm_toLp_posPart_sub_le {n : ℕ} (a : Fin n → ℝ) {u : ℝ}
     (hu : 0 ≤ u) :
     ‖WithLp.toLp q (fun i ↦ (a i - u)⁺)‖ ≤ (‖WithLp.toLp q a‖ - u)⁺ := by
@@ -56,8 +52,6 @@ private lemma norm_toLp_posPart_sub_le {n : ℕ} (a : Fin n → ℝ) {u : ℝ}
     simpa only [norm_smul_of_nonneg hc, norm_abs_eq_norm, div_mul_cancel₀ _ hr.ne',
       posPart_of_nonneg (sub_nonneg.mpr (le_of_not_ge h))] using hn
 
-/-- The scalar threshold estimate transfers through homogeneous functional calculus,
-so subtracting a common positive lattice element contracts finite lattice q-sums. -/
 private lemma latticePSum_posPart_sub_le {n : ℕ} (x : Fin n → X) {u : X}
     (hu : 0 ≤ u) :
     latticePSum q (fun i ↦ (x i - u)⁺) ≤ (latticePSum q x - u)⁺ := by
@@ -107,8 +101,6 @@ private lemma exists_lifts_abs_latticePSum_norm_lt (J : OrderIdeal X)
     rw [← inf_eq_sub_posPart_sub, posPart_def]
     exact sup_le inf_le_right (abs_nonneg z)
 
-/-- Lifts of absolute values control the quotient family norm, since the quotient
-map is contractive and the norm is unchanged by taking absolute values. -/
 private lemma norm_toLp_le_of_quotient_lifts {C δ : ℝ} (hC : IsQConcaveWith q C X)
     (J : OrderIdeal X) (hJ : IsClosed (J : Set X)) {n : ℕ}
     (x : Fin n → X ⧸ J.toSubmodule) (a : Fin n → X)
@@ -149,8 +141,7 @@ theorem ConcaveWith.id_quotient {C : ℝ} (hC : IsQConcaveWith q C X)
   obtain ⟨a, ha, hbound⟩ := exists_lifts_abs_latticePSum_norm_lt (q := q) J hJ x hδ
   exact norm_toLp_le_of_quotient_lifts hC J hJ x a ha hbound.le
 
-/-- Every quotient of a q-concave Banach lattice by a closed order ideal is q-concave.
-The quotient carries its usual quotient norm and lattice order. -/
+/-- Every quotient of a q-concave Banach lattice by a closed order ideal is q-concave. -/
 theorem IsQConcave.quotient (hX : IsQConcave q X)
     (J : OrderIdeal X) (hJ : IsClosed (J : Set X)) :
     letI := J.quotientNormedAddCommGroup hJ
@@ -160,7 +151,7 @@ theorem IsQConcave.quotient (hX : IsQConcave q X)
   letI := J.quotientBanachLattice hJ
   hX.elim fun C hC ↦ ⟨C, hC.id_quotient J hJ⟩
 
-/-- Passing to a quotient by a closed order ideal cannot increase the optimal
+/-- Taking a quotient by a closed order ideal cannot increase the optimal
 q-concavity constant of a q-concave Banach lattice. -/
 theorem IsQConcave.concavityConstant_quotient_le (hX : IsQConcave q X)
     (J : OrderIdeal X) (hJ : IsClosed (J : Set X)) :

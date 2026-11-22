@@ -7,12 +7,10 @@ import BanLat.PConvexity
 /-!
 # q-concave operators and Banach lattices
 
-For `1 ≤ q ≤ ∞`, an operator from a Banach lattice is q-concave when the ℓᑫ norm
-of the norms of finitely many images is bounded by a fixed multiple of the
-corresponding lattice q-sum norm. The least admissible constant is attained whenever the operator
-is q-concave. A Banach lattice is q-concave when its identity is q-concave.
-Closed vector sublattices inherit q-concavity, and every bounded linear operator
-from a Banach lattice is ∞-concave with optimal constant equal to its norm.
+For `1 ≤ q ≤ ∞`, an operator `T` from a Banach lattice is q-concave when `(∑_n ∣∣T x_n∣∣^q)^{1/q}`
+is bounded by a fixed multiple of `∣∣ (∑_n |x_n|^q)^{1/q}∣∣`. A Banach lattice is q-concave when
+its identity is q-concave. Closed vector sublattices inherit q-concavity, and every bounded linear
+operator from a Banach lattice is ∞-concave with optimal constant equal to its norm.
 -/
 
 open scoped ENNReal Topology
@@ -24,8 +22,8 @@ variable {X : Type*} [NormedAddCommGroup X] [Lattice X]
   [IsOrderedAddMonoid X] [BanachLattice X]
 variable {E : Type*} [NormedAddCommGroup E] [NormedSpace ℝ E]
 
-/-- An operator satisfies the q-concavity estimate with constant `C ≥ 0` when the ℓᑫ
-norm of the norms of its images is at most `C` times the norm of the lattice q-sum. -/
+/-- An operator `T` satisfies the q-concavity estimate with constant `C ≥ 0` when
+`(∑_n ∣∣T x_n∣∣^q)^{1/q} ≤ C * ∣∣ (∑_n |x_n|^q)^{1/q}∣∣` for any finite family `(x i)_{i < n}`. -/
 def ConcaveWith (C : ℝ) (T : X →L[ℝ] E) : Prop :=
   0 ≤ C ∧ ∀ (n : ℕ) (x : Fin n → X),
     ‖WithLp.toLp q (fun i ↦ ‖T (x i)‖)‖ ≤ C * ‖latticePSum q x‖
@@ -35,8 +33,7 @@ with some nonnegative constant. -/
 def IsQConcaveOp (T : X →L[ℝ] E) : Prop :=
   ∃ C, ConcaveWith q C T
 
-/-- The infimum of the admissible q-concavity constants of an operator.
-This constant is admissible whenever `IsQConcaveOp q T` holds. -/
+/-- The infimum of the q-concavity constants of an operator. -/
 def concavityConstant (T : X →L[ℝ] E) : ℝ :=
   sInf {C | ConcaveWith q C T}
 
@@ -45,20 +42,20 @@ def IsQConcave (X : Type*) [NormedAddCommGroup X] [Lattice X]
     [IsOrderedAddMonoid X] [BanachLattice X] : Prop :=
   IsQConcaveOp q (ContinuousLinearMap.id ℝ X)
 
-/-- A Banach lattice is q-concave with constant `C ≥ 0` when the ℓᑫ norm of the
-individual norms is at most `C` times the norm of every finite lattice q-sum. -/
+/-- A Banach lattice is q-concave with constant `C ≥ 0` when
+`(∑_n ∣∣x_n∣∣^q)^{1/q} ≤ C * ∣∣ (∑_n |x_n|^q)^{1/q}∣∣` for any finite family `(x i)_{i < n}`. -/
 abbrev IsQConcaveWith (C : ℝ) (X : Type*) [NormedAddCommGroup X] [Lattice X]
     [IsOrderedAddMonoid X] [BanachLattice X] : Prop :=
   ConcaveWith q C (ContinuousLinearMap.id ℝ X)
 
-/-- The q-concavity constant of a Banach lattice is that of its identity operator.
-For q-concave lattices it is the least constant satisfying the q-concavity estimate. -/
+/-- For a q-concave Banach lattice, its q-concavity constant is the least constant
+satisfying the q-concavity estimate. -/
 abbrev qConcavityConstant (X : Type*) [NormedAddCommGroup X] [Lattice X]
     [IsOrderedAddMonoid X] [BanachLattice X] : ℝ :=
   concavityConstant q (ContinuousLinearMap.id ℝ X)
 
-/-- A Banach lattice is q-concave iff the ℓᑫ norm of any finite family of individual
-norms is bounded by a fixed nonnegative multiple of the corresponding lattice q-sum norm. -/
+/-- A Banach lattice is q-concave iff `(∑_n ∣∣x_n∣∣^q)^{1/q} ≤ C * ∣∣ (∑_n |x_n|^q)^{1/q}∣∣`
+for some `C ≥ 0` and any finite family `(x i)_{i < n}`. -/
 theorem isQConcave_iff :
     IsQConcave q X ↔ ∃ C : ℝ, 0 ≤ C ∧ ∀ (n : ℕ) (x : Fin n → X),
       ‖WithLp.toLp q (fun i ↦ ‖x i‖)‖ ≤ C * ‖latticePSum q x‖ :=
@@ -66,13 +63,14 @@ theorem isQConcave_iff :
 
 variable {q} {T : X →L[ℝ] E}
 
-/-- Increasing an admissible constant preserves the operator q-concavity estimate. -/
+/-- If an operator is q-concave with constant `C`, then it is also q-concave with any larger
+constant `D`. -/
 theorem ConcaveWith.mono {C D : ℝ} (hC : ConcaveWith q C T) (hCD : C ≤ D) :
     ConcaveWith q D T :=
   ⟨hC.1.trans hCD, fun n x ↦ (hC.2 n x).trans
     (mul_le_mul_of_nonneg_right hCD (norm_nonneg _))⟩
 
-/-- Every admissible q-concavity constant bounds the operator norm. -/
+/-- Every q-concavity constant is larger than or equal to the operator norm. -/
 theorem ConcaveWith.norm_le {C : ℝ} (hC : ConcaveWith q C T) : ‖T‖ ≤ C := by
   refine T.opNorm_le_bound hC.1 fun x ↦ ?_
   have h := hC.2 1 (fun _ ↦ x)
@@ -80,12 +78,11 @@ theorem ConcaveWith.norm_le {C : ℝ} (hC : ConcaveWith q C T) : ‖T‖ ≤ C :
   simpa only [PiLp.toLp_apply, norm_norm] using
     (PiLp.norm_apply_le (WithLp.toLp q (fun _ : Fin 1 ↦ ‖T x‖)) 0).trans h
 
-/-- The admissible q-concavity constants form a set bounded below by zero. -/
 private lemma bddBelow_concaveWith :
     BddBelow {C | ConcaveWith q C T} :=
   ⟨0, fun _ hC ↦ hC.1⟩
 
-/-- The optimal operator q-concavity constant is at most every admissible constant. -/
+/-- The optimal operator q-concavity constant is less than or equal to every admissible constant. -/
 theorem ConcaveWith.concavityConstant_le {C : ℝ} (hC : ConcaveWith q C T) :
     concavityConstant q T ≤ C :=
   csInf_le bddBelow_concaveWith hC
@@ -95,26 +92,25 @@ theorem IsQConcaveOp.concavityConstant_nonneg (hT : IsQConcaveOp q T) :
     0 ≤ concavityConstant q T :=
   le_csInf hT (fun _ hC ↦ hC.1)
 
-/-- Each finite-family estimate is closed in its constant, so limits of admissible
-q-concavity constants remain admissible. -/
+/-- The set of admissible q-concavity constants of an operator is closed. -/
 private lemma isClosed_concaveWith :
     IsClosed {C | ConcaveWith q C T} := by
   simp only [ConcaveWith, Set.ofPred_and, Set.ofPred_forall]
   exact isClosed_Ici.inter (isClosed_iInter fun _ ↦ isClosed_iInter fun _ ↦
     isClosed_le continuous_const (continuous_id.mul continuous_const))
 
-/-- A q-concave operator satisfies its estimate with the optimal constant. -/
+/-- A q-concave operator is q-concave with the optimal constant. -/
 theorem IsQConcaveOp.concavityConstant_spec (hT : IsQConcaveOp q T) :
     ConcaveWith q (concavityConstant q T) T :=
   isClosed_concaveWith.csInf_mem hT bddBelow_concaveWith
 
-/-- The optimal q-concavity constant bounds the operator norm. -/
+/-- The optimal q-concavity constant is larger than or equal to the operator norm. -/
 theorem IsQConcaveOp.norm_le_concavityConstant (hT : IsQConcaveOp q T) :
     ‖T‖ ≤ concavityConstant q T :=
   hT.concavityConstant_spec.norm_le
 
-/-- Admissible constants of a q-concave operator are exactly those greater than
-or equal to its optimal constant. -/
+/-- The admissible q-concavity constants of a q-concave operator are exactly those greater
+than or equal to its optimal constant. -/
 theorem IsQConcaveOp.concaveWith_iff (hT : IsQConcaveOp q T) {C : ℝ} :
     ConcaveWith q C T ↔ concavityConstant q T ≤ C :=
   ⟨ConcaveWith.concavityConstant_le, hT.concavityConstant_spec.mono⟩
@@ -124,7 +120,7 @@ theorem concaveWith_zero :
     ConcaveWith q 0 (0 : X →L[ℝ] E) := by
   simp [ConcaveWith, Pi.zero_def]
 
-/-- The zero operator is q-concave for every exponent. -/
+/-- The zero operator is q-concave for every q. -/
 @[simp]
 theorem isQConcaveOp_zero : IsQConcaveOp q (0 : X →L[ℝ] E) :=
   ⟨0, concaveWith_zero⟩
@@ -136,7 +132,7 @@ theorem concavityConstant_zero : concavityConstant q (0 : X →L[ℝ] E) = 0 :=
     isQConcaveOp_zero.concavityConstant_nonneg
 
 /-- Every bounded linear operator from a Banach lattice is ∞-concave with its norm
-as an admissible constant, since the lattice ∞-sum dominates each absolute value. -/
+as an admissible constant. -/
 theorem concaveWith_top (T : X →L[ℝ] E) : ConcaveWith ∞ ‖T‖ T := by
   refine ⟨norm_nonneg _, fun n x ↦ ?_⟩
   rw [PiLp.norm_toLp, pi_norm_le_iff_of_nonneg (mul_nonneg (norm_nonneg _) (norm_nonneg _))]
@@ -146,24 +142,21 @@ theorem concaveWith_top (T : X →L[ℝ] E) : ConcaveWith ∞ ‖T‖ T := by
       ((abs_le_latticePSum ∞ x i).trans (le_abs_self _))) (norm_nonneg T))
 
 /-- Every bounded linear operator from a Banach lattice into a real normed space
-is ∞-concave. Completeness of the codomain is not required. -/
+is ∞-concave. -/
 theorem isQConcaveOp_top (T : X →L[ℝ] E) : IsQConcaveOp ∞ T :=
   ⟨‖T‖, concaveWith_top T⟩
 
-/-- At exponent infinity, the optimal q-concavity constant of an operator
-is exactly its operator norm. -/
+/-- The optimal ∞-concavity constant of an operator is exactly its operator norm. -/
 @[simp]
 theorem concavityConstant_top (T : X →L[ℝ] E) : concavityConstant ∞ T = ‖T‖ :=
   le_antisymm (concaveWith_top T).concavityConstant_le
     (isQConcaveOp_top T).norm_le_concavityConstant
 
-/-- Every Banach lattice is ∞-concave with constant one, since its lattice ∞-sums
-dominate the absolute values of all terms. -/
+/-- Every Banach lattice is ∞-concave with constant one. -/
 theorem concaveWith_top_id : IsQConcaveWith ∞ 1 X :=
   (concaveWith_top _).mono ContinuousLinearMap.norm_id_le
 
-/-- Every Banach lattice is ∞-concave.
-Its identity operator admits the constant one. -/
+/-- Every Banach lattice is ∞-concave. -/
 theorem isQConcave_top : IsQConcave ∞ X :=
   ⟨1, concaveWith_top_id⟩
 
@@ -200,8 +193,7 @@ theorem ConcaveWith.id_sublattice {C : ℝ}
   letI := Y.banachLatticeCoe hY
   hC.of_isometry Y.subtype isometry_subtype_coe
 
-/-- Every closed vector sublattice of a q-concave Banach lattice is q-concave.
-It carries the norm and lattice operations induced by the ambient space. -/
+/-- Every closed vector sublattice of a q-concave Banach lattice is q-concave. -/
 theorem IsQConcave.sublattice (hX : IsQConcave q X)
     (Y : VectorSublattice X) (hY : IsClosed (Y : Set X)) :
     letI := Y.banachLatticeCoe hY

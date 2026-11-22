@@ -6,10 +6,10 @@ import BanLat.PConvexity.Holder
 import Mathlib.Analysis.Normed.Module.FiniteDimension
 
 /-!
-# Dual representations of lattice power sums
+# Dual representations of lattice q-sums
 
 Finite Riesz–Kantorovich formulas and scalar supporting functionals identify the norm of
-lattice power sums in the dual with the corresponding finite-family pairing norm.
+lattice q-sums in the dual with the corresponding finite-family pairing norm.
 -/
 
 open scoped ENNReal Topology
@@ -18,8 +18,6 @@ noncomputable section
 
 variable {p q : ℝ≥0∞} [p.HolderConjugate q]
 
-/-- Compactness of the scalar unit ball gives finitely many supporting linear forms
-whose supremum approximates the conjugate norm with any prescribed relative error. -/
 private lemma exists_finite_scalar_support {n : ℕ} {ε : ℝ} (hε : 0 < ε) :
     ∃ s : Finset (PiLp p (fun _ : Fin n ↦ ℝ)), ∃ hs : s.Nonempty,
       (∀ a ∈ s, ‖a‖ ≤ 1) ∧ ∀ b : Fin n → ℝ,
@@ -51,8 +49,6 @@ private lemma exists_finite_scalar_support {n : ℕ} {ε : ℝ} (hε : 0 < ε) :
 variable {X : Type*} [NormedAddCommGroup X] [Lattice X]
   [IsOrderedAddMonoid X] [BanachLattice X] [Fact (1 ≤ q)]
 
-/-- Functional calculus transfers finite scalar supporting forms to a finite lattice
-supremum approximating a lattice power sum from below. -/
 private lemma exists_finite_lattice_support {n : ℕ} (x : Fin n → X) {ε : ℝ} (hε : 0 < ε) :
     ∃ s : Finset (PiLp p (fun _ : Fin n ↦ ℝ)), ∃ hs : s.Nonempty,
       (∀ a ∈ s, ‖a‖ ≤ 1) ∧
@@ -74,8 +70,6 @@ private lemma exists_finite_lattice_support {n : ℕ} (x : Fin n → X) {ε : �
     PosHomFunction.functionalCalculus_coordinate, latticePSum] using
     (PosHomFunction.functionalCalculus x).monotone hfun
 
-/-- The finite Riesz–Kantorovich formula for the order dual also applies to
-continuous functionals, whose lattice operations are transported from the order dual. -/
 private lemma isLUB_finset_sup_dual_apply {ι : Type*} {s : Finset ι} (hs : s.Nonempty)
     (φ : ι → StrongDual ℝ X) {x : X} (hx : 0 ≤ x) :
     IsLUB {w | ∃ y : ι → X, (∀ i ∈ s, 0 ≤ y i) ∧
@@ -88,8 +82,6 @@ private lemma isLUB_finset_sup_dual_apply {ι : Type*} {s : Finset ι} (hs : s.N
 
 variable [Fact (1 ≤ p)]
 
-/-- A bound on all lattice-family pairings bounds every finite supremum of scalar
-supporting functionals, by the Riesz–Kantorovich decomposition formula. -/
 private lemma finset_support_apply_le {n : ℕ} (φ : Fin n → StrongDual ℝ X)
     {C : ℝ} (hC : 0 ≤ C)
     (hpair : ∀ x : Fin n → X, ∑ i, φ i (x i) ≤ C * ‖latticePSum p x‖)
@@ -113,8 +105,6 @@ private lemma finset_support_apply_le {n : ℕ} (φ : Fin n → StrongDual ℝ X
         latticePSum_sum_smul_le_sum (p := p) (fun a : s ↦ a.1.ofLp)
           (fun a ↦ hsnorm a.1 a.2) (fun a : s ↦ y a.1) (fun a ↦ hy a.1 a.2)
 
-/-- Finite scalar supports approximate the dual lattice power sum, so a uniform
-pairing bound also bounds its value on every positive vector. -/
 private lemma latticePSum_dual_apply_le_of_pairing {n : ℕ}
     (φ : Fin n → StrongDual ℝ X) {C : ℝ} (hC : 0 ≤ C)
     (hpair : ∀ x : Fin n → X, ∑ i, φ i (x i) ≤ C * ‖latticePSum p x‖)
@@ -133,8 +123,9 @@ private lemma latticePSum_dual_apply_le_of_pairing {n : ℕ}
   exact (StrongDual.le_iff.mp hsupport u hu).trans
     (finset_support_apply_le φ hC hpair hs hsbound hu)
 
-/-- A bound on every finite-family pairing bounds the norm of the dual lattice q-sum
-by the same constant. Here `p` and `q` are conjugate, including one and infinity. -/
+/-- For conjugate exponents `p` and `q` and `C ≥ 0`, the bound
+`∑ i, φ i (x i) ≤ C * ‖latticePSum p x‖` for every family `x : Fin n → X` implies
+`‖latticePSum q φ‖ ≤ C`. This includes the endpoint exponents one and infinity. -/
 theorem norm_latticePSum_dual_le {n : ℕ} (φ : Fin n → StrongDual ℝ X)
     {C : ℝ} (hC : 0 ≤ C)
     (hpair : ∀ x : Fin n → X, ∑ i, φ i (x i) ≤ C * ‖latticePSum p x‖) :

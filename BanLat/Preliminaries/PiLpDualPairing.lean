@@ -9,8 +9,10 @@ import Mathlib.Analysis.Normed.Operator.NNNorm
 /-!
 # Norm estimates for finite families of dual functionals
 
-The scalar ℓᑫ norm of a finite family of functional norms is determined by its
-pairings with vector families in the scalar ℓᵖ unit ball, for conjugate exponents.
+The scalar ℓᑫ norm of a finite family of functional norms is determined as follows:
+if a finite family of functionals satisfies
+`∑_i φ_i (x_i) ≤ C (∑_i ∣∣ x_i ∣∣^p)^{1/p} ` then `(∑_i ∣∣ φ_i ∣∣^q)^{1/q} ≤ C`, with p and q
+conjugate exponents, including one and infinity.
 -/
 
 open scoped ENNReal
@@ -66,8 +68,9 @@ private lemma exists_unit_family_pairing (φ : ι → StrongDual ℝ E) {ε : �
     rw [← hval]
     linarith
 
-/-- A bound on all finite pairings controls the scalar ℓᑫ norm of the functional
-norms by the same constant, when the vector families are measured in scalar ℓᵖ norm. -/
+/-- In a real normed space if a finite family of functionals satisfies
+`∑_i φ_i (x_i) ≤ C (∑_i ∣∣ x_i ∣∣^p)^{1/p} ` then `(∑_i ∣∣ φ_i ∣∣^q)^{1/q} ≤ C`, with p and q
+conjugate exponents, including one and infinity. -/
 theorem norm_dual_family_le_of_sum_apply_le (φ : ι → StrongDual ℝ E) {C : ℝ}
     (hC : 0 ≤ C)
     (h : ∀ x : ι → E, ∑ i, φ i (x i) ≤ C * ‖WithLp.toLp p (fun i ↦ ‖x i‖)‖) :

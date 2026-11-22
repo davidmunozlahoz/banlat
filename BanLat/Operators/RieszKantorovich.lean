@@ -363,7 +363,8 @@ private lemma finset_sup_apply_le {ι : Type*} {s : Finset ι} (hs : s.Nonempty)
       simpa only [Finset.sum_cons, ite_eq_left rfl, ite_true, heq, hsum] using hyz
 
 /-- A finite supremum of order bounded operators, evaluated at a positive vector, is the
-supremum of the sums obtained by splitting that vector into positive summands. -/
+supremum of the sums obtained by splitting that vector into positive summands and evaluating them
+on the operators. -/
 theorem isLUB_finset_sup_apply {ι : Type*} {s : Finset ι} (hs : s.Nonempty)
     (f : ι → OrderBoundedHom X Y) {x : X} (hx : 0 ≤ x) :
     IsLUB {w | ∃ y : ι → X, (∀ i ∈ s, 0 ≤ y i) ∧

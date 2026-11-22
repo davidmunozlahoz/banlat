@@ -18,8 +18,6 @@ namespace PiLp
 
 variable {ι : Type*} [Fintype ι] {p q : ℝ≥0∞} [p.HolderConjugate q]
 
-/-- For finite conjugate exponents, the scalar Hölder estimate is Mathlib's
-finite-sum inequality written using `PiLp` norms. -/
 private lemma sum_mul_le_norm_mul_of_ne_top (hp : p ≠ ∞) (hq : q ≠ ∞)
     (a b : ι → ℝ) :
     ∑ i, a i * b i ≤ ‖WithLp.toLp p a‖ * ‖WithLp.toLp q b‖ := by
@@ -28,8 +26,6 @@ private lemma sum_mul_le_norm_mul_of_ne_top (hp : p ≠ ∞) (hq : q ≠ ∞)
     PiLp.toLp_apply, Real.norm_eq_abs] using
     Real.inner_le_Lp_mul_Lq Finset.univ a b (ENNReal.HolderConjugate.toReal_of_ne_top hp hq)
 
-/-- A finite scalar pairing is bounded by the maximum norm of its first factor
-times the sum norm of its second factor. -/
 private lemma sum_mul_le_norm_top_mul_norm_one (a b : ι → ℝ) :
     ∑ i, a i * b i ≤ ‖WithLp.toLp ∞ a‖ * ‖WithLp.toLp 1 b‖ := by
   simpa only [PiLp.norm_eq_of_L1, PiLp.toLp_apply, Real.norm_eq_abs, Finset.mul_sum] using
@@ -50,8 +46,6 @@ theorem sum_mul_le_norm_mul (a b : ι → ℝ) :
     simpa only [mul_comm] using sum_mul_le_norm_top_mul_norm_one b a
   · exact sum_mul_le_norm_mul_of_ne_top hp hq a b
 
-/-- A nonnegative finite scalar family has a nonnegative norming family for
-finite conjugate exponents. -/
 private lemma exists_nonneg_norming_of_ne_top (hp : p ≠ ∞) (hq : q ≠ ∞)
     (a : ι → ℝ) (ha : ∀ i, 0 ≤ a i) :
     ∃ b : ι → ℝ, (∀ i, 0 ≤ b i) ∧ ‖WithLp.toLp q b‖ ≤ 1 ∧
@@ -69,7 +63,6 @@ private lemma exists_nonneg_norming_of_ne_top (hp : p ≠ ∞) (hq : q ≠ ∞)
     simpa only [NNReal.coe_sum, NNReal.coe_mul, NNReal.coe_mk, NNReal.coe_rpow] using
       congrArg NNReal.toReal hval
 
-/-- The constant family one norms a nonnegative scalar family in the sum norm. -/
 private lemma exists_nonneg_norming_one (a : ι → ℝ) (ha : ∀ i, 0 ≤ a i) :
     ∃ b : ι → ℝ, (∀ i, 0 ≤ b i) ∧ ‖WithLp.toLp ∞ b‖ ≤ 1 ∧
       ∑ i, a i * b i = ‖WithLp.toLp 1 a‖ := by
@@ -77,8 +70,6 @@ private lemma exists_nonneg_norming_one (a : ι → ℝ) (ha : ∀ i, 0 ≤ a i)
   · simpa using (pi_norm_le_iff_of_nonneg zero_le_one).2 (fun _ ↦ by norm_num)
   · simp [PiLp.norm_eq_of_L1, Real.norm_of_nonneg (ha _)]
 
-/-- A coordinate where a nonnegative family is maximal gives a norming family
-of sum norm at most one. -/
 private lemma exists_nonneg_norming_top (a : ι → ℝ) (ha : ∀ i, 0 ≤ a i) :
     ∃ b : ι → ℝ, (∀ i, 0 ≤ b i) ∧ ‖WithLp.toLp 1 b‖ ≤ 1 ∧
       ∑ i, a i * b i = ‖WithLp.toLp ∞ a‖ := by
@@ -99,8 +90,9 @@ private lemma exists_nonneg_norming_top (a : ι → ℝ) (ha : ∀ i, 0 ≤ a i)
       · exact (pi_norm_le_iff_of_nonneg (ha j)).2 fun i ↦ by
           simpa only [Real.norm_of_nonneg (ha i)] using hj i (Finset.mem_univ i)
 
-/-- A nonnegative scalar family admits a nonnegative norming family in the
-unit ball for the conjugate exponent, including one and infinity. -/
+/-- A nonnegative scalar family `a_i` admits a nonnegative family `b_i` with `(∑ |b_i|^q)^{1/q} ≤ 1`
+ and `∑ a_i * b_i = (∑ |a_i|^p)^{1/p}` where `p` and `q` are conjugate exponents, including one
+ and infinity. -/
 theorem exists_nonneg_norming (a : ι → ℝ) (ha : ∀ i, 0 ≤ a i) :
     ∃ b : ι → ℝ, (∀ i, 0 ≤ b i) ∧ ‖WithLp.toLp q b‖ ≤ 1 ∧
       ∑ i, a i * b i = ‖WithLp.toLp p a‖ := by
@@ -112,8 +104,6 @@ theorem exists_nonneg_norming (a : ι → ℝ) (ha : ∀ i, 0 ≤ a i) :
     exact exists_nonneg_norming_one a ha
   · exact exists_nonneg_norming_of_ne_top hp hq a ha
 
-/-- Changing the signs of scalar coordinates preserves every nonzero finite-product
-ℓʳ norm; the same argument applies whenever the individual norms agree. -/
 private lemma norm_toLp_eq_of_norm_eq {r : ℝ≥0∞} (hr : r ≠ 0)
     {a b : ι → ℝ} (h : ∀ i, ‖a i‖ = ‖b i‖) :
     ‖WithLp.toLp r a‖ = ‖WithLp.toLp r b‖ := by
@@ -121,8 +111,9 @@ private lemma norm_toLp_eq_of_norm_eq {r : ℝ≥0∞} (hr : r ≠ 0)
   · simp only [PiLp.norm_eq_ciSup, h]
   · simp only [PiLp.norm_eq_sum (ENNReal.toReal_pos hr hr_top), h]
 
-/-- Every finite scalar family admits a norming family in the unit ball for the
-conjugate exponent, with signs chosen to match the original coordinates. -/
+/-- Every finite scalar family `a_i` admits a family `b_i` with signs chosen to match the
+original coordinates, `(∑ |b_i|^q)^{1/q} ≤ 1` and `∑ a_i * b_i = (∑ |a_i|^p)^{1/p}` where `p`
+and `q` are conjugate exponents, including one and infinity. -/
 theorem exists_norming (a : ι → ℝ) :
     ∃ b : ι → ℝ, ‖WithLp.toLp q b‖ ≤ 1 ∧
       ∑ i, a i * b i = ‖WithLp.toLp p a‖ := by
