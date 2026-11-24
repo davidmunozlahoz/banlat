@@ -3,7 +3,7 @@ Authors: Javier Laguna-Ricart, Alberto Salguero-Alarcón
 -/
 
 import BanLat.Examples.CofK.Basic
-import BanLat.Operators.Positive
+import BanLat.Operators.Complemented
 import Mathlib.Analysis.Convex.PartitionOfUnity
 import Mathlib.Analysis.Normed.Module.Convex
 import Mathlib.Analysis.Normed.Operator.Basic
@@ -179,7 +179,7 @@ end
 variable {K : Type*} [TopologicalSpace K] [CompactSpace K]
   [TopologicalSpace.MetrizableSpace K]
 
-/-- *Borsuk's theorem*: Continuous real functions on a nonempty compact subset
+/-- *Borsuk's theorem*: Continuous real functions on a nonempty closed subset
 of a compact metrizable space admit a positive unital linear extension operator. -/
 theorem exists_positive_unital_extension (s : Set K) [CompactSpace s] [Nonempty s] :
     ∃ T : C(s, ℝ) →L[ℝ] C(K, ℝ), Positive T.toLinearMap ∧ T 1 = 1 ∧
@@ -196,8 +196,8 @@ theorem exists_positive_unital_extension (s : Set K) [CompactSpace s] [Nonempty 
 
 variable {L : Type*} [TopologicalSpace L] [CompactSpace L] [Nonempty L]
 
-/-- If `E` is a closed subspace of a compact metric space `K`, then
-the space `C(E)` is positively 1-complemented in `C(K)`. -/
+/-- If `L` embeds as a nonempty closed subspace of a compact metrizable space `K`, then
+the space `C(L)` is positively 1-complemented in `C(K)`. -/
 theorem IsPositiveContractiveRetract.of_isClosedEmbedding (e : L → K)
     (he : IsClosedEmbedding e) :
     ∃ J : C(L, ℝ) →L[ℝ] C(K, ℝ), Positive.IsPositiveContractiveRetract J := by

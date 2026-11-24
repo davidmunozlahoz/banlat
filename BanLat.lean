@@ -111,6 +111,7 @@ import BanLat.LocallySolid.WithSeminorms
 import BanLat.Majorizing
 import BanLat.Normed
 import BanLat.Operators.Carrier
+import BanLat.Operators.Complemented
 import BanLat.Operators.Extension.HahnBanach
 import BanLat.Operators.Extension.Kantorovich
 import BanLat.Operators.Extension.OrderContinuous
