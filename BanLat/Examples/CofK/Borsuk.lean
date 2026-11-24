@@ -15,7 +15,7 @@ import Mathlib.Topology.Metrizable.Uniformity
 /-!
 # Positive extension operators
 
-*Borsuk's theorem*: continuous real functions on a nonempty closed subset
+*Borsuk's theorem*: continuous real functions on a nonempty compact subset
 of a compact metrizable space admit a positive unital linear extension operator.
 A partition of unity on the complement gives extensions depending linearly on
 the original functions.
@@ -179,7 +179,7 @@ end
 variable {K : Type*} [TopologicalSpace K] [CompactSpace K]
   [TopologicalSpace.MetrizableSpace K]
 
-/-- *Borsuk's theorem*: Continuous real functions on a nonempty closed subset
+/-- *Borsuk's theorem*: Continuous real functions on a nonempty compact subset
 of a compact metrizable space admit a positive unital linear extension operator. -/
 theorem exists_positive_unital_extension (s : Set K) [CompactSpace s] [Nonempty s] :
     ∃ T : C(s, ℝ) →L[ℝ] C(K, ℝ), Positive T.toLinearMap ∧ T 1 = 1 ∧
@@ -196,13 +196,13 @@ theorem exists_positive_unital_extension (s : Set K) [CompactSpace s] [Nonempty 
 
 variable {L : Type*} [TopologicalSpace L] [CompactSpace L] [Nonempty L]
 
-/-- If `L` embeds as a nonempty closed subspace of a compact metrizable space `K`, then
+/-- If a nonempty compact space `L` embeds in a compact metrizable space `K`, then
 the space `C(L)` is positively 1-complemented in `C(K)`. -/
-theorem IsPositiveContractiveRetract.of_isClosedEmbedding (e : L → K)
-    (he : IsClosedEmbedding e) :
-    ∃ J : C(L, ℝ) →L[ℝ] C(K, ℝ), Positive.IsPositiveContractiveRetract J := by
-  let h : L ≃ₜ range e := he.isEmbedding.toHomeomorph
-  let : CompactSpace (range e) := isCompact_iff_compactSpace.mp he.isClosed_range.isCompact
+theorem IsPositiveContractiveRetract.of_isEmbedding (e : L → K)
+    (he : IsEmbedding e) :
+    ∃ J : C(L, ℝ) →L[ℝ] C(K, ℝ), PositiveComplemented.IsPositiveContractiveRetract J := by
+  let h : L ≃ₜ range e := he.toHomeomorph
+  let : CompactSpace (range e) := isCompact_iff_compactSpace.mp (isCompact_range he.continuous)
   obtain ⟨T, hT, hOne, hTf⟩ := exists_positive_unital_extension (range e)
   let J : C(L, ℝ) →L[ℝ] C(K, ℝ) :=
     T.comp (ContinuousMap.compCLM ℝ ℝ ⟨h.symm, h.symm.continuous⟩)

@@ -9,37 +9,42 @@ import Mathlib.Topology.Algebra.Module.Complement
 /-!
 # Complemented Banach lattices
 
-A positive isometric embedding witnesses positive `λ`-complementation if it admits
-a positive left inverse of norm at most `λ`. Positive contractive retracts
-correspond to the case `λ = 1`.
-Lattice complementation requires both the embedding and its left inverse to be
-vector lattice homomorphisms.
+We describe several notions of complementation in the context of Banach lattices.
+Fix an isometric embedding `J : X →L[ℝ] Y`. Complementation of `X` in `Y` via `J`
+requires a bounded projection `P : Y →L[ℝ] Y` onto the range of `J`, so `P ∘ J = J`.
+In increasing order of generality, we consider
+
+* lattice complementation, when `J` and `P` are lattice homomorphisms;
+* positive complementation, when `J` and `P` are positive.
+
+In both cases, the bound `C` is an upper bound on the norm of `P`.
+An isometric lattice embedding onto a projection band gives lattice `1`-complementation.
+Positive complementation implies complementation of the range of `J` as a Banach subspace.
 -/
 
 /-! ## Positive complementation -/
 
-namespace Positive
+namespace PositiveComplemented
 
 variable {X Y : Type*} [NormedAddCommGroup X] [NormedAddCommGroup Y]
   [Lattice X] [Lattice Y] [IsOrderedAddMonoid X] [IsOrderedAddMonoid Y]
   [BanachLattice X] [BanachLattice Y]
 
-/-- The map `J` witnesses that `X` is positively 1-complemented in `Y` if
-it is a positive contraction with a positive contractive left inverse.
-These conditions make `J` an isometric embedding. -/
+/-- Given `J: X → Y` an isometric positive embedding, `X` is positively 1-complemented in `Y`
+via `J` if `J` admits a positive contractive left inverse. -/
 def IsPositiveContractiveRetract (J : X →L[ℝ] Y) : Prop :=
   ∃ Q : Y →L[ℝ] X,
     Positive J.toLinearMap ∧ Positive Q.toLinearMap ∧ Function.LeftInverse Q J ∧
       ‖J‖ ≤ 1 ∧ ‖Q‖ ≤ 1
 
-/-- A positive isometric embedding `J` witnesses positive `λ`-complementation
-if it has a positive left inverse of norm at most `λ`. -/
-def IsPositiveComplemented (J : X →L[ℝ] Y) (c : ℝ) : Prop :=
+/-- Given `J: X → Y` an isometric positive embedding, `X` is positively `C`-complemented in `Y`
+via `J` if `J` admits a positive left inverse of norm at most `C`. -/
+def IsPositiveComplemented (J : X →L[ℝ] Y) (C : ℝ) : Prop :=
   Positive J.toLinearMap ∧ Isometry J ∧
-    ∃ Q : Y →L[ℝ] X, Positive Q.toLinearMap ∧ Function.LeftInverse Q J ∧ ‖Q‖ ≤ c
+    ∃ Q : Y →L[ℝ] X, Positive Q.toLinearMap ∧ Function.LeftInverse Q J ∧ ‖Q‖ ≤ C
 
-/-- Positive contractive retracts are exactly the embeddings witnessing positive
-`1`-complementation. -/
+/-- `X` is positively `1`-complemented in `Y` via `J` exactly when `J` is a positive
+contraction with a positive contractive left inverse. -/
 theorem isPositiveContractiveRetract_iff_isPositiveComplemented_one
     {J : X →L[ℝ] Y} :
     IsPositiveContractiveRetract J ↔ IsPositiveComplemented J 1 :=
@@ -56,19 +61,21 @@ theorem isPositiveContractiveRetract_iff_isPositiveComplemented_one
         le_of_eq (((AddMonoidHomClass.isometry_iff_norm J).1 hJi x).trans
           (one_mul ‖x‖).symm), hQn⟩⟩
 
-/-- Increasing the norm bound preserves positive complementation. -/
-theorem IsPositiveComplemented.mono {J : X →L[ℝ] Y} {a b : ℝ}
-    (h : IsPositiveComplemented J a) (hab : a ≤ b) : IsPositiveComplemented J b :=
+/-- If `X` is positively `C`-complemented in `Y` via `J`, then it is positively
+`C'`-complemented in `Y` via `J` for every `C' ≥ C`. -/
+theorem IsPositiveComplemented.mono {J : X →L[ℝ] Y} {C C' : ℝ}
+    (h : IsPositiveComplemented J C) (hCC' : C ≤ C') : IsPositiveComplemented J C' :=
   match h with
-  | ⟨hJ, hJi, Q, hQ, hQJ, hQn⟩ => ⟨hJ, hJi, Q, hQ, hQJ, hQn.trans hab⟩
+  | ⟨hJ, hJi, Q, hQ, hQJ, hQn⟩ => ⟨hJ, hJi, Q, hQ, hQJ, hQn.trans hCC'⟩
 
-/-- A positively complemented embedding has complemented range as a Banach subspace. -/
-theorem IsPositiveComplemented.closedComplemented_range {J : X →L[ℝ] Y} {c : ℝ}
-    (h : IsPositiveComplemented J c) : J.range.ClosedComplemented :=
+/-- If `X` is positively `C`-complemented in `Y` via `J`, then the range of `J` is
+complemented in `Y` as a Banach subspace. -/
+theorem IsPositiveComplemented.closedComplemented_range {J : X →L[ℝ] Y} {C : ℝ}
+    (h : IsPositiveComplemented J C) : J.range.ClosedComplemented :=
   match h with
   | ⟨_, _, Q, _, hQJ, _⟩ => J.closedComplemented_range_of_leftInverse Q hQJ
 
-end Positive
+end PositiveComplemented
 
 /-! ## Lattice complementation -/
 
@@ -78,11 +85,11 @@ variable {X Y : Type*} [NormedAddCommGroup X] [NormedAddCommGroup Y]
   [Lattice X] [Lattice Y] [IsOrderedAddMonoid X] [IsOrderedAddMonoid Y]
   [BanachLattice X] [BanachLattice Y]
 
-/-- An isometric vector lattice embedding `J` witnesses lattice complementation
-with bound `c` if it admits a vector lattice homomorphism as a left inverse of norm at most `c`. -/
-def IsLatticeComplemented (J : X →L[ℝ] Y) (c : ℝ) : Prop :=
+/-- Given `J: X → Y` an isometric lattice embedding, `X` is lattice `C`-complemented
+in `Y` via `J` if `J` admits a lattice homomorphism as a left inverse of norm at most `C`. -/
+def IsLatticeComplemented (J : X →L[ℝ] Y) (C : ℝ) : Prop :=
   IsVecLatHom J ∧ Isometry J ∧
-    ∃ Q : Y →L[ℝ] X, IsVecLatHom Q ∧ Function.LeftInverse Q J ∧ ‖Q‖ ≤ c
+    ∃ Q : Y →L[ℝ] X, IsVecLatHom Q ∧ Function.LeftInverse Q J ∧ ‖Q‖ ≤ C
 
 private theorem norm_bandProjection_le (B : ProjectionBand Y) (y : Y) :
     ‖B.bandProjection y‖ ≤ ‖y‖ :=
@@ -90,8 +97,8 @@ private theorem norm_bandProjection_le (B : ProjectionBand Y) (y : Y) :
     (Positive.abs_le_map_abs (Positive.zero_le_iff.mp B.bandProjection_nonneg) y).trans
       (Positive.le_iff.mp B.bandProjection_le_id |y| (abs_nonneg y))
 
-/-- An isometric vector lattice embedding onto a projection band witnesses
-lattice complementation with bound `1`. -/
+/-- If `J` is an isometric lattice embedding onto a projection band, then `X`
+is lattice `1`-complemented in `Y` via `J`. -/
 theorem IsLatticeComplemented.of_projectionBand {J : X →L[ℝ] Y}
     (hJ : IsVecLatHom J) (hJi : Isometry J)
     (B : ProjectionBand Y) (hB : Set.range J = (B : Set Y)) :
@@ -116,9 +123,10 @@ theorem IsLatticeComplemented.of_projectionBand {J : X →L[ℝ] Y}
       (show J x ∈ (B : Set Y) from hB ▸ Set.mem_range_self x))),
     T.mkContinuous_norm_le zero_le_one hnorm⟩
 
-/-- A lattice-complemented embedding is positively complemented with the same bound. -/
-theorem IsLatticeComplemented.isPositiveComplemented {J : X →L[ℝ] Y} {c : ℝ}
-    (h : IsLatticeComplemented J c) : Positive.IsPositiveComplemented J c :=
+/-- If `X` is lattice `C`-complemented in `Y` via `J`, then `X` is positively
+`C`-complemented in `Y` via `J`. -/
+theorem IsLatticeComplemented.isPositiveComplemented {J : X →L[ℝ] Y} {C : ℝ}
+    (h : IsLatticeComplemented J C) : PositiveComplemented.IsPositiveComplemented J C :=
   match h with
   | ⟨hJ, hJi, Q, hQ, hQJ, hQn⟩ =>
     ⟨fun _ hx => (IsVecLatHom.mk' _ hJ).map_nonneg hx, hJi,
