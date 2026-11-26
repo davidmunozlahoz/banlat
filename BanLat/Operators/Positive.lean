@@ -4,6 +4,7 @@ Authors: David Muñoz-Lahoz
 
 import BanLat.Normed
 import Mathlib.Algebra.Order.Module.Basic
+import Mathlib.Analysis.Normed.Operator.Basic
 import Mathlib.Topology.Algebra.Module.Equiv.Basic
 
 /-!
