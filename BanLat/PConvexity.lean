@@ -114,6 +114,19 @@ theorem latticePSum_map {Y : Type*} [NormedAddCommGroup Y] [Lattice Y]
   letI := isUniformlyCompleteVectorLattice_of_banachLattice Y
   PosHomFunction.functionalCalculus_map T x (pSumFunction p n)
 
+/-- Taking absolute values of all entries leaves a finite lattice p-sum unchanged. -/
+@[simp]
+theorem latticePSum_abs {n : ℕ} (x : Fin n → X) :
+    latticePSum p (fun i ↦ |x i|) = latticePSum p x := by
+  let := isUniformlyCompleteVectorLattice_of_banachLattice X
+  have h : PosHomFunction.comp (pSumFunction p n)
+      (fun i ↦ |PosHomFunction.coordinate i|) = pSumFunction p n := by
+    ext a
+    exact norm_abs_eq_norm (WithLp.toLp p a)
+  simpa only [VecLatHom.map_abs, PosHomFunction.functionalCalculus_coordinate, h,
+    latticePSum] using PosHomFunction.functionalCalculus_comp x
+      (fun i ↦ |PosHomFunction.coordinate i|) (pSumFunction p n)
+
 variable {E : Type*} [NormedAddCommGroup E] [NormedSpace ℝ E]
 
 /-- A bounded linear operator satisfies the p-convexity estimate with constant `C ≥ 0`
@@ -555,20 +568,31 @@ The identity operator admits the constant one. -/
 theorem isPConvex_one : IsPConvex 1 X :=
   ⟨1, convexWith_one_id⟩
 
+/-- An isometric vector lattice embedding pulls back every p-convexity constant
+of its codomain to its domain. -/
+theorem ConvexWith.of_isometry {Y : Type*} [NormedAddCommGroup Y] [Lattice Y]
+    [IsOrderedAddMonoid Y] [BanachLattice Y] {C : ℝ} (hC : IsPConvexWith p C Y)
+    (S : VecLatHom X Y) (hS : Isometry S) : IsPConvexWith p C X := by
+  refine ⟨hC.1, fun n x ↦ ?_⟩
+  simpa only [ContinuousLinearMap.id_apply, ← latticePSum_map,
+    hS.norm_map_of_map_zero (map_zero S)] using hC.2 n (fun i ↦ S (x i))
+
+/-- A Banach lattice admitting an isometric vector lattice embedding into a p-convex
+Banach lattice is itself p-convex. -/
+theorem IsPConvex.of_isometry {Y : Type*} [NormedAddCommGroup Y] [Lattice Y]
+    [IsOrderedAddMonoid Y] [BanachLattice Y] (hY : IsPConvex p Y)
+    (S : VecLatHom X Y) (hS : Isometry S) : IsPConvex p X :=
+  hY.elim fun C hC ↦ ⟨C, hC.of_isometry S hS⟩
+
 /-- A closed vector sublattice inherits every p-convexity constant
 of the ambient Banach lattice. -/
 theorem ConvexWith.id_sublattice {C : ℝ}
     (hC : IsPConvexWith p C X)
     (Y : VectorSublattice X) (hY : IsClosed (Y : Set X)) :
     letI := Y.banachLatticeCoe hY
-    IsPConvexWith p C Y := by
-  let := Y.banachLatticeCoe hY
-  refine ⟨hC.1, fun n x ↦ ?_⟩
-  have hmap := latticePSum_map p Y.subtype x
-  change ‖((latticePSum p x : Y) : X)‖ ≤
-    C * ‖WithLp.toLp p (fun i ↦ ‖(x i : X)‖)‖
-  rw [show ((latticePSum p x : Y) : X) = latticePSum p (fun i ↦ (x i : X)) from hmap]
-  exact hC.2 n (fun i ↦ (x i : X))
+    IsPConvexWith p C Y :=
+  letI := Y.banachLatticeCoe hY
+  hC.of_isometry Y.subtype isometry_subtype_coe
 
 /-- Every closed vector sublattice of a p-convex Banach lattice is p-convex.
 It carries the norm and lattice operations induced by the ambient space. -/
