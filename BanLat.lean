@@ -61,6 +61,7 @@ import BanLat.Examples.CofK.Borsuk
 import BanLat.Examples.CofK.Complex
 import BanLat.Examples.CofK.Dual
 import BanLat.Examples.CofK.FunctionalCalculus
+import BanLat.Examples.CofK.Hom
 import BanLat.Examples.Ellp.Basic
 import BanLat.Examples.Ellp.Schur
 import BanLat.Examples.Ellp.Sum

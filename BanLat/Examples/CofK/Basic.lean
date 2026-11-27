@@ -119,9 +119,22 @@ noncomputable instance instAMSpaceWithUnitCofK : AMSpaceWithUnit C(K, ℝ) where
 
 namespace ContinuousMap
 
-/-! ## Positive unital operators -/
+/-! ## Positive operators -/
 
 section
+
+/-- A positive linear functional on `C(K, ℝ)` is bounded by its value at `1`
+times the supremum norm. -/
+theorem abs_apply_le_norm_mul_one {φ : C(K, ℝ) →ₗ[ℝ] ℝ}
+    (hφ : Positive φ) (f : C(K, ℝ)) : |φ f| ≤ ‖f‖ * φ 1 := by
+  calc
+    |φ f| ≤ φ |f| := hφ.abs_le_map_abs f
+    _ ≤ φ (‖f‖ • 1) := (Positive.monotone_iff.mpr hφ)
+      (ContinuousMap.le_def.mpr fun x ↦ by
+        simpa only [ContinuousMap.abs_apply, ContinuousMap.smul_apply,
+          ContinuousMap.one_apply, smul_eq_mul, mul_one, Real.norm_eq_abs] using
+          f.norm_coe_le_norm x)
+    _ = ‖f‖ * φ 1 := by rw [map_smul, smul_eq_mul]
 
 variable {K L : Type*} [TopologicalSpace K] [TopologicalSpace L]
   [CompactSpace K] [CompactSpace L]
@@ -130,15 +143,11 @@ omit [CompactSpace L] in
 /-- If T is a positive unital operator between real C(K)-spaces, then |Tf| ≤ ||f||·1. -/
 private lemma abs_apply_le_norm_smul_one {T : C(K, ℝ) →L[ℝ] C(L, ℝ)}
     (hT : Positive T.toLinearMap) (hOne : T 1 = 1) (f : C(K, ℝ)) :
-    |T f| ≤ ‖f‖ • (1 : C(L, ℝ)) :=
-  calc
-    |T f| ≤ T |f| := hT.abs_le_map_abs f
-    _ ≤ T (‖f‖ • 1) := (Positive.monotone_iff.mpr hT)
-      (ContinuousMap.le_def.mpr fun x ↦ by
-        simpa only [ContinuousMap.abs_apply, ContinuousMap.smul_apply,
-          ContinuousMap.one_apply, smul_eq_mul, mul_one, Real.norm_eq_abs] using
-          f.norm_coe_le_norm x)
-    _ = ‖f‖ • 1 := (map_smul T _ _).trans (congrArg (‖f‖ • ·) hOne)
+    |T f| ≤ ‖f‖ • (1 : C(L, ℝ)) := by
+  refine ContinuousMap.le_def.mpr fun x ↦ ?_
+  have hpos : Positive ((evalCLM ℝ x).toLinearMap.comp T.toLinearMap) :=
+    fun g hg ↦ ContinuousMap.le_def.mp (hT g hg) x
+  simpa [hOne] using abs_apply_le_norm_mul_one hpos f
 
 /-- A positive unital operator between real C(K)-spaces is a contraction.
 This includes when either underlying compact space is empty. -/
